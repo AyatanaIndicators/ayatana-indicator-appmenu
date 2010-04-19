@@ -1,0 +1,25 @@
+Source: indicator-appmenu
+Section: gnome
+Priority: optional
+Maintainer: Ubuntu Core Developers <ubuntu-devel-discuss@lists.ubuntu.com>
+Build-Depends: debhelper (>= 5.0),
+               cdbs (>= 0.4.41),
+               libgtk2.0-dev (>= 2.12.0),
+               libdbus-glib-1-dev,
+               gnome-doc-utils,
+               scrollkeeper,
+               intltool,
+               libindicator-dev (>= 0.3.5),
+               libdbusmenu-gtk-dev (>= 0.2.5),
+               libdbusmenu-glib-dev (>= 0.2.8)
+Standards-Version: 3.8.0
+
+Package: indicator-appmenu
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Recommends: indicator-applet | indicator-renderer
+Breaks: indicator-applet (<< 0.3.0)
+Description: Indicator for application menus.
+ .
+ This package provides support for application menus.
+
