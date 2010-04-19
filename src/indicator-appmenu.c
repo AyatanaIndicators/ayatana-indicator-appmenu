@@ -1,0 +1,4 @@
+
+void myfunc (void) {
+	return;
+}

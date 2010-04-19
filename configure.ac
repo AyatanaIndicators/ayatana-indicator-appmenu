@@ -88,6 +88,7 @@ AC_SUBST(DBUSSERVICEDIR)
 
 AC_OUTPUT([
 Makefile
+src/Makefile
 ])
 
 ###########################

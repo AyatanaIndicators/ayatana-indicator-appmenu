@@ -1,3 +1,5 @@
 compile
 gtk-doc.make
 m4
+src/libappmenu.la
+src/libappmenu_la-indicator-appmenu.lo
