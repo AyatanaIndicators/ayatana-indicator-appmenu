@@ -5,3 +5,4 @@ src/libappmenu.la
 src/libappmenu_la-indicator-appmenu.lo
 src/application-menu-registrar-client.h
 src/application-menu-registrar-server.h
+src/libappmenu_la-window-menus.lo
