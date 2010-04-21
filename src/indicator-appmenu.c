@@ -39,6 +39,7 @@ static void indicator_appmenu_init       (IndicatorAppmenu *self);
 static void indicator_appmenu_dispose    (GObject *object);
 static void indicator_appmenu_finalize   (GObject *object);
 static GList * get_entries (IndicatorObject * io);
+static void switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef);
 
 G_DEFINE_TYPE (IndicatorAppmenu, indicator_appmenu, INDICATOR_OBJECT_TYPE);
 
@@ -74,8 +75,7 @@ indicator_appmenu_dispose (GObject *object)
 	IndicatorAppmenu * iapp = INDICATOR_APPMENU(object);
 
 	/* No specific ref */
-	iapp->default_app = NULL;
-	
+	switch_default_app (iapp, NULL);
 
 	G_OBJECT_CLASS (indicator_appmenu_parent_class)->dispose (object);
 	return;
@@ -102,4 +102,35 @@ get_entries (IndicatorObject * io)
 	}
 
 	return window_menus_get_entries(iapp->default_app);
+}
+
+/* Switch applications, remove all the entires for the previous
+   one and add them for the new application */
+static void
+switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef)
+{
+	if (iapp->default_app == newdef) {
+		return;
+	}
+
+	GList * entries;
+
+	/* Remove old */
+	if (iapp->default_app != NULL) {
+		for (entries = window_menus_get_entries(iapp->default_app); entries != NULL; entries = g_list_next(entries)) {
+			g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_REMOVED_ID, 0, entries->data, TRUE);
+		}
+	}
+
+	/* Switch */
+	iapp->default_app = newdef;
+
+	/* Add new */
+	if (iapp->default_app != NULL) {
+		for (entries = window_menus_get_entries(iapp->default_app); entries != NULL; entries = g_list_next(entries)) {
+			g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_ADDED_ID, 0, entries->data, TRUE);
+		}
+	}
+
+	return;
 }
