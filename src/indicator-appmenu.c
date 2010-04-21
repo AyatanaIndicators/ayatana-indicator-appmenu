@@ -31,7 +31,7 @@ struct _IndicatorAppmenu {
 	IndicatorObject parent;
 
 	WindowMenus * default_app;
-
+	GHashTable * apps;
 };
 
 static void indicator_appmenu_class_init (IndicatorAppmenuClass *klass);
@@ -64,6 +64,7 @@ static void
 indicator_appmenu_init (IndicatorAppmenu *self)
 {
 	self->default_app = NULL;
+	self->apps = g_hash_table_new_full(NULL, NULL, NULL, g_object_unref);
 
 	return;
 }
@@ -76,6 +77,11 @@ indicator_appmenu_dispose (GObject *object)
 
 	/* No specific ref */
 	switch_default_app (iapp, NULL);
+
+	if (iapp->apps != NULL) {
+		g_hash_table_destroy(iapp->apps);
+		iapp->apps = NULL;
+	}
 
 	G_OBJECT_CLASS (indicator_appmenu_parent_class)->dispose (object);
 	return;
