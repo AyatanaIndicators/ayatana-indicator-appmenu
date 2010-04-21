@@ -30,12 +30,15 @@ struct _IndicatorAppmenuClass {
 struct _IndicatorAppmenu {
 	IndicatorObject parent;
 
+	WindowMenus * default_app;
+
 };
 
 static void indicator_appmenu_class_init (IndicatorAppmenuClass *klass);
 static void indicator_appmenu_init       (IndicatorAppmenu *self);
 static void indicator_appmenu_dispose    (GObject *object);
 static void indicator_appmenu_finalize   (GObject *object);
+static GList * get_entries (IndicatorObject * io);
 
 G_DEFINE_TYPE (IndicatorAppmenu, indicator_appmenu, INDICATOR_OBJECT_TYPE);
 
@@ -48,6 +51,10 @@ indicator_appmenu_class_init (IndicatorAppmenuClass *klass)
 	object_class->dispose = indicator_appmenu_dispose;
 	object_class->finalize = indicator_appmenu_finalize;
 
+	IndicatorObjectClass * ioclass = INDICATOR_OBJECT_CLASS(klass);
+
+	ioclass->get_entries = get_entries;
+
 	return;
 }
 
@@ -55,6 +62,7 @@ indicator_appmenu_class_init (IndicatorAppmenuClass *klass)
 static void
 indicator_appmenu_init (IndicatorAppmenu *self)
 {
+	self->default_app = NULL;
 
 	return;
 }
@@ -63,6 +71,11 @@ indicator_appmenu_init (IndicatorAppmenu *self)
 static void
 indicator_appmenu_dispose (GObject *object)
 {
+	IndicatorAppmenu * iapp = INDICATOR_APPMENU(object);
+
+	/* No specific ref */
+	iapp->default_app = NULL;
+	
 
 	G_OBJECT_CLASS (indicator_appmenu_parent_class)->dispose (object);
 	return;
@@ -75,4 +88,18 @@ indicator_appmenu_finalize (GObject *object)
 
 	G_OBJECT_CLASS (indicator_appmenu_parent_class)->finalize (object);
 	return;
+}
+
+/* Get the current set of entries */
+static GList *
+get_entries (IndicatorObject * io)
+{
+	g_return_val_if_fail(IS_INDICATOR_APPMENU(io), NULL);
+	IndicatorAppmenu * iapp = INDICATOR_APPMENU(io);
+
+	if (iapp->default_app == NULL) {
+		return NULL;
+	}
+
+	return window_menus_get_entries(iapp->default_app);
 }

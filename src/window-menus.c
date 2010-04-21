@@ -65,3 +65,10 @@ window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * d
 
 	return NULL;
 }
+
+GList *
+window_menus_get_entries (WindowMenus * wm)
+{
+
+	return NULL;
+}

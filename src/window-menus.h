@@ -26,6 +26,7 @@ struct _WindowMenus {
 
 GType window_menus_get_type (void);
 WindowMenus * window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * dbus_object);
+GList * window_menus_get_entries (WindowMenus * wm);
 
 G_END_DECLS
 
