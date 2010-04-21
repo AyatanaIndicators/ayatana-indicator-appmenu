@@ -14,6 +14,11 @@
 #define IS_INDICATOR_APPMENU_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), INDICATOR_APPMENU_TYPE))
 #define INDICATOR_APPMENU_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), INDICATOR_APPMENU_TYPE, IndicatorAppmenuClass))
 
+GType indicator_appmenu_get_type (void);
+
+INDICATOR_SET_VERSION
+INDICATOR_SET_TYPE(INDICATOR_APPMENU_TYPE)
+
 typedef struct _IndicatorAppmenu      IndicatorAppmenu;
 typedef struct _IndicatorAppmenuClass IndicatorAppmenuClass;
 
@@ -27,7 +32,6 @@ struct _IndicatorAppmenu {
 
 };
 
-GType indicator_appmenu_get_type (void);
 static void indicator_appmenu_class_init (IndicatorAppmenuClass *klass);
 static void indicator_appmenu_init       (IndicatorAppmenu *self);
 static void indicator_appmenu_dispose    (GObject *object);
