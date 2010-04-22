@@ -102,8 +102,8 @@ indicator_appmenu_init (IndicatorAppmenu *self)
 
 	DBusGConnection * connection = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
 	dbus_g_connection_register_g_object(connection,
-										REG_OBJECT,
-										G_OBJECT(self));
+	                                    REG_OBJECT,
+	                                    G_OBJECT(self));
 
 	return;
 }
