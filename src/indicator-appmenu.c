@@ -4,9 +4,11 @@
 #endif
 
 #include <dbus/dbus-glib.h>
+#include <dbus/dbus-glib-bindings.h>
 
 #include <libindicator/indicator.h>
 #include <libindicator/indicator-object.h>
+
 #include "window-menus.h"
 #include "dbus-shared.h"
 
@@ -47,6 +49,7 @@ static GList * get_entries (IndicatorObject * io);
 static void switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef);
 static gboolean _application_menu_registrar_server_window_register (IndicatorAppmenu * iapp, guint windowid, const GValue * objectpath, DBusGMethodInvocation * method);
 static gboolean _application_menu_registrar_server_window_unregister (IndicatorAppmenu * iapp, guint windowid, const GValue * objectpath, DBusGMethodInvocation * method);
+static void request_name_cb (DBusGProxy *proxy, guint result, GError *error, gpointer userdata);
 
 #include "application-menu-registrar-server.h"
 
@@ -100,10 +103,23 @@ indicator_appmenu_init (IndicatorAppmenu *self)
 	self->default_app = NULL;
 	self->apps = g_hash_table_new_full(NULL, NULL, NULL, g_object_unref);
 
+	/* Register this object on DBus */
 	DBusGConnection * connection = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
 	dbus_g_connection_register_g_object(connection,
 	                                    REG_OBJECT,
 	                                    G_OBJECT(self));
+
+	/* Request a name so others can find us */
+	DBusGProxy * dbus_proxy = dbus_g_proxy_new_for_name_owner(connection,
+	                                                   DBUS_SERVICE_DBUS,
+	                                                   DBUS_PATH_DBUS,
+	                                                   DBUS_INTERFACE_DBUS,
+	                                                   NULL);
+	org_freedesktop_DBus_request_name_async (dbus_proxy,
+	                                         DBUS_NAME,
+	                                         DBUS_NAME_FLAG_DO_NOT_QUEUE,
+	                                         request_name_cb,
+	                                         self);
 
 	return;
 }
@@ -194,4 +210,31 @@ _application_menu_registrar_server_window_unregister (IndicatorAppmenu * iapp, g
 {
 	dbus_g_method_return(method);
 	return TRUE;
+}
+
+/* Response to whether we got our name or not */
+static void
+request_name_cb (DBusGProxy *proxy, guint result, GError * inerror, gpointer userdata)
+{
+	gboolean error = FALSE;
+
+	if (inerror != NULL) {
+		g_warning("Unable to get name request: %s", inerror->message);
+		error = TRUE;
+	}
+
+	if (!error && result != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER && result != DBUS_REQUEST_NAME_REPLY_ALREADY_OWNER) {
+		g_warning("The dbus name we want is already taken");
+		error = TRUE;
+	}
+
+	if (error) {
+		/* We can rest assured no one will register with us, but let's
+		   just ensure we're not showing anything. */
+		switch_default_app(INDICATOR_APPMENU(userdata), NULL);
+	}
+
+	g_object_unref(proxy);
+
+	return;
 }
