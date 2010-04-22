@@ -27,6 +27,8 @@ typedef struct _IndicatorAppmenuClass IndicatorAppmenuClass;
 struct _IndicatorAppmenuClass {
 	IndicatorObjectClass parent_class;
 
+	void (*window_registered) (IndicatorAppmenu * iapp, guint wid, gchar * path, gpointer user_data);
+	void (*window_unregistered) (IndicatorAppmenu * iapp, guint wid, gchar * path, gpointer user_data);
 };
 
 struct _IndicatorAppmenu {
@@ -47,6 +49,14 @@ static gboolean _application_menu_registrar_server_window_unregister (IndicatorA
 
 #include "application-menu-registrar-server.h"
 
+enum {
+	WINDOW_REGISTERED,
+	WINDOW_UNREGISTERED,
+	LAST_SIGNAL
+};
+
+static guint signals[LAST_SIGNAL] = { 0 };
+
 G_DEFINE_TYPE (IndicatorAppmenu, indicator_appmenu, INDICATOR_OBJECT_TYPE);
 
 /* One time init */
@@ -61,6 +71,21 @@ indicator_appmenu_class_init (IndicatorAppmenuClass *klass)
 	IndicatorObjectClass * ioclass = INDICATOR_OBJECT_CLASS(klass);
 
 	ioclass->get_entries = get_entries;
+
+	signals[WINDOW_REGISTERED] =  g_signal_new("window-registered",
+	                                      G_TYPE_FROM_CLASS(klass),
+	                                      G_SIGNAL_RUN_LAST,
+	                                      G_STRUCT_OFFSET (IndicatorAppmenuClass, window_registered),
+	                                      NULL, NULL,
+	                                      g_cclosure_marshal_VOID__UINT, // XXX
+	                                      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
+	signals[WINDOW_UNREGISTERED] =  g_signal_new("window-unregistered",
+	                                      G_TYPE_FROM_CLASS(klass),
+	                                      G_SIGNAL_RUN_LAST,
+	                                      G_STRUCT_OFFSET (IndicatorAppmenuClass, window_unregistered),
+	                                      NULL, NULL,
+	                                      g_cclosure_marshal_VOID__UINT, // XXX
+	                                      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
 
 	return;
 }
