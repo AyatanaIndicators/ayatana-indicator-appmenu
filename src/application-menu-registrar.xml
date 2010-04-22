@@ -19,7 +19,7 @@
 			<arg type="u" name="windowID" direction="out" />
 			<arg type="o" name="path" direction="out" />
 		</signal>
-		<signal name="WindowUnegistered">
+		<signal name="WindowUnregistered">
 			<arg type="u" name="windowID" direction="out" />
 			<arg type="o" name="path" direction="out" />
 		</signal>
