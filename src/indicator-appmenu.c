@@ -3,6 +3,8 @@
 #include "config.h"
 #endif
 
+#include <dbus/dbus-glib.h>
+
 #include <libindicator/indicator.h>
 #include <libindicator/indicator-object.h>
 #include "window-menus.h"
@@ -40,6 +42,10 @@ static void indicator_appmenu_dispose    (GObject *object);
 static void indicator_appmenu_finalize   (GObject *object);
 static GList * get_entries (IndicatorObject * io);
 static void switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef);
+static gboolean _application_menu_registrar_server_window_register (IndicatorAppmenu * iapp, guint windowid, const GValue * objectpath, DBusGMethodInvocation * method);
+static gboolean _application_menu_registrar_server_window_unregister (IndicatorAppmenu * iapp, guint windowid, const GValue * objectpath, DBusGMethodInvocation * method);
+
+#include "application-menu-registrar-server.h"
 
 G_DEFINE_TYPE (IndicatorAppmenu, indicator_appmenu, INDICATOR_OBJECT_TYPE);
 
@@ -139,4 +145,20 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef)
 	}
 
 	return;
+}
+
+/* A new window wishes to register it's windows with us */
+static gboolean
+_application_menu_registrar_server_window_register (IndicatorAppmenu * iapp, guint windowid, const GValue * objectpath, DBusGMethodInvocation * method)
+{
+	dbus_g_method_return(method);
+	return TRUE;
+}
+
+/* Oh, this one is done playing with us. */
+static gboolean
+_application_menu_registrar_server_window_unregister (IndicatorAppmenu * iapp, guint windowid, const GValue * objectpath, DBusGMethodInvocation * method)
+{
+	dbus_g_method_return(method);
+	return TRUE;
 }
