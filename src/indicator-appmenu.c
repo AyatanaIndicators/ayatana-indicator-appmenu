@@ -8,6 +8,7 @@
 #include <libindicator/indicator.h>
 #include <libindicator/indicator-object.h>
 #include "window-menus.h"
+#include "dbus-shared.h"
 
 #define INDICATOR_APPMENU_TYPE            (indicator_appmenu_get_type ())
 #define INDICATOR_APPMENU(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), INDICATOR_APPMENU_TYPE, IndicatorAppmenu))
@@ -87,6 +88,8 @@ indicator_appmenu_class_init (IndicatorAppmenuClass *klass)
 	                                      g_cclosure_marshal_VOID__UINT, // XXX
 	                                      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
 
+	dbus_g_object_type_install_info(INDICATOR_APPMENU_TYPE, &dbus_glib__application_menu_registrar_server_object_info);
+
 	return;
 }
 
@@ -96,6 +99,11 @@ indicator_appmenu_init (IndicatorAppmenu *self)
 {
 	self->default_app = NULL;
 	self->apps = g_hash_table_new_full(NULL, NULL, NULL, g_object_unref);
+
+	DBusGConnection * connection = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
+	dbus_g_connection_register_g_object(connection,
+										REG_OBJECT,
+										G_OBJECT(self));
 
 	return;
 }
