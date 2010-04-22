@@ -5,6 +5,7 @@
 
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-bindings.h>
+#include <dbus/dbus-glib-lowlevel.h>
 
 #include <libindicator/indicator.h>
 #include <libindicator/indicator-object.h>
@@ -200,6 +201,15 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef)
 static gboolean
 _application_menu_registrar_server_window_register (IndicatorAppmenu * iapp, guint windowid, const GValue * objectpath, DBusGMethodInvocation * method)
 {
+	if (g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid)) == NULL) {
+		WindowMenus * wm = window_menus_new(windowid, (gchar *)g_value_get_boxed(objectpath), dbus_g_method_get_sender(method));
+		g_hash_table_insert(iapp->apps, GUINT_TO_POINTER(windowid), wm);
+
+		/* TODO: Check to see if it's the visible window */
+	} else {
+		g_warning("Already have a menu for window ID %X with path %s from %s", windowid, (gchar *)g_value_get_boxed(objectpath), dbus_g_method_get_sender(method));
+	}
+
 	dbus_g_method_return(method);
 	return TRUE;
 }
@@ -208,6 +218,17 @@ _application_menu_registrar_server_window_register (IndicatorAppmenu * iapp, gui
 static gboolean
 _application_menu_registrar_server_window_unregister (IndicatorAppmenu * iapp, guint windowid, const GValue * objectpath, DBusGMethodInvocation * method)
 {
+	gpointer lookup = g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid));
+	if (lookup != NULL) {
+		WindowMenus * wm = (WindowMenus *)lookup;
+		if (iapp->default_app == wm) {
+			switch_default_app(iapp, NULL);
+		}
+		g_hash_table_remove(iapp->apps, GUINT_TO_POINTER(windowid));
+	} else {
+		g_warning("Unable to unregister window ID %X as I don't have it.", windowid);
+	}
+
 	dbus_g_method_return(method);
 	return TRUE;
 }
