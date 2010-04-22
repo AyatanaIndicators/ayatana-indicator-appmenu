@@ -206,6 +206,8 @@ _application_menu_registrar_server_window_register (IndicatorAppmenu * iapp, gui
 		g_hash_table_insert(iapp->apps, GUINT_TO_POINTER(windowid), wm);
 
 		/* TODO: Check to see if it's the visible window */
+
+		g_signal_emit(G_OBJECT(iapp), signals[WINDOW_REGISTERED], 0, windowid, objectpath, TRUE);
 	} else {
 		g_warning("Already have a menu for window ID %X with path %s from %s", windowid, (gchar *)g_value_get_boxed(objectpath), dbus_g_method_get_sender(method));
 	}
@@ -225,6 +227,8 @@ _application_menu_registrar_server_window_unregister (IndicatorAppmenu * iapp, g
 			switch_default_app(iapp, NULL);
 		}
 		g_hash_table_remove(iapp->apps, GUINT_TO_POINTER(windowid));
+
+		g_signal_emit(G_OBJECT(iapp), signals[WINDOW_UNREGISTERED], 0, windowid, objectpath, TRUE);
 	} else {
 		g_warning("Unable to unregister window ID %X as I don't have it.", windowid);
 	}
