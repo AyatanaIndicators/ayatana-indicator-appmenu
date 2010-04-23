@@ -10,6 +10,7 @@
 #include <libindicator/indicator.h>
 #include <libindicator/indicator-object.h>
 
+#include "indicator-appmenu-marshal.h"
 #include "window-menus.h"
 #include "dbus-shared.h"
 
@@ -82,15 +83,15 @@ indicator_appmenu_class_init (IndicatorAppmenuClass *klass)
 	                                      G_SIGNAL_RUN_LAST,
 	                                      G_STRUCT_OFFSET (IndicatorAppmenuClass, window_registered),
 	                                      NULL, NULL,
-	                                      g_cclosure_marshal_VOID__UINT, // XXX
-	                                      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
+	                                      _indicator_appmenu_marshal_VOID__UINT_BOXED,
+	                                      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_BOXED);
 	signals[WINDOW_UNREGISTERED] =  g_signal_new("window-unregistered",
 	                                      G_TYPE_FROM_CLASS(klass),
 	                                      G_SIGNAL_RUN_LAST,
 	                                      G_STRUCT_OFFSET (IndicatorAppmenuClass, window_unregistered),
 	                                      NULL, NULL,
-	                                      g_cclosure_marshal_VOID__UINT, // XXX
-	                                      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
+	                                      _indicator_appmenu_marshal_VOID__UINT_BOXED,
+	                                      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_BOXED);
 
 	dbus_g_object_type_install_info(INDICATOR_APPMENU_TYPE, &dbus_glib__application_menu_registrar_server_object_info);
 
