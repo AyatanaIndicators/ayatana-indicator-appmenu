@@ -2,11 +2,14 @@
 #include "config.h"
 #endif
 
+#include <libdbusmenu-gtk/client.h>
+
 #include "window-menus.h"
 
 typedef struct _WindowMenusPrivate WindowMenusPrivate;
 struct _WindowMenusPrivate {
 	guint windowid;
+	DbusmenuGtkClient * client;
 };
 
 #define WINDOW_MENUS_GET_PRIVATE(o) \
@@ -37,6 +40,9 @@ window_menus_class_init (WindowMenusClass *klass)
 static void
 window_menus_init (WindowMenus *self)
 {
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(self);
+
+	priv->client = NULL;
 
 	return;
 }
@@ -45,6 +51,12 @@ window_menus_init (WindowMenus *self)
 static void
 window_menus_dispose (GObject *object)
 {
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(object);
+
+	if (priv->client != NULL) {
+		g_object_unref(G_OBJECT(priv->client));
+		priv->client = NULL;
+	}
 
 	G_OBJECT_CLASS (window_menus_parent_class)->dispose (object);
 	return;
