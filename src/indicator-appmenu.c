@@ -207,6 +207,7 @@ _application_menu_registrar_server_window_register (IndicatorAppmenu * iapp, gui
 		g_hash_table_insert(iapp->apps, GUINT_TO_POINTER(windowid), wm);
 
 		/* TODO: Check to see if it's the visible window */
+		switch_default_app(iapp, wm);
 
 		g_signal_emit(G_OBJECT(iapp), signals[WINDOW_REGISTERED], 0, windowid, objectpath, TRUE);
 	} else {
