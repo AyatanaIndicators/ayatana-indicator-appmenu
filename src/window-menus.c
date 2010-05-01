@@ -74,6 +74,7 @@ window_menus_finalize (GObject *object)
 WindowMenus *
 window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * dbus_object)
 {
+	g_debug("Creating new windows menu: %X, %s, %s", windowid, dbus_addr, dbus_object);
 
 	return NULL;
 }
