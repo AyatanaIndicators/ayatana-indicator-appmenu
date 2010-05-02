@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<node name="/">
+	<interface name="org.ayatana.indicator.appmenu.registrar">
+
+<!-- Methods -->
+		<method name="WindowRegister">
+			<annotation name="org.freedesktop.DBus.GLib.Async" value="true" />
+			<arg type="u" name="windowID" direction="in" />
+			<arg type="o" name="path" direction="in" />
+		</method>
+		<method name="WindowUnregister">
+			<annotation name="org.freedesktop.DBus.GLib.Async" value="true" />
+			<arg type="u" name="windowID" direction="in" />
+			<arg type="o" name="path" direction="in" />
+		</method>
+
+<!-- Signals -->
+		<signal name="WindowRegistered">
+			<arg type="u" name="windowID" direction="out" />
+			<arg type="o" name="path" direction="out" />
+		</signal>
+		<signal name="WindowUnregistered">
+			<arg type="u" name="windowID" direction="out" />
+			<arg type="o" name="path" direction="out" />
+		</signal>
+
+	</interface>
+</node>
