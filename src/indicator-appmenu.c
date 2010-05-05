@@ -49,8 +49,7 @@ static void indicator_appmenu_dispose    (GObject *object);
 static void indicator_appmenu_finalize   (GObject *object);
 static GList * get_entries (IndicatorObject * io);
 static void switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef);
-static gboolean _application_menu_registrar_server_window_register (IndicatorAppmenu * iapp, guint windowid, const gchar * objectpath, DBusGMethodInvocation * method);
-static gboolean _application_menu_registrar_server_window_unregister (IndicatorAppmenu * iapp, guint windowid, const gchar * objectpath, DBusGMethodInvocation * method);
+static gboolean _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, guint windowid, const gchar * objectpath, DBusGMethodInvocation * method);
 static void request_name_cb (DBusGProxy *proxy, guint result, GError *error, gpointer userdata);
 
 #include "application-menu-registrar-server.h"
@@ -200,7 +199,7 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef)
 
 /* A new window wishes to register it's windows with us */
 static gboolean
-_application_menu_registrar_server_window_register (IndicatorAppmenu * iapp, guint windowid, const gchar * objectpath, DBusGMethodInvocation * method)
+_application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, guint windowid, const gchar * objectpath, DBusGMethodInvocation * method)
 {
 	if (g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid)) == NULL) {
 		WindowMenus * wm = window_menus_new(windowid, objectpath, dbus_g_method_get_sender(method));
@@ -212,27 +211,6 @@ _application_menu_registrar_server_window_register (IndicatorAppmenu * iapp, gui
 		g_signal_emit(G_OBJECT(iapp), signals[WINDOW_REGISTERED], 0, windowid, objectpath, TRUE);
 	} else {
 		g_warning("Already have a menu for window ID %X with path %s from %s", windowid, objectpath, dbus_g_method_get_sender(method));
-	}
-
-	dbus_g_method_return(method);
-	return TRUE;
-}
-
-/* Oh, this one is done playing with us. */
-static gboolean
-_application_menu_registrar_server_window_unregister (IndicatorAppmenu * iapp, guint windowid, const gchar * objectpath, DBusGMethodInvocation * method)
-{
-	gpointer lookup = g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid));
-	if (lookup != NULL) {
-		WindowMenus * wm = (WindowMenus *)lookup;
-		if (iapp->default_app == wm) {
-			switch_default_app(iapp, NULL);
-		}
-		g_hash_table_remove(iapp->apps, GUINT_TO_POINTER(windowid));
-
-		g_signal_emit(G_OBJECT(iapp), signals[WINDOW_UNREGISTERED], 0, windowid, objectpath, TRUE);
-	} else {
-		g_warning("Unable to unregister window ID %X as I don't have it.", windowid);
 	}
 
 	dbus_g_method_return(method);
