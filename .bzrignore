@@ -3,3 +3,11 @@ gtk-doc.make
 m4
 src/libappmenu.la
 src/libappmenu_la-indicator-appmenu.lo
+src/application-menu-registrar-client.h
+src/application-menu-registrar-server.h
+src/libappmenu_la-window-menus.lo
+src/indicator-appmenu-marshal.c
+src/indicator-appmenu-marshal.h
+src/stamp-marshal
+src/libappmenu_la-indicator-appmenu.lo
+src/libappmenu_la-indicator-appmenu-marshal.lo
