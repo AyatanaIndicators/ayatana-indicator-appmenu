@@ -13,6 +13,7 @@ appmenulibdir = $(INDICATORDIR)
 appmenulib_LTLIBRARIES = libappmenu.la
 libappmenu_la_SOURCES = \
 	application-menu-registrar-server.h \
+	dbus-shared.h \
 	indicator-appmenu.c \
 	indicator-appmenu-marshal.c \
 	window-menus.c \
