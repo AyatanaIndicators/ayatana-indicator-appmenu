@@ -1,9 +1,9 @@
-indicator-appmenu (0.0.1-0ubuntu1~ppa1) UNRELEASED; urgency=low
+indicator-appmenu (0.0.1-0ubuntu1~ppa1) lucid; urgency=low
 
   * New upstream release.
     * Now it allows registering things.
 
- -- Ted Gould <ted@ubuntu.com>  Wed, 05 May 2010 11:13:50 +0200
+ -- Ted Gould <ted@ubuntu.com>  Wed, 05 May 2010 11:21:33 +0200
 
 indicator-appmenu (0.0.0-0ubuntu1~ppa1) lucid; urgency=low
 
