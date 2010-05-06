@@ -122,6 +122,8 @@ window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * d
 
 	priv->menu = dbusmenu_gtkmenu_new((gchar *)dbus_addr, (gchar *)dbus_object);
 
+	/* TODO: Parse current items? */
+
 	g_signal_connect(G_OBJECT(priv->menu), "add",    G_CALLBACK(menu_entry_added),   newmenu);
 	g_signal_connect(G_OBJECT(priv->menu), "remove", G_CALLBACK(menu_entry_removed), newmenu);
 
