@@ -2,14 +2,14 @@
 #include "config.h"
 #endif
 
-#include <libdbusmenu-gtk/client.h>
+#include <libdbusmenu-gtk/menu.h>
 
 #include "window-menus.h"
 
 typedef struct _WindowMenusPrivate WindowMenusPrivate;
 struct _WindowMenusPrivate {
 	guint windowid;
-	DbusmenuGtkClient * client;
+	DbusmenuGtkMenu * menu;
 };
 
 #define WINDOW_MENUS_GET_PRIVATE(o) \
@@ -42,7 +42,7 @@ window_menus_init (WindowMenus *self)
 {
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(self);
 
-	priv->client = NULL;
+	priv->menu = NULL;
 
 	return;
 }
@@ -53,9 +53,9 @@ window_menus_dispose (GObject *object)
 {
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(object);
 
-	if (priv->client != NULL) {
-		g_object_unref(G_OBJECT(priv->client));
-		priv->client = NULL;
+	if (priv->menu != NULL) {
+		g_object_unref(G_OBJECT(priv->menu));
+		priv->menu = NULL;
 	}
 
 	G_OBJECT_CLASS (window_menus_parent_class)->dispose (object);
@@ -76,7 +76,12 @@ window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * d
 {
 	g_debug("Creating new windows menu: %X, %s, %s", windowid, dbus_addr, dbus_object);
 
-	return NULL;
+	WindowMenus * newmenu = WINDOW_MENUS(g_object_new(WINDOW_MENUS_TYPE, NULL));
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(newmenu);
+
+	priv->menu = dbusmenu_gtkmenu_new((gchar *)dbus_addr, (gchar *)dbus_object);
+
+	return newmenu;
 }
 
 GList *
