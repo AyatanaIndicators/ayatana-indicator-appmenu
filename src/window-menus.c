@@ -6,6 +6,8 @@
 
 #include "window-menus.h"
 
+/* Private parts */
+
 typedef struct _WindowMenusPrivate WindowMenusPrivate;
 struct _WindowMenusPrivate {
 	guint windowid;
@@ -14,6 +16,18 @@ struct _WindowMenusPrivate {
 
 #define WINDOW_MENUS_GET_PRIVATE(o) \
 (G_TYPE_INSTANCE_GET_PRIVATE ((o), WINDOW_MENUS_TYPE, WindowMenusPrivate))
+
+/* Signals */
+
+enum {
+	ENTRY_ADDED,
+	ENTRY_REMOVED,
+	LAST_SIGNAL
+};
+
+static guint signals[LAST_SIGNAL] = { 0 };
+
+/* Prototypes */
 
 static void window_menus_class_init (WindowMenusClass *klass);
 static void window_menus_init       (WindowMenus *self);
@@ -32,6 +46,22 @@ window_menus_class_init (WindowMenusClass *klass)
 
 	object_class->dispose = window_menus_dispose;
 	object_class->finalize = window_menus_finalize;
+
+	/* Signals */
+	signals[ENTRY_ADDED] =  g_signal_new(WINDOW_MENUS_SIGNAL_ENTRY_ADDED,
+	                                      G_TYPE_FROM_CLASS(klass),
+	                                      G_SIGNAL_RUN_LAST,
+	                                      G_STRUCT_OFFSET (WindowMenusClass, entry_added),
+	                                      NULL, NULL,
+	                                      g_cclosure_marshal_VOID__OBJECT,
+	                                      G_TYPE_NONE, 1, G_TYPE_OBJECT);
+	signals[ENTRY_REMOVED] =  g_signal_new(WINDOW_MENUS_SIGNAL_ENTRY_REMOVED,
+	                                      G_TYPE_FROM_CLASS(klass),
+	                                      G_SIGNAL_RUN_LAST,
+	                                      G_STRUCT_OFFSET (WindowMenusClass, entry_removed),
+	                                      NULL, NULL,
+	                                      g_cclosure_marshal_VOID__OBJECT,
+	                                      G_TYPE_NONE, 1, G_TYPE_OBJECT);
 
 	return;
 }
