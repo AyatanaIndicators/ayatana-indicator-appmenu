@@ -41,6 +41,9 @@ struct _IndicatorAppmenu {
 
 	WindowMenus * default_app;
 	GHashTable * apps;
+
+	gulong sig_entry_added;
+	gulong sig_entry_removed;
 };
 
 static void indicator_appmenu_class_init (IndicatorAppmenuClass *klass);
@@ -51,6 +54,8 @@ static GList * get_entries (IndicatorObject * io);
 static void switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef);
 static gboolean _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, guint windowid, const gchar * objectpath, DBusGMethodInvocation * method);
 static void request_name_cb (DBusGProxy *proxy, guint result, GError *error, gpointer userdata);
+static void window_entry_added (WindowMenus * mw, IndicatorObjectEntry * entry, gpointer user_data);
+static void window_entry_removed (WindowMenus * mw, IndicatorObjectEntry * entry, gpointer user_data);
 
 #include "application-menu-registrar-server.h"
 
@@ -183,9 +188,31 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef)
 			g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_REMOVED_ID, 0, entries->data, TRUE);
 		}
 	}
+	
+	/* Disconnect signals */
+	if (iapp->sig_entry_added != 0) {
+		g_signal_handler_disconnect(G_OBJECT(iapp->default_app), iapp->sig_entry_added);
+		iapp->sig_entry_added = 0;
+	}
+	if (iapp->sig_entry_removed != 0) {
+		g_signal_handler_disconnect(G_OBJECT(iapp->default_app), iapp->sig_entry_removed);
+		iapp->sig_entry_removed = 0;
+	}
 
 	/* Switch */
 	iapp->default_app = newdef;
+
+	/* Connect signals */
+	if (iapp->default_app != NULL) {
+		iapp->sig_entry_added =   g_signal_connect(G_OBJECT(iapp->default_app),
+		                                           WINDOW_MENUS_SIGNAL_ENTRY_ADDED,
+		                                           G_CALLBACK(window_entry_added),
+		                                           iapp);
+		iapp->sig_entry_removed = g_signal_connect(G_OBJECT(iapp->default_app),
+		                                           WINDOW_MENUS_SIGNAL_ENTRY_REMOVED,
+		                                           G_CALLBACK(window_entry_removed),
+		                                           iapp);
+	}
 
 	/* Add new */
 	if (iapp->default_app != NULL) {
@@ -240,6 +267,22 @@ request_name_cb (DBusGProxy *proxy, guint result, GError * inerror, gpointer use
 	}
 
 	g_object_unref(proxy);
+
+	return;
+}
+
+/* Pass up the entry added event */
+static void
+window_entry_added (WindowMenus * mw, IndicatorObjectEntry * entry, gpointer user_data)
+{
+
+	return;
+}
+
+/* Pass up the entry removed event */
+static void
+window_entry_removed (WindowMenus * mw, IndicatorObjectEntry * entry, gpointer user_data)
+{
 
 	return;
 }
