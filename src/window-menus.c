@@ -128,11 +128,23 @@ window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * d
 	return newmenu;
 }
 
+/* Get the entries that we have */
 GList *
 window_menus_get_entries (WindowMenus * wm)
 {
+	g_return_val_if_fail(IS_WINDOW_MENUS(wm), NULL);
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
 
-	return NULL;
+	int i;
+	GList * output = NULL;
+	for (i = 0; i < priv->entries->len; i++) {
+		output = g_list_prepend(output, g_array_index(priv->entries, IndicatorObjectEntry *, i));
+	}
+	if (output != NULL) {
+		output = g_list_reverse(output);
+	}
+
+	return output;
 }
 
 /* Respond to an entry getting added to the menu */
