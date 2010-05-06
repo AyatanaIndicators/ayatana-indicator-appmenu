@@ -12,6 +12,7 @@ typedef struct _WindowMenusPrivate WindowMenusPrivate;
 struct _WindowMenusPrivate {
 	guint windowid;
 	DbusmenuGtkMenu * menu;
+	GArray * entries;
 };
 
 #define WINDOW_MENUS_GET_PRIVATE(o) \
@@ -76,6 +77,8 @@ window_menus_init (WindowMenus *self)
 
 	priv->menu = NULL;
 
+	priv->entries = g_array_new(FALSE, FALSE, sizeof(IndicatorObjectEntry *));
+
 	return;
 }
 
@@ -98,6 +101,12 @@ window_menus_dispose (GObject *object)
 static void
 window_menus_finalize (GObject *object)
 {
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(object);
+
+	if (priv->entries != NULL) {
+		g_array_free(priv->entries, TRUE);
+		priv->entries = NULL;
+	}
 
 	G_OBJECT_CLASS (window_menus_parent_class)->finalize (object);
 	return;
