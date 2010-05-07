@@ -275,7 +275,7 @@ request_name_cb (DBusGProxy *proxy, guint result, GError * inerror, gpointer use
 static void
 window_entry_added (WindowMenus * mw, IndicatorObjectEntry * entry, gpointer user_data)
 {
-
+	g_signal_emit_by_name(G_OBJECT(user_data), INDICATOR_OBJECT_SIGNAL_ENTRY_ADDED, entry);
 	return;
 }
 
@@ -283,6 +283,6 @@ window_entry_added (WindowMenus * mw, IndicatorObjectEntry * entry, gpointer use
 static void
 window_entry_removed (WindowMenus * mw, IndicatorObjectEntry * entry, gpointer user_data)
 {
-
+	g_signal_emit_by_name(G_OBJECT(user_data), INDICATOR_OBJECT_SIGNAL_ENTRY_REMOVED, entry);
 	return;
 }
