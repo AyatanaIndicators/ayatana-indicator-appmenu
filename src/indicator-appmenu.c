@@ -87,15 +87,15 @@ indicator_appmenu_class_init (IndicatorAppmenuClass *klass)
 	                                      G_SIGNAL_RUN_LAST,
 	                                      G_STRUCT_OFFSET (IndicatorAppmenuClass, window_registered),
 	                                      NULL, NULL,
-	                                      _indicator_appmenu_marshal_VOID__UINT_BOXED,
-	                                      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_BOXED);
+	                                      _indicator_appmenu_marshal_VOID__UINT_STRING,
+	                                      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
 	signals[WINDOW_UNREGISTERED] =  g_signal_new("window-unregistered",
 	                                      G_TYPE_FROM_CLASS(klass),
 	                                      G_SIGNAL_RUN_LAST,
 	                                      G_STRUCT_OFFSET (IndicatorAppmenuClass, window_unregistered),
 	                                      NULL, NULL,
-	                                      _indicator_appmenu_marshal_VOID__UINT_BOXED,
-	                                      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_BOXED);
+	                                      _indicator_appmenu_marshal_VOID__UINT_STRING,
+	                                      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
 
 	dbus_g_object_type_install_info(INDICATOR_APPMENU_TYPE, &dbus_glib__application_menu_registrar_server_object_info);
 
