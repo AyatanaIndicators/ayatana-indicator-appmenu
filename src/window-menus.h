@@ -1,8 +1,30 @@
+/*
+An implementation of indicator object showing menus from applications.
+
+Copyright 2010 Canonical Ltd.
+
+Authors:
+    Ted Gould <ted@canonical.com>
+
+This program is free software: you can redistribute it and/or modify it 
+under the terms of the GNU General Public License version 3, as published 
+by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful, but 
+WITHOUT ANY WARRANTY; without even the implied warranties of 
+MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR 
+PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along 
+with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #ifndef __WINDOW_MENUS_H__
 #define __WINDOW_MENUS_H__
 
 #include <glib.h>
 #include <glib-object.h>
+#include <libindicator/indicator-object.h>
 
 G_BEGIN_DECLS
 
@@ -13,11 +35,18 @@ G_BEGIN_DECLS
 #define IS_WINDOW_MENUS_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), WINDOW_MENUS_TYPE))
 #define WINDOW_MENUS_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), WINDOW_MENUS_TYPE, WindowMenusClass))
 
+#define WINDOW_MENUS_SIGNAL_ENTRY_ADDED    "entry-added"
+#define WINDOW_MENUS_SIGNAL_ENTRY_REMOVED  "entry-removed"
+
 typedef struct _WindowMenus      WindowMenus;
 typedef struct _WindowMenusClass WindowMenusClass;
 
 struct _WindowMenusClass {
 	GObjectClass parent_class;
+
+	/* Signals */
+	void (*entry_added)   (WindowMenus * wm, IndicatorObjectEntry * entry, gpointer user_data);
+	void (*entry_removed) (WindowMenus * wm, IndicatorObjectEntry * entry, gpointer user_data);
 };
 
 struct _WindowMenus {
