@@ -1,9 +1,9 @@
-indicator-appmenu (0.0.1-0ubuntu1~ppa3) UNRELEASED; urgency=low
+indicator-appmenu (0.0.1-0ubuntu1~ppa3) lucid; urgency=low
 
   * Upstream Merge
     * Making it so we don't track window IDs at all
 
- -- Ted Gould <ted@ubuntu.com>  Fri, 07 May 2010 17:24:35 +0200
+ -- Ted Gould <ted@ubuntu.com>  Fri, 07 May 2010 17:25:28 +0200
 
 indicator-appmenu (0.0.1-0ubuntu1~ppa2) lucid; urgency=low
 
