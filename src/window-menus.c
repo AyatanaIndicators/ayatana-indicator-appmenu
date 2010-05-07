@@ -35,7 +35,7 @@ static void window_menus_init       (WindowMenus *self);
 static void window_menus_dispose    (GObject *object);
 static void window_menus_finalize   (GObject *object);
 static void menu_entry_added        (GtkContainer * container, GtkWidget * widget, gpointer user_data);
-static void menu_entry_removed      (GtkContainer * container, GtkWidget * widget, gpointer user_data);
+//static void menu_entry_removed      (GtkContainer * container, GtkWidget * widget, gpointer user_data);
 
 G_DEFINE_TYPE (WindowMenus, window_menus, G_TYPE_OBJECT);
 
@@ -112,6 +112,26 @@ window_menus_finalize (GObject *object)
 	return;
 }
 
+static void
+update_array_helper (GtkWidget * widget, gpointer user_data)
+{
+	gpointer * thedata = (gpointer *)user_data;
+	menu_entry_added (GTK_CONTAINER(thedata[1]), widget, thedata[0]);
+	return;
+}
+
+static gboolean
+update_array (gpointer user_data)
+{
+	WindowMenus * wm = WINDOW_MENUS(user_data);
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
+
+	gpointer thedata[2] = {wm, priv->menu};
+	gtk_container_foreach(GTK_CONTAINER(priv->menu), update_array_helper, thedata);
+
+	return FALSE;
+}
+
 WindowMenus *
 window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * dbus_object)
 {
@@ -122,10 +142,12 @@ window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * d
 
 	priv->menu = dbusmenu_gtkmenu_new((gchar *)dbus_addr, (gchar *)dbus_object);
 
-	/* TODO: Parse current items? */
+	/* This is a work around for the demo */
+	g_timeout_add(100, update_array, newmenu);
 
-	g_signal_connect(G_OBJECT(priv->menu), "add",    G_CALLBACK(menu_entry_added),   newmenu);
-	g_signal_connect(G_OBJECT(priv->menu), "remove", G_CALLBACK(menu_entry_removed), newmenu);
+	// TODO: When GTK supports these, use them
+	// g_signal_connect(G_OBJECT(priv->menu), "add",    G_CALLBACK(menu_entry_added),   newmenu);
+	// g_signal_connect(G_OBJECT(priv->menu), "remove", G_CALLBACK(menu_entry_removed), newmenu);
 
 	return newmenu;
 }
@@ -153,7 +175,6 @@ window_menus_get_entries (WindowMenus * wm)
 static void
 menu_entry_added (GtkContainer * container, GtkWidget * widget, gpointer user_data)
 {
-#if 0
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
 
 	if (!GTK_IS_MENU_ITEM(widget)) {
@@ -170,10 +191,10 @@ menu_entry_added (GtkContainer * container, GtkWidget * widget, gpointer user_da
 	entry->menu = GTK_MENU(gtk_menu_item_get_submenu(GTK_MENU_ITEM(widget)));
 
 	g_array_append_val(priv->entries, entry);
-#endif
 	return;
 }
 
+#if 0
 /* Respond to an entry getting removed from the menu */
 static void
 menu_entry_removed (GtkContainer * container, GtkWidget * widget, gpointer user_data)
@@ -182,3 +203,4 @@ menu_entry_removed (GtkContainer * container, GtkWidget * widget, gpointer user_
 
 	return;
 }
+#endif
