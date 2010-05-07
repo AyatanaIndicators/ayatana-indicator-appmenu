@@ -229,7 +229,7 @@ static gboolean
 _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, guint windowid, const gchar * objectpath, DBusGMethodInvocation * method)
 {
 	if (g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid)) == NULL) {
-		WindowMenus * wm = window_menus_new(windowid, objectpath, dbus_g_method_get_sender(method));
+		WindowMenus * wm = window_menus_new(windowid, dbus_g_method_get_sender(method), objectpath);
 		g_hash_table_insert(iapp->apps, GUINT_TO_POINTER(windowid), wm);
 
 		/* TODO: Check to see if it's the visible window */
