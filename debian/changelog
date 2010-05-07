@@ -2,6 +2,7 @@ indicator-appmenu (0.0.1-0ubuntu1~ppa2) UNRELEASED; urgency=low
 
   * Upstream Merge
     * Building the menus at a demo quality
+  * Autogen
 
  -- Ted Gould <ted@ubuntu.com>  Fri, 07 May 2010 16:01:42 +0200
 
