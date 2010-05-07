@@ -105,16 +105,15 @@ G_END_DECLS
 
 #include <dbus/dbus-glib.h>
 static const DBusGMethodInfo dbus_glib__application_menu_registrar_server_methods[] = {
-  { (GCallback) _application_menu_registrar_server_window_register, dbus_glib_marshal__application_menu_registrar_server_NONE__UINT_BOXED_POINTER, 0 },
-  { (GCallback) _application_menu_registrar_server_window_unregister, dbus_glib_marshal__application_menu_registrar_server_NONE__UINT_BOXED_POINTER, 80 },
+  { (GCallback) _application_menu_registrar_server_register_window, dbus_glib_marshal__application_menu_registrar_server_NONE__UINT_BOXED_POINTER, 0 },
 };
 
 const DBusGObjectInfo dbus_glib__application_menu_registrar_server_object_info = {
   0,
   dbus_glib__application_menu_registrar_server_methods,
-  2,
-"org.ayatana.indicator.appmenu.registrar\0WindowRegister\0A\0windowID\0I\0u\0path\0I\0o\0\0org.ayatana.indicator.appmenu.registrar\0WindowUnregister\0A\0windowID\0I\0u\0path\0I\0o\0\0\0",
-"org.ayatana.indicator.appmenu.registrar\0WindowRegistered\0org.ayatana.indicator.appmenu.registrar\0WindowUnregistered\0\0",
+  1,
+"org.ayatana.WindowMenu.Registrar\0RegisterWindow\0A\0windowID\0I\0u\0path\0I\0o\0\0\0",
+"\0",
 "\0"
 };
 
