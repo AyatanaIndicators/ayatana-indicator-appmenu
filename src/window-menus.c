@@ -153,6 +153,7 @@ window_menus_get_entries (WindowMenus * wm)
 static void
 menu_entry_added (GtkContainer * container, GtkWidget * widget, gpointer user_data)
 {
+#if 0
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
 
 	if (!GTK_IS_MENU_ITEM(widget)) {
@@ -169,7 +170,7 @@ menu_entry_added (GtkContainer * container, GtkWidget * widget, gpointer user_da
 	entry->menu = GTK_MENU(gtk_menu_item_get_submenu(GTK_MENU_ITEM(widget)));
 
 	g_array_append_val(priv->entries, entry);
-
+#endif
 	return;
 }
 
