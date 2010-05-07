@@ -156,7 +156,7 @@ menu_entry_added (GtkContainer * container, GtkWidget * widget, gpointer user_da
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
 
 	if (!GTK_IS_MENU_ITEM(widget)) {
-		g_warning("Got an item added to the menu which isn't a menu item");
+		g_warning("Got an item added to the menu which isn't a menu item: %s", G_OBJECT_TYPE_NAME(widget));
 		return;
 	}
 
