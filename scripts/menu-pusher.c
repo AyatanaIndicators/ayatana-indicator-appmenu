@@ -55,7 +55,7 @@ main (int argv, char ** argc)
 	DBusGProxy * proxy = dbus_g_proxy_new_for_name_owner(session, DBUS_NAME, REG_OBJECT, REG_IFACE, NULL);
 	g_return_val_if_fail(proxy != NULL, 1);
 
-	org_ayatana_indicator_appmenu_registrar_register_window(proxy, 0, "/this/is/a/long/object/path", NULL);
+	org_ayatana_WindowMenu_Registrar_register_window(proxy, 0, "/this/is/a/long/object/path", NULL);
 
 	gtk_main();
 
