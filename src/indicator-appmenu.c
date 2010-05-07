@@ -41,6 +41,9 @@ struct _IndicatorAppmenu {
 
 	WindowMenus * default_app;
 	GHashTable * apps;
+
+	gulong sig_entry_added;
+	gulong sig_entry_removed;
 };
 
 static void indicator_appmenu_class_init (IndicatorAppmenuClass *klass);
@@ -51,6 +54,8 @@ static GList * get_entries (IndicatorObject * io);
 static void switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef);
 static gboolean _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, guint windowid, const gchar * objectpath, DBusGMethodInvocation * method);
 static void request_name_cb (DBusGProxy *proxy, guint result, GError *error, gpointer userdata);
+static void window_entry_added (WindowMenus * mw, IndicatorObjectEntry * entry, gpointer user_data);
+static void window_entry_removed (WindowMenus * mw, IndicatorObjectEntry * entry, gpointer user_data);
 
 #include "application-menu-registrar-server.h"
 
@@ -82,15 +87,15 @@ indicator_appmenu_class_init (IndicatorAppmenuClass *klass)
 	                                      G_SIGNAL_RUN_LAST,
 	                                      G_STRUCT_OFFSET (IndicatorAppmenuClass, window_registered),
 	                                      NULL, NULL,
-	                                      _indicator_appmenu_marshal_VOID__UINT_BOXED,
-	                                      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_BOXED);
+	                                      _indicator_appmenu_marshal_VOID__UINT_STRING,
+	                                      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
 	signals[WINDOW_UNREGISTERED] =  g_signal_new("window-unregistered",
 	                                      G_TYPE_FROM_CLASS(klass),
 	                                      G_SIGNAL_RUN_LAST,
 	                                      G_STRUCT_OFFSET (IndicatorAppmenuClass, window_unregistered),
 	                                      NULL, NULL,
-	                                      _indicator_appmenu_marshal_VOID__UINT_BOXED,
-	                                      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_BOXED);
+	                                      _indicator_appmenu_marshal_VOID__UINT_STRING,
+	                                      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
 
 	dbus_g_object_type_install_info(INDICATOR_APPMENU_TYPE, &dbus_glib__application_menu_registrar_server_object_info);
 
@@ -183,9 +188,31 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef)
 			g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_REMOVED_ID, 0, entries->data, TRUE);
 		}
 	}
+	
+	/* Disconnect signals */
+	if (iapp->sig_entry_added != 0) {
+		g_signal_handler_disconnect(G_OBJECT(iapp->default_app), iapp->sig_entry_added);
+		iapp->sig_entry_added = 0;
+	}
+	if (iapp->sig_entry_removed != 0) {
+		g_signal_handler_disconnect(G_OBJECT(iapp->default_app), iapp->sig_entry_removed);
+		iapp->sig_entry_removed = 0;
+	}
 
 	/* Switch */
 	iapp->default_app = newdef;
+
+	/* Connect signals */
+	if (iapp->default_app != NULL) {
+		iapp->sig_entry_added =   g_signal_connect(G_OBJECT(iapp->default_app),
+		                                           WINDOW_MENUS_SIGNAL_ENTRY_ADDED,
+		                                           G_CALLBACK(window_entry_added),
+		                                           iapp);
+		iapp->sig_entry_removed = g_signal_connect(G_OBJECT(iapp->default_app),
+		                                           WINDOW_MENUS_SIGNAL_ENTRY_REMOVED,
+		                                           G_CALLBACK(window_entry_removed),
+		                                           iapp);
+	}
 
 	/* Add new */
 	if (iapp->default_app != NULL) {
@@ -197,16 +224,29 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef)
 	return;
 }
 
+/* Switch the window menus */
+gboolean
+switch_timeout (gpointer user_data)
+{
+	gpointer * array = (gpointer *)user_data;
+	switch_default_app(INDICATOR_APPMENU(array[0]), WINDOW_MENUS(array[1]));
+	g_free(user_data);
+	return FALSE;
+}
+
 /* A new window wishes to register it's windows with us */
 static gboolean
 _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, guint windowid, const gchar * objectpath, DBusGMethodInvocation * method)
 {
 	if (g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid)) == NULL) {
-		WindowMenus * wm = window_menus_new(windowid, objectpath, dbus_g_method_get_sender(method));
+		WindowMenus * wm = window_menus_new(windowid, dbus_g_method_get_sender(method), objectpath);
 		g_hash_table_insert(iapp->apps, GUINT_TO_POINTER(windowid), wm);
 
 		/* TODO: Check to see if it's the visible window */
-		switch_default_app(iapp, wm);
+		gpointer * params = (gpointer *)g_new(gpointer, 2);
+		params[0] = iapp;
+		params[1] = wm;
+		g_timeout_add(250, switch_timeout, params);
 
 		g_signal_emit(G_OBJECT(iapp), signals[WINDOW_REGISTERED], 0, windowid, objectpath, TRUE);
 	} else {
@@ -241,5 +281,21 @@ request_name_cb (DBusGProxy *proxy, guint result, GError * inerror, gpointer use
 
 	g_object_unref(proxy);
 
+	return;
+}
+
+/* Pass up the entry added event */
+static void
+window_entry_added (WindowMenus * mw, IndicatorObjectEntry * entry, gpointer user_data)
+{
+	g_signal_emit_by_name(G_OBJECT(user_data), INDICATOR_OBJECT_SIGNAL_ENTRY_ADDED, entry);
+	return;
+}
+
+/* Pass up the entry removed event */
+static void
+window_entry_removed (WindowMenus * mw, IndicatorObjectEntry * entry, gpointer user_data)
+{
+	g_signal_emit_by_name(G_OBJECT(user_data), INDICATOR_OBJECT_SIGNAL_ENTRY_REMOVED, entry);
 	return;
 }

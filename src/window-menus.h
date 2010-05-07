@@ -3,6 +3,7 @@
 
 #include <glib.h>
 #include <glib-object.h>
+#include <libindicator/indicator-object.h>
 
 G_BEGIN_DECLS
 
@@ -13,11 +14,18 @@ G_BEGIN_DECLS
 #define IS_WINDOW_MENUS_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), WINDOW_MENUS_TYPE))
 #define WINDOW_MENUS_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), WINDOW_MENUS_TYPE, WindowMenusClass))
 
+#define WINDOW_MENUS_SIGNAL_ENTRY_ADDED    "entry-added"
+#define WINDOW_MENUS_SIGNAL_ENTRY_REMOVED  "entry-removed"
+
 typedef struct _WindowMenus      WindowMenus;
 typedef struct _WindowMenusClass WindowMenusClass;
 
 struct _WindowMenusClass {
 	GObjectClass parent_class;
+
+	/* Signals */
+	void (*entry_added)   (WindowMenus * wm, IndicatorObjectEntry * entry, gpointer user_data);
+	void (*entry_removed) (WindowMenus * wm, IndicatorObjectEntry * entry, gpointer user_data);
 };
 
 struct _WindowMenus {
