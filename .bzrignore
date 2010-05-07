@@ -11,3 +11,6 @@ src/indicator-appmenu-marshal.h
 src/stamp-marshal
 src/libappmenu_la-indicator-appmenu.lo
 src/libappmenu_la-indicator-appmenu-marshal.lo
+scripts/.deps
+scripts/.libs
+scripts/menu-pusher
