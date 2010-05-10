@@ -164,13 +164,36 @@ window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * d
 	priv->menu = dbusmenu_gtkmenu_new((gchar *)dbus_addr, (gchar *)dbus_object);
 
 	/* This is a work around for the demo */
-	g_timeout_add(100, update_array, newmenu);
+	g_timeout_add(1000, update_array, newmenu);
 
 	// TODO: When GTK supports these, use them
 	// g_signal_connect(G_OBJECT(priv->menu), "add",    G_CALLBACK(menu_entry_added),   newmenu);
 	// g_signal_connect(G_OBJECT(priv->menu), "remove", G_CALLBACK(menu_entry_removed), newmenu);
 
 	return newmenu;
+}
+
+/* Get the location of this entry */
+guint
+window_menus_get_location (WindowMenus * wm, IndicatorObjectEntry * entry)
+{
+	if (entry == NULL) {
+		return 0;
+	}
+
+	guint i;
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
+	for (i = 0; i < priv->entries->len; i++) {
+		if (entry == g_array_index(priv->entries, IndicatorObjectEntry *, i)) {
+			break;
+		}
+	}
+
+	if (i == priv->entries->len) {
+		return 0;
+	}
+
+	return i;
 }
 
 /* Get the entries that we have */
@@ -206,7 +229,7 @@ menu_entry_added (GtkContainer * container, GtkWidget * widget, gpointer user_da
 	IndicatorObjectEntry * entry = g_new0(IndicatorObjectEntry, 1);
 
 	/* TODO: Should be a better way for this */
-	entry->label = GTK_LABEL(gtk_label_new(gtk_menu_item_get_label(GTK_MENU_ITEM(widget))));
+	entry->label = GTK_LABEL(gtk_label_new_with_mnemonic(gtk_menu_item_get_label(GTK_MENU_ITEM(widget))));
 	gtk_widget_show(GTK_WIDGET(entry->label));
 	/* TODO: Check for image item */
 	entry->image = NULL;

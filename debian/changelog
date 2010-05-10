@@ -1,3 +1,10 @@
+indicator-appmenu (0.0.1-0ubuntu1~ppa4) UNRELEASED; urgency=low
+
+  * Upstream Merge
+    * Fixes and Qt integration fixes.
+
+ -- Ted Gould <ted@ubuntu.com>  Mon, 10 May 2010 18:12:02 +0200
+
 indicator-appmenu (0.0.1-0ubuntu1~ppa3) lucid; urgency=low
 
   * Upstream Merge

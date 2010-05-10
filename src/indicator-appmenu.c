@@ -71,6 +71,7 @@ static void indicator_appmenu_init       (IndicatorAppmenu *self);
 static void indicator_appmenu_dispose    (GObject *object);
 static void indicator_appmenu_finalize   (GObject *object);
 static GList * get_entries (IndicatorObject * io);
+static guint get_location (IndicatorObject * io, IndicatorObjectEntry * entry);
 static void switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef);
 static gboolean _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, guint windowid, const gchar * objectpath, DBusGMethodInvocation * method);
 static void request_name_cb (DBusGProxy *proxy, guint result, GError *error, gpointer userdata);
@@ -101,6 +102,7 @@ indicator_appmenu_class_init (IndicatorAppmenuClass *klass)
 	IndicatorObjectClass * ioclass = INDICATOR_OBJECT_CLASS(klass);
 
 	ioclass->get_entries = get_entries;
+	ioclass->get_location = get_location;
 
 	signals[WINDOW_REGISTERED] =  g_signal_new("window-registered",
 	                                      G_TYPE_FROM_CLASS(klass),
@@ -191,6 +193,18 @@ get_entries (IndicatorObject * io)
 	return window_menus_get_entries(iapp->default_app);
 }
 
+/* Grabs the location of the entry */
+static guint
+get_location (IndicatorObject * io, IndicatorObjectEntry * entry)
+{
+	guint count = 0;
+	IndicatorAppmenu * iapp = INDICATOR_APPMENU(io);
+	if (iapp->default_app != NULL) {
+		count = window_menus_get_location(iapp->default_app, entry);
+	}
+	return count;
+}
+
 /* Switch applications, remove all the entires for the previous
    one and add them for the new application */
 static void
@@ -266,7 +280,7 @@ _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, gui
 		gpointer * params = (gpointer *)g_new(gpointer, 2);
 		params[0] = iapp;
 		params[1] = wm;
-		g_timeout_add(250, switch_timeout, params);
+		g_timeout_add(1250, switch_timeout, params);
 
 		g_signal_emit(G_OBJECT(iapp), signals[WINDOW_REGISTERED], 0, windowid, objectpath, TRUE);
 	} else {
