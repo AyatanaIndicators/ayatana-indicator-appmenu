@@ -164,7 +164,7 @@ window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * d
 	priv->menu = dbusmenu_gtkmenu_new((gchar *)dbus_addr, (gchar *)dbus_object);
 
 	/* This is a work around for the demo */
-	g_timeout_add(100, update_array, newmenu);
+	g_timeout_add(1000, update_array, newmenu);
 
 	// TODO: When GTK supports these, use them
 	// g_signal_connect(G_OBJECT(priv->menu), "add",    G_CALLBACK(menu_entry_added),   newmenu);

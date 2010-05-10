@@ -280,7 +280,7 @@ _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, gui
 		gpointer * params = (gpointer *)g_new(gpointer, 2);
 		params[0] = iapp;
 		params[1] = wm;
-		g_timeout_add(250, switch_timeout, params);
+		g_timeout_add(1250, switch_timeout, params);
 
 		g_signal_emit(G_OBJECT(iapp), signals[WINDOW_REGISTERED], 0, windowid, objectpath, TRUE);
 	} else {
