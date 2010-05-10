@@ -229,7 +229,7 @@ menu_entry_added (GtkContainer * container, GtkWidget * widget, gpointer user_da
 	IndicatorObjectEntry * entry = g_new0(IndicatorObjectEntry, 1);
 
 	/* TODO: Should be a better way for this */
-	entry->label = GTK_LABEL(gtk_label_new(gtk_menu_item_get_label(GTK_MENU_ITEM(widget))));
+	entry->label = GTK_LABEL(gtk_label_new_with_mnemonic(gtk_menu_item_get_label(GTK_MENU_ITEM(widget))));
 	gtk_widget_show(GTK_WIDGET(entry->label));
 	/* TODO: Check for image item */
 	entry->image = NULL;
