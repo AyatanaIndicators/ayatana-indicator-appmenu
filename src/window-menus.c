@@ -173,6 +173,29 @@ window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * d
 	return newmenu;
 }
 
+/* Get the location of this entry */
+guint
+window_menus_get_location (WindowMenus * wm, IndicatorObjectEntry * entry)
+{
+	if (entry == NULL) {
+		return 0;
+	}
+
+	guint i;
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
+	for (i = 0; i < priv->entries->len; i++) {
+		if (entry == g_array_index(priv->entries, IndicatorObjectEntry *, i)) {
+			break;
+		}
+	}
+
+	if (i == priv->entries->len) {
+		return 0;
+	}
+
+	return i;
+}
+
 /* Get the entries that we have */
 GList *
 window_menus_get_entries (WindowMenus * wm)
