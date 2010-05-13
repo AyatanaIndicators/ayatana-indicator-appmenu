@@ -1,11 +1,11 @@
 
-AC_INIT(indicator-appmenu, 0.0.1, ted@canonical.com)
+AC_INIT(indicator-appmenu, 0.0.2, ted@canonical.com)
 AC_COPYRIGHT([Copyright 2010 Canonical])
 
 AC_PREREQ(2.53)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(indicator-appmenu, 0.0.1)
+AM_INIT_AUTOMAKE(indicator-appmenu, 0.0.2)
 
 AM_MAINTAINER_MODE
 
@@ -89,6 +89,7 @@ AC_SUBST(DBUSSERVICEDIR)
 AC_OUTPUT([
 Makefile
 src/Makefile
+scripts/Makefile
 ])
 
 ###########################

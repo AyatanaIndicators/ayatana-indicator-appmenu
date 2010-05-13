@@ -15,22 +15,6 @@
 
 @SET_MAKE@
 
-# Rules for generating marshal files using glib-genmarshal
-#
-# Define:
-# 	glib_marshal_list = marshal list file
-# 	glib_marshal_prefix = prefix for marshal functions
-#
-# before including Makefile.am.marshal. You will also need to have
-# the following targets already defined:
-#
-# 	CLEANFILES
-#	DISTCLEANFILES
-#	BUILT_SOURCES
-#	EXTRA_DIST
-#
-# Author: Emmanuele Bassi <ebassi@linux.intel.com>
-
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkgincludedir = $(includedir)/@PACKAGE@
@@ -50,9 +34,9 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
-	$(top_srcdir)/Makefile.am.marshal
-subdir = src
+libexec_PROGRAMS = menu-pusher$(EXEEXT)
+subdir = scripts
+DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
@@ -61,41 +45,18 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
-am__vpath_adj = case $$p in \
-    $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
-    *) f=$$p;; \
-  esac;
-am__strip_dir = f=`echo $$p | sed -e 's|^.*/||'`;
-am__install_max = 40
-am__nobase_strip_setup = \
-  srcdirstrip=`echo "$(srcdir)" | sed 's/[].[^$$\\*|]/\\\\&/g'`
-am__nobase_strip = \
-  for p in $$list; do echo "$$p"; done | sed -e "s|$$srcdirstrip/||"
-am__nobase_list = $(am__nobase_strip_setup); \
-  for p in $$list; do echo "$$p $$p"; done | \
-  sed "s| $$srcdirstrip/| |;"' / .*\//!s/ .*/ ./; s,\( .*\)/[^/]*$$,\1,' | \
-  $(AWK) 'BEGIN { files["."] = "" } { files[$$2] = files[$$2] " " $$1; \
-    if (++n[$$2] == $(am__install_max)) \
-      { print $$2, files[$$2]; n[$$2] = 0; files[$$2] = "" } } \
-    END { for (dir in files) print dir, files[dir] }'
-am__base_list = \
-  sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
-  sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
-am__installdirs = "$(DESTDIR)$(appmenulibdir)"
-LTLIBRARIES = $(appmenulib_LTLIBRARIES)
+am__installdirs = "$(DESTDIR)$(libexecdir)"
+PROGRAMS = $(libexec_PROGRAMS)
+am_menu_pusher_OBJECTS = menu_pusher-menu-pusher.$(OBJEXT)
+menu_pusher_OBJECTS = $(am_menu_pusher_OBJECTS)
 am__DEPENDENCIES_1 =
-libappmenu_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
-am_libappmenu_la_OBJECTS = libappmenu_la-indicator-appmenu.lo \
-	libappmenu_la-indicator-appmenu-marshal.lo \
-	libappmenu_la-window-menus.lo
-libappmenu_la_OBJECTS = $(am_libappmenu_la_OBJECTS)
+menu_pusher_DEPENDENCIES = $(am__DEPENDENCIES_1)
 AM_V_lt = $(am__v_lt_$(V))
 am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
 am__v_lt_0 = --silent
-libappmenu_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
-	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(libappmenu_la_CFLAGS) \
-	$(CFLAGS) $(libappmenu_la_LDFLAGS) $(LDFLAGS) -o $@
+menu_pusher_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(menu_pusher_CFLAGS) \
+	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -122,8 +83,8 @@ am__v_CCLD_0 = @echo "  CCLD  " $@;
 AM_V_GEN = $(am__v_GEN_$(V))
 am__v_GEN_ = $(am__v_GEN_$(AM_DEFAULT_VERBOSITY))
 am__v_GEN_0 = @echo "  GEN   " $@;
-SOURCES = $(libappmenu_la_SOURCES)
-DIST_SOURCES = $(libappmenu_la_SOURCES)
+SOURCES = $(menu_pusher_SOURCES)
+DIST_SOURCES = $(menu_pusher_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -252,49 +213,22 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-CLEANFILES = stamp-marshal $(BUILT_SOURCES)
-DISTCLEANFILES = $(marshal_h) $(marshal_c)
-BUILT_SOURCES = $(marshal_h) $(marshal_c) $(DBUS_SPECS:.xml=-client.h) \
-	$(DBUS_SPECS:.xml=-server.h)
-EXTRA_DIST = $(glib_marshal_list) $(DBUS_SPECS)
-marshal_h = $(glib_marshal_list:.list=.h)
-marshal_c = $(glib_marshal_list:.list=.c)
+menu_pusher_SOURCES = \
+	menu-pusher.c
 
-######################################
-# Building the indicator
-######################################
-appmenulibdir = $(INDICATORDIR)
-appmenulib_LTLIBRARIES = libappmenu.la
-libappmenu_la_SOURCES = \
-	application-menu-registrar-server.h \
-	dbus-shared.h \
-	indicator-appmenu.c \
-	indicator-appmenu-marshal.c \
-	window-menus.c \
-	window-menus.h
+menu_pusher_CFLAGS = \
+	$(INDICATOR_CFLAGS) \
+	-Wall \
+	-Werror
 
-libappmenu_la_CFLAGS = $(INDICATOR_CFLAGS) -Wall -Wl,-Bsymbolic-functions -Wl,-z,defs -Wl,--as-needed -Werror
-libappmenu_la_LIBADD = $(INDICATOR_LIBS)
-libappmenu_la_LDFLAGS = -module -avoid-version
+menu_pusher_LDADD = \
+	$(INDICATOR_LIBS)
 
-######################################
-# Build your own marshaller
-######################################
-glib_marshal_list = indicator-appmenu-marshal.list
-glib_marshal_prefix = _indicator_appmenu_marshal
-
-######################################
-# DBus Love
-######################################
-DBUS_SPECS = \
-	application-menu-registrar.xml
-
-all: $(BUILT_SOURCES)
-	$(MAKE) $(AM_MAKEFLAGS) all-am
+all: all-am
 
 .SUFFIXES:
 .SUFFIXES: .c .lo .o .obj
-$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(top_srcdir)/Makefile.am.marshal $(am__configure_deps)
+$(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am  $(am__configure_deps)
 	@for dep in $?; do \
 	  case '$(am__configure_deps)' in \
 	    *$$dep*) \
@@ -303,9 +237,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(top_srcdir
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu src/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu scripts/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu src/Makefile
+	  $(AUTOMAKE) --gnu scripts/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -324,39 +258,52 @@ $(top_srcdir)/configure: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 $(ACLOCAL_M4): @MAINTAINER_MODE_TRUE@ $(am__aclocal_m4_deps)
 	cd $(top_builddir) && $(MAKE) $(AM_MAKEFLAGS) am--refresh
 $(am__aclocal_m4_deps):
-install-appmenulibLTLIBRARIES: $(appmenulib_LTLIBRARIES)
+install-libexecPROGRAMS: $(libexec_PROGRAMS)
 	@$(NORMAL_INSTALL)
-	test -z "$(appmenulibdir)" || $(MKDIR_P) "$(DESTDIR)$(appmenulibdir)"
-	@list='$(appmenulib_LTLIBRARIES)'; test -n "$(appmenulibdir)" || list=; \
-	list2=; for p in $$list; do \
-	  if test -f $$p; then \
-	    list2="$$list2 $$p"; \
-	  else :; fi; \
-	done; \
-	test -z "$$list2" || { \
-	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 '$(DESTDIR)$(appmenulibdir)'"; \
-	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL) $(INSTALL_STRIP_FLAG) $$list2 "$(DESTDIR)$(appmenulibdir)"; \
-	}
+	test -z "$(libexecdir)" || $(MKDIR_P) "$(DESTDIR)$(libexecdir)"
+	@list='$(libexec_PROGRAMS)'; test -n "$(libexecdir)" || list=; \
+	for p in $$list; do echo "$$p $$p"; done | \
+	sed 's/$(EXEEXT)$$//' | \
+	while read p p1; do if test -f $$p || test -f $$p1; \
+	  then echo "$$p"; echo "$$p"; else :; fi; \
+	done | \
+	sed -e 'p;s,.*/,,;n;h' -e 's|.*|.|' \
+	    -e 'p;x;s,.*/,,;s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/' | \
+	sed 'N;N;N;s,\n, ,g' | \
+	$(AWK) 'BEGIN { files["."] = ""; dirs["."] = 1 } \
+	  { d=$$3; if (dirs[d] != 1) { print "d", d; dirs[d] = 1 } \
+	    if ($$2 == $$4) files[d] = files[d] " " $$1; \
+	    else { print "f", $$3 "/" $$4, $$1; } } \
+	  END { for (d in files) print "f", d, files[d] }' | \
+	while read type dir files; do \
+	    if test "$$dir" = .; then dir=; else dir=/$$dir; fi; \
+	    test -z "$$files" || { \
+	    echo " $(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) $$files '$(DESTDIR)$(libexecdir)$$dir'"; \
+	    $(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) $$files "$(DESTDIR)$(libexecdir)$$dir" || exit $$?; \
+	    } \
+	; done
 
-uninstall-appmenulibLTLIBRARIES:
+uninstall-libexecPROGRAMS:
 	@$(NORMAL_UNINSTALL)
-	@list='$(appmenulib_LTLIBRARIES)'; test -n "$(appmenulibdir)" || list=; \
-	for p in $$list; do \
-	  $(am__strip_dir) \
-	  echo " $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f '$(DESTDIR)$(appmenulibdir)/$$f'"; \
-	  $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=uninstall rm -f "$(DESTDIR)$(appmenulibdir)/$$f"; \
-	done
+	@list='$(libexec_PROGRAMS)'; test -n "$(libexecdir)" || list=; \
+	files=`for p in $$list; do echo "$$p"; done | \
+	  sed -e 'h;s,^.*/,,;s/$(EXEEXT)$$//;$(transform)' \
+	      -e 's/$$/$(EXEEXT)/' `; \
+	test -n "$$list" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(libexecdir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(libexecdir)" && rm -f $$files
 
-clean-appmenulibLTLIBRARIES:
-	-test -z "$(appmenulib_LTLIBRARIES)" || rm -f $(appmenulib_LTLIBRARIES)
-	@list='$(appmenulib_LTLIBRARIES)'; for p in $$list; do \
-	  dir="`echo $$p | sed -e 's|/[^/]*$$||'`"; \
-	  test "$$dir" != "$$p" || dir=.; \
-	  echo "rm -f \"$${dir}/so_locations\""; \
-	  rm -f "$${dir}/so_locations"; \
-	done
-libappmenu.la: $(libappmenu_la_OBJECTS) $(libappmenu_la_DEPENDENCIES) 
-	$(AM_V_CCLD)$(libappmenu_la_LINK) -rpath $(appmenulibdir) $(libappmenu_la_OBJECTS) $(libappmenu_la_LIBADD) $(LIBS)
+clean-libexecPROGRAMS:
+	@list='$(libexec_PROGRAMS)'; test -n "$$list" || exit 0; \
+	echo " rm -f" $$list; \
+	rm -f $$list || exit $$?; \
+	test -n "$(EXEEXT)" || exit 0; \
+	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
+	echo " rm -f" $$list; \
+	rm -f $$list
+menu-pusher$(EXEEXT): $(menu_pusher_OBJECTS) $(menu_pusher_DEPENDENCIES) 
+	@rm -f menu-pusher$(EXEEXT)
+	$(AM_V_CCLD)$(menu_pusher_LINK) $(menu_pusher_OBJECTS) $(menu_pusher_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -364,9 +311,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libappmenu_la-indicator-appmenu-marshal.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libappmenu_la-indicator-appmenu.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libappmenu_la-window-menus.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/menu_pusher-menu-pusher.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
@@ -392,29 +337,21 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
 
-libappmenu_la-indicator-appmenu.lo: indicator-appmenu.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libappmenu_la_CFLAGS) $(CFLAGS) -MT libappmenu_la-indicator-appmenu.lo -MD -MP -MF $(DEPDIR)/libappmenu_la-indicator-appmenu.Tpo -c -o libappmenu_la-indicator-appmenu.lo `test -f 'indicator-appmenu.c' || echo '$(srcdir)/'`indicator-appmenu.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libappmenu_la-indicator-appmenu.Tpo $(DEPDIR)/libappmenu_la-indicator-appmenu.Plo
+menu_pusher-menu-pusher.o: menu-pusher.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(menu_pusher_CFLAGS) $(CFLAGS) -MT menu_pusher-menu-pusher.o -MD -MP -MF $(DEPDIR)/menu_pusher-menu-pusher.Tpo -c -o menu_pusher-menu-pusher.o `test -f 'menu-pusher.c' || echo '$(srcdir)/'`menu-pusher.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/menu_pusher-menu-pusher.Tpo $(DEPDIR)/menu_pusher-menu-pusher.Po
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='indicator-appmenu.c' object='libappmenu_la-indicator-appmenu.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='menu-pusher.c' object='menu_pusher-menu-pusher.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libappmenu_la_CFLAGS) $(CFLAGS) -c -o libappmenu_la-indicator-appmenu.lo `test -f 'indicator-appmenu.c' || echo '$(srcdir)/'`indicator-appmenu.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(menu_pusher_CFLAGS) $(CFLAGS) -c -o menu_pusher-menu-pusher.o `test -f 'menu-pusher.c' || echo '$(srcdir)/'`menu-pusher.c
 
-libappmenu_la-indicator-appmenu-marshal.lo: indicator-appmenu-marshal.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libappmenu_la_CFLAGS) $(CFLAGS) -MT libappmenu_la-indicator-appmenu-marshal.lo -MD -MP -MF $(DEPDIR)/libappmenu_la-indicator-appmenu-marshal.Tpo -c -o libappmenu_la-indicator-appmenu-marshal.lo `test -f 'indicator-appmenu-marshal.c' || echo '$(srcdir)/'`indicator-appmenu-marshal.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libappmenu_la-indicator-appmenu-marshal.Tpo $(DEPDIR)/libappmenu_la-indicator-appmenu-marshal.Plo
+menu_pusher-menu-pusher.obj: menu-pusher.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(menu_pusher_CFLAGS) $(CFLAGS) -MT menu_pusher-menu-pusher.obj -MD -MP -MF $(DEPDIR)/menu_pusher-menu-pusher.Tpo -c -o menu_pusher-menu-pusher.obj `if test -f 'menu-pusher.c'; then $(CYGPATH_W) 'menu-pusher.c'; else $(CYGPATH_W) '$(srcdir)/menu-pusher.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/menu_pusher-menu-pusher.Tpo $(DEPDIR)/menu_pusher-menu-pusher.Po
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='indicator-appmenu-marshal.c' object='libappmenu_la-indicator-appmenu-marshal.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='menu-pusher.c' object='menu_pusher-menu-pusher.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libappmenu_la_CFLAGS) $(CFLAGS) -c -o libappmenu_la-indicator-appmenu-marshal.lo `test -f 'indicator-appmenu-marshal.c' || echo '$(srcdir)/'`indicator-appmenu-marshal.c
-
-libappmenu_la-window-menus.lo: window-menus.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libappmenu_la_CFLAGS) $(CFLAGS) -MT libappmenu_la-window-menus.lo -MD -MP -MF $(DEPDIR)/libappmenu_la-window-menus.Tpo -c -o libappmenu_la-window-menus.lo `test -f 'window-menus.c' || echo '$(srcdir)/'`window-menus.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libappmenu_la-window-menus.Tpo $(DEPDIR)/libappmenu_la-window-menus.Plo
-@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='window-menus.c' object='libappmenu_la-window-menus.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libappmenu_la_CFLAGS) $(CFLAGS) -c -o libappmenu_la-window-menus.lo `test -f 'window-menus.c' || echo '$(srcdir)/'`window-menus.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(menu_pusher_CFLAGS) $(CFLAGS) -c -o menu_pusher-menu-pusher.obj `if test -f 'menu-pusher.c'; then $(CYGPATH_W) 'menu-pusher.c'; else $(CYGPATH_W) '$(srcdir)/menu-pusher.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -505,15 +442,13 @@ distdir: $(DISTFILES)
 	  fi; \
 	done
 check-am: all-am
-check: $(BUILT_SOURCES)
-	$(MAKE) $(AM_MAKEFLAGS) check-am
-all-am: Makefile $(LTLIBRARIES)
+check: check-am
+all-am: Makefile $(PROGRAMS)
 installdirs:
-	for dir in "$(DESTDIR)$(appmenulibdir)"; do \
+	for dir in "$(DESTDIR)$(libexecdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
-install: $(BUILT_SOURCES)
-	$(MAKE) $(AM_MAKEFLAGS) install-am
+install: install-am
 install-exec: install-exec-am
 install-data: install-data-am
 uninstall: uninstall-am
@@ -530,20 +465,17 @@ install-strip:
 mostlyclean-generic:
 
 clean-generic:
-	-test -z "$(CLEANFILES)" || rm -f $(CLEANFILES)
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
-	-test -z "$(DISTCLEANFILES)" || rm -f $(DISTCLEANFILES)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
-	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-am
 
-clean-am: clean-appmenulibLTLIBRARIES clean-generic clean-libtool \
+clean-am: clean-generic clean-libexecPROGRAMS clean-libtool \
 	mostlyclean-am
 
 distclean: distclean-am
@@ -564,13 +496,13 @@ info: info-am
 
 info-am:
 
-install-data-am: install-appmenulibLTLIBRARIES
+install-data-am:
 
 install-dvi: install-dvi-am
 
 install-dvi-am:
 
-install-exec-am:
+install-exec-am: install-libexecPROGRAMS
 
 install-html: install-html-am
 
@@ -610,60 +542,24 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-appmenulibLTLIBRARIES
+uninstall-am: uninstall-libexecPROGRAMS
 
-.MAKE: all check install install-am install-strip
+.MAKE: install-am install-strip
 
-.PHONY: CTAGS GTAGS all all-am check check-am clean \
-	clean-appmenulibLTLIBRARIES clean-generic clean-libtool ctags \
-	distclean distclean-compile distclean-generic \
-	distclean-libtool distclean-tags distdir dvi dvi-am html \
-	html-am info info-am install install-am \
-	install-appmenulibLTLIBRARIES install-data install-data-am \
-	install-dvi install-dvi-am install-exec install-exec-am \
-	install-html install-html-am install-info install-info-am \
-	install-man install-pdf install-pdf-am install-ps \
-	install-ps-am install-strip installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags uninstall \
-	uninstall-am uninstall-appmenulibLTLIBRARIES
+.PHONY: CTAGS GTAGS all all-am check check-am clean clean-generic \
+	clean-libexecPROGRAMS clean-libtool ctags distclean \
+	distclean-compile distclean-generic distclean-libtool \
+	distclean-tags distdir dvi dvi-am html html-am info info-am \
+	install install-am install-data install-data-am install-dvi \
+	install-dvi-am install-exec install-exec-am install-html \
+	install-html-am install-info install-info-am \
+	install-libexecPROGRAMS install-man install-pdf install-pdf-am \
+	install-ps install-ps-am install-strip installcheck \
+	installcheck-am installdirs maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-compile \
+	mostlyclean-generic mostlyclean-libtool pdf pdf-am ps ps-am \
+	tags uninstall uninstall-am uninstall-libexecPROGRAMS
 
-
-stamp-marshal: $(glib_marshal_list)
-	$(QUIET_GEN)$(GLIB_GENMARSHAL) \
-		--prefix=$(glib_marshal_prefix) \
-		--header \
-	$(srcdir)/$(glib_marshal_list) > xgen-mh \
-	&& (cmp -s xgen-mh $(marshal_h) || cp -f xgen-mh $(marshal_h)) \
-	&& rm -f xgen-mh \
-	&& echo timestamp > $(@F)
-
-$(marshal_h): stamp-marshal
-	@true
-
-$(marshal_c): $(marshal_h)
-	$(QUIET_GEN)(echo "#include \"$(marshal_h)\"" ; \
-	$(GLIB_GENMARSHAL) \
-		--prefix=$(glib_marshal_prefix) \
-		--body \
-	$(srcdir)/$(glib_marshal_list)) > xgen-mc \
-	&& cp xgen-mc $(marshal_c) \
-	&& rm -f xgen-mc
-
-%-client.h: %.xml
-	dbus-binding-tool \
-		--prefix=_$(notdir $(subst -,_,$(<:.xml=)))_client \
-		--mode=glib-client \
-		--output=$@ \
-		$<
-
-%-server.h: %.xml
-	dbus-binding-tool \
-		--prefix=_$(notdir $(subst -,_,$(<:.xml=)))_server \
-		--mode=glib-server \
-		--output=$@ \
-		$<
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.
