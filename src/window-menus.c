@@ -56,7 +56,7 @@ static void window_menus_init       (WindowMenus *self);
 static void window_menus_dispose    (GObject *object);
 static void window_menus_finalize   (GObject *object);
 static void menu_entry_added        (GtkContainer * container, GtkWidget * widget, gpointer user_data);
-//static void menu_entry_removed      (GtkContainer * container, GtkWidget * widget, gpointer user_data);
+static void menu_entry_removed      (GtkContainer * container, GtkWidget * widget, gpointer user_data);
 
 G_DEFINE_TYPE (WindowMenus, window_menus, G_TYPE_OBJECT);
 
@@ -146,7 +146,7 @@ window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * d
 	priv->menu = dbusmenu_gtkmenu_new((gchar *)dbus_addr, (gchar *)dbus_object);
 
 	g_signal_connect(G_OBJECT(priv->menu), "add",    G_CALLBACK(menu_entry_added),   newmenu);
-	//g_signal_connect(G_OBJECT(priv->menu), "remove", G_CALLBACK(menu_entry_removed), newmenu);
+	g_signal_connect(G_OBJECT(priv->menu), "remove", G_CALLBACK(menu_entry_removed), newmenu);
 
 	return newmenu;
 }
@@ -224,7 +224,6 @@ menu_entry_added (GtkContainer * container, GtkWidget * widget, gpointer user_da
 	return;
 }
 
-#if 0
 /* Respond to an entry getting removed from the menu */
 static void
 menu_entry_removed (GtkContainer * container, GtkWidget * widget, gpointer user_data)
@@ -233,4 +232,3 @@ menu_entry_removed (GtkContainer * container, GtkWidget * widget, gpointer user_
 
 	return;
 }
-#endif
