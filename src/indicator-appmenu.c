@@ -292,6 +292,7 @@ active_window_changed (BamfMatcher * matcher, BamfApplication * app, BamfWindow 
 	IndicatorAppmenu * appmenu = INDICATOR_APPMENU(user_data);
 
 	guint32 xid = bamf_window_get_xid(window);
+	g_debug("window changed to %d", xid);
 	
 	WindowMenus * menus = g_hash_table_lookup(appmenu->apps, GINT_TO_POINTER(xid));
 
