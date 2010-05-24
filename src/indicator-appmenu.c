@@ -302,16 +302,6 @@ active_window_changed (BamfMatcher * matcher, BamfApplication * app, BamfWindow 
 	return;
 }
 
-/* Switch the window menus */
-gboolean
-switch_timeout (gpointer user_data)
-{
-	gpointer * array = (gpointer *)user_data;
-	switch_default_app(INDICATOR_APPMENU(array[0]), WINDOW_MENUS(array[1]));
-	g_free(user_data);
-	return FALSE;
-}
-
 /* A new window wishes to register it's windows with us */
 static gboolean
 _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, guint windowid, const gchar * objectpath, DBusGMethodInvocation * method)
@@ -320,13 +310,15 @@ _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, gui
 		WindowMenus * wm = window_menus_new(windowid, dbus_g_method_get_sender(method), objectpath);
 		//g_hash_table_insert(iapp->apps, GUINT_TO_POINTER(windowid), wm);
 
-		/* TODO: Check to see if it's the visible window */
-		gpointer * params = (gpointer *)g_new(gpointer, 2);
-		params[0] = iapp;
-		params[1] = wm;
-		g_timeout_add(1250, switch_timeout, params);
-
 		g_signal_emit(G_OBJECT(iapp), signals[WINDOW_REGISTERED], 0, windowid, objectpath, TRUE);
+
+		/* Node: Does not cause ref */
+		BamfWindow * win = bamf_matcher_get_active_window(iapp->matcher);
+		guint32 xid = bamf_window_get_xid(win);
+
+		if (xid == windowid) {
+			switch_default_app(iapp, wm);
+		}
 	} else {
 		g_warning("Already have a menu for window ID %X with path %s from %s", windowid, objectpath, dbus_g_method_get_sender(method));
 	}
