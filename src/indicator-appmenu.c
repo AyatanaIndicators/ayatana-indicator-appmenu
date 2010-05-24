@@ -81,7 +81,7 @@ static gboolean _application_menu_registrar_server_register_window (IndicatorApp
 static void request_name_cb (DBusGProxy *proxy, guint result, GError *error, gpointer userdata);
 static void window_entry_added (WindowMenus * mw, IndicatorObjectEntry * entry, gpointer user_data);
 static void window_entry_removed (WindowMenus * mw, IndicatorObjectEntry * entry, gpointer user_data);
-static void active_window_changed (BamfMatcher * matcher, BamfApplication * app, BamfView * view, gpointer user_data);
+static void active_window_changed (BamfMatcher * matcher, BamfApplication * app, BamfWindow * window, gpointer user_data);
 
 #include "application-menu-registrar-server.h"
 
@@ -284,8 +284,19 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef)
 /* Recieve the signal that the window being shown
    has now changed. */
 static void
-active_window_changed (BamfMatcher * matcher, BamfApplication * app, BamfView * view, gpointer user_data)
+active_window_changed (BamfMatcher * matcher, BamfApplication * app, BamfWindow * window, gpointer user_data)
 {
+	g_return_if_fail(BAMF_IS_WINDOW(window));
+	g_return_if_fail(IS_INDICATOR_APPMENU(user_data));
+
+	IndicatorAppmenu * appmenu = INDICATOR_APPMENU(user_data);
+
+	guint32 xid = bamf_window_get_xid(window);
+	
+	WindowMenus * menus = g_hash_table_lookup(appmenu->apps, GINT_TO_POINTER(xid));
+
+	/* Note: This function can handle menus being NULL */
+	switch_default_app(appmenu, menus);
 
 	return;
 }
