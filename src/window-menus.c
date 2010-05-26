@@ -198,11 +198,40 @@ window_menus_get_entries (WindowMenus * wm)
 	return output;
 }
 
+/* Goes through the items in the root node and adds them
+   to the flock */
+static void
+new_root_helper (DbusmenuMenuitem * item, gpointer user_data)
+{
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
+	menu_entry_added(NULL, NULL, NULL);
+	priv = NULL;
+	return;
+}
+
+/* Respond to the root menu item on our client changing */
 static void
 root_changed (DbusmenuClient * client, DbusmenuMenuitem * new_root, gpointer user_data)
 {
-	menu_entry_added(NULL, NULL, NULL);
-	menu_entry_removed(NULL, NULL, NULL);
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
+
+	/* Remove the old entries */
+	while (priv->entries->len != 0) {
+		menu_entry_removed(NULL, NULL, NULL);
+	}
+
+	/* See if we've got new entries */
+	if (new_root == NULL) {
+		return;
+	}
+
+	/* Set up signals */
+	g_signal_connect(G_OBJECT(new_root), DBUSMENU_MENUITEM_SIGNAL_CHILD_ADDED,   G_CALLBACK(menu_entry_added),   user_data);
+	g_signal_connect(G_OBJECT(new_root), DBUSMENU_MENUITEM_SIGNAL_CHILD_REMOVED, G_CALLBACK(menu_entry_removed), user_data);
+	/* TODO: Child Moved */
+
+	/* Add the new entries */
+	dbusmenu_menuitem_foreach(new_root, new_root_helper, user_data);
 
 	return;
 }
