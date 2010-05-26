@@ -56,8 +56,8 @@ static void window_menus_init       (WindowMenus *self);
 static void window_menus_dispose    (GObject *object);
 static void window_menus_finalize   (GObject *object);
 static void root_changed            (DbusmenuClient * client, DbusmenuMenuitem * new_root, gpointer user_data);
-static void menu_entry_added        (GtkContainer * container, GtkWidget * widget, gpointer user_data);
-static void menu_entry_removed      (GtkContainer * container, GtkWidget * widget, gpointer user_data);
+static void menu_entry_added        (DbusmenuMenuitem * root, DbusmenuMenuitem * newentry, guint position, gpointer user_data);
+static void menu_entry_removed      (DbusmenuMenuitem * root, DbusmenuMenuitem * oldentry, gpointer user_data);
 
 G_DEFINE_TYPE (WindowMenus, window_menus, G_TYPE_OBJECT);
 
@@ -204,8 +204,7 @@ static void
 new_root_helper (DbusmenuMenuitem * item, gpointer user_data)
 {
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
-	menu_entry_added(NULL, NULL, NULL);
-	priv = NULL;
+	menu_entry_added(dbusmenu_client_get_root(DBUSMENU_CLIENT(priv->client)), item, priv->entries->len, user_data);
 	return;
 }
 
@@ -238,30 +237,11 @@ root_changed (DbusmenuClient * client, DbusmenuMenuitem * new_root, gpointer use
 
 /* Respond to an entry getting added to the menu */
 static void
-menu_entry_added (GtkContainer * container, GtkWidget * widget, gpointer user_data)
+menu_entry_added (DbusmenuMenuitem * root, DbusmenuMenuitem * newentry, guint position, gpointer user_data)
 {
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
 
-	if (!GTK_IS_MENU_ITEM(widget)) {
-		g_warning("Got an item added to the menu which isn't a menu item: %s", G_OBJECT_TYPE_NAME(widget));
-		return;
-	}
-
 	IndicatorObjectEntry * entry = g_new0(IndicatorObjectEntry, 1);
-
-	/* TODO: Should be a better way for this */
-	entry->label = GTK_LABEL(gtk_label_new_with_mnemonic(gtk_menu_item_get_label(GTK_MENU_ITEM(widget))));
-	gtk_widget_show(GTK_WIDGET(entry->label));
-	/* TODO: Check for image item */
-	entry->image = NULL;
-	entry->menu = GTK_MENU(gtk_menu_item_get_submenu(GTK_MENU_ITEM(widget)));
-
-	if (entry->menu != NULL) {
-		g_object_ref(G_OBJECT(entry->menu));
-		gtk_menu_item_set_submenu(GTK_MENU_ITEM(widget), NULL);
-	} else {
-		g_warning("No menu!");
-	}
 
 	g_array_append_val(priv->entries, entry);
 	return;
@@ -269,9 +249,11 @@ menu_entry_added (GtkContainer * container, GtkWidget * widget, gpointer user_da
 
 /* Respond to an entry getting removed from the menu */
 static void
-menu_entry_removed (GtkContainer * container, GtkWidget * widget, gpointer user_data)
+menu_entry_removed (DbusmenuMenuitem * root, DbusmenuMenuitem * oldentry, gpointer user_data)
 {
-	/* TODO */
+	//WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
+	
+	/* Need to find the menuitem */
 
 	return;
 }
