@@ -56,7 +56,7 @@ static void window_menus_init       (WindowMenus *self);
 static void window_menus_dispose    (GObject *object);
 static void window_menus_finalize   (GObject *object);
 static void menu_entry_added        (GtkContainer * container, GtkWidget * widget, gpointer user_data);
-//static void menu_entry_removed      (GtkContainer * container, GtkWidget * widget, gpointer user_data);
+static void menu_entry_removed      (GtkContainer * container, GtkWidget * widget, gpointer user_data);
 
 G_DEFINE_TYPE (WindowMenus, window_menus, G_TYPE_OBJECT);
 
@@ -133,26 +133,8 @@ window_menus_finalize (GObject *object)
 	return;
 }
 
-static void
-update_array_helper (GtkWidget * widget, gpointer user_data)
-{
-	gpointer * thedata = (gpointer *)user_data;
-	menu_entry_added (GTK_CONTAINER(thedata[1]), widget, thedata[0]);
-	return;
-}
-
-static gboolean
-update_array (gpointer user_data)
-{
-	WindowMenus * wm = WINDOW_MENUS(user_data);
-	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
-
-	gpointer thedata[2] = {wm, priv->menu};
-	gtk_container_foreach(GTK_CONTAINER(priv->menu), update_array_helper, thedata);
-
-	return FALSE;
-}
-
+/* Build a new window menus object and attach to the signals to build
+   up the representative menu. */
 WindowMenus *
 window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * dbus_object)
 {
@@ -163,12 +145,8 @@ window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * d
 
 	priv->menu = dbusmenu_gtkmenu_new((gchar *)dbus_addr, (gchar *)dbus_object);
 
-	/* This is a work around for the demo */
-	g_timeout_add(1000, update_array, newmenu);
-
-	// TODO: When GTK supports these, use them
-	// g_signal_connect(G_OBJECT(priv->menu), "add",    G_CALLBACK(menu_entry_added),   newmenu);
-	// g_signal_connect(G_OBJECT(priv->menu), "remove", G_CALLBACK(menu_entry_removed), newmenu);
+	g_signal_connect(G_OBJECT(priv->menu), "add",    G_CALLBACK(menu_entry_added),   newmenu);
+	g_signal_connect(G_OBJECT(priv->menu), "remove", G_CALLBACK(menu_entry_removed), newmenu);
 
 	return newmenu;
 }
@@ -246,7 +224,6 @@ menu_entry_added (GtkContainer * container, GtkWidget * widget, gpointer user_da
 	return;
 }
 
-#if 0
 /* Respond to an entry getting removed from the menu */
 static void
 menu_entry_removed (GtkContainer * container, GtkWidget * widget, gpointer user_data)
@@ -255,4 +232,3 @@ menu_entry_removed (GtkContainer * container, GtkWidget * widget, gpointer user_
 
 	return;
 }
-#endif
