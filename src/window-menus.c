@@ -32,7 +32,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 typedef struct _WindowMenusPrivate WindowMenusPrivate;
 struct _WindowMenusPrivate {
 	guint windowid;
-	DbusmenuGtkMenu * menu;
+	DbusmenuGtkClient * client;
 	GArray * entries;
 };
 
@@ -55,6 +55,7 @@ static void window_menus_class_init (WindowMenusClass *klass);
 static void window_menus_init       (WindowMenus *self);
 static void window_menus_dispose    (GObject *object);
 static void window_menus_finalize   (GObject *object);
+static void root_changed            (DbusmenuClient * client, DbusmenuMenuitem * new_root, gpointer user_data);
 static void menu_entry_added        (GtkContainer * container, GtkWidget * widget, gpointer user_data);
 static void menu_entry_removed      (GtkContainer * container, GtkWidget * widget, gpointer user_data);
 
@@ -96,7 +97,7 @@ window_menus_init (WindowMenus *self)
 {
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(self);
 
-	priv->menu = NULL;
+	priv->client = NULL;
 
 	priv->entries = g_array_new(FALSE, FALSE, sizeof(IndicatorObjectEntry *));
 
@@ -109,9 +110,9 @@ window_menus_dispose (GObject *object)
 {
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(object);
 
-	if (priv->menu != NULL) {
-		g_object_unref(G_OBJECT(priv->menu));
-		priv->menu = NULL;
+	if (priv->client != NULL) {
+		g_object_unref(G_OBJECT(priv->client));
+		priv->client = NULL;
 	}
 
 	G_OBJECT_CLASS (window_menus_parent_class)->dispose (object);
@@ -143,10 +144,14 @@ window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * d
 	WindowMenus * newmenu = WINDOW_MENUS(g_object_new(WINDOW_MENUS_TYPE, NULL));
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(newmenu);
 
-	priv->menu = dbusmenu_gtkmenu_new((gchar *)dbus_addr, (gchar *)dbus_object);
+	priv->client = dbusmenu_gtkclient_new((gchar *)dbus_addr, (gchar *)dbus_object);
 
-	g_signal_connect(G_OBJECT(priv->menu), "add",    G_CALLBACK(menu_entry_added),   newmenu);
-	g_signal_connect(G_OBJECT(priv->menu), "remove", G_CALLBACK(menu_entry_removed), newmenu);
+	g_signal_connect(G_OBJECT(priv->client), DBUSMENU_GTKCLIENT_SIGNAL_ROOT_CHANGED, G_CALLBACK(root_changed),   newmenu);
+
+	DbusmenuMenuitem * root = dbusmenu_client_get_root(DBUSMENU_CLIENT(priv->client));
+	if (root != NULL) {
+		root_changed(DBUSMENU_CLIENT(priv->client), root, newmenu);
+	}
 
 	return newmenu;
 }
@@ -191,6 +196,15 @@ window_menus_get_entries (WindowMenus * wm)
 	}
 
 	return output;
+}
+
+static void
+root_changed (DbusmenuClient * client, DbusmenuMenuitem * new_root, gpointer user_data)
+{
+	menu_entry_added(NULL, NULL, NULL);
+	menu_entry_removed(NULL, NULL, NULL);
+
+	return;
 }
 
 /* Respond to an entry getting added to the menu */
