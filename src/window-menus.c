@@ -59,7 +59,7 @@ static void root_changed            (DbusmenuClient * client, DbusmenuMenuitem *
 static void menu_entry_added        (DbusmenuMenuitem * root, DbusmenuMenuitem * newentry, guint position, gpointer user_data);
 static void menu_entry_removed      (DbusmenuMenuitem * root, DbusmenuMenuitem * oldentry, gpointer user_data);
 static void menu_entry_realized     (DbusmenuMenuitem * newentry, gpointer user_data);
-static void menu_entry_has_children (DbusmenuMenuitem * newentry, DbusmenuMenuitem * child, guint position, gpointer user_data);
+static void menu_child_realized     (DbusmenuMenuitem * child, gpointer user_data);
 
 G_DEFINE_TYPE (WindowMenus, window_menus, G_TYPE_OBJECT);
 
@@ -265,9 +265,22 @@ menu_entry_realized (DbusmenuMenuitem * newentry, gpointer user_data)
 	GtkMenu * menu = dbusmenu_gtkclient_menuitem_get_submenu(priv->client, newentry);
 
 	if (menu == NULL) {
-		g_signal_connect(G_OBJECT(newentry), DBUSMENU_MENUITEM_SIGNAL_CHILD_ADDED, G_CALLBACK(menu_entry_has_children), user_data);
+		GList * children = dbusmenu_menuitem_get_children(newentry);
+		if (children != NULL) {
+			gpointer * data = g_new(gpointer, 2);
+			data[0] = user_data;
+			data[1] = newentry;
+
+			g_signal_connect(G_OBJECT(children->data), DBUSMENU_MENUITEM_SIGNAL_REALIZED, G_CALLBACK(menu_child_realized), data);
+		} else {
+			g_warning("Entry has no children!");
+		}
 	} else {
-		menu_entry_has_children(newentry, NULL, 0, user_data);
+		gpointer * data = g_new(gpointer, 2);
+		data[0] = user_data;
+		data[1] = newentry;
+
+		menu_child_realized(NULL, data);
 	}
 	
 	return;
@@ -275,12 +288,14 @@ menu_entry_realized (DbusmenuMenuitem * newentry, gpointer user_data)
 
 /* We can't go until we have some kids.  Really, it's important. */
 static void
-menu_entry_has_children (DbusmenuMenuitem * newentry, DbusmenuMenuitem * child, guint position, gpointer user_data)
+menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 {
-	/* Only care about the first */
-	g_signal_handlers_disconnect_by_func(G_OBJECT(newentry), menu_entry_has_children, user_data);
+	DbusmenuMenuitem * newentry = (DbusmenuMenuitem *)(((gpointer *)user_data)[1]);
 
-	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
+	/* Only care about the first */
+	g_signal_handlers_disconnect_by_func(G_OBJECT(child), menu_child_realized, user_data);
+
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE((((gpointer *)user_data)[0]));
 	IndicatorObjectEntry * entry = g_new0(IndicatorObjectEntry, 1);
 
 	entry->label = GTK_LABEL(gtk_label_new(dbusmenu_menuitem_property_get(newentry, DBUSMENU_MENUITEM_PROP_LABEL)));
