@@ -299,7 +299,7 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE((((gpointer *)user_data)[0]));
 	IndicatorObjectEntry * entry = g_new0(IndicatorObjectEntry, 1);
 
-	entry->label = GTK_LABEL(gtk_label_new(dbusmenu_menuitem_property_get(newentry, DBUSMENU_MENUITEM_PROP_LABEL)));
+	entry->label = GTK_LABEL(gtk_label_new_with_mnemonic(dbusmenu_menuitem_property_get(newentry, DBUSMENU_MENUITEM_PROP_LABEL)));
 	entry->menu = dbusmenu_gtkclient_menuitem_get_submenu(priv->client, newentry);
 
 	if (entry->menu == NULL) {
