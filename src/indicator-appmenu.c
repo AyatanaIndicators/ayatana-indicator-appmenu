@@ -311,7 +311,7 @@ _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, gui
 {
 	if (TRUE || g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid)) == NULL) {
 		WindowMenus * wm = window_menus_new(windowid, dbus_g_method_get_sender(method), objectpath);
-		//g_hash_table_insert(iapp->apps, GUINT_TO_POINTER(windowid), wm);
+		g_hash_table_insert(iapp->apps, GUINT_TO_POINTER(windowid), wm);
 
 		g_signal_emit(G_OBJECT(iapp), signals[WINDOW_REGISTERED], 0, windowid, objectpath, TRUE);
 
