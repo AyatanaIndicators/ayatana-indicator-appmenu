@@ -310,7 +310,7 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 
 	g_array_append_val(priv->entries, entry);
 
-	g_signal_emit(G_OBJECT(user_data), signals[ENTRY_ADDED], 0, entry, TRUE);
+	g_signal_emit(G_OBJECT((((gpointer *)user_data)[0])), signals[ENTRY_ADDED], 0, entry, TRUE);
 
 	return;
 }
