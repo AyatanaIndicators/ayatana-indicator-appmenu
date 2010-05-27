@@ -243,6 +243,9 @@ menu_entry_added (DbusmenuMenuitem * root, DbusmenuMenuitem * newentry, guint po
 
 	IndicatorObjectEntry * entry = g_new0(IndicatorObjectEntry, 1);
 
+	entry->label = GTK_LABEL(gtk_label_new(dbusmenu_menuitem_property_get(newentry, DBUSMENU_MENUITEM_PROP_LABEL)));
+	entry->menu = dbusmenu_gtkclient_menuitem_get_submenu(priv->client, newentry);
+
 	g_array_append_val(priv->entries, entry);
 	return;
 }
