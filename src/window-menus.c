@@ -312,6 +312,8 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 
 	g_signal_emit(G_OBJECT((((gpointer *)user_data)[0])), signals[ENTRY_ADDED], 0, entry, TRUE);
 
+	g_free(user_data);
+
 	return;
 }
 
