@@ -58,7 +58,8 @@ static void window_menus_finalize   (GObject *object);
 static void root_changed            (DbusmenuClient * client, DbusmenuMenuitem * new_root, gpointer user_data);
 static void menu_entry_added        (DbusmenuMenuitem * root, DbusmenuMenuitem * newentry, guint position, gpointer user_data);
 static void menu_entry_removed      (DbusmenuMenuitem * root, DbusmenuMenuitem * oldentry, gpointer user_data);
-static void menu_entry_realized     (DbusmenuMenuitem * mi, gpointer user_data);
+static void menu_entry_realized     (DbusmenuMenuitem * newentry, gpointer user_data);
+static void menu_entry_has_children (DbusmenuMenuitem * newentry, DbusmenuMenuitem * child, guint position, gpointer user_data);
 
 G_DEFINE_TYPE (WindowMenus, window_menus, G_TYPE_OBJECT);
 
@@ -261,11 +262,33 @@ static void
 menu_entry_realized (DbusmenuMenuitem * newentry, gpointer user_data)
 {
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
+	GtkMenu * menu = dbusmenu_gtkclient_menuitem_get_submenu(priv->client, newentry);
 
+	if (menu == NULL) {
+		g_signal_connect(G_OBJECT(newentry), DBUSMENU_MENUITEM_SIGNAL_CHILD_ADDED, G_CALLBACK(menu_entry_has_children), user_data);
+	} else {
+		menu_entry_has_children(newentry, NULL, 0, user_data);
+	}
+	
+	return;
+}
+
+/* We can't go until we have some kids.  Really, it's important. */
+static void
+menu_entry_has_children (DbusmenuMenuitem * newentry, DbusmenuMenuitem * child, guint position, gpointer user_data)
+{
+	/* Only care about the first */
+	g_signal_handlers_disconnect_by_func(G_OBJECT(newentry), menu_entry_has_children, user_data);
+
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
 	IndicatorObjectEntry * entry = g_new0(IndicatorObjectEntry, 1);
 
 	entry->label = GTK_LABEL(gtk_label_new(dbusmenu_menuitem_property_get(newentry, DBUSMENU_MENUITEM_PROP_LABEL)));
 	entry->menu = dbusmenu_gtkclient_menuitem_get_submenu(priv->client, newentry);
+
+	if (entry->menu == NULL) {
+		g_debug("Submenu for %s is NULL", dbusmenu_menuitem_property_get(newentry, DBUSMENU_MENUITEM_PROP_LABEL));
+	}
 
 	gtk_widget_show(GTK_WIDGET(entry->label));
 
