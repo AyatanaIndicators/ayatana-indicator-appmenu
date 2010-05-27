@@ -214,11 +214,12 @@ new_root_helper (DbusmenuMenuitem * item, gpointer user_data)
 static void
 root_changed (DbusmenuClient * client, DbusmenuMenuitem * new_root, gpointer user_data)
 {
+	g_return_if_fail(IS_WINDOW_MENUS(user_data));
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
 
 	/* Remove the old entries */
 	while (priv->entries->len != 0) {
-		menu_entry_removed(NULL, NULL, NULL);
+		menu_entry_removed(NULL, NULL, user_data);
 	}
 
 	/* See if we've got new entries */
@@ -308,6 +309,9 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 	gtk_widget_show(GTK_WIDGET(entry->label));
 
 	g_array_append_val(priv->entries, entry);
+
+	g_signal_emit(G_OBJECT(user_data), signals[ENTRY_ADDED], 0, entry, TRUE);
+
 	return;
 }
 
@@ -315,9 +319,16 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 static void
 menu_entry_removed (DbusmenuMenuitem * root, DbusmenuMenuitem * oldentry, gpointer user_data)
 {
-	//WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
+	g_return_if_fail(IS_WINDOW_MENUS(user_data));
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
 	
-	/* Need to find the menuitem */
+	/* TODO: find the menuitem */
+	IndicatorObjectEntry * entry = g_array_index(priv->entries, IndicatorObjectEntry *, priv->entries->len - 1);
+	g_array_remove_index(priv->entries, priv->entries->len - 1);
+
+	g_signal_emit(G_OBJECT(user_data), signals[ENTRY_REMOVED], 0, entry, TRUE);
+
+	g_free(entry);
 
 	return;
 }
