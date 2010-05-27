@@ -10,8 +10,8 @@ Build-Depends: debhelper (>= 5.0),
                scrollkeeper,
                intltool,
                libindicator-dev (>= 0.3.5),
-               libdbusmenu-gtk-dev (>= 0.2.5),
-               libdbusmenu-glib-dev (>= 0.2.8)
+               libdbusmenu-gtk-dev (>= 0.3.0),
+               libdbusmenu-glib-dev (>= 0.3.0)
 Standards-Version: 3.8.0
 
 Package: indicator-appmenu
