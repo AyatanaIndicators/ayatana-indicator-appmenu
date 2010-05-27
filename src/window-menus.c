@@ -58,6 +58,7 @@ static void window_menus_finalize   (GObject *object);
 static void root_changed            (DbusmenuClient * client, DbusmenuMenuitem * new_root, gpointer user_data);
 static void menu_entry_added        (DbusmenuMenuitem * root, DbusmenuMenuitem * newentry, guint position, gpointer user_data);
 static void menu_entry_removed      (DbusmenuMenuitem * root, DbusmenuMenuitem * oldentry, gpointer user_data);
+static void menu_entry_realized     (DbusmenuMenuitem * mi, gpointer user_data);
 
 G_DEFINE_TYPE (WindowMenus, window_menus, G_TYPE_OBJECT);
 
@@ -238,6 +239,22 @@ root_changed (DbusmenuClient * client, DbusmenuMenuitem * new_root, gpointer use
 /* Respond to an entry getting added to the menu */
 static void
 menu_entry_added (DbusmenuMenuitem * root, DbusmenuMenuitem * newentry, guint position, gpointer user_data)
+{
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
+
+	g_signal_connect(G_OBJECT(newentry), DBUSMENU_MENUITEM_SIGNAL_REALIZED, G_CALLBACK(menu_entry_realized), user_data);
+
+	GtkMenuItem * mi = dbusmenu_gtkclient_menuitem_get(priv->client, newentry);
+	if (mi != NULL) {
+		menu_entry_realized(newentry, user_data);
+	}
+	return;
+}
+
+/* React to the menuitem when we know that it's got all the data
+   that we really need. */
+static void
+menu_entry_realized (DbusmenuMenuitem * newentry, gpointer user_data)
 {
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
 
