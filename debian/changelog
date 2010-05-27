@@ -1,11 +1,11 @@
-indicator-appmenu (0.0.3-0ubuntu1~ppa2~bamf1) UNRELEASED; urgency=low
+indicator-appmenu (0.0.3-0ubuntu1~ppa2~bamf1) lucid; urgency=low
 
   * Upstream Merge
     * Bamf integration
   * debian/control: Requiring libbamf-dev to build
   * Autogen update
 
- -- Ted Gould <ted@ubuntu.com>  Thu, 27 May 2010 14:19:35 -0500
+ -- Ted Gould <ted@ubuntu.com>  Thu, 27 May 2010 14:20:19 -0500
 
 indicator-appmenu (0.0.3-0ubuntu1~ppa1) lucid; urgency=low
 
