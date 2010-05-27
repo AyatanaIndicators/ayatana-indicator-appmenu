@@ -231,7 +231,11 @@ root_changed (DbusmenuClient * client, DbusmenuMenuitem * new_root, gpointer use
 	/* TODO: Child Moved */
 
 	/* Add the new entries */
-	dbusmenu_menuitem_foreach(new_root, new_root_helper, user_data);
+	GList * children = dbusmenu_menuitem_get_children(new_root);
+	while (children != NULL) {
+		new_root_helper(DBUSMENU_MENUITEM(children->data), user_data);
+		children = g_list_next(children);
+	}
 
 	return;
 }
