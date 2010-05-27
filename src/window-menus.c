@@ -32,7 +32,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 typedef struct _WindowMenusPrivate WindowMenusPrivate;
 struct _WindowMenusPrivate {
 	guint windowid;
-	DbusmenuGtkMenu * menu;
+	DbusmenuGtkClient * client;
 	GArray * entries;
 };
 
@@ -55,8 +55,11 @@ static void window_menus_class_init (WindowMenusClass *klass);
 static void window_menus_init       (WindowMenus *self);
 static void window_menus_dispose    (GObject *object);
 static void window_menus_finalize   (GObject *object);
-static void menu_entry_added        (GtkContainer * container, GtkWidget * widget, gpointer user_data);
-//static void menu_entry_removed      (GtkContainer * container, GtkWidget * widget, gpointer user_data);
+static void root_changed            (DbusmenuClient * client, DbusmenuMenuitem * new_root, gpointer user_data);
+static void menu_entry_added        (DbusmenuMenuitem * root, DbusmenuMenuitem * newentry, guint position, gpointer user_data);
+static void menu_entry_removed      (DbusmenuMenuitem * root, DbusmenuMenuitem * oldentry, gpointer user_data);
+static void menu_entry_realized     (DbusmenuMenuitem * newentry, gpointer user_data);
+static void menu_child_realized     (DbusmenuMenuitem * child, gpointer user_data);
 
 G_DEFINE_TYPE (WindowMenus, window_menus, G_TYPE_OBJECT);
 
@@ -77,15 +80,15 @@ window_menus_class_init (WindowMenusClass *klass)
 	                                      G_SIGNAL_RUN_LAST,
 	                                      G_STRUCT_OFFSET (WindowMenusClass, entry_added),
 	                                      NULL, NULL,
-	                                      g_cclosure_marshal_VOID__OBJECT,
-	                                      G_TYPE_NONE, 1, G_TYPE_OBJECT);
+	                                      g_cclosure_marshal_VOID__POINTER,
+	                                      G_TYPE_NONE, 1, G_TYPE_POINTER);
 	signals[ENTRY_REMOVED] =  g_signal_new(WINDOW_MENUS_SIGNAL_ENTRY_REMOVED,
 	                                      G_TYPE_FROM_CLASS(klass),
 	                                      G_SIGNAL_RUN_LAST,
 	                                      G_STRUCT_OFFSET (WindowMenusClass, entry_removed),
 	                                      NULL, NULL,
-	                                      g_cclosure_marshal_VOID__OBJECT,
-	                                      G_TYPE_NONE, 1, G_TYPE_OBJECT);
+	                                      g_cclosure_marshal_VOID__POINTER,
+	                                      G_TYPE_NONE, 1, G_TYPE_POINTER);
 
 	return;
 }
@@ -96,7 +99,7 @@ window_menus_init (WindowMenus *self)
 {
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(self);
 
-	priv->menu = NULL;
+	priv->client = NULL;
 
 	priv->entries = g_array_new(FALSE, FALSE, sizeof(IndicatorObjectEntry *));
 
@@ -109,9 +112,9 @@ window_menus_dispose (GObject *object)
 {
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(object);
 
-	if (priv->menu != NULL) {
-		g_object_unref(G_OBJECT(priv->menu));
-		priv->menu = NULL;
+	if (priv->client != NULL) {
+		g_object_unref(G_OBJECT(priv->client));
+		priv->client = NULL;
 	}
 
 	G_OBJECT_CLASS (window_menus_parent_class)->dispose (object);
@@ -133,26 +136,8 @@ window_menus_finalize (GObject *object)
 	return;
 }
 
-static void
-update_array_helper (GtkWidget * widget, gpointer user_data)
-{
-	gpointer * thedata = (gpointer *)user_data;
-	menu_entry_added (GTK_CONTAINER(thedata[1]), widget, thedata[0]);
-	return;
-}
-
-static gboolean
-update_array (gpointer user_data)
-{
-	WindowMenus * wm = WINDOW_MENUS(user_data);
-	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
-
-	gpointer thedata[2] = {wm, priv->menu};
-	gtk_container_foreach(GTK_CONTAINER(priv->menu), update_array_helper, thedata);
-
-	return FALSE;
-}
-
+/* Build a new window menus object and attach to the signals to build
+   up the representative menu. */
 WindowMenus *
 window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * dbus_object)
 {
@@ -161,14 +146,14 @@ window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * d
 	WindowMenus * newmenu = WINDOW_MENUS(g_object_new(WINDOW_MENUS_TYPE, NULL));
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(newmenu);
 
-	priv->menu = dbusmenu_gtkmenu_new((gchar *)dbus_addr, (gchar *)dbus_object);
+	priv->client = dbusmenu_gtkclient_new((gchar *)dbus_addr, (gchar *)dbus_object);
 
-	/* This is a work around for the demo */
-	g_timeout_add(1000, update_array, newmenu);
+	g_signal_connect(G_OBJECT(priv->client), DBUSMENU_GTKCLIENT_SIGNAL_ROOT_CHANGED, G_CALLBACK(root_changed),   newmenu);
 
-	// TODO: When GTK supports these, use them
-	// g_signal_connect(G_OBJECT(priv->menu), "add",    G_CALLBACK(menu_entry_added),   newmenu);
-	// g_signal_connect(G_OBJECT(priv->menu), "remove", G_CALLBACK(menu_entry_removed), newmenu);
+	DbusmenuMenuitem * root = dbusmenu_client_get_root(DBUSMENU_CLIENT(priv->client));
+	if (root != NULL) {
+		root_changed(DBUSMENU_CLIENT(priv->client), root, newmenu);
+	}
 
 	return newmenu;
 }
@@ -215,44 +200,137 @@ window_menus_get_entries (WindowMenus * wm)
 	return output;
 }
 
-/* Respond to an entry getting added to the menu */
+/* Goes through the items in the root node and adds them
+   to the flock */
 static void
-menu_entry_added (GtkContainer * container, GtkWidget * widget, gpointer user_data)
+new_root_helper (DbusmenuMenuitem * item, gpointer user_data)
 {
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
+	menu_entry_added(dbusmenu_client_get_root(DBUSMENU_CLIENT(priv->client)), item, priv->entries->len, user_data);
+	return;
+}
 
-	if (!GTK_IS_MENU_ITEM(widget)) {
-		g_warning("Got an item added to the menu which isn't a menu item: %s", G_OBJECT_TYPE_NAME(widget));
+/* Respond to the root menu item on our client changing */
+static void
+root_changed (DbusmenuClient * client, DbusmenuMenuitem * new_root, gpointer user_data)
+{
+	g_return_if_fail(IS_WINDOW_MENUS(user_data));
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
+
+	/* Remove the old entries */
+	while (priv->entries->len != 0) {
+		menu_entry_removed(NULL, NULL, user_data);
+	}
+
+	/* See if we've got new entries */
+	if (new_root == NULL) {
 		return;
 	}
 
-	IndicatorObjectEntry * entry = g_new0(IndicatorObjectEntry, 1);
+	/* Set up signals */
+	g_signal_connect(G_OBJECT(new_root), DBUSMENU_MENUITEM_SIGNAL_CHILD_ADDED,   G_CALLBACK(menu_entry_added),   user_data);
+	g_signal_connect(G_OBJECT(new_root), DBUSMENU_MENUITEM_SIGNAL_CHILD_REMOVED, G_CALLBACK(menu_entry_removed), user_data);
+	/* TODO: Child Moved */
 
-	/* TODO: Should be a better way for this */
-	entry->label = GTK_LABEL(gtk_label_new_with_mnemonic(gtk_menu_item_get_label(GTK_MENU_ITEM(widget))));
-	gtk_widget_show(GTK_WIDGET(entry->label));
-	/* TODO: Check for image item */
-	entry->image = NULL;
-	entry->menu = GTK_MENU(gtk_menu_item_get_submenu(GTK_MENU_ITEM(widget)));
-
-	if (entry->menu != NULL) {
-		g_object_ref(G_OBJECT(entry->menu));
-		gtk_menu_item_set_submenu(GTK_MENU_ITEM(widget), NULL);
-	} else {
-		g_warning("No menu!");
+	/* Add the new entries */
+	GList * children = dbusmenu_menuitem_get_children(new_root);
+	while (children != NULL) {
+		new_root_helper(DBUSMENU_MENUITEM(children->data), user_data);
+		children = g_list_next(children);
 	}
 
-	g_array_append_val(priv->entries, entry);
 	return;
 }
 
-#if 0
+/* Respond to an entry getting added to the menu */
+static void
+menu_entry_added (DbusmenuMenuitem * root, DbusmenuMenuitem * newentry, guint position, gpointer user_data)
+{
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
+
+	g_signal_connect(G_OBJECT(newentry), DBUSMENU_MENUITEM_SIGNAL_REALIZED, G_CALLBACK(menu_entry_realized), user_data);
+
+	GtkMenuItem * mi = dbusmenu_gtkclient_menuitem_get(priv->client, newentry);
+	if (mi != NULL) {
+		menu_entry_realized(newentry, user_data);
+	}
+	return;
+}
+
+/* React to the menuitem when we know that it's got all the data
+   that we really need. */
+static void
+menu_entry_realized (DbusmenuMenuitem * newentry, gpointer user_data)
+{
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
+	GtkMenu * menu = dbusmenu_gtkclient_menuitem_get_submenu(priv->client, newentry);
+
+	if (menu == NULL) {
+		GList * children = dbusmenu_menuitem_get_children(newentry);
+		if (children != NULL) {
+			gpointer * data = g_new(gpointer, 2);
+			data[0] = user_data;
+			data[1] = newentry;
+
+			g_signal_connect(G_OBJECT(children->data), DBUSMENU_MENUITEM_SIGNAL_REALIZED, G_CALLBACK(menu_child_realized), data);
+		} else {
+			g_warning("Entry has no children!");
+		}
+	} else {
+		gpointer * data = g_new(gpointer, 2);
+		data[0] = user_data;
+		data[1] = newentry;
+
+		menu_child_realized(NULL, data);
+	}
+	
+	return;
+}
+
+/* We can't go until we have some kids.  Really, it's important. */
+static void
+menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
+{
+	DbusmenuMenuitem * newentry = (DbusmenuMenuitem *)(((gpointer *)user_data)[1]);
+
+	/* Only care about the first */
+	g_signal_handlers_disconnect_by_func(G_OBJECT(child), menu_child_realized, user_data);
+
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE((((gpointer *)user_data)[0]));
+	IndicatorObjectEntry * entry = g_new0(IndicatorObjectEntry, 1);
+
+	entry->label = GTK_LABEL(gtk_label_new_with_mnemonic(dbusmenu_menuitem_property_get(newentry, DBUSMENU_MENUITEM_PROP_LABEL)));
+	entry->menu = dbusmenu_gtkclient_menuitem_get_submenu(priv->client, newentry);
+
+	if (entry->menu == NULL) {
+		g_debug("Submenu for %s is NULL", dbusmenu_menuitem_property_get(newentry, DBUSMENU_MENUITEM_PROP_LABEL));
+	}
+
+	gtk_widget_show(GTK_WIDGET(entry->label));
+
+	g_array_append_val(priv->entries, entry);
+
+	g_signal_emit(G_OBJECT((((gpointer *)user_data)[0])), signals[ENTRY_ADDED], 0, entry, TRUE);
+
+	g_free(user_data);
+
+	return;
+}
+
 /* Respond to an entry getting removed from the menu */
 static void
-menu_entry_removed (GtkContainer * container, GtkWidget * widget, gpointer user_data)
+menu_entry_removed (DbusmenuMenuitem * root, DbusmenuMenuitem * oldentry, gpointer user_data)
 {
-	/* TODO */
+	g_return_if_fail(IS_WINDOW_MENUS(user_data));
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
+	
+	/* TODO: find the menuitem */
+	IndicatorObjectEntry * entry = g_array_index(priv->entries, IndicatorObjectEntry *, priv->entries->len - 1);
+	g_array_remove_index(priv->entries, priv->entries->len - 1);
+
+	g_signal_emit(G_OBJECT(user_data), signals[ENTRY_REMOVED], 0, entry, TRUE);
+
+	g_free(entry);
 
 	return;
 }
-#endif
