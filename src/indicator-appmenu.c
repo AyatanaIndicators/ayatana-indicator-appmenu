@@ -77,8 +77,11 @@ static gboolean _application_menu_registrar_server_register_window (IndicatorApp
 static void request_name_cb (DBusGProxy *proxy, guint result, GError *error, gpointer userdata);
 static void window_entry_added (WindowMenus * mw, IndicatorObjectEntry * entry, gpointer user_data);
 static void window_entry_removed (WindowMenus * mw, IndicatorObjectEntry * entry, gpointer user_data);
+static gboolean _application_menu_debug_server_current_menu(IndicatorAppmenu * iapp, guint * windowid, GValue * objectpath, gchar ** address, GError * error);
+static gboolean _application_menu_debug_server_all_menus(IndicatorAppmenu * iapp, GArray * entries, GError * error);
 
 #include "application-menu-registrar-server.h"
+#include "application-menu-debug-server.h"
 
 enum {
 	WINDOW_REGISTERED,
@@ -320,3 +323,25 @@ window_entry_removed (WindowMenus * mw, IndicatorObjectEntry * entry, gpointer u
 	g_signal_emit_by_name(G_OBJECT(user_data), INDICATOR_OBJECT_SIGNAL_ENTRY_REMOVED, entry);
 	return;
 }
+
+/**********************
+  DEBUG INTERFACE
+ **********************/
+/* Get the current menu */
+static gboolean
+_application_menu_debug_server_current_menu (IndicatorAppmenu * iapp, guint * windowid, GValue * objectpath, gchar ** address, GError * error)
+{
+
+
+	return FALSE;
+}
+
+/* Get all the menus we have */
+static gboolean
+_application_menu_debug_server_all_menus(IndicatorAppmenu * iapp, GArray * entries, GError * error)
+{
+
+
+	return FALSE;
+}
+
