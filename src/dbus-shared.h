@@ -25,3 +25,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define  REG_IFACE  "org.ayatana.WindowMenu.Registrar"
 #define  REG_OBJECT "/org/ayatana/WindowMenu/Registrar"
 
+#define  DEBUG_IFACE   "org.ayatana.AppMenu.Debug"
+#define  DEBUG_OBJECT "/org/ayatana/AppMenu/Debug"
+
