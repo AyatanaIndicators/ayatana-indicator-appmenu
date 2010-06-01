@@ -9,7 +9,7 @@
 			<arg type="s" name="address" direction="out" />
 		</method>
 		<method name="AllMenus">
-			<arg type="a{uos}" name="menus" direction="out" />
+			<arg type="a(uos)" name="menus" direction="out" />
 		</method>
 
 	</interface>
