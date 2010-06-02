@@ -124,12 +124,12 @@ static void window_entry_added                                       (WindowMenu
 static void window_entry_removed                                     (WindowMenus * mw,
                                                                       IndicatorObjectEntry * entry,
                                                                       gpointer user_data);
-static gboolean _application_menu_debug_server_current_menu          (IndicatorAppmenu * iapp,
+static gboolean _application_menu_debug_server_current_menu          (IndicatorAppmenuDebug * iappd,
                                                                       guint * windowid,
                                                                       GValue * objectpath,
                                                                       gchar ** address,
                                                                       GError * error);
-static gboolean _application_menu_debug_server_all_menus             (IndicatorAppmenu * iapp,
+static gboolean _application_menu_debug_server_all_menus             (IndicatorAppmenuDebug * iappd,
                                                                       GArray * entries,
                                                                       GError * error);
 
@@ -421,19 +421,30 @@ window_entry_removed (WindowMenus * mw, IndicatorObjectEntry * entry, gpointer u
  **********************/
 /* Get the current menu */
 static gboolean
-_application_menu_debug_server_current_menu (IndicatorAppmenu * iapp, guint * windowid, GValue * objectpath, gchar ** address, GError * error)
+_application_menu_debug_server_current_menu (IndicatorAppmenuDebug * iappd, guint * windowid, GValue * objectpath, gchar ** address, GError * error)
 {
+	IndicatorAppmenu * iapp = iappd->appmenu;
 
+	if (iapp->default_app == NULL) {
+		*windowid = 0;
+		g_value_set_boxed(objectpath, g_strdup("/"));
+		*address = g_strdup(":1.0");
+		return TRUE;
+	}
 
 	return FALSE;
 }
 
 /* Get all the menus we have */
 static gboolean
-_application_menu_debug_server_all_menus(IndicatorAppmenu * iapp, GArray * entries, GError * error)
+_application_menu_debug_server_all_menus(IndicatorAppmenuDebug * iappd, GArray * entries, GError * error)
 {
+	IndicatorAppmenu * iapp = iappd->appmenu;
 
+	if (iapp->apps == NULL) {
+		return FALSE;
+	}
 
-	return FALSE;
+	return TRUE;
 }
 
