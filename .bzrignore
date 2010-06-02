@@ -14,3 +14,5 @@ src/libappmenu_la-indicator-appmenu-marshal.lo
 scripts/.deps
 scripts/.libs
 scripts/menu-pusher
+src/application-menu-debug-client.h
+src/application-menu-debug-server.h
