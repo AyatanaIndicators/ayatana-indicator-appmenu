@@ -51,6 +51,8 @@ INDICATOR_SET_TYPE(INDICATOR_APPMENU_TYPE)
 
 typedef struct _IndicatorAppmenu      IndicatorAppmenu;
 typedef struct _IndicatorAppmenuClass IndicatorAppmenuClass;
+typedef struct _IndicatorAppmenuDebug      IndicatorAppmenuDebug;
+typedef struct _IndicatorAppmenuDebugClass IndicatorAppmenuDebugClass;
 
 struct _IndicatorAppmenuClass {
 	IndicatorObjectClass parent_class;
@@ -67,6 +69,8 @@ struct _IndicatorAppmenu {
 
 	gulong sig_entry_added;
 	gulong sig_entry_removed;
+
+	IndicatorAppmenuDebug * debug;
 };
 
 
@@ -81,9 +85,6 @@ struct _IndicatorAppmenu {
 #define INDICATOR_APPMENU_DEBUG_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), INDICATOR_APPMENU_DEBUG_TYPE, IndicatorAppmenuDebugClass))
 
 GType indicator_appmenu_debug_get_type (void);
-
-typedef struct _IndicatorAppmenuDebug      IndicatorAppmenuDebug;
-typedef struct _IndicatorAppmenuDebugClass IndicatorAppmenuDebugClass;
 
 struct _IndicatorAppmenuDebugClass {
 	GObjectClass parent_class;
@@ -187,6 +188,7 @@ static void
 indicator_appmenu_init (IndicatorAppmenu *self)
 {
 	self->default_app = NULL;
+	self->debug = NULL;
 	self->apps = g_hash_table_new_full(NULL, NULL, NULL, g_object_unref);
 
 	/* Register this object on DBus */
@@ -207,6 +209,10 @@ indicator_appmenu_init (IndicatorAppmenu *self)
 	                                         request_name_cb,
 	                                         self);
 
+	/* Setup debug interface */
+	self->debug = g_object_new(INDICATOR_APPMENU_DEBUG_TYPE, NULL);
+	self->debug->appmenu = self;
+
 	return;
 }
 
@@ -222,6 +228,11 @@ indicator_appmenu_dispose (GObject *object)
 	if (iapp->apps != NULL) {
 		g_hash_table_destroy(iapp->apps);
 		iapp->apps = NULL;
+	}
+
+	if (iapp->debug != NULL) {
+		g_object_unref(iapp->debug);
+		iapp->debug = NULL;
 	}
 
 	G_OBJECT_CLASS (indicator_appmenu_parent_class)->dispose (object);
