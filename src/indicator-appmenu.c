@@ -126,7 +126,7 @@ static void window_entry_removed                                     (WindowMenu
                                                                       gpointer user_data);
 static gboolean _application_menu_debug_server_current_menu          (IndicatorAppmenuDebug * iappd,
                                                                       guint * windowid,
-                                                                      GValue * objectpath,
+                                                                      gchar ** objectpath,
                                                                       gchar ** address,
                                                                       GError * error);
 static gboolean _application_menu_debug_server_all_menus             (IndicatorAppmenuDebug * iappd,
@@ -421,19 +421,19 @@ window_entry_removed (WindowMenus * mw, IndicatorObjectEntry * entry, gpointer u
  **********************/
 /* Get the current menu */
 static gboolean
-_application_menu_debug_server_current_menu (IndicatorAppmenuDebug * iappd, guint * windowid, GValue * objectpath, gchar ** address, GError * error)
+_application_menu_debug_server_current_menu (IndicatorAppmenuDebug * iappd, guint * windowid, gchar ** objectpath, gchar ** address, GError * error)
 {
 	IndicatorAppmenu * iapp = iappd->appmenu;
 
 	if (iapp->default_app == NULL) {
 		*windowid = 0;
-		g_value_set_boxed(objectpath, g_strdup("/"));
+		*objectpath = g_strdup("/");
 		*address = g_strdup(":1.0");
 		return TRUE;
 	}
 
 	*windowid = window_menus_get_xid(iapp->default_app);
-	g_value_set_boxed(objectpath, window_menus_get_path(iapp->default_app));
+	*objectpath = window_menus_get_path(iapp->default_app);
 	*address = window_menus_get_address(iapp->default_app);
 
 	return TRUE;
