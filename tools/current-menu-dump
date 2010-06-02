@@ -1,0 +1,21 @@
+#!/bin/sh
+
+TMPFILE=`mktemp`
+CURMENU="./current-menu"
+DBUSDUMP="/usr/lib/libdbusmenu/dbusmenu-dumper"
+
+$CURMENU > $TMPFILE
+
+OBPATH=`grep "object path" $TMPFILE | cut -d " " -f 6 | sed -e s:\"::g`
+
+echo -n "Path: "
+echo $OBPATH
+
+OBADDR=`grep "string" $TMPFILE | cut -d " " -f 5 | sed -e s:\"::g`
+
+echo -n "Addr: "
+echo $OBADDR
+
+rm -f $TMPFILE
+
+$DBUSDUMP --dbus-name $OBADDR --dbus-object $OBPATH
