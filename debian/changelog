@@ -1,3 +1,10 @@
+indicator-appmenu (0.0.3-0ubuntu1~ppa2) UNRELEASED; urgency=low
+
+  * Upstream Merge
+    * Building a debug interface with a couple little scripts.
+
+ -- Ted Gould <ted@ubuntu.com>  Wed, 02 Jun 2010 17:16:29 -0500
+
 indicator-appmenu (0.0.3-0ubuntu1~ppa1) lucid; urgency=low
 
   * New upstream release.

@@ -58,6 +58,10 @@ WindowMenus * window_menus_new (const guint windowid, const gchar * dbus_addr, c
 GList * window_menus_get_entries (WindowMenus * wm);
 guint window_menus_get_location (WindowMenus * wm, IndicatorObjectEntry * entry);
 
+guint window_menus_get_xid (WindowMenus * wm);
+gchar * window_menus_get_path (WindowMenus * wm);
+gchar * window_menus_get_address (WindowMenus * wm);
+
 G_END_DECLS
 
 #endif
