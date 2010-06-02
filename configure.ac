@@ -90,6 +90,7 @@ AC_OUTPUT([
 Makefile
 src/Makefile
 scripts/Makefile
+tools/Makefile
 ])
 
 ###########################
