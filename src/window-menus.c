@@ -339,19 +339,32 @@ menu_entry_removed (DbusmenuMenuitem * root, DbusmenuMenuitem * oldentry, gpoint
 guint
 window_menus_get_xid (WindowMenus * wm)
 {
-	return 1;
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
+	return priv->windowid;
 }
 
 /* Get the path for this object */
 gchar *
 window_menus_get_path (WindowMenus * wm)
 {
-	return g_strdup("/");
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
+	GValue obj = {0};
+	g_value_init(&obj, G_TYPE_STRING);
+	g_object_get_property(G_OBJECT(priv->client), DBUSMENU_CLIENT_PROP_DBUS_OBJECT, &obj);
+	gchar * retval = g_value_dup_string(&obj);
+	g_value_unset(&obj);
+	return retval;
 }
 
 /* Get the address of this object */
 gchar *
 window_menus_get_address (WindowMenus * wm)
 {
-	return g_strdup(":1.0");
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
+	GValue obj = {0};
+	g_value_init(&obj, G_TYPE_STRING);
+	g_object_get_property(G_OBJECT(priv->client), DBUSMENU_CLIENT_PROP_DBUS_NAME, &obj);
+	gchar * retval = g_value_dup_string(&obj);
+	g_value_unset(&obj);
+	return retval;
 }
