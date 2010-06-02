@@ -1,0 +1,3 @@
+#!/bin/sh
+
+dbus-send --session --dest=org.ayatana.WindowMenu.Registrar --print-reply /org/ayatana/AppMenu/Debug org.ayatana.AppMenu.Debug.CurrentMenu

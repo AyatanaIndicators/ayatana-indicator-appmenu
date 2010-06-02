@@ -1,7 +1,8 @@
 
 SUBDIRS = \
 	src \
-	scripts
+	scripts \
+	tools
 
 DISTCHECK_CONFIGURE_FLAGS = --enable-localinstall
 

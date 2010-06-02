@@ -34,6 +34,9 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "window-menus.h"
 #include "dbus-shared.h"
 
+/**********************
+  Indicator Object
+ **********************/
 #define INDICATOR_APPMENU_TYPE            (indicator_appmenu_get_type ())
 #define INDICATOR_APPMENU(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), INDICATOR_APPMENU_TYPE, IndicatorAppmenu))
 #define INDICATOR_APPMENU_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), INDICATOR_APPMENU_TYPE, IndicatorAppmenuClass))
@@ -48,6 +51,8 @@ INDICATOR_SET_TYPE(INDICATOR_APPMENU_TYPE)
 
 typedef struct _IndicatorAppmenu      IndicatorAppmenu;
 typedef struct _IndicatorAppmenuClass IndicatorAppmenuClass;
+typedef struct _IndicatorAppmenuDebug      IndicatorAppmenuDebug;
+typedef struct _IndicatorAppmenuDebugClass IndicatorAppmenuDebugClass;
 
 struct _IndicatorAppmenuClass {
 	IndicatorObjectClass parent_class;
@@ -64,21 +69,75 @@ struct _IndicatorAppmenu {
 
 	gulong sig_entry_added;
 	gulong sig_entry_removed;
+
+	IndicatorAppmenuDebug * debug;
 };
 
-static void indicator_appmenu_class_init (IndicatorAppmenuClass *klass);
-static void indicator_appmenu_init       (IndicatorAppmenu *self);
-static void indicator_appmenu_dispose    (GObject *object);
-static void indicator_appmenu_finalize   (GObject *object);
-static GList * get_entries (IndicatorObject * io);
-static guint get_location (IndicatorObject * io, IndicatorObjectEntry * entry);
-static void switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef);
-static gboolean _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, guint windowid, const gchar * objectpath, DBusGMethodInvocation * method);
-static void request_name_cb (DBusGProxy *proxy, guint result, GError *error, gpointer userdata);
-static void window_entry_added (WindowMenus * mw, IndicatorObjectEntry * entry, gpointer user_data);
-static void window_entry_removed (WindowMenus * mw, IndicatorObjectEntry * entry, gpointer user_data);
 
+/**********************
+  Debug Proxy
+ **********************/
+#define INDICATOR_APPMENU_DEBUG_TYPE            (indicator_appmenu_debug_get_type ())
+#define INDICATOR_APPMENU_DEBUG(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), INDICATOR_APPMENU_DEBUG_TYPE, IndicatorAppmenuDebug))
+#define INDICATOR_APPMENU_DEBUG_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), INDICATOR_APPMENU_DEBUG_TYPE, IndicatorAppmenuDebugClass))
+#define IS_INDICATOR_APPMENU_DEBUG(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), INDICATOR_APPMENU_DEBUG_TYPE))
+#define IS_INDICATOR_APPMENU_DEBUG_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), INDICATOR_APPMENU_DEBUG_TYPE))
+#define INDICATOR_APPMENU_DEBUG_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), INDICATOR_APPMENU_DEBUG_TYPE, IndicatorAppmenuDebugClass))
+
+GType indicator_appmenu_debug_get_type (void);
+
+struct _IndicatorAppmenuDebugClass {
+	GObjectClass parent_class;
+};
+
+struct _IndicatorAppmenuDebug {
+	GObject parent;
+	IndicatorAppmenu * appmenu;
+};
+
+
+/**********************
+  Prototypes
+ **********************/
+static void indicator_appmenu_class_init                             (IndicatorAppmenuClass *klass);
+static void indicator_appmenu_init                                   (IndicatorAppmenu *self);
+static void indicator_appmenu_dispose                                (GObject *object);
+static void indicator_appmenu_finalize                               (GObject *object);
+static void indicator_appmenu_debug_class_init                       (IndicatorAppmenuDebugClass *klass);
+static void indicator_appmenu_debug_init                             (IndicatorAppmenuDebug *self);
+static GList * get_entries                                           (IndicatorObject * io);
+static guint get_location                                            (IndicatorObject * io,
+                                                                      IndicatorObjectEntry * entry);
+static void switch_default_app                                       (IndicatorAppmenu * iapp,
+                                                                      WindowMenus * newdef);
+static gboolean _application_menu_registrar_server_register_window   (IndicatorAppmenu * iapp,
+                                                                      guint windowid,
+                                                                      const gchar * objectpath,
+                                                                      DBusGMethodInvocation * method);
+static void request_name_cb                                          (DBusGProxy *proxy,
+                                                                      guint result,
+                                                                      GError *error,
+                                                                      gpointer userdata);
+static void window_entry_added                                       (WindowMenus * mw,
+                                                                      IndicatorObjectEntry * entry,
+                                                                      gpointer user_data);
+static void window_entry_removed                                     (WindowMenus * mw,
+                                                                      IndicatorObjectEntry * entry,
+                                                                      gpointer user_data);
+static gboolean _application_menu_debug_server_current_menu          (IndicatorAppmenuDebug * iappd,
+                                                                      guint * windowid,
+                                                                      gchar ** objectpath,
+                                                                      gchar ** address,
+                                                                      GError * error);
+static gboolean _application_menu_debug_server_all_menus             (IndicatorAppmenuDebug * iappd,
+                                                                      GArray * entries,
+                                                                      GError * error);
+
+/**********************
+  DBus Interfaces
+ **********************/
 #include "application-menu-registrar-server.h"
+#include "application-menu-debug-server.h"
 
 enum {
 	WINDOW_REGISTERED,
@@ -129,6 +188,7 @@ static void
 indicator_appmenu_init (IndicatorAppmenu *self)
 {
 	self->default_app = NULL;
+	self->debug = NULL;
 	self->apps = g_hash_table_new_full(NULL, NULL, NULL, g_object_unref);
 
 	/* Register this object on DBus */
@@ -149,6 +209,10 @@ indicator_appmenu_init (IndicatorAppmenu *self)
 	                                         request_name_cb,
 	                                         self);
 
+	/* Setup debug interface */
+	self->debug = g_object_new(INDICATOR_APPMENU_DEBUG_TYPE, NULL);
+	self->debug->appmenu = self;
+
 	return;
 }
 
@@ -166,6 +230,11 @@ indicator_appmenu_dispose (GObject *object)
 		iapp->apps = NULL;
 	}
 
+	if (iapp->debug != NULL) {
+		g_object_unref(iapp->debug);
+		iapp->debug = NULL;
+	}
+
 	G_OBJECT_CLASS (indicator_appmenu_parent_class)->dispose (object);
 	return;
 }
@@ -176,6 +245,32 @@ indicator_appmenu_finalize (GObject *object)
 {
 
 	G_OBJECT_CLASS (indicator_appmenu_parent_class)->finalize (object);
+	return;
+}
+
+G_DEFINE_TYPE (IndicatorAppmenuDebug, indicator_appmenu_debug, G_TYPE_OBJECT);
+
+/* One time init */
+static void
+indicator_appmenu_debug_class_init (IndicatorAppmenuDebugClass *klass)
+{
+	dbus_g_object_type_install_info(INDICATOR_APPMENU_DEBUG_TYPE, &dbus_glib__application_menu_debug_server_object_info);
+
+	return;
+}
+
+/* Per instance Init */
+static void
+indicator_appmenu_debug_init (IndicatorAppmenuDebug *self)
+{
+	self->appmenu = NULL;
+
+	/* Register this object on DBus */
+	DBusGConnection * connection = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
+	dbus_g_connection_register_g_object(connection,
+	                                    DEBUG_OBJECT,
+	                                    G_OBJECT(self));
+
 	return;
 }
 
@@ -320,3 +415,40 @@ window_entry_removed (WindowMenus * mw, IndicatorObjectEntry * entry, gpointer u
 	g_signal_emit_by_name(G_OBJECT(user_data), INDICATOR_OBJECT_SIGNAL_ENTRY_REMOVED, entry);
 	return;
 }
+
+/**********************
+  DEBUG INTERFACE
+ **********************/
+/* Get the current menu */
+static gboolean
+_application_menu_debug_server_current_menu (IndicatorAppmenuDebug * iappd, guint * windowid, gchar ** objectpath, gchar ** address, GError * error)
+{
+	IndicatorAppmenu * iapp = iappd->appmenu;
+
+	if (iapp->default_app == NULL) {
+		*windowid = 0;
+		*objectpath = g_strdup("/");
+		*address = g_strdup(":1.0");
+		return TRUE;
+	}
+
+	*windowid = window_menus_get_xid(iapp->default_app);
+	*objectpath = window_menus_get_path(iapp->default_app);
+	*address = window_menus_get_address(iapp->default_app);
+
+	return TRUE;
+}
+
+/* Get all the menus we have */
+static gboolean
+_application_menu_debug_server_all_menus(IndicatorAppmenuDebug * iappd, GArray * entries, GError * error)
+{
+	IndicatorAppmenu * iapp = iappd->appmenu;
+
+	if (iapp->apps == NULL) {
+		return FALSE;
+	}
+
+	return TRUE;
+}
+
