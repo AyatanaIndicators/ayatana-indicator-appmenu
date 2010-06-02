@@ -11,3 +11,6 @@ current-menu-dump: current-menu-dump.in
 EXTRA_DIST = \
 	current-menu \
 	current-menu-dump.in
+
+CLEANFILES = \
+	current-menu-dump
