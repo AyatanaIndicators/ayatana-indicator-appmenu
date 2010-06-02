@@ -1,7 +1,7 @@
 #!/bin/sh
 
 TMPFILE=`mktemp`
-CURMENU="./current-menu"
+CURMENU="@LIBEXECDIR@/current-menu"
 DBUSDUMP="/usr/lib/libdbusmenu/dbusmenu-dumper"
 
 $CURMENU > $TMPFILE

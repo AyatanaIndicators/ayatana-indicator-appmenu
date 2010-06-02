@@ -3,4 +3,11 @@ libexec_SCRIPTS = \
 	current-menu \
 	current-menu-dump
 
-EXTRA_DIST = $(libexec_SCRIPTS)
+current-menu-dump: current-menu-dump.in
+	sed \
+		-e s:@LIBEXECDIR@:$(libexecdir):g \
+		$< > $@
+
+EXTRA_DIST = \
+	current-menu \
+	current-menu-dump.in
