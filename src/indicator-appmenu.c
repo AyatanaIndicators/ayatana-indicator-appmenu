@@ -34,6 +34,9 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "window-menus.h"
 #include "dbus-shared.h"
 
+/**********************
+  Indicator Object
+ **********************/
 #define INDICATOR_APPMENU_TYPE            (indicator_appmenu_get_type ())
 #define INDICATOR_APPMENU(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), INDICATOR_APPMENU_TYPE, IndicatorAppmenu))
 #define INDICATOR_APPMENU_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), INDICATOR_APPMENU_TYPE, IndicatorAppmenuClass))
@@ -66,10 +69,41 @@ struct _IndicatorAppmenu {
 	gulong sig_entry_removed;
 };
 
+
+/**********************
+  Debug Proxy
+ **********************/
+#define INDICATOR_APPMENU_DEBUG_TYPE            (indicator_appmenu_debug_get_type ())
+#define INDICATOR_APPMENU_DEBUG(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), INDICATOR_APPMENU_DEBUG_TYPE, IndicatorAppmenuDebug))
+#define INDICATOR_APPMENU_DEBUG_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), INDICATOR_APPMENU_DEBUG_TYPE, IndicatorAppmenuDebugClass))
+#define IS_INDICATOR_APPMENU_DEBUG(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), INDICATOR_APPMENU_DEBUG_TYPE))
+#define IS_INDICATOR_APPMENU_DEBUG_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), INDICATOR_APPMENU_DEBUG_TYPE))
+#define INDICATOR_APPMENU_DEBUG_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), INDICATOR_APPMENU_DEBUG_TYPE, IndicatorAppmenuDebugClass))
+
+GType indicator_appmenu_debug_get_type (void);
+
+typedef struct _IndicatorAppmenuDebug      IndicatorAppmenuDebug;
+typedef struct _IndicatorAppmenuDebugClass IndicatorAppmenuDebugClass;
+
+struct _IndicatorAppmenuDebugClass {
+	GObjectClass parent_class;
+};
+
+struct _IndicatorAppmenuDebug {
+	GObject parent;
+	IndicatorAppmenu * appmenu;
+};
+
+
+/**********************
+  Prototypes
+ **********************/
 static void indicator_appmenu_class_init                             (IndicatorAppmenuClass *klass);
 static void indicator_appmenu_init                                   (IndicatorAppmenu *self);
 static void indicator_appmenu_dispose                                (GObject *object);
 static void indicator_appmenu_finalize                               (GObject *object);
+static void indicator_appmenu_debug_class_init                       (IndicatorAppmenuDebugClass *klass);
+static void indicator_appmenu_debug_init                             (IndicatorAppmenuDebug *self);
 static GList * get_entries                                           (IndicatorObject * io);
 static guint get_location                                            (IndicatorObject * io,
                                                                       IndicatorObjectEntry * entry);
@@ -98,6 +132,9 @@ static gboolean _application_menu_debug_server_all_menus             (IndicatorA
                                                                       GArray * entries,
                                                                       GError * error);
 
+/**********************
+  DBus Interfaces
+ **********************/
 #include "application-menu-registrar-server.h"
 #include "application-menu-debug-server.h"
 
@@ -197,6 +234,32 @@ indicator_appmenu_finalize (GObject *object)
 {
 
 	G_OBJECT_CLASS (indicator_appmenu_parent_class)->finalize (object);
+	return;
+}
+
+G_DEFINE_TYPE (IndicatorAppmenuDebug, indicator_appmenu_debug, G_TYPE_OBJECT);
+
+/* One time init */
+static void
+indicator_appmenu_debug_class_init (IndicatorAppmenuDebugClass *klass)
+{
+	dbus_g_object_type_install_info(INDICATOR_APPMENU_DEBUG_TYPE, &dbus_glib__application_menu_debug_server_object_info);
+
+	return;
+}
+
+/* Per instance Init */
+static void
+indicator_appmenu_debug_init (IndicatorAppmenuDebug *self)
+{
+	self->appmenu = NULL;
+
+	/* Register this object on DBus */
+	DBusGConnection * connection = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
+	dbus_g_connection_register_g_object(connection,
+	                                    DEBUG_OBJECT,
+	                                    G_OBJECT(self));
+
 	return;
 }
 
