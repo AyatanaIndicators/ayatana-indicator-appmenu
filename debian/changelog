@@ -3,8 +3,11 @@ indicator-appmenu (0.0.3-0ubuntu1~ppa2) UNRELEASED; urgency=low
   * Upstream Merge
     * Building a debug interface with a couple little scripts.
   * Autogen rerun
+  * debian/control, debian/indicator-appmenu.install and
+    debian/indicator-appmenu-tools.install: Breaking out the tools
+    into their own package as most users won't need them.
 
- -- Ted Gould <ted@ubuntu.com>  Wed, 02 Jun 2010 17:19:59 -0500
+ -- Ted Gould <ted@ubuntu.com>  Wed, 02 Jun 2010 17:29:46 -0500
 
 indicator-appmenu (0.0.3-0ubuntu1~ppa1) lucid; urgency=low
 
