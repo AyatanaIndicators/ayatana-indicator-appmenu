@@ -432,7 +432,11 @@ _application_menu_debug_server_current_menu (IndicatorAppmenuDebug * iappd, guin
 		return TRUE;
 	}
 
-	return FALSE;
+	*windowid = window_menus_get_xid(iapp->default_app);
+	g_value_set_boxed(objectpath, window_menus_get_path(iapp->default_app));
+	*address = window_menus_get_address(iapp->default_app);
+
+	return TRUE;
 }
 
 /* Get all the menus we have */

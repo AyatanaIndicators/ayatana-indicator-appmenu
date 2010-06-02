@@ -334,3 +334,24 @@ menu_entry_removed (DbusmenuMenuitem * root, DbusmenuMenuitem * oldentry, gpoint
 
 	return;
 }
+
+/* Get the XID of this window */
+guint
+window_menus_get_xid (WindowMenus * wm)
+{
+	return 1;
+}
+
+/* Get the path for this object */
+gchar *
+window_menus_get_path (WindowMenus * wm)
+{
+	return g_strdup("/");
+}
+
+/* Get the address of this object */
+gchar *
+window_menus_get_address (WindowMenus * wm)
+{
+	return g_strdup(":1.0");
+}
