@@ -197,7 +197,7 @@ indicator_appmenu_init (IndicatorAppmenu *self)
 {
 	self->default_app = NULL;
 	self->debug = NULL;
-	self->apps = g_hash_table_new_full(NULL, NULL, NULL, g_object_unref);
+	self->apps = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_object_unref);
 	self->matcher = NULL;
 
 	/* Get the default BAMF matcher */
