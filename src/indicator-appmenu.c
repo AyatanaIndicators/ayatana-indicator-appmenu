@@ -409,7 +409,7 @@ _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, gui
 {
 	g_debug("Registering window ID %d with path %s from %s", windowid, objectpath, dbus_g_method_get_sender(method));
 
-	if (TRUE || g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid)) == NULL) {
+	if (g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid)) == NULL) {
 		WindowMenus * wm = window_menus_new(windowid, dbus_g_method_get_sender(method), objectpath);
 		g_hash_table_insert(iapp->apps, GUINT_TO_POINTER(windowid), wm);
 
