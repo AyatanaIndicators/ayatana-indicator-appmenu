@@ -407,6 +407,8 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 static gboolean
 _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, guint windowid, const gchar * objectpath, DBusGMethodInvocation * method)
 {
+	g_debug("Registering window ID %d with path %s from %s", windowid, objectpath, dbus_g_method_get_sender(method));
+
 	if (TRUE || g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid)) == NULL) {
 		WindowMenus * wm = window_menus_new(windowid, dbus_g_method_get_sender(method), objectpath);
 		g_hash_table_insert(iapp->apps, GUINT_TO_POINTER(windowid), wm);
@@ -421,7 +423,7 @@ _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, gui
 			switch_default_app(iapp, wm);
 		}
 	} else {
-		g_warning("Already have a menu for window ID %X with path %s from %s", windowid, objectpath, dbus_g_method_get_sender(method));
+		g_warning("Already have a menu for window ID %d with path %s from %s", windowid, objectpath, dbus_g_method_get_sender(method));
 	}
 
 	dbus_g_method_return(method);
