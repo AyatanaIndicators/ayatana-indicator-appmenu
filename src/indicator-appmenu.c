@@ -340,6 +340,12 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef)
 	/* Remove old */
 	if (iapp->default_app != NULL) {
 		for (entries = window_menus_get_entries(iapp->default_app); entries != NULL; entries = g_list_next(entries)) {
+			IndicatorObjectEntry * entry = (IndicatorObjectEntry *)entries->data;
+
+			if (entry->menu != NULL) {
+				gtk_menu_detach(entry->menu);
+			}
+
 			g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_REMOVED_ID, 0, entries->data, TRUE);
 		}
 	}
