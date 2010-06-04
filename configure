@@ -11709,6 +11709,7 @@ GTK_REQUIRED_VERSION=2.12
 INDICATOR_REQUIRED_VERSION=0.3.5
 DBUSMENUGTK_REQUIRED_VERSION=0.3.0
 DBUS_GLIB_REQUIRED_VERSION=0.82
+BAMF_REQUIRED_VERSION=0.2
 
 
 pkg_failed=no
@@ -11723,18 +11724,21 @@ if test -n "$PKG_CONFIG"; then
     { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gtk+-2.0 >= \$GTK_REQUIRED_VERSION
                              indicator >= \$INDICATOR_REQUIRED_VERSION
                              dbus-glib-1 >= \$DBUS_GLIB_REQUIRED_VERSION
-                             dbusmenu-gtk >= \$DBUSMENUGTK_REQUIRED_VERSION\""; } >&5
+                             dbusmenu-gtk >= \$DBUSMENUGTK_REQUIRED_VERSION
+                             libbamf >= \$BAMF_REQUIRED_VERSION\""; } >&5
   ($PKG_CONFIG --exists --print-errors "gtk+-2.0 >= $GTK_REQUIRED_VERSION
                              indicator >= $INDICATOR_REQUIRED_VERSION
                              dbus-glib-1 >= $DBUS_GLIB_REQUIRED_VERSION
-                             dbusmenu-gtk >= $DBUSMENUGTK_REQUIRED_VERSION") 2>&5
+                             dbusmenu-gtk >= $DBUSMENUGTK_REQUIRED_VERSION
+                             libbamf >= $BAMF_REQUIRED_VERSION") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_INDICATOR_CFLAGS=`$PKG_CONFIG --cflags "gtk+-2.0 >= $GTK_REQUIRED_VERSION
                              indicator >= $INDICATOR_REQUIRED_VERSION
                              dbus-glib-1 >= $DBUS_GLIB_REQUIRED_VERSION
-                             dbusmenu-gtk >= $DBUSMENUGTK_REQUIRED_VERSION" 2>/dev/null`
+                             dbusmenu-gtk >= $DBUSMENUGTK_REQUIRED_VERSION
+                             libbamf >= $BAMF_REQUIRED_VERSION" 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -11750,18 +11754,21 @@ if test -n "$PKG_CONFIG"; then
     { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"gtk+-2.0 >= \$GTK_REQUIRED_VERSION
                              indicator >= \$INDICATOR_REQUIRED_VERSION
                              dbus-glib-1 >= \$DBUS_GLIB_REQUIRED_VERSION
-                             dbusmenu-gtk >= \$DBUSMENUGTK_REQUIRED_VERSION\""; } >&5
+                             dbusmenu-gtk >= \$DBUSMENUGTK_REQUIRED_VERSION
+                             libbamf >= \$BAMF_REQUIRED_VERSION\""; } >&5
   ($PKG_CONFIG --exists --print-errors "gtk+-2.0 >= $GTK_REQUIRED_VERSION
                              indicator >= $INDICATOR_REQUIRED_VERSION
                              dbus-glib-1 >= $DBUS_GLIB_REQUIRED_VERSION
-                             dbusmenu-gtk >= $DBUSMENUGTK_REQUIRED_VERSION") 2>&5
+                             dbusmenu-gtk >= $DBUSMENUGTK_REQUIRED_VERSION
+                             libbamf >= $BAMF_REQUIRED_VERSION") 2>&5
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
   pkg_cv_INDICATOR_LIBS=`$PKG_CONFIG --libs "gtk+-2.0 >= $GTK_REQUIRED_VERSION
                              indicator >= $INDICATOR_REQUIRED_VERSION
                              dbus-glib-1 >= $DBUS_GLIB_REQUIRED_VERSION
-                             dbusmenu-gtk >= $DBUSMENUGTK_REQUIRED_VERSION" 2>/dev/null`
+                             dbusmenu-gtk >= $DBUSMENUGTK_REQUIRED_VERSION
+                             libbamf >= $BAMF_REQUIRED_VERSION" 2>/dev/null`
 else
   pkg_failed=yes
 fi
@@ -11783,12 +11790,14 @@ fi
 	        INDICATOR_PKG_ERRORS=`$PKG_CONFIG --short-errors --errors-to-stdout --print-errors "gtk+-2.0 >= $GTK_REQUIRED_VERSION
                              indicator >= $INDICATOR_REQUIRED_VERSION
                              dbus-glib-1 >= $DBUS_GLIB_REQUIRED_VERSION
-                             dbusmenu-gtk >= $DBUSMENUGTK_REQUIRED_VERSION"`
+                             dbusmenu-gtk >= $DBUSMENUGTK_REQUIRED_VERSION
+                             libbamf >= $BAMF_REQUIRED_VERSION"`
         else
 	        INDICATOR_PKG_ERRORS=`$PKG_CONFIG --errors-to-stdout --print-errors "gtk+-2.0 >= $GTK_REQUIRED_VERSION
                              indicator >= $INDICATOR_REQUIRED_VERSION
                              dbus-glib-1 >= $DBUS_GLIB_REQUIRED_VERSION
-                             dbusmenu-gtk >= $DBUSMENUGTK_REQUIRED_VERSION"`
+                             dbusmenu-gtk >= $DBUSMENUGTK_REQUIRED_VERSION
+                             libbamf >= $BAMF_REQUIRED_VERSION"`
         fi
 	# Put the nasty error message in config.log where it belongs
 	echo "$INDICATOR_PKG_ERRORS" >&5
@@ -11796,7 +11805,8 @@ fi
 	as_fn_error "Package requirements (gtk+-2.0 >= $GTK_REQUIRED_VERSION
                              indicator >= $INDICATOR_REQUIRED_VERSION
                              dbus-glib-1 >= $DBUS_GLIB_REQUIRED_VERSION
-                             dbusmenu-gtk >= $DBUSMENUGTK_REQUIRED_VERSION) were not met:
+                             dbusmenu-gtk >= $DBUSMENUGTK_REQUIRED_VERSION
+                             libbamf >= $BAMF_REQUIRED_VERSION) were not met:
 
 $INDICATOR_PKG_ERRORS
 

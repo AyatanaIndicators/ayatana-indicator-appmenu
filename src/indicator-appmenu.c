@@ -30,6 +30,8 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <libindicator/indicator.h>
 #include <libindicator/indicator-object.h>
 
+#include <libbamf/bamf-matcher.h>
+
 #include "indicator-appmenu-marshal.h"
 #include "window-menus.h"
 #include "dbus-shared.h"
@@ -66,6 +68,8 @@ struct _IndicatorAppmenu {
 
 	WindowMenus * default_app;
 	GHashTable * apps;
+
+	BamfMatcher * matcher;
 
 	gulong sig_entry_added;
 	gulong sig_entry_removed;
@@ -123,6 +127,10 @@ static void window_entry_added                                       (WindowMenu
                                                                       gpointer user_data);
 static void window_entry_removed                                     (WindowMenus * mw,
                                                                       IndicatorObjectEntry * entry,
+                                                                      gpointer user_data);
+static void active_window_changed                                    (BamfMatcher * matcher,
+                                                                      BamfView * oldview,
+                                                                      BamfView * newview,
                                                                       gpointer user_data);
 static gboolean _application_menu_debug_server_current_menu          (IndicatorAppmenuDebug * iappd,
                                                                       guint * windowid,
@@ -189,7 +197,18 @@ indicator_appmenu_init (IndicatorAppmenu *self)
 {
 	self->default_app = NULL;
 	self->debug = NULL;
-	self->apps = g_hash_table_new_full(NULL, NULL, NULL, g_object_unref);
+	self->apps = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_object_unref);
+	self->matcher = NULL;
+
+	/* Get the default BAMF matcher */
+	self->matcher = bamf_matcher_get_default();
+	if (self->matcher == NULL) {
+		/* we don't want to exit out of Unity -- but this
+		   should really never happen */
+		g_warning("Unable to get BAMF matcher, can not watch applications switch!");
+	} else {
+		g_signal_connect(G_OBJECT(self->matcher), "active-window-changed", G_CALLBACK(active_window_changed), self);
+	}
 
 	/* Register this object on DBus */
 	DBusGConnection * connection = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
@@ -221,6 +240,13 @@ static void
 indicator_appmenu_dispose (GObject *object)
 {
 	IndicatorAppmenu * iapp = INDICATOR_APPMENU(object);
+
+	/* bring down the matcher before resetting to no menu so we don't
+	   get match signals */
+	if (iapp->matcher != NULL) {
+		g_object_unref(iapp->matcher);
+		iapp->matcher = NULL;
+	}
 
 	/* No specific ref */
 	switch_default_app (iapp, NULL);
@@ -314,6 +340,16 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef)
 	/* Remove old */
 	if (iapp->default_app != NULL) {
 		for (entries = window_menus_get_entries(iapp->default_app); entries != NULL; entries = g_list_next(entries)) {
+			IndicatorObjectEntry * entry = (IndicatorObjectEntry *)entries->data;
+
+			if (entry->label != NULL) {
+				gtk_widget_hide(GTK_WIDGET(entry->label));
+			}
+
+			if (entry->menu != NULL) {
+				gtk_menu_detach(entry->menu);
+			}
+
 			g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_REMOVED_ID, 0, entries->data, TRUE);
 		}
 	}
@@ -346,9 +382,39 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef)
 	/* Add new */
 	if (iapp->default_app != NULL) {
 		for (entries = window_menus_get_entries(iapp->default_app); entries != NULL; entries = g_list_next(entries)) {
+			IndicatorObjectEntry * entry = (IndicatorObjectEntry *)entries->data;
+
+			if (entry->label != NULL) {
+				gtk_widget_show(GTK_WIDGET(entry->label));
+			}
+
 			g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_ADDED_ID, 0, entries->data, TRUE);
 		}
 	}
+
+	return;
+}
+
+/* Recieve the signal that the window being shown
+   has now changed. */
+static void
+active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * newview, gpointer user_data)
+{
+	if (!BAMF_IS_WINDOW(newview)) {
+		/* We're only dealing with windows currently */
+		return;
+	}
+	BamfWindow * window = BAMF_WINDOW(newview);
+
+	IndicatorAppmenu * appmenu = INDICATOR_APPMENU(user_data);
+
+	guint32 xid = bamf_window_get_xid(window);
+	g_debug("window changed to %d", xid);
+	
+	WindowMenus * menus = g_hash_table_lookup(appmenu->apps, GINT_TO_POINTER(xid));
+
+	/* Note: This function can handle menus being NULL */
+	switch_default_app(appmenu, menus);
 
 	return;
 }
@@ -357,16 +423,26 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef)
 static gboolean
 _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, guint windowid, const gchar * objectpath, DBusGMethodInvocation * method)
 {
-	if (TRUE || g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid)) == NULL) {
-		WindowMenus * wm = window_menus_new(windowid, dbus_g_method_get_sender(method), objectpath);
-		//g_hash_table_insert(iapp->apps, GUINT_TO_POINTER(windowid), wm);
+	g_debug("Registering window ID %d with path %s from %s", windowid, objectpath, dbus_g_method_get_sender(method));
 
-		/* TODO: Check to see if it's the visible window */
-		switch_default_app(iapp, wm);
+	if (g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid)) == NULL) {
+		WindowMenus * wm = window_menus_new(windowid, dbus_g_method_get_sender(method), objectpath);
+		g_hash_table_insert(iapp->apps, GUINT_TO_POINTER(windowid), wm);
 
 		g_signal_emit(G_OBJECT(iapp), signals[WINDOW_REGISTERED], 0, windowid, objectpath, TRUE);
+
+		/* Node: Does not cause ref */
+		BamfWindow * win = bamf_matcher_get_active_window(iapp->matcher);
+		guint32 xid = 0;
+		if (BAMF_IS_WINDOW(win)) {
+			xid = bamf_window_get_xid(win);
+		}
+
+		if (xid != 0 && xid == windowid) {
+			switch_default_app(iapp, wm);
+		}
 	} else {
-		g_warning("Already have a menu for window ID %X with path %s from %s", windowid, objectpath, dbus_g_method_get_sender(method));
+		g_warning("Already have a menu for window ID %d with path %s from %s", windowid, objectpath, dbus_g_method_get_sender(method));
 	}
 
 	dbus_g_method_return(method);
