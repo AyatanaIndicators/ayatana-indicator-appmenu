@@ -1,11 +1,11 @@
 
-AC_INIT(indicator-appmenu, 0.0.3, ted@canonical.com)
+AC_INIT(indicator-appmenu, 0.0.4, ted@canonical.com)
 AC_COPYRIGHT([Copyright 2010 Canonical])
 
 AC_PREREQ(2.53)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(indicator-appmenu, 0.0.3)
+AM_INIT_AUTOMAKE(indicator-appmenu, 0.0.4)
 
 AM_MAINTAINER_MODE
 
@@ -41,11 +41,13 @@ GTK_REQUIRED_VERSION=2.12
 INDICATOR_REQUIRED_VERSION=0.3.5
 DBUSMENUGTK_REQUIRED_VERSION=0.3.0
 DBUS_GLIB_REQUIRED_VERSION=0.82
+BAMF_REQUIRED_VERSION=0.2
 
 PKG_CHECK_MODULES(INDICATOR, gtk+-2.0 >= $GTK_REQUIRED_VERSION
                              indicator >= $INDICATOR_REQUIRED_VERSION
                              dbus-glib-1 >= $DBUS_GLIB_REQUIRED_VERSION
-                             dbusmenu-gtk >= $DBUSMENUGTK_REQUIRED_VERSION)
+                             dbusmenu-gtk >= $DBUSMENUGTK_REQUIRED_VERSION
+                             libbamf >= $BAMF_REQUIRED_VERSION)
 
 AC_SUBST(INDICATOR_CFLAGS)
 AC_SUBST(INDICATOR_LIBS)
@@ -90,6 +92,7 @@ AC_OUTPUT([
 Makefile
 src/Makefile
 scripts/Makefile
+tools/Makefile
 ])
 
 ###########################
