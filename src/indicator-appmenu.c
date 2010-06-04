@@ -342,6 +342,10 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef)
 		for (entries = window_menus_get_entries(iapp->default_app); entries != NULL; entries = g_list_next(entries)) {
 			IndicatorObjectEntry * entry = (IndicatorObjectEntry *)entries->data;
 
+			if (entry->label != NULL) {
+				gtk_widget_hide(GTK_WIDGET(entry->label));
+			}
+
 			if (entry->menu != NULL) {
 				gtk_menu_detach(entry->menu);
 			}
@@ -378,6 +382,12 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef)
 	/* Add new */
 	if (iapp->default_app != NULL) {
 		for (entries = window_menus_get_entries(iapp->default_app); entries != NULL; entries = g_list_next(entries)) {
+			IndicatorObjectEntry * entry = (IndicatorObjectEntry *)entries->data;
+
+			if (entry->label != NULL) {
+				gtk_widget_show(GTK_WIDGET(entry->label));
+			}
+
 			g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_ADDED_ID, 0, entries->data, TRUE);
 		}
 	}
