@@ -433,9 +433,12 @@ _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, gui
 
 		/* Node: Does not cause ref */
 		BamfWindow * win = bamf_matcher_get_active_window(iapp->matcher);
-		guint32 xid = bamf_window_get_xid(win);
+		guint32 xid = 0;
+		if (BAMF_IS_WINDOW(win)) {
+			xid = bamf_window_get_xid(win);
+		}
 
-		if (xid == windowid) {
+		if (xid != 0 && xid == windowid) {
 			switch_default_app(iapp, wm);
 		}
 	} else {
