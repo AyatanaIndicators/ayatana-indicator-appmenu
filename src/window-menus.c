@@ -128,6 +128,18 @@ window_menus_finalize (GObject *object)
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(object);
 
 	if (priv->entries != NULL) {
+		int i;
+		for (i = 0; i < priv->entries->len; i++) {
+			IndicatorObjectEntry * entry;
+			entry = g_array_index(priv->entries, IndicatorObjectEntry *, i);
+			
+			if (entry->label != NULL) {
+				g_object_unref(entry->label);
+			}
+			if (entry->menu != NULL) {
+				g_object_unref(entry->menu);
+			}
+		}
 		g_array_free(priv->entries, TRUE);
 		priv->entries = NULL;
 	}
@@ -300,10 +312,18 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 	IndicatorObjectEntry * entry = g_new0(IndicatorObjectEntry, 1);
 
 	entry->label = GTK_LABEL(gtk_label_new_with_mnemonic(dbusmenu_menuitem_property_get(newentry, DBUSMENU_MENUITEM_PROP_LABEL)));
+
+	if (entry->label != NULL) {
+		g_object_ref(entry->label);
+	}
+
 	entry->menu = dbusmenu_gtkclient_menuitem_get_submenu(priv->client, newentry);
 
 	if (entry->menu == NULL) {
 		g_debug("Submenu for %s is NULL", dbusmenu_menuitem_property_get(newentry, DBUSMENU_MENUITEM_PROP_LABEL));
+	} else {
+		g_object_ref(entry->menu);
+		gtk_menu_detach(entry->menu);
 	}
 
 	gtk_widget_show(GTK_WIDGET(entry->label));
@@ -333,4 +353,38 @@ menu_entry_removed (DbusmenuMenuitem * root, DbusmenuMenuitem * oldentry, gpoint
 	g_free(entry);
 
 	return;
+}
+
+/* Get the XID of this window */
+guint
+window_menus_get_xid (WindowMenus * wm)
+{
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
+	return priv->windowid;
+}
+
+/* Get the path for this object */
+gchar *
+window_menus_get_path (WindowMenus * wm)
+{
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
+	GValue obj = {0};
+	g_value_init(&obj, G_TYPE_STRING);
+	g_object_get_property(G_OBJECT(priv->client), DBUSMENU_CLIENT_PROP_DBUS_OBJECT, &obj);
+	gchar * retval = g_value_dup_string(&obj);
+	g_value_unset(&obj);
+	return retval;
+}
+
+/* Get the address of this object */
+gchar *
+window_menus_get_address (WindowMenus * wm)
+{
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
+	GValue obj = {0};
+	g_value_init(&obj, G_TYPE_STRING);
+	g_object_get_property(G_OBJECT(priv->client), DBUSMENU_CLIENT_PROP_DBUS_NAME, &obj);
+	gchar * retval = g_value_dup_string(&obj);
+	g_value_unset(&obj);
+	return retval;
 }

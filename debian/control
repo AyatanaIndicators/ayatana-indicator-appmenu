@@ -11,7 +11,8 @@ Build-Depends: debhelper (>= 5.0),
                intltool,
                libindicator-dev (>= 0.3.5),
                libdbusmenu-gtk-dev (>= 0.3.0),
-               libdbusmenu-glib-dev (>= 0.3.0)
+               libdbusmenu-glib-dev (>= 0.3.0),
+               libbamf-dev (>= 0.2)
 Standards-Version: 3.8.4
 Homepage: http://launchpad.net/indicator-appmenu
 Vcs-Bzr: http://bazaar.launchpad.net/~ubuntu-desktop/indicator-appmenu/ubuntu
@@ -25,4 +26,14 @@ Breaks: indicator-applet (<< 0.3.0)
 Description: Indicator for application menus.
  .
  This package provides support for application menus.
+
+Package: indicator-appmenu-tools
+Architecture: any
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         indicator-appmenu (= ${binary:Version}),
+         libdbusmenu-tools
+Description: Tools for debuging application menus.
+ .
+ This package provides support for supporing application menus.
 
