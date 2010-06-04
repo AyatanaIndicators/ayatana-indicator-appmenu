@@ -323,6 +323,7 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 		g_debug("Submenu for %s is NULL", dbusmenu_menuitem_property_get(newentry, DBUSMENU_MENUITEM_PROP_LABEL));
 	} else {
 		g_object_ref(entry->menu);
+		gtk_menu_detach(entry->menu);
 	}
 
 	gtk_widget_show(GTK_WIDGET(entry->label));
