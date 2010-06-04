@@ -1,3 +1,16 @@
+indicator-appmenu (0.0.3-0ubuntu1) UNRELEASED; urgency=low
+
+  * New upstream release.
+    * Dynamic menu items
+  * debian/control: Increasing dbusmenu reqs to 0.3.0
+
+  [Ken VanDine]
+  * debian/watch added
+  * debian/control
+    - Added Homepage and Vcs 
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 27 May 2010 12:15:24 -0500
+
 indicator-appmenu (0.0.3-0ubuntu1~ppa2) lucid; urgency=low
 
   * Upstream Merge
