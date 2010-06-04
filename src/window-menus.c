@@ -300,10 +300,17 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 	IndicatorObjectEntry * entry = g_new0(IndicatorObjectEntry, 1);
 
 	entry->label = GTK_LABEL(gtk_label_new_with_mnemonic(dbusmenu_menuitem_property_get(newentry, DBUSMENU_MENUITEM_PROP_LABEL)));
+
+	if (entry->label != NULL) {
+		g_object_ref(entry->label);
+	}
+
 	entry->menu = dbusmenu_gtkclient_menuitem_get_submenu(priv->client, newentry);
 
 	if (entry->menu == NULL) {
 		g_debug("Submenu for %s is NULL", dbusmenu_menuitem_property_get(newentry, DBUSMENU_MENUITEM_PROP_LABEL));
+	} else {
+		g_object_ref(entry->menu);
 	}
 
 	gtk_widget_show(GTK_WIDGET(entry->label));
