@@ -1,3 +1,20 @@
+indicator-appmenu (0.0.3-0ubuntu1~ppa3~bamf2) lucid; urgency=low
+
+  * Merge with main packaging
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 03 Jun 2010 23:31:45 -0500
+
+indicator-appmenu (0.0.3-0ubuntu1~ppa2) lucid; urgency=low
+
+  * Upstream Merge
+    * Building a debug interface with a couple little scripts.
+  * Autogen rerun
+  * debian/control, debian/indicator-appmenu.install and
+    debian/indicator-appmenu-tools.install: Breaking out the tools
+    into their own package as most users won't need them.
+
+ -- Ted Gould <ted@ubuntu.com>  Wed, 02 Jun 2010 17:34:36 -0500
+
 indicator-appmenu (0.0.3-0ubuntu1~ppa2~bamf1) lucid; urgency=low
 
   * Upstream Merge

@@ -24,3 +24,13 @@ Description: Indicator for application menus.
  .
  This package provides support for application menus.
 
+Package: indicator-appmenu-tools
+Architecture: any
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
+         indicator-appmenu (= ${binary:Version}),
+         libdbusmenu-tools
+Description: Tools for debuging application menus.
+ .
+ This package provides support for supporing application menus.
+

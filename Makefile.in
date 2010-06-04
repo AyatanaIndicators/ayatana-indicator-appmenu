@@ -238,7 +238,8 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 SUBDIRS = \
 	src \
-	scripts
+	scripts \
+	tools
 
 DISTCHECK_CONFIGURE_FLAGS = --enable-localinstall
 all: config.h
