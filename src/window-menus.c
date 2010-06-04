@@ -128,6 +128,18 @@ window_menus_finalize (GObject *object)
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(object);
 
 	if (priv->entries != NULL) {
+		int i;
+		for (i = 0; i < priv->entries->len; i++) {
+			IndicatorObjectEntry * entry;
+			entry = g_array_index(priv->entries, IndicatorObjectEntry *, i);
+			
+			if (entry->label != NULL) {
+				g_object_unref(entry->label);
+			}
+			if (entry->menu != NULL) {
+				g_object_unref(entry->menu);
+			}
+		}
 		g_array_free(priv->entries, TRUE);
 		priv->entries = NULL;
 	}
