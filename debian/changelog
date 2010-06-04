@@ -1,4 +1,4 @@
-indicator-appmenu (0.0.4-0ubuntu1~ppa1) UNRELEASED; urgency=low
+indicator-appmenu (0.0.4-0ubuntu1~ppa1) lucid; urgency=low
 
   * New upstream release.
     * Application switching using BAMF
@@ -8,7 +8,7 @@ indicator-appmenu (0.0.4-0ubuntu1~ppa1) UNRELEASED; urgency=low
     debian/indicator-appmenu-tools.install: Breaking out the tools
     into their own package as most users won't need them.
 
- -- Ted Gould <ted@ubuntu.com>  Fri, 04 Jun 2010 09:38:47 -0500
+ -- Ted Gould <ted@ubuntu.com>  Fri, 04 Jun 2010 09:42:16 -0500
 
 indicator-appmenu (0.0.3-0ubuntu1) UNRELEASED; urgency=low
 
