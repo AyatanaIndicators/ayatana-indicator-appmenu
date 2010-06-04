@@ -197,7 +197,7 @@ indicator_appmenu_init (IndicatorAppmenu *self)
 {
 	self->default_app = NULL;
 	self->debug = NULL;
-	self->apps = g_hash_table_new_full(NULL, NULL, NULL, g_object_unref);
+	self->apps = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_object_unref);
 	self->matcher = NULL;
 
 	/* Get the default BAMF matcher */
@@ -340,6 +340,16 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef)
 	/* Remove old */
 	if (iapp->default_app != NULL) {
 		for (entries = window_menus_get_entries(iapp->default_app); entries != NULL; entries = g_list_next(entries)) {
+			IndicatorObjectEntry * entry = (IndicatorObjectEntry *)entries->data;
+
+			if (entry->label != NULL) {
+				gtk_widget_hide(GTK_WIDGET(entry->label));
+			}
+
+			if (entry->menu != NULL) {
+				gtk_menu_detach(entry->menu);
+			}
+
 			g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_REMOVED_ID, 0, entries->data, TRUE);
 		}
 	}
@@ -372,6 +382,12 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef)
 	/* Add new */
 	if (iapp->default_app != NULL) {
 		for (entries = window_menus_get_entries(iapp->default_app); entries != NULL; entries = g_list_next(entries)) {
+			IndicatorObjectEntry * entry = (IndicatorObjectEntry *)entries->data;
+
+			if (entry->label != NULL) {
+				gtk_widget_show(GTK_WIDGET(entry->label));
+			}
+
 			g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_ADDED_ID, 0, entries->data, TRUE);
 		}
 	}
@@ -407,7 +423,9 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 static gboolean
 _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, guint windowid, const gchar * objectpath, DBusGMethodInvocation * method)
 {
-	if (TRUE || g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid)) == NULL) {
+	g_debug("Registering window ID %d with path %s from %s", windowid, objectpath, dbus_g_method_get_sender(method));
+
+	if (g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid)) == NULL) {
 		WindowMenus * wm = window_menus_new(windowid, dbus_g_method_get_sender(method), objectpath);
 		g_hash_table_insert(iapp->apps, GUINT_TO_POINTER(windowid), wm);
 
@@ -421,7 +439,7 @@ _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, gui
 			switch_default_app(iapp, wm);
 		}
 	} else {
-		g_warning("Already have a menu for window ID %X with path %s from %s", windowid, objectpath, dbus_g_method_get_sender(method));
+		g_warning("Already have a menu for window ID %d with path %s from %s", windowid, objectpath, dbus_g_method_get_sender(method));
 	}
 
 	dbus_g_method_return(method);
