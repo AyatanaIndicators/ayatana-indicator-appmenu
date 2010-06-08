@@ -3,7 +3,7 @@ indicator-appmenu (0.0.4-0ubuntu1~ppa2~hiding1) lucid; urgency=low
   * Upstream Merge
     * Supporting for visibility and enable properties.
 
- -- Ted Gould <ted@ubuntu.com>  Tue, 08 Jun 2010 15:55:31 -0500
+ -- Ted Gould <ted@ubuntu.com>  Tue, 08 Jun 2010 15:56:52 -0500
 
 indicator-appmenu (0.0.4-0ubuntu1~ppa1) lucid; urgency=low
 
