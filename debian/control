@@ -35,5 +35,5 @@ Depends: ${shlibs:Depends},
          libdbusmenu-tools
 Description: Tools for debuging application menus.
  .
- This package provides support for supporing application menus.
+ This package provides tools for supporting application menus.
 
