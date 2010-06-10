@@ -1,11 +1,10 @@
-indicator-appmenu (0.0.4-0ubuntu1~ppa2) lucid; urgency=low
+indicator-appmenu (0.0.4-0ubuntu2) UNRELEASED; urgency=low
 
-  * Upstream Merge
-    * Supporting for visibility and enable properties.
+  * Fixed typo in description 
 
- -- Ted Gould <ted@ubuntu.com>  Thu, 10 Jun 2010 08:41:19 -0500
+ -- Ken VanDine <ken.vandine@canonical.com>  Thu, 10 Jun 2010 09:21:12 -0400
 
-indicator-appmenu (0.0.4-0ubuntu1~ppa1) lucid; urgency=low
+indicator-appmenu (0.0.4-0ubuntu1) UNRELEASED; urgency=low
 
   * New upstream release.
     * Application switching using BAMF
@@ -16,6 +15,13 @@ indicator-appmenu (0.0.4-0ubuntu1~ppa1) lucid; urgency=low
     into their own package as most users won't need them.
 
  -- Ted Gould <ted@ubuntu.com>  Fri, 04 Jun 2010 09:42:16 -0500
+
+indicator-appmenu (0.0.4-0ubuntu1~ppa2) lucid; urgency=low
+
+  * Upstream Merge
+    * Supporting for visibility and enable properties.
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 10 Jun 2010 08:41:19 -0500
 
 indicator-appmenu (0.0.3-0ubuntu1) UNRELEASED; urgency=low
 
