@@ -299,6 +299,28 @@ menu_entry_realized (DbusmenuMenuitem * newentry, gpointer user_data)
 	return;
 }
 
+/* Respond to properties changing on the menu item so that we can
+   properly hide and show them. */
+static void
+menu_prop_changed (DbusmenuMenuitem * item, const gchar * property, const GValue * value, gpointer user_data)
+{
+	IndicatorObjectEntry * entry = (IndicatorObjectEntry *)user_data;
+
+	if (!g_strcmp0(property, DBUSMENU_MENUITEM_PROP_VISIBLE)) {
+		if (g_value_get_boolean(value)) {
+			gtk_widget_show(GTK_WIDGET(entry->label));
+		} else {
+			gtk_widget_hide(GTK_WIDGET(entry->label));
+		}
+	} else if (!g_strcmp0(property, DBUSMENU_MENUITEM_PROP_ENABLED)) {
+		gtk_widget_set_sensitive(GTK_WIDGET(entry->label), g_value_get_boolean(value));
+	} else if (!g_strcmp0(property, DBUSMENU_MENUITEM_PROP_LABEL)) {
+		gtk_label_set_text(entry->label, g_value_get_string(value));
+	}
+
+	return;
+}
+
 /* We can't go until we have some kids.  Really, it's important. */
 static void
 menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
@@ -326,7 +348,12 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 		gtk_menu_detach(entry->menu);
 	}
 
-	gtk_widget_show(GTK_WIDGET(entry->label));
+	g_signal_connect(G_OBJECT(newentry), DBUSMENU_MENUITEM_SIGNAL_PROPERTY_CHANGED, G_CALLBACK(menu_prop_changed), entry);
+
+	if (dbusmenu_menuitem_property_get_bool(newentry, DBUSMENU_MENUITEM_PROP_VISIBLE)) {
+		gtk_widget_show(GTK_WIDGET(entry->label));
+	}
+	gtk_widget_set_sensitive(GTK_WIDGET(entry->label), dbusmenu_menuitem_property_get_bool(newentry, DBUSMENU_MENUITEM_PROP_ENABLED));
 
 	g_array_append_val(priv->entries, entry);
 
