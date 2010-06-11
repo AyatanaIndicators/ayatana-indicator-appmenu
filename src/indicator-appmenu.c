@@ -424,8 +424,19 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 static void
 menus_destroyed (GObject * menus, gpointer user_data)
 {
+	WindowMenus * wm = WINDOW_MENUS(menus);
+	IndicatorAppmenu * iapp = INDICATOR_APPMENU(user_data);
 
+	/* If we're it, let's remove ourselves and BAMF will probably
+	   give us a new entry in a bit. */
+	if (iapp->default_app == wm) {
+		switch_default_app(iapp, NULL);
+	}
 
+	guint xid = window_menus_get_xid(wm);
+	g_hash_table_remove(iapp->apps, GUINT_TO_POINTER(xid));
+
+	return;
 }
 
 /* A new window wishes to register it's windows with us */
