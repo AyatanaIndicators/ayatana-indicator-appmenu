@@ -24,6 +24,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #endif
 
 #include <libdbusmenu-gtk/menu.h>
+#include <dbus/dbus-glib.h>
 
 #include "window-menus.h"
 
@@ -33,6 +34,7 @@ typedef struct _WindowMenusPrivate WindowMenusPrivate;
 struct _WindowMenusPrivate {
 	guint windowid;
 	DbusmenuGtkClient * client;
+	DBusGProxy * props;
 	GArray * entries;
 };
 
@@ -100,6 +102,7 @@ window_menus_init (WindowMenus *self)
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(self);
 
 	priv->client = NULL;
+	priv->props = NULL;
 
 	priv->entries = g_array_new(FALSE, FALSE, sizeof(IndicatorObjectEntry *));
 
@@ -115,6 +118,11 @@ window_menus_dispose (GObject *object)
 	if (priv->client != NULL) {
 		g_object_unref(G_OBJECT(priv->client));
 		priv->client = NULL;
+	}
+	
+	if (priv->props != NULL) {
+		g_object_unref(G_OBJECT(priv->props));
+		priv->props = NULL;
 	}
 
 	G_OBJECT_CLASS (window_menus_parent_class)->dispose (object);
@@ -155,8 +163,22 @@ window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * d
 {
 	g_debug("Creating new windows menu: %X, %s, %s", windowid, dbus_addr, dbus_object);
 
+	DBusGConnection * session_bus = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
+	g_return_val_if_fail(session_bus != NULL, NULL);
+
 	WindowMenus * newmenu = WINDOW_MENUS(g_object_new(WINDOW_MENUS_TYPE, NULL));
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(newmenu);
+
+	priv->props = dbus_g_proxy_new_for_name_owner(session_bus,
+	                                              dbus_addr,
+	                                              dbus_object,
+	                                              DBUS_INTERFACE_PROPERTIES,
+	                                              NULL);
+	if (priv->props == NULL) {
+		g_warning("Unable to get property proxy on '%s' object '%s'", dbus_addr, dbus_object);
+		g_object_unref(newmenu);
+		return NULL;
+	}
 
 	priv->client = dbusmenu_gtkclient_new((gchar *)dbus_addr, (gchar *)dbus_object);
 
