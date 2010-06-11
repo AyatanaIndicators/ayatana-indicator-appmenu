@@ -419,6 +419,15 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 	return;
 }
 
+/* Respond to the menus being destroyed.  We need to deregister
+   and make sure we weren't being shown.  */
+static void
+menus_destroyed (GObject * menus, gpointer user_data)
+{
+
+
+}
+
 /* A new window wishes to register it's windows with us */
 static gboolean
 _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, guint windowid, const gchar * objectpath, DBusGMethodInvocation * method)
@@ -427,6 +436,10 @@ _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, gui
 
 	if (g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid)) == NULL) {
 		WindowMenus * wm = window_menus_new(windowid, dbus_g_method_get_sender(method), objectpath);
+		g_return_val_if_fail(wm != NULL, FALSE);
+
+		g_signal_connect(G_OBJECT(wm), "destroy", G_CALLBACK(menus_destroyed), iapp);
+
 		g_hash_table_insert(iapp->apps, GUINT_TO_POINTER(windowid), wm);
 
 		g_signal_emit(G_OBJECT(iapp), signals[WINDOW_REGISTERED], 0, windowid, objectpath, TRUE);
