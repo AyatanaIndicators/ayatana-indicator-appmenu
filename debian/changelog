@@ -1,10 +1,10 @@
-indicator-appmenu (0.0.5-0ubuntu1~ppa2~apport1) UNRELEASED; urgency=low
+indicator-appmenu (0.0.5-0ubuntu1~ppa2~apport1) lucid; urgency=low
 
   * Adding indicator-appmenu-crashdb.conf and source_indicator-appmenu.py
     so that bugs reported with ubuntu-bug will go to the upstream project
     if the package is gotten from a PPA.
 
- -- Ted Gould <ted@ubuntu.com>  Fri, 11 Jun 2010 14:46:41 -0500
+ -- Ted Gould <ted@ubuntu.com>  Fri, 11 Jun 2010 14:49:12 -0500
 
 indicator-appmenu (0.0.5-0ubuntu1~ppa1) lucid; urgency=low
 
