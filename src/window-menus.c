@@ -57,6 +57,7 @@ static void window_menus_class_init (WindowMenusClass *klass);
 static void window_menus_init       (WindowMenus *self);
 static void window_menus_dispose    (GObject *object);
 static void window_menus_finalize   (GObject *object);
+static void properties_destroyed    (GObject * object, gpointer user_data);
 static void root_changed            (DbusmenuClient * client, DbusmenuMenuitem * new_root, gpointer user_data);
 static void menu_entry_added        (DbusmenuMenuitem * root, DbusmenuMenuitem * newentry, guint position, gpointer user_data);
 static void menu_entry_removed      (DbusmenuMenuitem * root, DbusmenuMenuitem * oldentry, gpointer user_data);
@@ -180,6 +181,8 @@ window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * d
 		return NULL;
 	}
 
+	g_signal_connect(G_OBJECT(priv->props), "destory", G_CALLBACK(properties_destroyed), newmenu);
+
 	priv->client = dbusmenu_gtkclient_new((gchar *)dbus_addr, (gchar *)dbus_object);
 
 	g_signal_connect(G_OBJECT(priv->client), DBUSMENU_GTKCLIENT_SIGNAL_ROOT_CHANGED, G_CALLBACK(root_changed),   newmenu);
@@ -190,6 +193,20 @@ window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * d
 	}
 
 	return newmenu;
+}
+
+/* Respond to the proxies getting destoryed.  I means that we need
+   to kill ourselves. */
+static void
+properties_destroyed (GObject * object, gpointer user_data)
+{
+	WindowMenus * wm = WINDOW_MENUS(user_data);
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
+
+	priv->props = NULL;
+
+	g_object_unref(G_OBJECT(wm));
+	return;
 }
 
 /* Get the location of this entry */
