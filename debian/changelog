@@ -1,3 +1,10 @@
+indicator-appmenu (0.0.5-0ubuntu1~ppa2~apport2) lucid; urgency=low
+
+  * debian/indicator-appmenu.install: Apparently the second parameter
+    needs to be a directory.
+
+ -- Ted Gould <ted@ubuntu.com>  Fri, 11 Jun 2010 14:50:14 -0500
+
 indicator-appmenu (0.0.5-0ubuntu1~ppa2~apport1) lucid; urgency=low
 
   * Adding indicator-appmenu-crashdb.conf and source_indicator-appmenu.py
