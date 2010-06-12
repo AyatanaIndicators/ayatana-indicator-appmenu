@@ -181,7 +181,7 @@ window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * d
 		return NULL;
 	}
 
-	g_signal_connect(G_OBJECT(priv->props), "destory", G_CALLBACK(properties_destroyed), newmenu);
+	g_signal_connect(G_OBJECT(priv->props), "destroy", G_CALLBACK(properties_destroyed), newmenu);
 
 	priv->client = dbusmenu_gtkclient_new((gchar *)dbus_addr, (gchar *)dbus_object);
 
