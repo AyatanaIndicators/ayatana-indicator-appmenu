@@ -449,7 +449,7 @@ _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, gui
 		WindowMenus * wm = window_menus_new(windowid, dbus_g_method_get_sender(method), objectpath);
 		g_return_val_if_fail(wm != NULL, FALSE);
 
-		g_signal_connect(G_OBJECT(wm), "destroy", G_CALLBACK(menus_destroyed), iapp);
+		g_signal_connect(G_OBJECT(wm), WINDOW_MENUS_SIGNAL_DESTROY, G_CALLBACK(menus_destroyed), iapp);
 
 		g_hash_table_insert(iapp->apps, GUINT_TO_POINTER(windowid), wm);
 
