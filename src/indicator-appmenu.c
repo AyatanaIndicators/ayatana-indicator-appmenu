@@ -434,7 +434,7 @@ menus_destroyed (GObject * menus, gpointer user_data)
 	}
 
 	guint xid = window_menus_get_xid(wm);
-	g_hash_table_remove(iapp->apps, GUINT_TO_POINTER(xid));
+	g_hash_table_steal(iapp->apps, GUINT_TO_POINTER(xid));
 
 	return;
 }
