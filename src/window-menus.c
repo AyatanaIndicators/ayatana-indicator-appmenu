@@ -46,6 +46,7 @@ struct _WindowMenusPrivate {
 enum {
 	ENTRY_ADDED,
 	ENTRY_REMOVED,
+	DESTROY,
 	LAST_SIGNAL
 };
 
@@ -92,6 +93,13 @@ window_menus_class_init (WindowMenusClass *klass)
 	                                      NULL, NULL,
 	                                      g_cclosure_marshal_VOID__POINTER,
 	                                      G_TYPE_NONE, 1, G_TYPE_POINTER);
+	signals[DESTROY] =       g_signal_new(WINDOW_MENUS_SIGNAL_DESTROY,
+	                                      G_TYPE_FROM_CLASS(klass),
+	                                      G_SIGNAL_RUN_LAST,
+	                                      G_STRUCT_OFFSET (WindowMenusClass, destroy),
+	                                      NULL, NULL,
+	                                      g_cclosure_marshal_VOID__VOID,
+	                                      G_TYPE_NONE, 0, G_TYPE_NONE);
 
 	return;
 }
