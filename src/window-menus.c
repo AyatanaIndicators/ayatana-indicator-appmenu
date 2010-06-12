@@ -122,6 +122,8 @@ window_menus_init (WindowMenus *self)
 static void
 window_menus_dispose (GObject *object)
 {
+	g_signal_emit(object, signals[DESTROY], 0, TRUE);
+
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(object);
 
 	if (priv->client != NULL) {
@@ -208,6 +210,8 @@ window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * d
 static void
 properties_destroyed (GObject * object, gpointer user_data)
 {
+	g_debug("Proxy destroyed");
+
 	WindowMenus * wm = WINDOW_MENUS(user_data);
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
 
