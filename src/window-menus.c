@@ -210,8 +210,6 @@ window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * d
 static void
 properties_destroyed (GObject * object, gpointer user_data)
 {
-	g_debug("Proxy destroyed");
-
 	WindowMenus * wm = WINDOW_MENUS(user_data);
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
 
