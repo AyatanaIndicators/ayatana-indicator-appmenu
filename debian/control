@@ -21,7 +21,7 @@ Vcs-Browser: https://code.launchpad.net/~ubuntu-desktop/indicator-appmenu/ubuntu
 Package: indicator-appmenu
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Recommends: indicator-applet | indicator-renderer
+Recommends: indicator-applet | indicator-renderer, appmenu-gtk
 Breaks: indicator-applet (<< 0.3.0)
 Description: Indicator for application menus.
  .
