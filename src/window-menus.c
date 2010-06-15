@@ -402,7 +402,7 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 	if (dbusmenu_menuitem_property_get_value(newentry, DBUSMENU_MENUITEM_PROP_VISIBLE) != NULL
 		&& dbusmenu_menuitem_property_get_bool(newentry, DBUSMENU_MENUITEM_PROP_VISIBLE) == FALSE)
 		gtk_widget_hide(GTK_WIDGET(entry->label));
-	} else 
+	else
 		gtk_widget_show(GTK_WIDGET(entry->label));
 
 	if (dbusmenu_menuitem_property_get_value (newentry, DBUSMENU_MENUITEM_PROP_ENABLED) != NULL)
