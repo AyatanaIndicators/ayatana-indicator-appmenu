@@ -408,10 +408,17 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 
 	IndicatorAppmenu * appmenu = INDICATOR_APPMENU(user_data);
 
-	guint32 xid = bamf_window_get_xid(window);
-	g_debug("window changed to %d", xid);
+	WindowMenus * menus = NULL;
+
+	while (window != NULL && menus == NULL) {
+		guint32 xid = bamf_window_get_xid(window);
 	
-	WindowMenus * menus = g_hash_table_lookup(appmenu->apps, GINT_TO_POINTER(xid));
+		menus = g_hash_table_lookup(appmenu->apps, GINT_TO_POINTER(xid));
+
+		if (menus == NULL) {
+			window = bamf_window_get_transient(window);
+		}
+	}
 
 	/* Note: This function can handle menus being NULL */
 	switch_default_app(appmenu, menus);
