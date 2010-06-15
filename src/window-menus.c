@@ -399,10 +399,14 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 
 	g_signal_connect(G_OBJECT(newentry), DBUSMENU_MENUITEM_SIGNAL_PROPERTY_CHANGED, G_CALLBACK(menu_prop_changed), entry);
 
-	if (dbusmenu_menuitem_property_get_bool(newentry, DBUSMENU_MENUITEM_PROP_VISIBLE)) {
+	if (dbusmenu_menuitem_property_get_value(newentry, DBUSMENU_MENUITEM_PROP_VISIBLE) != NULL) {
+		if (dbusmenu_menuitem_property_get_bool(newentry, DBUSMENU_MENUITEM_PROP_VISIBLE) == FALSE)
+			gtk_widget_show(GTK_WIDGET(entry->label));
+	} else 
 		gtk_widget_show(GTK_WIDGET(entry->label));
-	}
-	gtk_widget_set_sensitive(GTK_WIDGET(entry->label), dbusmenu_menuitem_property_get_bool(newentry, DBUSMENU_MENUITEM_PROP_ENABLED));
+
+	if (dbusmenu_menuitem_property_get_value (newentry, DBUSMENU_MENUITEM_PROP_ENABLED) != NULL)
+		gtk_widget_set_sensitive(GTK_WIDGET(entry->label), dbusmenu_menuitem_property_get_bool(newentry, DBUSMENU_MENUITEM_PROP_ENABLED));
 
 	g_array_append_val(priv->entries, entry);
 
