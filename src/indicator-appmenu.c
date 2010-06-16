@@ -75,6 +75,9 @@ struct _IndicatorAppmenu {
 	gulong sig_entry_added;
 	gulong sig_entry_removed;
 
+	GArray * window_menus;
+	GArray * desktop_menus;
+
 	IndicatorAppmenuDebug * debug;
 };
 
@@ -203,6 +206,10 @@ indicator_appmenu_init (IndicatorAppmenu *self)
 	self->matcher = NULL;
 	self->active_window = NULL;
 
+	/* Setup the entries for the fallbacks */
+	self->window_menus = g_array_sized_new(FALSE, FALSE, sizeof(IndicatorObjectEntry), 2);
+	self->desktop_menus = g_array_sized_new(FALSE, FALSE, sizeof(IndicatorObjectEntry), 2);
+
 	/* Get the default BAMF matcher */
 	self->matcher = bamf_matcher_get_default();
 	if (self->matcher == NULL) {
@@ -272,6 +279,23 @@ indicator_appmenu_dispose (GObject *object)
 static void
 indicator_appmenu_finalize (GObject *object)
 {
+	IndicatorAppmenu * iapp = INDICATOR_APPMENU(object);
+
+	if (iapp->window_menus != NULL) {
+		if (iapp->window_menus->len != 0) {
+			g_warning("Window menus weren't free'd in dispose!");
+		}
+		g_array_free(iapp->window_menus, TRUE);
+		iapp->window_menus = NULL;
+	}
+
+	if (iapp->desktop_menus != NULL) {
+		if (iapp->desktop_menus->len != 0) {
+			g_warning("Desktop menus weren't free'd in dispose!");
+		}
+		g_array_free(iapp->desktop_menus, TRUE);
+		iapp->desktop_menus = NULL;
+	}
 
 	G_OBJECT_CLASS (indicator_appmenu_parent_class)->finalize (object);
 	return;
@@ -381,10 +405,28 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * 
 		/* If the default app was previously NULL, then we probably had other
 		   menus up.  Let's remove those. */
 
+		if (iapp->active_window == NULL) {
+			/* No active window means that the desktop menu items were
+			   the ones being shown. */
+			int i;
+			for (i = 0; i < iapp->desktop_menus->len; i++) {
+				g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_REMOVED_ID, 0, &g_array_index(iapp->desktop_menus, IndicatorObjectEntry, i), TRUE);
+			}
+		} else {
+			/* We had an active window so we must have had the window
+			   specific menu items shown. */
+			int i;
+			for (i = 0; i < iapp->window_menus->len; i++) {
+				g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_REMOVED_ID, 0, &g_array_index(iapp->window_menus, IndicatorObjectEntry, i), TRUE);
+			}
+		}
 	}
 
 	/* Through either the if or the setting, we know at this point that iapp->default_app
 	   is NULL and all the menus from it have been removed. */
+
+	/* Update the active window pointer */
+	iapp->active_window = active_window;
 
 	/* If we're putting up a new window, let's do that now. */
 	if (newdef != NULL) {
@@ -413,7 +455,21 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * 
 		}
 	} else {
 		/* No new application here we need to put up something.  No blankness. */
-
+		if (iapp->active_window == NULL) {
+			/* No active window means that the desktop menu items were
+			   the ones being shown. */
+			int i;
+			for (i = 0; i < iapp->desktop_menus->len; i++) {
+				g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_ADDED_ID, 0, &g_array_index(iapp->desktop_menus, IndicatorObjectEntry, i), TRUE);
+			}
+		} else {
+			/* We had an active window so we must have had the window
+			   specific menu items shown. */
+			int i;
+			for (i = 0; i < iapp->window_menus->len; i++) {
+				g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_ADDED_ID, 0, &g_array_index(iapp->window_menus, IndicatorObjectEntry, i), TRUE);
+			}
+		}
 	}
 
 	return;
