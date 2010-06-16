@@ -70,6 +70,7 @@ struct _IndicatorAppmenu {
 	GHashTable * apps;
 
 	BamfMatcher * matcher;
+	BamfWindow * active_window;
 
 	gulong sig_entry_added;
 	gulong sig_entry_removed;
@@ -332,13 +333,23 @@ get_location (IndicatorObject * io, IndicatorObjectEntry * entry)
 static void
 switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * active_window)
 {
-	if (iapp->default_app == newdef) {
+	if (iapp->default_app == newdef && iapp->default_app != NULL) {
+		/* We've got an app with menus and it hasn't changed. */
+
+		/* Keep active window up-to-date, though we're probably not
+		   using it much. */
+		iapp->active_window = active_window;
+		return;
+	}
+	if (iapp->default_app == NULL && iapp->active_window == active_window) {
+		/* There's no application menus, but the active window hasn't
+		   changed.  So there's no change. */
 		return;
 	}
 
 	GList * entries;
 
-	/* Remove old */
+	/* No matter what, we want to remove the old application menu */
 	if (iapp->default_app != NULL) {
 		for (entries = window_menus_get_entries(iapp->default_app); entries != NULL; entries = g_list_next(entries)) {
 			IndicatorObjectEntry * entry = (IndicatorObjectEntry *)entries->data;
@@ -353,23 +364,33 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * 
 
 			g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_REMOVED_ID, 0, entries->data, TRUE);
 		}
-	}
 	
-	/* Disconnect signals */
-	if (iapp->sig_entry_added != 0) {
-		g_signal_handler_disconnect(G_OBJECT(iapp->default_app), iapp->sig_entry_added);
-		iapp->sig_entry_added = 0;
-	}
-	if (iapp->sig_entry_removed != 0) {
-		g_signal_handler_disconnect(G_OBJECT(iapp->default_app), iapp->sig_entry_removed);
-		iapp->sig_entry_removed = 0;
+		/* Disconnect signals */
+		if (iapp->sig_entry_added != 0) {
+			g_signal_handler_disconnect(G_OBJECT(iapp->default_app), iapp->sig_entry_added);
+			iapp->sig_entry_added = 0;
+		}
+		if (iapp->sig_entry_removed != 0) {
+			g_signal_handler_disconnect(G_OBJECT(iapp->default_app), iapp->sig_entry_removed);
+			iapp->sig_entry_removed = 0;
+		}
+
+		iapp->default_app = NULL;
+	} else {
+		/* If the default app was previously NULL, then we probably had other
+		   menus up.  Let's remove those. */
+
 	}
 
-	/* Switch */
-	iapp->default_app = newdef;
+	/* Through either the if or the setting, we know at this point that iapp->default_app
+	   is NULL and all the menus from it have been removed. */
 
-	/* Connect signals */
-	if (iapp->default_app != NULL) {
+	/* If we're putting up a new window, let's do that now. */
+	if (newdef != NULL) {
+		/* Switch */
+		iapp->default_app = newdef;
+
+		/* Connect signals */
 		iapp->sig_entry_added =   g_signal_connect(G_OBJECT(iapp->default_app),
 		                                           WINDOW_MENUS_SIGNAL_ENTRY_ADDED,
 		                                           G_CALLBACK(window_entry_added),
@@ -378,10 +399,8 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * 
 		                                           WINDOW_MENUS_SIGNAL_ENTRY_REMOVED,
 		                                           G_CALLBACK(window_entry_removed),
 		                                           iapp);
-	}
 
-	/* Add new */
-	if (iapp->default_app != NULL) {
+		/* Add new */
 		for (entries = window_menus_get_entries(iapp->default_app); entries != NULL; entries = g_list_next(entries)) {
 			IndicatorObjectEntry * entry = (IndicatorObjectEntry *)entries->data;
 
@@ -391,6 +410,9 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * 
 
 			g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_ADDED_ID, 0, entries->data, TRUE);
 		}
+	} else {
+		/* No new application here we need to put up something.  No blankness. */
+
 	}
 
 	return;
