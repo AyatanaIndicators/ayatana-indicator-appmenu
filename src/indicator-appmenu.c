@@ -464,14 +464,8 @@ _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, gui
 
 		/* Node: Does not cause ref */
 		BamfWindow * win = bamf_matcher_get_active_window(iapp->matcher);
-		guint32 xid = 0;
-		if (BAMF_IS_WINDOW(win)) {
-			xid = bamf_window_get_xid(win);
-		}
 
-		if (xid != 0 && xid == windowid) {
-			switch_default_app(iapp, wm);
-		}
+		active_window_changed(iapp->matcher, NULL, BAMF_VIEW(win), iapp);
 	} else {
 		g_warning("Already have a menu for window ID %d with path %s from %s", windowid, objectpath, dbus_g_method_get_sender(method));
 	}
