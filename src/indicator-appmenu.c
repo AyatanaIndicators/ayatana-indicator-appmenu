@@ -113,7 +113,8 @@ static GList * get_entries                                           (IndicatorO
 static guint get_location                                            (IndicatorObject * io,
                                                                       IndicatorObjectEntry * entry);
 static void switch_default_app                                       (IndicatorAppmenu * iapp,
-                                                                      WindowMenus * newdef);
+                                                                      WindowMenus * newdef,
+                                                                      BamfWindow * active_window);
 static gboolean _application_menu_registrar_server_register_window   (IndicatorAppmenu * iapp,
                                                                       guint windowid,
                                                                       const gchar * objectpath,
@@ -249,7 +250,7 @@ indicator_appmenu_dispose (GObject *object)
 	}
 
 	/* No specific ref */
-	switch_default_app (iapp, NULL);
+	switch_default_app (iapp, NULL, NULL);
 
 	if (iapp->apps != NULL) {
 		g_hash_table_destroy(iapp->apps);
@@ -329,7 +330,7 @@ get_location (IndicatorObject * io, IndicatorObjectEntry * entry)
 /* Switch applications, remove all the entires for the previous
    one and add them for the new application */
 static void
-switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef)
+switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * active_window)
 {
 	if (iapp->default_app == newdef) {
 		return;
@@ -424,7 +425,7 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 	g_debug("Switching to windows from XID %d", xid);
 
 	/* Note: This function can handle menus being NULL */
-	switch_default_app(appmenu, menus);
+	switch_default_app(appmenu, menus, BAMF_WINDOW(newview));
 
 	return;
 }
@@ -440,7 +441,7 @@ menus_destroyed (GObject * menus, gpointer user_data)
 	/* If we're it, let's remove ourselves and BAMF will probably
 	   give us a new entry in a bit. */
 	if (iapp->default_app == wm) {
-		switch_default_app(iapp, NULL);
+		switch_default_app(iapp, NULL, NULL);
 	}
 
 	guint xid = window_menus_get_xid(wm);
@@ -496,7 +497,7 @@ request_name_cb (DBusGProxy *proxy, guint result, GError * inerror, gpointer use
 	if (error) {
 		/* We can rest assured no one will register with us, but let's
 		   just ensure we're not showing anything. */
-		switch_default_app(INDICATOR_APPMENU(userdata), NULL);
+		switch_default_app(INDICATOR_APPMENU(userdata), NULL, NULL);
 	}
 
 	g_object_unref(proxy);
