@@ -1,4 +1,4 @@
-indicator-appmenu (0.0.5-0ubuntu3~ppa1) UNRELEASED; urgency=low
+indicator-appmenu (0.0.5-0ubuntu3~ppa1) lucid; urgency=low
 
   * debian/control: Updating libbamf-dev to 0.2.28-0ubuntu2+r265
   * Upstream Merge
@@ -6,7 +6,7 @@ indicator-appmenu (0.0.5-0ubuntu3~ppa1) UNRELEASED; urgency=low
     * Look for transient windows on window switching.
     * Fix visiblity and enable defaults
 
- -- Ted Gould <ted@ubuntu.com>  Wed, 16 Jun 2010 11:43:46 -0500
+ -- Ted Gould <ted@ubuntu.com>  Wed, 16 Jun 2010 11:45:33 -0500
 
 indicator-appmenu (0.0.5-0ubuntu2) UNRELEASED; urgency=low
 
