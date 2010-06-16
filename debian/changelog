@@ -1,8 +1,10 @@
 indicator-appmenu (0.0.5-0ubuntu3~ppa1~transient2) UNRELEASED; urgency=low
 
   * debian/control: Updating libbamf-dev to 0.2.28-0ubuntu2+r265
+  * Upstream Merge
+    * Transient detection on new windows
 
- -- Ted Gould <ted@ubuntu.com>  Tue, 15 Jun 2010 23:16:36 -0500
+ -- Ted Gould <ted@ubuntu.com>  Tue, 15 Jun 2010 23:19:52 -0500
 
 indicator-appmenu (0.0.5-0ubuntu3~ppa1~transient1) lucid; urgency=low
 
