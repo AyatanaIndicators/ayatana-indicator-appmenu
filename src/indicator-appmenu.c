@@ -408,10 +408,20 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 
 	IndicatorAppmenu * appmenu = INDICATOR_APPMENU(user_data);
 
-	guint32 xid = bamf_window_get_xid(window);
-	g_debug("window changed to %d", xid);
+	WindowMenus * menus = NULL;
+	guint32 xid = 0;
+
+	while (window != NULL && menus == NULL) {
+		xid = bamf_window_get_xid(window);
 	
-	WindowMenus * menus = g_hash_table_lookup(appmenu->apps, GINT_TO_POINTER(xid));
+		menus = g_hash_table_lookup(appmenu->apps, GUINT_TO_POINTER(xid));
+
+		if (menus == NULL) {
+			window = bamf_window_get_transient(window);
+		}
+	}
+
+	g_debug("Switching to windows from XID %d", xid);
 
 	/* Note: This function can handle menus being NULL */
 	switch_default_app(appmenu, menus);
@@ -457,14 +467,8 @@ _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, gui
 
 		/* Node: Does not cause ref */
 		BamfWindow * win = bamf_matcher_get_active_window(iapp->matcher);
-		guint32 xid = 0;
-		if (BAMF_IS_WINDOW(win)) {
-			xid = bamf_window_get_xid(win);
-		}
 
-		if (xid != 0 && xid == windowid) {
-			switch_default_app(iapp, wm);
-		}
+		active_window_changed(iapp->matcher, NULL, BAMF_VIEW(win), iapp);
 	} else {
 		g_warning("Already have a menu for window ID %d with path %s from %s", windowid, objectpath, dbus_g_method_get_sender(method));
 	}
