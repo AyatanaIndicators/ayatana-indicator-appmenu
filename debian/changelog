@@ -1,4 +1,4 @@
-indicator-appmenu (0.0.6-0ubuntu1) UNRELEASED; urgency=low
+indicator-appmenu (0.0.6-0ubuntu1) maverick; urgency=low
 
   * debian/control: Updating libbamf-dev to 0.2.30
 
