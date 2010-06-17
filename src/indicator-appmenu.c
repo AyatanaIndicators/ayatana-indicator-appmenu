@@ -434,7 +434,7 @@ build_desktop_menus (IndicatorAppmenu * iapp)
 	gtk_widget_show(GTK_WIDGET(entries[0].menu));
 
 	/* Copy the entries on the stack into the array */
-	g_array_insert_vals(iapp->window_menus, 0, entries, 1);
+	g_array_insert_vals(iapp->desktop_menus, 0, entries, 1);
 
 	return;
 }
