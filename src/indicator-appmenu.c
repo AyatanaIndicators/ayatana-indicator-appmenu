@@ -647,11 +647,11 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * 
 static void
 active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * newview, gpointer user_data)
 {
-	if (!BAMF_IS_WINDOW(newview)) {
-		/* We're only dealing with windows currently */
-		return;
+	BamfWindow * window = NULL;
+
+	if (newview != NULL) {
+		window = BAMF_WINDOW(newview);
 	}
-	BamfWindow * window = BAMF_WINDOW(newview);
 
 	IndicatorAppmenu * appmenu = INDICATOR_APPMENU(user_data);
 
@@ -712,7 +712,7 @@ _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, gui
 
 		g_signal_emit(G_OBJECT(iapp), signals[WINDOW_REGISTERED], 0, windowid, objectpath, TRUE);
 
-		/* Node: Does not cause ref */
+		/* Note: Does not cause ref */
 		BamfWindow * win = bamf_matcher_get_active_window(iapp->matcher);
 
 		active_window_changed(iapp->matcher, NULL, BAMF_VIEW(win), iapp);
