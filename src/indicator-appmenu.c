@@ -113,6 +113,8 @@ static void indicator_appmenu_dispose                                (GObject *o
 static void indicator_appmenu_finalize                               (GObject *object);
 static void indicator_appmenu_debug_class_init                       (IndicatorAppmenuDebugClass *klass);
 static void indicator_appmenu_debug_init                             (IndicatorAppmenuDebug *self);
+static void build_window_menus                                       (IndicatorAppmenu * iapp);
+static void build_desktop_menus                                      (IndicatorAppmenu * iapp);
 static GList * get_entries                                           (IndicatorObject * io);
 static guint get_location                                            (IndicatorObject * io,
                                                                       IndicatorObjectEntry * entry);
@@ -209,6 +211,9 @@ indicator_appmenu_init (IndicatorAppmenu *self)
 	/* Setup the entries for the fallbacks */
 	self->window_menus = g_array_sized_new(FALSE, FALSE, sizeof(IndicatorObjectEntry), 2);
 	self->desktop_menus = g_array_sized_new(FALSE, FALSE, sizeof(IndicatorObjectEntry), 2);
+
+	build_window_menus(self);
+	build_desktop_menus(self);
 
 	/* Get the default BAMF matcher */
 	self->matcher = bamf_matcher_get_default();
@@ -323,6 +328,22 @@ indicator_appmenu_debug_init (IndicatorAppmenuDebug *self)
 	dbus_g_connection_register_g_object(connection,
 	                                    DEBUG_OBJECT,
 	                                    G_OBJECT(self));
+
+	return;
+}
+
+/* Create the default window menus */
+static void
+build_window_menus (IndicatorAppmenu * iapp)
+{
+
+	return;
+}
+
+/* Create the default desktop menus */
+static void
+build_desktop_menus (IndicatorAppmenu * iapp)
+{
 
 	return;
 }
