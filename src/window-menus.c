@@ -24,6 +24,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #endif
 
 #include <libdbusmenu-gtk/menu.h>
+#include <dbus/dbus-glib.h>
 
 #include "window-menus.h"
 
@@ -33,6 +34,7 @@ typedef struct _WindowMenusPrivate WindowMenusPrivate;
 struct _WindowMenusPrivate {
 	guint windowid;
 	DbusmenuGtkClient * client;
+	DBusGProxy * props;
 	GArray * entries;
 };
 
@@ -44,6 +46,7 @@ struct _WindowMenusPrivate {
 enum {
 	ENTRY_ADDED,
 	ENTRY_REMOVED,
+	DESTROY,
 	LAST_SIGNAL
 };
 
@@ -55,6 +58,7 @@ static void window_menus_class_init (WindowMenusClass *klass);
 static void window_menus_init       (WindowMenus *self);
 static void window_menus_dispose    (GObject *object);
 static void window_menus_finalize   (GObject *object);
+static void properties_destroyed    (GObject * object, gpointer user_data);
 static void root_changed            (DbusmenuClient * client, DbusmenuMenuitem * new_root, gpointer user_data);
 static void menu_entry_added        (DbusmenuMenuitem * root, DbusmenuMenuitem * newentry, guint position, gpointer user_data);
 static void menu_entry_removed      (DbusmenuMenuitem * root, DbusmenuMenuitem * oldentry, gpointer user_data);
@@ -89,6 +93,13 @@ window_menus_class_init (WindowMenusClass *klass)
 	                                      NULL, NULL,
 	                                      g_cclosure_marshal_VOID__POINTER,
 	                                      G_TYPE_NONE, 1, G_TYPE_POINTER);
+	signals[DESTROY] =       g_signal_new(WINDOW_MENUS_SIGNAL_DESTROY,
+	                                      G_TYPE_FROM_CLASS(klass),
+	                                      G_SIGNAL_RUN_LAST,
+	                                      G_STRUCT_OFFSET (WindowMenusClass, destroy),
+	                                      NULL, NULL,
+	                                      g_cclosure_marshal_VOID__VOID,
+	                                      G_TYPE_NONE, 0, G_TYPE_NONE);
 
 	return;
 }
@@ -100,6 +111,7 @@ window_menus_init (WindowMenus *self)
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(self);
 
 	priv->client = NULL;
+	priv->props = NULL;
 
 	priv->entries = g_array_new(FALSE, FALSE, sizeof(IndicatorObjectEntry *));
 
@@ -110,11 +122,18 @@ window_menus_init (WindowMenus *self)
 static void
 window_menus_dispose (GObject *object)
 {
+	g_signal_emit(object, signals[DESTROY], 0, TRUE);
+
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(object);
 
 	if (priv->client != NULL) {
 		g_object_unref(G_OBJECT(priv->client));
 		priv->client = NULL;
+	}
+	
+	if (priv->props != NULL) {
+		g_object_unref(G_OBJECT(priv->props));
+		priv->props = NULL;
 	}
 
 	G_OBJECT_CLASS (window_menus_parent_class)->dispose (object);
@@ -155,8 +174,24 @@ window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * d
 {
 	g_debug("Creating new windows menu: %X, %s, %s", windowid, dbus_addr, dbus_object);
 
+	DBusGConnection * session_bus = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
+	g_return_val_if_fail(session_bus != NULL, NULL);
+
 	WindowMenus * newmenu = WINDOW_MENUS(g_object_new(WINDOW_MENUS_TYPE, NULL));
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(newmenu);
+
+	priv->props = dbus_g_proxy_new_for_name_owner(session_bus,
+	                                              dbus_addr,
+	                                              dbus_object,
+	                                              DBUS_INTERFACE_PROPERTIES,
+	                                              NULL);
+	if (priv->props == NULL) {
+		g_warning("Unable to get property proxy on '%s' object '%s'", dbus_addr, dbus_object);
+		g_object_unref(newmenu);
+		return NULL;
+	}
+
+	g_signal_connect(G_OBJECT(priv->props), "destroy", G_CALLBACK(properties_destroyed), newmenu);
 
 	priv->client = dbusmenu_gtkclient_new((gchar *)dbus_addr, (gchar *)dbus_object);
 
@@ -168,6 +203,20 @@ window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * d
 	}
 
 	return newmenu;
+}
+
+/* Respond to the proxies getting destoryed.  I means that we need
+   to kill ourselves. */
+static void
+properties_destroyed (GObject * object, gpointer user_data)
+{
+	WindowMenus * wm = WINDOW_MENUS(user_data);
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
+
+	priv->props = NULL;
+
+	g_object_unref(G_OBJECT(wm));
+	return;
 }
 
 /* Get the location of this entry */
@@ -350,10 +399,14 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 
 	g_signal_connect(G_OBJECT(newentry), DBUSMENU_MENUITEM_SIGNAL_PROPERTY_CHANGED, G_CALLBACK(menu_prop_changed), entry);
 
-	if (dbusmenu_menuitem_property_get_bool(newentry, DBUSMENU_MENUITEM_PROP_VISIBLE)) {
+	if (dbusmenu_menuitem_property_get_value(newentry, DBUSMENU_MENUITEM_PROP_VISIBLE) != NULL
+		&& dbusmenu_menuitem_property_get_bool(newentry, DBUSMENU_MENUITEM_PROP_VISIBLE) == FALSE)
+		gtk_widget_hide(GTK_WIDGET(entry->label));
+	else
 		gtk_widget_show(GTK_WIDGET(entry->label));
-	}
-	gtk_widget_set_sensitive(GTK_WIDGET(entry->label), dbusmenu_menuitem_property_get_bool(newentry, DBUSMENU_MENUITEM_PROP_ENABLED));
+
+	if (dbusmenu_menuitem_property_get_value (newentry, DBUSMENU_MENUITEM_PROP_ENABLED) != NULL)
+		gtk_widget_set_sensitive(GTK_WIDGET(entry->label), dbusmenu_menuitem_property_get_bool(newentry, DBUSMENU_MENUITEM_PROP_ENABLED));
 
 	g_array_append_val(priv->entries, entry);
 

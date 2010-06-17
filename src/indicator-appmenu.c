@@ -70,9 +70,13 @@ struct _IndicatorAppmenu {
 	GHashTable * apps;
 
 	BamfMatcher * matcher;
+	BamfWindow * active_window;
 
 	gulong sig_entry_added;
 	gulong sig_entry_removed;
+
+	GArray * window_menus;
+	GArray * desktop_menus;
 
 	IndicatorAppmenuDebug * debug;
 };
@@ -109,11 +113,14 @@ static void indicator_appmenu_dispose                                (GObject *o
 static void indicator_appmenu_finalize                               (GObject *object);
 static void indicator_appmenu_debug_class_init                       (IndicatorAppmenuDebugClass *klass);
 static void indicator_appmenu_debug_init                             (IndicatorAppmenuDebug *self);
+static void build_window_menus                                       (IndicatorAppmenu * iapp);
+static void build_desktop_menus                                      (IndicatorAppmenu * iapp);
 static GList * get_entries                                           (IndicatorObject * io);
 static guint get_location                                            (IndicatorObject * io,
                                                                       IndicatorObjectEntry * entry);
 static void switch_default_app                                       (IndicatorAppmenu * iapp,
-                                                                      WindowMenus * newdef);
+                                                                      WindowMenus * newdef,
+                                                                      BamfWindow * active_window);
 static gboolean _application_menu_registrar_server_register_window   (IndicatorAppmenu * iapp,
                                                                       guint windowid,
                                                                       const gchar * objectpath,
@@ -199,6 +206,14 @@ indicator_appmenu_init (IndicatorAppmenu *self)
 	self->debug = NULL;
 	self->apps = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_object_unref);
 	self->matcher = NULL;
+	self->active_window = NULL;
+
+	/* Setup the entries for the fallbacks */
+	self->window_menus = g_array_sized_new(FALSE, FALSE, sizeof(IndicatorObjectEntry), 2);
+	self->desktop_menus = g_array_sized_new(FALSE, FALSE, sizeof(IndicatorObjectEntry), 2);
+
+	build_window_menus(self);
+	build_desktop_menus(self);
 
 	/* Get the default BAMF matcher */
 	self->matcher = bamf_matcher_get_default();
@@ -249,7 +264,7 @@ indicator_appmenu_dispose (GObject *object)
 	}
 
 	/* No specific ref */
-	switch_default_app (iapp, NULL);
+	switch_default_app (iapp, NULL, NULL);
 
 	if (iapp->apps != NULL) {
 		g_hash_table_destroy(iapp->apps);
@@ -269,6 +284,23 @@ indicator_appmenu_dispose (GObject *object)
 static void
 indicator_appmenu_finalize (GObject *object)
 {
+	IndicatorAppmenu * iapp = INDICATOR_APPMENU(object);
+
+	if (iapp->window_menus != NULL) {
+		if (iapp->window_menus->len != 0) {
+			g_warning("Window menus weren't free'd in dispose!");
+		}
+		g_array_free(iapp->window_menus, TRUE);
+		iapp->window_menus = NULL;
+	}
+
+	if (iapp->desktop_menus != NULL) {
+		if (iapp->desktop_menus->len != 0) {
+			g_warning("Desktop menus weren't free'd in dispose!");
+		}
+		g_array_free(iapp->desktop_menus, TRUE);
+		iapp->desktop_menus = NULL;
+	}
 
 	G_OBJECT_CLASS (indicator_appmenu_parent_class)->finalize (object);
 	return;
@@ -300,6 +332,113 @@ indicator_appmenu_debug_init (IndicatorAppmenuDebug *self)
 	return;
 }
 
+/* Create the default window menus */
+static void
+build_window_menus (IndicatorAppmenu * iapp)
+{
+	IndicatorObjectEntry entries[2] = {{0}, {0}};
+
+	/* File Menu */
+	entries[0].label = GTK_LABEL(gtk_label_new("File"));
+	g_object_ref(G_OBJECT(entries[0].label));
+	gtk_widget_show(GTK_WIDGET(entries[0].label));
+
+	entries[0].menu = GTK_MENU(gtk_menu_new());
+	g_object_ref(G_OBJECT(entries[0].menu));
+
+	GtkMenuItem * mi = GTK_MENU_ITEM(gtk_menu_item_new_with_label("Close"));
+	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
+	gtk_widget_show(GTK_WIDGET(mi));
+	gtk_menu_append(entries[0].menu, GTK_WIDGET(mi));
+
+	gtk_widget_show(GTK_WIDGET(entries[0].menu));
+
+	/* Edit Menu */
+	entries[1].label = GTK_LABEL(gtk_label_new("Edit"));
+	g_object_ref(G_OBJECT(entries[1].label));
+	gtk_widget_show(GTK_WIDGET(entries[1].label));
+
+	entries[1].menu = GTK_MENU(gtk_menu_new());
+	g_object_ref(G_OBJECT(entries[1].menu));
+
+	mi = GTK_MENU_ITEM(gtk_menu_item_new_with_label("Undo"));
+	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
+	gtk_widget_show(GTK_WIDGET(mi));
+	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
+
+	mi = GTK_MENU_ITEM(gtk_menu_item_new_with_label("Redo"));
+	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
+	gtk_widget_show(GTK_WIDGET(mi));
+	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
+
+	mi = GTK_MENU_ITEM(gtk_separator_menu_item_new());
+	gtk_widget_show(GTK_WIDGET(mi));
+	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
+
+	mi = GTK_MENU_ITEM(gtk_menu_item_new_with_label("Cut"));
+	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
+	gtk_widget_show(GTK_WIDGET(mi));
+	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
+
+	mi = GTK_MENU_ITEM(gtk_menu_item_new_with_label("Copy"));
+	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
+	gtk_widget_show(GTK_WIDGET(mi));
+	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
+
+	mi = GTK_MENU_ITEM(gtk_menu_item_new_with_label("Paste"));
+	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
+	gtk_widget_show(GTK_WIDGET(mi));
+	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
+
+	mi = GTK_MENU_ITEM(gtk_menu_item_new_with_label("Delete"));
+	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
+	gtk_widget_show(GTK_WIDGET(mi));
+	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
+
+	mi = GTK_MENU_ITEM(gtk_separator_menu_item_new());
+	gtk_widget_show(GTK_WIDGET(mi));
+	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
+
+	mi = GTK_MENU_ITEM(gtk_menu_item_new_with_label("Select All"));
+	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
+	gtk_widget_show(GTK_WIDGET(mi));
+	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
+
+	gtk_widget_show(GTK_WIDGET(entries[1].menu));
+
+	/* Copy the entries on the stack into the array */
+	g_array_insert_vals(iapp->window_menus, 0, entries, 2);
+
+	return;
+}
+
+/* Create the default desktop menus */
+static void
+build_desktop_menus (IndicatorAppmenu * iapp)
+{
+	IndicatorObjectEntry entries[1] = {{0}};
+
+	/* File Menu */
+	entries[0].label = GTK_LABEL(gtk_label_new("Desktop"));
+	g_object_ref(G_OBJECT(entries[0].label));
+	gtk_widget_show(GTK_WIDGET(entries[0].label));
+
+	entries[0].menu = GTK_MENU(gtk_menu_new());
+	g_object_ref(G_OBJECT(entries[0].menu));
+
+	GtkMenuItem * mi = GTK_MENU_ITEM(gtk_menu_item_new_with_label("Desktop Menus will go here"));
+	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
+	gtk_widget_show(GTK_WIDGET(mi));
+	gtk_menu_append(entries[0].menu, GTK_WIDGET(mi));
+
+	gtk_widget_show(GTK_WIDGET(entries[0].menu));
+
+	/* Copy the entries on the stack into the array */
+	g_array_insert_vals(iapp->desktop_menus, 0, entries, 1);
+
+	return;
+}
+
 /* Get the current set of entries */
 static GList *
 get_entries (IndicatorObject * io)
@@ -307,11 +446,25 @@ get_entries (IndicatorObject * io)
 	g_return_val_if_fail(IS_INDICATOR_APPMENU(io), NULL);
 	IndicatorAppmenu * iapp = INDICATOR_APPMENU(io);
 
-	if (iapp->default_app == NULL) {
-		return NULL;
+	if (iapp->default_app != NULL) {
+		return window_menus_get_entries(iapp->default_app);
 	}
 
-	return window_menus_get_entries(iapp->default_app);
+	GArray * entryarray;
+	if (iapp->active_window == NULL) {
+		entryarray = iapp->desktop_menus;
+	} else {
+		entryarray = iapp->window_menus;
+	}
+
+	GList * output = NULL;
+	int i;
+
+	for (i = 0; i < entryarray->len; i++) {
+		output = g_list_append(output, &g_array_index(entryarray, IndicatorObjectEntry, i));
+	}
+
+	return output;
 }
 
 /* Grabs the location of the entry */
@@ -321,7 +474,30 @@ get_location (IndicatorObject * io, IndicatorObjectEntry * entry)
 	guint count = 0;
 	IndicatorAppmenu * iapp = INDICATOR_APPMENU(io);
 	if (iapp->default_app != NULL) {
+		/* Find the location in the app */
 		count = window_menus_get_location(iapp->default_app, entry);
+	} else if (iapp->active_window != NULL) {
+		/* Find the location in the window menus */
+		for (count = 0; count < iapp->window_menus->len; count++) {
+			if (entry == &g_array_index(iapp->window_menus, IndicatorObjectEntry, count)) {
+				break;
+			}
+		}
+		if (count == iapp->window_menus->len) {
+			g_warning("Unable to find entry in default window menus");
+			count = 0;
+		}
+	} else {
+		/* Find the location in the desktop menus */
+		for (count = 0; count < iapp->desktop_menus->len; count++) {
+			if (entry == &g_array_index(iapp->desktop_menus, IndicatorObjectEntry, count)) {
+				break;
+			}
+		}
+		if (count == iapp->desktop_menus->len) {
+			g_warning("Unable to find entry in default window menus");
+			count = 0;
+		}
 	}
 	return count;
 }
@@ -329,15 +505,25 @@ get_location (IndicatorObject * io, IndicatorObjectEntry * entry)
 /* Switch applications, remove all the entires for the previous
    one and add them for the new application */
 static void
-switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef)
+switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * active_window)
 {
-	if (iapp->default_app == newdef) {
+	if (iapp->default_app == newdef && iapp->default_app != NULL) {
+		/* We've got an app with menus and it hasn't changed. */
+
+		/* Keep active window up-to-date, though we're probably not
+		   using it much. */
+		iapp->active_window = active_window;
+		return;
+	}
+	if (iapp->default_app == NULL && iapp->active_window == active_window) {
+		/* There's no application menus, but the active window hasn't
+		   changed.  So there's no change. */
 		return;
 	}
 
 	GList * entries;
 
-	/* Remove old */
+	/* No matter what, we want to remove the old application menu */
 	if (iapp->default_app != NULL) {
 		for (entries = window_menus_get_entries(iapp->default_app); entries != NULL; entries = g_list_next(entries)) {
 			IndicatorObjectEntry * entry = (IndicatorObjectEntry *)entries->data;
@@ -352,23 +538,63 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef)
 
 			g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_REMOVED_ID, 0, entries->data, TRUE);
 		}
-	}
 	
-	/* Disconnect signals */
-	if (iapp->sig_entry_added != 0) {
-		g_signal_handler_disconnect(G_OBJECT(iapp->default_app), iapp->sig_entry_added);
-		iapp->sig_entry_added = 0;
-	}
-	if (iapp->sig_entry_removed != 0) {
-		g_signal_handler_disconnect(G_OBJECT(iapp->default_app), iapp->sig_entry_removed);
-		iapp->sig_entry_removed = 0;
+		/* Disconnect signals */
+		if (iapp->sig_entry_added != 0) {
+			g_signal_handler_disconnect(G_OBJECT(iapp->default_app), iapp->sig_entry_added);
+			iapp->sig_entry_added = 0;
+		}
+		if (iapp->sig_entry_removed != 0) {
+			g_signal_handler_disconnect(G_OBJECT(iapp->default_app), iapp->sig_entry_removed);
+			iapp->sig_entry_removed = 0;
+		}
+
+		iapp->default_app = NULL;
+	} else {
+		/* If the default app was previously NULL, then we probably had other
+		   menus up.  Let's remove those. */
+
+		if (iapp->active_window == NULL) {
+			/* No active window means that the desktop menu items were
+			   the ones being shown. */
+			int i;
+			for (i = 0; i < iapp->desktop_menus->len; i++) {
+				if (g_array_index(iapp->desktop_menus, IndicatorObjectEntry, i).label != NULL) {
+					gtk_widget_hide(GTK_WIDGET(g_array_index(iapp->desktop_menus, IndicatorObjectEntry, i).label));
+				}
+				if (g_array_index(iapp->desktop_menus, IndicatorObjectEntry, i).menu != NULL) {
+					gtk_menu_detach(g_array_index(iapp->desktop_menus, IndicatorObjectEntry, i).menu);
+				}
+				g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_REMOVED_ID, 0, &g_array_index(iapp->desktop_menus, IndicatorObjectEntry, i), TRUE);
+			}
+		} else {
+			/* We had an active window so we must have had the window
+			   specific menu items shown. */
+			int i;
+			for (i = 0; i < iapp->window_menus->len; i++) {
+				if (g_array_index(iapp->window_menus, IndicatorObjectEntry, i).label != NULL) {
+					gtk_widget_hide(GTK_WIDGET(g_array_index(iapp->window_menus, IndicatorObjectEntry, i).label));
+				}
+				if (g_array_index(iapp->window_menus, IndicatorObjectEntry, i).menu != NULL) {
+					gtk_menu_detach(g_array_index(iapp->window_menus, IndicatorObjectEntry, i).menu);
+				}
+				g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_REMOVED_ID, 0, &g_array_index(iapp->window_menus, IndicatorObjectEntry, i), TRUE);
+			}
+		}
 	}
 
-	/* Switch */
-	iapp->default_app = newdef;
+	/* Through either the if or the setting, we know at this point that iapp->default_app
+	   is NULL and all the menus from it have been removed. */
 
-	/* Connect signals */
-	if (iapp->default_app != NULL) {
+	/* Update the active window pointer */
+	iapp->active_window = active_window;
+
+	/* If we're putting up a new window, let's do that now. */
+	if (newdef != NULL) {
+		/* Switch */
+		iapp->default_app = newdef;
+
+		/* Connect signals */
 		iapp->sig_entry_added =   g_signal_connect(G_OBJECT(iapp->default_app),
 		                                           WINDOW_MENUS_SIGNAL_ENTRY_ADDED,
 		                                           G_CALLBACK(window_entry_added),
@@ -377,10 +603,8 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef)
 		                                           WINDOW_MENUS_SIGNAL_ENTRY_REMOVED,
 		                                           G_CALLBACK(window_entry_removed),
 		                                           iapp);
-	}
 
-	/* Add new */
-	if (iapp->default_app != NULL) {
+		/* Add new */
 		for (entries = window_menus_get_entries(iapp->default_app); entries != NULL; entries = g_list_next(entries)) {
 			IndicatorObjectEntry * entry = (IndicatorObjectEntry *)entries->data;
 
@@ -389,6 +613,29 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef)
 			}
 
 			g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_ADDED_ID, 0, entries->data, TRUE);
+		}
+	} else {
+		/* No new application here we need to put up something.  No blankness. */
+		if (iapp->active_window == NULL) {
+			/* No active window means that the desktop menu items were
+			   the ones being shown. */
+			int i;
+			for (i = 0; i < iapp->desktop_menus->len; i++) {
+				if (g_array_index(iapp->desktop_menus, IndicatorObjectEntry, i).label != NULL) {
+					gtk_widget_show(GTK_WIDGET(g_array_index(iapp->desktop_menus, IndicatorObjectEntry, i).label));
+				}
+				g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_ADDED_ID, 0, &g_array_index(iapp->desktop_menus, IndicatorObjectEntry, i), TRUE);
+			}
+		} else {
+			/* We had an active window so we must have had the window
+			   specific menu items shown. */
+			int i;
+			for (i = 0; i < iapp->window_menus->len; i++) {
+				if (g_array_index(iapp->window_menus, IndicatorObjectEntry, i).label != NULL) {
+					gtk_widget_show(GTK_WIDGET(g_array_index(iapp->window_menus, IndicatorObjectEntry, i).label));
+				}
+				g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_ADDED_ID, 0, &g_array_index(iapp->window_menus, IndicatorObjectEntry, i), TRUE);
+			}
 		}
 	}
 
@@ -400,21 +647,51 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef)
 static void
 active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * newview, gpointer user_data)
 {
-	if (!BAMF_IS_WINDOW(newview)) {
-		/* We're only dealing with windows currently */
-		return;
+	BamfWindow * window = NULL;
+
+	if (newview != NULL) {
+		window = BAMF_WINDOW(newview);
 	}
-	BamfWindow * window = BAMF_WINDOW(newview);
 
 	IndicatorAppmenu * appmenu = INDICATOR_APPMENU(user_data);
 
-	guint32 xid = bamf_window_get_xid(window);
-	g_debug("window changed to %d", xid);
+	WindowMenus * menus = NULL;
+	guint32 xid = 0;
+
+	while (window != NULL && menus == NULL) {
+		xid = bamf_window_get_xid(window);
 	
-	WindowMenus * menus = g_hash_table_lookup(appmenu->apps, GINT_TO_POINTER(xid));
+		menus = g_hash_table_lookup(appmenu->apps, GUINT_TO_POINTER(xid));
+
+		if (menus == NULL) {
+			window = bamf_window_get_transient(window);
+		}
+	}
+
+	g_debug("Switching to windows from XID %d", xid);
 
 	/* Note: This function can handle menus being NULL */
-	switch_default_app(appmenu, menus);
+	switch_default_app(appmenu, menus, BAMF_WINDOW(newview));
+
+	return;
+}
+
+/* Respond to the menus being destroyed.  We need to deregister
+   and make sure we weren't being shown.  */
+static void
+menus_destroyed (GObject * menus, gpointer user_data)
+{
+	WindowMenus * wm = WINDOW_MENUS(menus);
+	IndicatorAppmenu * iapp = INDICATOR_APPMENU(user_data);
+
+	/* If we're it, let's remove ourselves and BAMF will probably
+	   give us a new entry in a bit. */
+	if (iapp->default_app == wm) {
+		switch_default_app(iapp, NULL, NULL);
+	}
+
+	guint xid = window_menus_get_xid(wm);
+	g_hash_table_steal(iapp->apps, GUINT_TO_POINTER(xid));
 
 	return;
 }
@@ -427,20 +704,18 @@ _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, gui
 
 	if (g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid)) == NULL) {
 		WindowMenus * wm = window_menus_new(windowid, dbus_g_method_get_sender(method), objectpath);
+		g_return_val_if_fail(wm != NULL, FALSE);
+
+		g_signal_connect(G_OBJECT(wm), WINDOW_MENUS_SIGNAL_DESTROY, G_CALLBACK(menus_destroyed), iapp);
+
 		g_hash_table_insert(iapp->apps, GUINT_TO_POINTER(windowid), wm);
 
 		g_signal_emit(G_OBJECT(iapp), signals[WINDOW_REGISTERED], 0, windowid, objectpath, TRUE);
 
-		/* Node: Does not cause ref */
+		/* Note: Does not cause ref */
 		BamfWindow * win = bamf_matcher_get_active_window(iapp->matcher);
-		guint32 xid = 0;
-		if (BAMF_IS_WINDOW(win)) {
-			xid = bamf_window_get_xid(win);
-		}
 
-		if (xid != 0 && xid == windowid) {
-			switch_default_app(iapp, wm);
-		}
+		active_window_changed(iapp->matcher, NULL, BAMF_VIEW(win), iapp);
 	} else {
 		g_warning("Already have a menu for window ID %d with path %s from %s", windowid, objectpath, dbus_g_method_get_sender(method));
 	}
@@ -468,7 +743,7 @@ request_name_cb (DBusGProxy *proxy, guint result, GError * inerror, gpointer use
 	if (error) {
 		/* We can rest assured no one will register with us, but let's
 		   just ensure we're not showing anything. */
-		switch_default_app(INDICATOR_APPMENU(userdata), NULL);
+		switch_default_app(INDICATOR_APPMENU(userdata), NULL, NULL);
 	}
 
 	g_object_unref(proxy);

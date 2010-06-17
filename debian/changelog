@@ -1,9 +1,22 @@
-indicator-appmenu (0.0.5-0ubuntu2) UNRELEASED; urgency=low
+indicator-appmenu (0.0.6-0ubuntu1) UNRELEASED; urgency=low
 
-  * debian/control
-    - Added recommends for appmenu-gtk
+  * debian/control: Updating libbamf-dev to 0.2.30
 
- -- Ken VanDine <ken.vandine@canonical.com>  Tue, 15 Jun 2010 12:00:10 -0400
+  [Ted Gould]
+  * debian/control: Updating libbamf-dev to 0.2.28
+  * New upstream release.
+    * Adding support for default window menus and a dummy
+      desktop menu.
+    * Transient detection on new windows
+    * Look for transient windows on window switching.
+    * Fix visiblity and enable defaults
+    * Watching for applications dropping off the bus and removing
+      their windows.
+  * Adding indicator-appmenu-crashdb.conf and source_indicator-appmenu.py
+    so that bugs reported with ubuntu-bug will go to the upstream project
+    if the package is gotten from a PPA.
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Thu, 17 Jun 2010 16:27:04 -0400
 
 indicator-appmenu (0.0.5-0ubuntu1) maverick; urgency=low
 

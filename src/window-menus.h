@@ -37,6 +37,7 @@ G_BEGIN_DECLS
 
 #define WINDOW_MENUS_SIGNAL_ENTRY_ADDED    "entry-added"
 #define WINDOW_MENUS_SIGNAL_ENTRY_REMOVED  "entry-removed"
+#define WINDOW_MENUS_SIGNAL_DESTROY        "destroy"
 
 typedef struct _WindowMenus      WindowMenus;
 typedef struct _WindowMenusClass WindowMenusClass;
@@ -47,6 +48,8 @@ struct _WindowMenusClass {
 	/* Signals */
 	void (*entry_added)   (WindowMenus * wm, IndicatorObjectEntry * entry, gpointer user_data);
 	void (*entry_removed) (WindowMenus * wm, IndicatorObjectEntry * entry, gpointer user_data);
+
+	void (*destroy)       (WindowMenus * wm, gpointer user_data);
 };
 
 struct _WindowMenus {
