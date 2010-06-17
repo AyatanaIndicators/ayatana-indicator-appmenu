@@ -1,20 +1,19 @@
-indicator-appmenu (0.0.5-0ubuntu3~ppa2) lucid; urgency=low
+indicator-appmenu (0.0.6-0ubuntu1~ppa1) UNRELEASED; urgency=low
 
-  * Upstream Merge
+  * debian/control: Updating libbamf-dev to 0.2.28
+  * New upstream release.
     * Adding support for default window menus and a dummy
       desktop menu.
-
- -- Ted Gould <ted@ubuntu.com>  Thu, 17 Jun 2010 09:38:34 -0500
-
-indicator-appmenu (0.0.5-0ubuntu3~ppa1) lucid; urgency=low
-
-  * debian/control: Updating libbamf-dev to 0.2.28-0ubuntu2+r265
-  * Upstream Merge
     * Transient detection on new windows
     * Look for transient windows on window switching.
     * Fix visiblity and enable defaults
+    * Watching for applications dropping off the bus and removing
+      their windows.
+  * Adding indicator-appmenu-crashdb.conf and source_indicator-appmenu.py
+    so that bugs reported with ubuntu-bug will go to the upstream project
+    if the package is gotten from a PPA.
 
- -- Ted Gould <ted@ubuntu.com>  Wed, 16 Jun 2010 11:45:33 -0500
+ -- Ted Gould <ted@ubuntu.com>  Thu, 17 Jun 2010 14:41:45 -0500
 
 indicator-appmenu (0.0.5-0ubuntu2) UNRELEASED; urgency=low
 
@@ -22,22 +21,6 @@ indicator-appmenu (0.0.5-0ubuntu2) UNRELEASED; urgency=low
     - Added recommends for appmenu-gtk
 
  -- Ken VanDine <ken.vandine@canonical.com>  Tue, 15 Jun 2010 12:00:10 -0400
-
-indicator-appmenu (0.0.5-0ubuntu2~ppa2) lucid; urgency=low
-
-  * Upstream Merge
-    * Watching for applications dropping off the bus and removing
-      their windows.
-
- -- Ted Gould <ted@ubuntu.com>  Tue, 15 Jun 2010 15:52:25 -0500
-
-indicator-appmenu (0.0.5-0ubuntu2~ppa1) lucid; urgency=low
-
-  * Adding indicator-appmenu-crashdb.conf and source_indicator-appmenu.py
-    so that bugs reported with ubuntu-bug will go to the upstream project
-    if the package is gotten from a PPA.
-
- -- Ted Gould <ted@ubuntu.com>  Fri, 11 Jun 2010 15:39:57 -0500
 
 indicator-appmenu (0.0.5-0ubuntu1) maverick; urgency=low
 
