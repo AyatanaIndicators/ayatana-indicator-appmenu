@@ -1,3 +1,11 @@
+indicator-appmenu (0.0.5-0ubuntu3~ppa2) lucid; urgency=low
+
+  * Upstream Merge
+    * Adding support for default window menus and a dummy
+      desktop menu.
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 17 Jun 2010 09:24:24 -0500
+
 indicator-appmenu (0.0.5-0ubuntu3~ppa1) lucid; urgency=low
 
   * debian/control: Updating libbamf-dev to 0.2.28-0ubuntu2+r265
