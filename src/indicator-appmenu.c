@@ -416,6 +416,25 @@ build_window_menus (IndicatorAppmenu * iapp)
 static void
 build_desktop_menus (IndicatorAppmenu * iapp)
 {
+	IndicatorObjectEntry entries[1] = {{0}};
+
+	/* File Menu */
+	entries[0].label = GTK_LABEL(gtk_label_new("Desktop"));
+	g_object_ref(G_OBJECT(entries[0].label));
+	gtk_widget_show(GTK_WIDGET(entries[0].label));
+
+	entries[0].menu = GTK_MENU(gtk_menu_new());
+	g_object_ref(G_OBJECT(entries[0].menu));
+
+	GtkMenuItem * mi = GTK_MENU_ITEM(gtk_menu_item_new_with_label("Desktop Menus will go here"));
+	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
+	gtk_widget_show(GTK_WIDGET(mi));
+	gtk_menu_append(entries[0].menu, GTK_WIDGET(mi));
+
+	gtk_widget_show(GTK_WIDGET(entries[0].menu));
+
+	/* Copy the entries on the stack into the array */
+	g_array_insert_vals(iapp->window_menus, 0, entries, 1);
 
 	return;
 }
