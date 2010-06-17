@@ -559,6 +559,12 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * 
 			   the ones being shown. */
 			int i;
 			for (i = 0; i < iapp->desktop_menus->len; i++) {
+				if (g_array_index(iapp->desktop_menus, IndicatorObjectEntry, i).label != NULL) {
+					gtk_widget_hide(GTK_WIDGET(g_array_index(iapp->desktop_menus, IndicatorObjectEntry, i).label));
+				}
+				if (g_array_index(iapp->desktop_menus, IndicatorObjectEntry, i).menu != NULL) {
+					gtk_menu_detach(g_array_index(iapp->desktop_menus, IndicatorObjectEntry, i).menu);
+				}
 				g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_REMOVED_ID, 0, &g_array_index(iapp->desktop_menus, IndicatorObjectEntry, i), TRUE);
 			}
 		} else {
@@ -566,6 +572,12 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * 
 			   specific menu items shown. */
 			int i;
 			for (i = 0; i < iapp->window_menus->len; i++) {
+				if (g_array_index(iapp->window_menus, IndicatorObjectEntry, i).label != NULL) {
+					gtk_widget_hide(GTK_WIDGET(g_array_index(iapp->window_menus, IndicatorObjectEntry, i).label));
+				}
+				if (g_array_index(iapp->window_menus, IndicatorObjectEntry, i).menu != NULL) {
+					gtk_menu_detach(g_array_index(iapp->window_menus, IndicatorObjectEntry, i).menu);
+				}
 				g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_REMOVED_ID, 0, &g_array_index(iapp->window_menus, IndicatorObjectEntry, i), TRUE);
 			}
 		}
@@ -609,6 +621,9 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * 
 			   the ones being shown. */
 			int i;
 			for (i = 0; i < iapp->desktop_menus->len; i++) {
+				if (g_array_index(iapp->desktop_menus, IndicatorObjectEntry, i).label != NULL) {
+					gtk_widget_show(GTK_WIDGET(g_array_index(iapp->desktop_menus, IndicatorObjectEntry, i).label));
+				}
 				g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_ADDED_ID, 0, &g_array_index(iapp->desktop_menus, IndicatorObjectEntry, i), TRUE);
 			}
 		} else {
@@ -616,6 +631,9 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * 
 			   specific menu items shown. */
 			int i;
 			for (i = 0; i < iapp->window_menus->len; i++) {
+				if (g_array_index(iapp->window_menus, IndicatorObjectEntry, i).label != NULL) {
+					gtk_widget_show(GTK_WIDGET(g_array_index(iapp->window_menus, IndicatorObjectEntry, i).label));
+				}
 				g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_ADDED_ID, 0, &g_array_index(iapp->window_menus, IndicatorObjectEntry, i), TRUE);
 			}
 		}
