@@ -334,11 +334,25 @@ get_entries (IndicatorObject * io)
 	g_return_val_if_fail(IS_INDICATOR_APPMENU(io), NULL);
 	IndicatorAppmenu * iapp = INDICATOR_APPMENU(io);
 
-	if (iapp->default_app == NULL) {
-		return NULL;
+	if (iapp->default_app != NULL) {
+		return window_menus_get_entries(iapp->default_app);
 	}
 
-	return window_menus_get_entries(iapp->default_app);
+	GArray * entryarray;
+	if (iapp->active_window == NULL) {
+		entryarray = iapp->desktop_menus;
+	} else {
+		entryarray = iapp->window_menus;
+	}
+
+	GList * output = NULL;
+	int i;
+
+	for (i = 0; i < entryarray->len; i++) {
+		output = g_list_append(output, &g_array_index(entryarray, IndicatorObjectEntry, i));
+	}
+
+	return output;
 }
 
 /* Grabs the location of the entry */
