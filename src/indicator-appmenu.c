@@ -348,7 +348,30 @@ get_location (IndicatorObject * io, IndicatorObjectEntry * entry)
 	guint count = 0;
 	IndicatorAppmenu * iapp = INDICATOR_APPMENU(io);
 	if (iapp->default_app != NULL) {
+		/* Find the location in the app */
 		count = window_menus_get_location(iapp->default_app, entry);
+	} else if (iapp->active_window != NULL) {
+		/* Find the location in the window menus */
+		for (count = 0; count < iapp->window_menus->len; count++) {
+			if (entry == &g_array_index(iapp->window_menus, IndicatorObjectEntry, count)) {
+				break;
+			}
+		}
+		if (count == iapp->window_menus->len) {
+			g_warning("Unable to find entry in default window menus");
+			count = 0;
+		}
+	} else {
+		/* Find the location in the desktop menus */
+		for (count = 0; count < iapp->desktop_menus->len; count++) {
+			if (entry == &g_array_index(iapp->desktop_menus, IndicatorObjectEntry, count)) {
+				break;
+			}
+		}
+		if (count == iapp->desktop_menus->len) {
+			g_warning("Unable to find entry in default window menus");
+			count = 0;
+		}
 	}
 	return count;
 }
