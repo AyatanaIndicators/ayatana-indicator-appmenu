@@ -146,6 +146,8 @@ window_menus_finalize (GObject *object)
 {
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(object);
 
+	g_debug("Window Menus Object finalizing for: %d", priv->windowid);
+
 	if (priv->entries != NULL) {
 		int i;
 		for (i = 0; i < priv->entries->len; i++) {
