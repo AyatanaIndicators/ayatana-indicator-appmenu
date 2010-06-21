@@ -642,7 +642,11 @@ menus_destroyed (GObject * menus, gpointer user_data)
 	}
 
 	guint xid = window_menus_get_xid(wm);
+	g_return_if_fail(xid != 0);
+
 	g_hash_table_steal(iapp->apps, GUINT_TO_POINTER(xid));
+
+	g_debug("Removing menus for %d", xid);
 
 	return;
 }
@@ -653,7 +657,7 @@ _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, gui
 {
 	g_debug("Registering window ID %d with path %s from %s", windowid, objectpath, dbus_g_method_get_sender(method));
 
-	if (g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid)) == NULL) {
+	if (g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid)) == NULL && windowid != 0) {
 		WindowMenus * wm = window_menus_new(windowid, dbus_g_method_get_sender(method), objectpath);
 		g_return_val_if_fail(wm != NULL, FALSE);
 
@@ -668,7 +672,11 @@ _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, gui
 
 		active_window_changed(iapp->matcher, NULL, BAMF_VIEW(win), iapp);
 	} else {
-		g_warning("Already have a menu for window ID %d with path %s from %s", windowid, objectpath, dbus_g_method_get_sender(method));
+		if (windowid == 0) {
+			g_warning("Can't build windows for a NULL window ID %d with path %s from %s", windowid, objectpath, dbus_g_method_get_sender(method));
+		} else {
+			g_warning("Already have a menu for window ID %d with path %s from %s", windowid, objectpath, dbus_g_method_get_sender(method));
+		}
 	}
 
 	dbus_g_method_return(method);
