@@ -507,6 +507,8 @@ get_location (IndicatorObject * io, IndicatorObjectEntry * entry)
 static void
 switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * active_window)
 {
+	GList * entry_head, * entries;
+
 	if (iapp->default_app == newdef && iapp->default_app != NULL) {
 		/* We've got an app with menus and it hasn't changed. */
 
@@ -521,72 +523,38 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * 
 		return;
 	}
 
-	GList * entries;
+	entry_head = indicator_object_get_entries(INDICATOR_OBJECT(iapp));
 
-	/* No matter what, we want to remove the old application menu */
-	if (iapp->default_app != NULL) {
-		for (entries = window_menus_get_entries(iapp->default_app); entries != NULL; entries = g_list_next(entries)) {
-			IndicatorObjectEntry * entry = (IndicatorObjectEntry *)entries->data;
+	for (entries = entry_head; entries != NULL; entries = g_list_next(entries)) {
+		IndicatorObjectEntry * entry = (IndicatorObjectEntry *)entries->data;
 
-			if (entry->label != NULL) {
-				gtk_widget_hide(GTK_WIDGET(entry->label));
-			}
-
-			if (entry->menu != NULL) {
-				gtk_menu_detach(entry->menu);
-			}
-
-			g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_REMOVED_ID, 0, entries->data, TRUE);
-		}
-	
-		/* Disconnect signals */
-		if (iapp->sig_entry_added != 0) {
-			g_signal_handler_disconnect(G_OBJECT(iapp->default_app), iapp->sig_entry_added);
-			iapp->sig_entry_added = 0;
-		}
-		if (iapp->sig_entry_removed != 0) {
-			g_signal_handler_disconnect(G_OBJECT(iapp->default_app), iapp->sig_entry_removed);
-			iapp->sig_entry_removed = 0;
+		if (entry->label != NULL) {
+			gtk_widget_hide(GTK_WIDGET(entry->label));
 		}
 
-		iapp->default_app = NULL;
-	} else {
-		/* If the default app was previously NULL, then we probably had other
-		   menus up.  Let's remove those. */
-
-		if (iapp->active_window == NULL) {
-			/* No active window means that the desktop menu items were
-			   the ones being shown. */
-			int i;
-			for (i = 0; i < iapp->desktop_menus->len; i++) {
-				if (g_array_index(iapp->desktop_menus, IndicatorObjectEntry, i).label != NULL) {
-					gtk_widget_hide(GTK_WIDGET(g_array_index(iapp->desktop_menus, IndicatorObjectEntry, i).label));
-				}
-				if (g_array_index(iapp->desktop_menus, IndicatorObjectEntry, i).menu != NULL) {
-					gtk_menu_detach(g_array_index(iapp->desktop_menus, IndicatorObjectEntry, i).menu);
-				}
-				g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_REMOVED_ID, 0, &g_array_index(iapp->desktop_menus, IndicatorObjectEntry, i), TRUE);
-			}
-		} else {
-			/* We had an active window so we must have had the window
-			   specific menu items shown. */
-			int i;
-			for (i = 0; i < iapp->window_menus->len; i++) {
-				if (g_array_index(iapp->window_menus, IndicatorObjectEntry, i).label != NULL) {
-					gtk_widget_hide(GTK_WIDGET(g_array_index(iapp->window_menus, IndicatorObjectEntry, i).label));
-				}
-				if (g_array_index(iapp->window_menus, IndicatorObjectEntry, i).menu != NULL) {
-					gtk_menu_detach(g_array_index(iapp->window_menus, IndicatorObjectEntry, i).menu);
-				}
-				g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_REMOVED_ID, 0, &g_array_index(iapp->window_menus, IndicatorObjectEntry, i), TRUE);
-			}
+		if (entry->menu != NULL) {
+			gtk_menu_detach(entry->menu);
 		}
+
+		g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_REMOVED_ID, 0, entries->data, TRUE);
 	}
 
-	/* Through either the if or the setting, we know at this point that iapp->default_app
-	   is NULL and all the menus from it have been removed. */
+	g_list_free(entry_head);
+	
+	/* Disconnect signals */
+	if (iapp->sig_entry_added != 0) {
+		g_signal_handler_disconnect(G_OBJECT(iapp->default_app), iapp->sig_entry_added);
+		iapp->sig_entry_added = 0;
+	}
+	if (iapp->sig_entry_removed != 0) {
+		g_signal_handler_disconnect(G_OBJECT(iapp->default_app), iapp->sig_entry_removed);
+		iapp->sig_entry_removed = 0;
+	}
 
-	/* Update the active window pointer */
+	/* Default App is NULL, let's see if it needs replacement */
+	iapp->default_app = NULL;
+
+	/* Update the active window pointer -- may be NULL */
 	iapp->active_window = active_window;
 
 	/* If we're putting up a new window, let's do that now. */
@@ -603,41 +571,24 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * 
 		                                           WINDOW_MENUS_SIGNAL_ENTRY_REMOVED,
 		                                           G_CALLBACK(window_entry_removed),
 		                                           iapp);
-
-		/* Add new */
-		for (entries = window_menus_get_entries(iapp->default_app); entries != NULL; entries = g_list_next(entries)) {
-			IndicatorObjectEntry * entry = (IndicatorObjectEntry *)entries->data;
-
-			if (entry->label != NULL) {
-				gtk_widget_show(GTK_WIDGET(entry->label));
-			}
-
-			g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_ADDED_ID, 0, entries->data, TRUE);
-		}
-	} else {
-		/* No new application here we need to put up something.  No blankness. */
-		if (iapp->active_window == NULL) {
-			/* No active window means that the desktop menu items were
-			   the ones being shown. */
-			int i;
-			for (i = 0; i < iapp->desktop_menus->len; i++) {
-				if (g_array_index(iapp->desktop_menus, IndicatorObjectEntry, i).label != NULL) {
-					gtk_widget_show(GTK_WIDGET(g_array_index(iapp->desktop_menus, IndicatorObjectEntry, i).label));
-				}
-				g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_ADDED_ID, 0, &g_array_index(iapp->desktop_menus, IndicatorObjectEntry, i), TRUE);
-			}
-		} else {
-			/* We had an active window so we must have had the window
-			   specific menu items shown. */
-			int i;
-			for (i = 0; i < iapp->window_menus->len; i++) {
-				if (g_array_index(iapp->window_menus, IndicatorObjectEntry, i).label != NULL) {
-					gtk_widget_show(GTK_WIDGET(g_array_index(iapp->window_menus, IndicatorObjectEntry, i).label));
-				}
-				g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_ADDED_ID, 0, &g_array_index(iapp->window_menus, IndicatorObjectEntry, i), TRUE);
-			}
-		}
 	}
+
+	/* Get our new list of entries.  Now we can go ahead and signal
+	   that each of them has been added */
+
+	entry_head = indicator_object_get_entries(INDICATOR_OBJECT(iapp));
+
+	for (entries = entry_head; entries != NULL; entries = g_list_next(entries)) {
+		IndicatorObjectEntry * entry = (IndicatorObjectEntry *)entries->data;
+
+		if (entry->label != NULL) {
+			gtk_widget_show(GTK_WIDGET(entry->label));
+		}
+
+		g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_ADDED_ID, 0, entries->data, TRUE);
+	}
+
+	g_list_free(entry_head);
 
 	return;
 }
@@ -691,7 +642,11 @@ menus_destroyed (GObject * menus, gpointer user_data)
 	}
 
 	guint xid = window_menus_get_xid(wm);
+	g_return_if_fail(xid != 0);
+
 	g_hash_table_steal(iapp->apps, GUINT_TO_POINTER(xid));
+
+	g_debug("Removing menus for %d", xid);
 
 	return;
 }
@@ -702,7 +657,7 @@ _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, gui
 {
 	g_debug("Registering window ID %d with path %s from %s", windowid, objectpath, dbus_g_method_get_sender(method));
 
-	if (g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid)) == NULL) {
+	if (g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid)) == NULL && windowid != 0) {
 		WindowMenus * wm = window_menus_new(windowid, dbus_g_method_get_sender(method), objectpath);
 		g_return_val_if_fail(wm != NULL, FALSE);
 
@@ -717,7 +672,11 @@ _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, gui
 
 		active_window_changed(iapp->matcher, NULL, BAMF_VIEW(win), iapp);
 	} else {
-		g_warning("Already have a menu for window ID %d with path %s from %s", windowid, objectpath, dbus_g_method_get_sender(method));
+		if (windowid == 0) {
+			g_warning("Can't build windows for a NULL window ID %d with path %s from %s", windowid, objectpath, dbus_g_method_get_sender(method));
+		} else {
+			g_warning("Already have a menu for window ID %d with path %s from %s", windowid, objectpath, dbus_g_method_get_sender(method));
+		}
 	}
 
 	dbus_g_method_return(method);

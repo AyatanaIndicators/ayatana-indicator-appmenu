@@ -25,6 +25,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <libdbusmenu-gtk/menu.h>
 #include <dbus/dbus-glib.h>
+#include <glib.h>
 
 #include "window-menus.h"
 
@@ -146,6 +147,8 @@ window_menus_finalize (GObject *object)
 {
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(object);
 
+	g_debug("Window Menus Object finalizing for: %d", priv->windowid);
+
 	if (priv->entries != NULL) {
 		int i;
 		for (i = 0; i < priv->entries->len; i++) {
@@ -174,11 +177,17 @@ window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * d
 {
 	g_debug("Creating new windows menu: %X, %s, %s", windowid, dbus_addr, dbus_object);
 
+	g_return_val_if_fail(windowid != 0, NULL);
+	g_return_val_if_fail(dbus_addr != NULL, NULL);
+	g_return_val_if_fail(dbus_object != NULL, NULL);
+
 	DBusGConnection * session_bus = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
 	g_return_val_if_fail(session_bus != NULL, NULL);
 
 	WindowMenus * newmenu = WINDOW_MENUS(g_object_new(WINDOW_MENUS_TYPE, NULL));
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(newmenu);
+
+	priv->windowid = windowid;
 
 	priv->props = dbus_g_proxy_new_for_name_owner(session_bus,
 	                                              dbus_addr,
@@ -214,6 +223,7 @@ properties_destroyed (GObject * object, gpointer user_data)
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
 
 	priv->props = NULL;
+	g_debug("Properties destroyed for window: %d", priv->windowid);
 
 	g_object_unref(G_OBJECT(wm));
 	return;
