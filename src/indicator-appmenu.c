@@ -642,6 +642,8 @@ menus_destroyed (GObject * menus, gpointer user_data)
 	}
 
 	guint xid = window_menus_get_xid(wm);
+	g_return_if_fail(xid != 0);
+
 	g_hash_table_steal(iapp->apps, GUINT_TO_POINTER(xid));
 
 	g_debug("Removing menus for %d", xid);

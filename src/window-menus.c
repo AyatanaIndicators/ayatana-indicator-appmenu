@@ -25,6 +25,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <libdbusmenu-gtk/menu.h>
 #include <dbus/dbus-glib.h>
+#include <glib.h>
 
 #include "window-menus.h"
 
@@ -175,6 +176,10 @@ WindowMenus *
 window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * dbus_object)
 {
 	g_debug("Creating new windows menu: %X, %s, %s", windowid, dbus_addr, dbus_object);
+
+	g_return_val_if_fail(windowid != 0, NULL);
+	g_return_val_if_fail(dbus_addr != NULL, NULL);
+	g_return_val_if_fail(dbus_object != NULL, NULL);
 
 	DBusGConnection * session_bus = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
 	g_return_val_if_fail(session_bus != NULL, NULL);
