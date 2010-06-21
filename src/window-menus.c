@@ -182,6 +182,8 @@ window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * d
 	WindowMenus * newmenu = WINDOW_MENUS(g_object_new(WINDOW_MENUS_TYPE, NULL));
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(newmenu);
 
+	priv->windowid = windowid;
+
 	priv->props = dbus_g_proxy_new_for_name_owner(session_bus,
 	                                              dbus_addr,
 	                                              dbus_object,
@@ -216,6 +218,7 @@ properties_destroyed (GObject * object, gpointer user_data)
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
 
 	priv->props = NULL;
+	g_debug("Properties destroyed for window: %d", priv->windowid);
 
 	g_object_unref(G_OBJECT(wm));
 	return;
