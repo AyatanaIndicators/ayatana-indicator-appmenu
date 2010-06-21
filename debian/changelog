@@ -1,9 +1,9 @@
-indicator-appmenu (0.0.6-0ubuntu2~ppa1) UNRELEASED; urgency=low
+indicator-appmenu (0.0.6-0ubuntu2~ppa1) lucid; urgency=low
 
   * Upstream Merge
     * Setting the window ID and debug check
 
- -- Ted Gould <ted@ubuntu.com>  Mon, 21 Jun 2010 15:42:28 -0500
+ -- Ted Gould <ted@ubuntu.com>  Mon, 21 Jun 2010 15:43:02 -0500
 
 indicator-appmenu (0.0.6-0ubuntu1) maverick; urgency=low
 
