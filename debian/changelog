@@ -3,7 +3,7 @@ indicator-appmenu (0.0.6-0ubuntu2~ppa2~accel1) lucid; urgency=low
   * Upstream Merge
     * Accelerator support
 
- -- Ted Gould <ted@ubuntu.com>  Mon, 21 Jun 2010 15:44:51 -0500
+ -- Ted Gould <ted@ubuntu.com>  Mon, 21 Jun 2010 15:46:04 -0500
 
 indicator-appmenu (0.0.6-0ubuntu2~ppa1) lucid; urgency=low
 
