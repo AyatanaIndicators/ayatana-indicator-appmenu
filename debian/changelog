@@ -1,9 +1,9 @@
-indicator-appmenu (0.0.6-0ubuntu2~ppa2) UNRELEASED; urgency=low
+indicator-appmenu (0.0.6-0ubuntu2~ppa2) lucid; urgency=low
 
   * Upstream Merge
     * Accelerator support
 
- -- Ted Gould <ted@ubuntu.com>  Tue, 22 Jun 2010 14:36:23 -0500
+ -- Ted Gould <ted@ubuntu.com>  Tue, 22 Jun 2010 14:38:13 -0500
 
 indicator-appmenu (0.0.6-0ubuntu2~ppa1) lucid; urgency=low
 
