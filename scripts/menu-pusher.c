@@ -23,6 +23,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <dbus/dbus-glib.h>
 #include <libdbusmenu-glib/menuitem.h>
 #include <libdbusmenu-glib/server.h>
+#include <libdbusmenu-gtk/menuitem.h>
 #include "../src/dbus-shared.h"
 #include "../src/application-menu-registrar-client.h"
 
@@ -39,10 +40,12 @@ main (int argv, char ** argc)
 
 	DbusmenuMenuitem * secondlevel = dbusmenu_menuitem_new();
 	dbusmenu_menuitem_property_set(secondlevel, DBUSMENU_MENUITEM_PROP_LABEL, "Open");
+	dbusmenu_menuitem_property_set_shortcut_string(secondlevel, "<Control>O");
 	dbusmenu_menuitem_child_append(firstlevel, secondlevel);
 
 	secondlevel = dbusmenu_menuitem_new();
 	dbusmenu_menuitem_property_set(secondlevel, DBUSMENU_MENUITEM_PROP_LABEL, "Save");
+	dbusmenu_menuitem_property_set_shortcut_string(secondlevel, "<Control>S");
 	dbusmenu_menuitem_child_append(firstlevel, secondlevel);
 
 	secondlevel = dbusmenu_menuitem_new();
