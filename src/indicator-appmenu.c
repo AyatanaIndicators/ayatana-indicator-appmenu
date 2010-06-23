@@ -75,6 +75,8 @@ struct _IndicatorAppmenu {
 	gulong sig_entry_added;
 	gulong sig_entry_removed;
 
+	GtkMenuItem * close_item;
+
 	GArray * window_menus;
 	GArray * desktop_menus;
 
@@ -207,6 +209,7 @@ indicator_appmenu_init (IndicatorAppmenu *self)
 	self->apps = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_object_unref);
 	self->matcher = NULL;
 	self->active_window = NULL;
+	self->close_item = NULL;
 
 	/* Setup the entries for the fallbacks */
 	self->window_menus = g_array_sized_new(FALSE, FALSE, sizeof(IndicatorObjectEntry), 2);
@@ -350,6 +353,7 @@ build_window_menus (IndicatorAppmenu * iapp)
 	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
 	gtk_widget_show(GTK_WIDGET(mi));
 	gtk_menu_append(entries[0].menu, GTK_WIDGET(mi));
+	iapp->close_item = mi;
 
 	gtk_widget_show(GTK_WIDGET(entries[0].menu));
 
@@ -507,7 +511,14 @@ get_location (IndicatorObject * io, IndicatorObjectEntry * entry)
 static void
 switch_active_window (IndicatorAppmenu * iapp, BamfWindow * active_window)
 {
+	if (iapp->active_window == active_window) {
+		return;
+	}
+
 	iapp->active_window = active_window;
+
+
+
 	return;
 }
 
