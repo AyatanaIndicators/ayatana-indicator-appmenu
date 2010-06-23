@@ -502,6 +502,15 @@ get_location (IndicatorObject * io, IndicatorObjectEntry * entry)
 	return count;
 }
 
+/* A helper for switch_default_app that takes care of the
+   switching of the active window variable */
+static void
+switch_active_window (IndicatorAppmenu * iapp, BamfWindow * active_window)
+{
+	iapp->active_window = active_window;
+	return;
+}
+
 /* Switch applications, remove all the entires for the previous
    one and add them for the new application */
 static void
@@ -514,7 +523,7 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * 
 
 		/* Keep active window up-to-date, though we're probably not
 		   using it much. */
-		iapp->active_window = active_window;
+		switch_active_window(iapp, active_window);
 		return;
 	}
 	if (iapp->default_app == NULL && iapp->active_window == active_window) {
@@ -555,7 +564,7 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * 
 	iapp->default_app = NULL;
 
 	/* Update the active window pointer -- may be NULL */
-	iapp->active_window = active_window;
+	switch_active_window(iapp, active_window);
 
 	/* If we're putting up a new window, let's do that now. */
 	if (newdef != NULL) {
