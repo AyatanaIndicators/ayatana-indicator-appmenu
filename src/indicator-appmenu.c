@@ -346,7 +346,7 @@ build_window_menus (IndicatorAppmenu * iapp)
 		g_warning("Unable to find the file menu stock item");
 		stockitem.label = "_File";
 	}
-	entries[0].label = GTK_LABEL(gtk_label_new(stockitem.label));
+	entries[0].label = GTK_LABEL(gtk_label_new_with_mnemonic(stockitem.label));
 	g_object_ref(G_OBJECT(entries[0].label));
 	gtk_widget_show(GTK_WIDGET(entries[0].label));
 
@@ -365,7 +365,7 @@ build_window_menus (IndicatorAppmenu * iapp)
 		g_warning("Unable to find the edit menu stock item");
 		stockitem.label = "_Edit";
 	}
-	entries[1].label = GTK_LABEL(gtk_label_new(stockitem.label));
+	entries[1].label = GTK_LABEL(gtk_label_new_with_mnemonic(stockitem.label));
 	g_object_ref(G_OBJECT(entries[1].label));
 	gtk_widget_show(GTK_WIDGET(entries[1].label));
 
