@@ -342,7 +342,10 @@ build_window_menus (IndicatorAppmenu * iapp)
 	GtkStockItem stockitem;
 
 	/* File Menu */
-	gtk_stock_lookup(GTK_STOCK_FILE, &stockitem);
+	if (!gtk_stock_lookup(GTK_STOCK_FILE, &stockitem)) {
+		g_warning("Unable to find the file menu stock item");
+		stockitem.label = "_File";
+	}
 	entries[0].label = GTK_LABEL(gtk_label_new(stockitem.label));
 	g_object_ref(G_OBJECT(entries[0].label));
 	gtk_widget_show(GTK_WIDGET(entries[0].label));
@@ -358,7 +361,10 @@ build_window_menus (IndicatorAppmenu * iapp)
 	gtk_widget_show(GTK_WIDGET(entries[0].menu));
 
 	/* Edit Menu */
-	gtk_stock_lookup(GTK_STOCK_EDIT, &stockitem);
+	if (!gtk_stock_lookup(GTK_STOCK_EDIT, &stockitem)) {
+		g_warning("Unable to find the edit menu stock item");
+		stockitem.label = "_Edit";
+	}
 	entries[1].label = GTK_LABEL(gtk_label_new(stockitem.label));
 	g_object_ref(G_OBJECT(entries[1].label));
 	gtk_widget_show(GTK_WIDGET(entries[1].label));
