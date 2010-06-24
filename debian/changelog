@@ -1,11 +1,11 @@
-indicator-appmenu (0.0.7-0ubuntu1) UNRELEASED; urgency=low
+indicator-appmenu (0.0.7-0ubuntu1~ppa1) lucid; urgency=low
 
   * New upstream release.
     * Accelerator support (LP: #586978)
     * Setting the window ID and debug check
   * debian/control: Updating libdbusmenu*-dev to 0.3.3
 
- -- Ted Gould <ted@ubuntu.com>  Thu, 24 Jun 2010 10:41:36 -0500
+ -- Ted Gould <ted@ubuntu.com>  Thu, 24 Jun 2010 10:54:52 -0500
 
 indicator-appmenu (0.0.6-0ubuntu1) maverick; urgency=low
 
