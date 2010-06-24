@@ -3,8 +3,9 @@ indicator-appmenu (0.0.7-0ubuntu1) UNRELEASED; urgency=low
   * New upstream release.
     * Accelerator support
     * Setting the window ID and debug check
+  * debian/control: Updating libdbusmenu*-dev to 0.3.3
 
- -- Ted Gould <ted@ubuntu.com>  Thu, 24 Jun 2010 10:40:39 -0500
+ -- Ted Gould <ted@ubuntu.com>  Thu, 24 Jun 2010 10:41:36 -0500
 
 indicator-appmenu (0.0.6-0ubuntu1) maverick; urgency=low
 
