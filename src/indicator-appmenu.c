@@ -339,10 +339,11 @@ build_window_menus (IndicatorAppmenu * iapp)
 	IndicatorObjectEntry entries[2] = {{0}, {0}};
 	GtkAccelGroup * agroup = gtk_accel_group_new();
 	GtkMenuItem * mi = NULL;
-	//GtkStockItem * stockitem = NULL;
+	GtkStockItem stockitem;
 
 	/* File Menu */
-	entries[0].label = GTK_LABEL(gtk_label_new("File"));
+	gtk_stock_lookup(GTK_STOCK_FILE, &stockitem);
+	entries[0].label = GTK_LABEL(gtk_label_new(stockitem.label));
 	g_object_ref(G_OBJECT(entries[0].label));
 	gtk_widget_show(GTK_WIDGET(entries[0].label));
 
@@ -357,7 +358,8 @@ build_window_menus (IndicatorAppmenu * iapp)
 	gtk_widget_show(GTK_WIDGET(entries[0].menu));
 
 	/* Edit Menu */
-	entries[1].label = GTK_LABEL(gtk_label_new("Edit"));
+	gtk_stock_lookup(GTK_STOCK_EDIT, &stockitem);
+	entries[1].label = GTK_LABEL(gtk_label_new(stockitem.label));
 	g_object_ref(G_OBJECT(entries[1].label));
 	gtk_widget_show(GTK_WIDGET(entries[1].label));
 
