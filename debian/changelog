@@ -1,4 +1,4 @@
-indicator-appmenu (0.0.7-0ubuntu1) UNRELEASED; urgency=low
+indicator-appmenu (0.0.7-0ubuntu1) maverick; urgency=low
 
   * New upstream release.
     * Accelerator support (LP: #586978)
