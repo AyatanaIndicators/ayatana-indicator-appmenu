@@ -35,6 +35,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "indicator-appmenu-marshal.h"
 #include "window-menus.h"
 #include "dbus-shared.h"
+#include "gdk-get-func.h"
 
 /**********************
   Indicator Object
@@ -517,7 +518,33 @@ switch_active_window (IndicatorAppmenu * iapp, BamfWindow * active_window)
 
 	iapp->active_window = active_window;
 
+	if (iapp->close_item == NULL) {
+		return;
+	}
 
+	gtk_widget_set_sensitive(GTK_WIDGET(iapp->close_item), FALSE);
+
+	guint xid = bamf_window_get_xid(iapp->active_window);
+	if (xid == 0) {
+		return;
+	}
+
+	GdkWindow * window = gdk_window_foreign_new(xid);
+	if (window == NULL) {
+		return;
+	}
+
+	GdkWMFunction functions;
+	if (!gdk_window_get_functions(window, &functions)) {
+		g_object_unref(window);
+		return;
+	}
+
+	if (functions & GDK_FUNC_ALL || functions & GDK_FUNC_CLOSE) {
+		gtk_widget_set_sensitive(GTK_WIDGET(iapp->close_item), TRUE);
+	}
+
+	g_object_unref(window);
 
 	return;
 }
