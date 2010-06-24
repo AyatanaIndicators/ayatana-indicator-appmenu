@@ -17,3 +17,4 @@ scripts/menu-pusher
 src/application-menu-debug-client.h
 src/application-menu-debug-server.h
 tools/current-menu-dump
+src/libappmenu_la-gdk-get-func.lo
