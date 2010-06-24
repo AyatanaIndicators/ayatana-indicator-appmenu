@@ -1,7 +1,7 @@
 indicator-appmenu (0.0.7-0ubuntu1) UNRELEASED; urgency=low
 
   * New upstream release.
-    * Accelerator support
+    * Accelerator support (LP: #586978)
     * Setting the window ID and debug check
   * debian/control: Updating libdbusmenu*-dev to 0.3.3
 
