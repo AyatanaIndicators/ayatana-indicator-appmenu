@@ -86,7 +86,8 @@ am__installdirs = "$(DESTDIR)$(appmenulibdir)"
 LTLIBRARIES = $(appmenulib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libappmenu_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
-am_libappmenu_la_OBJECTS = libappmenu_la-indicator-appmenu.lo \
+am_libappmenu_la_OBJECTS = libappmenu_la-gdk-get-func.lo \
+	libappmenu_la-indicator-appmenu.lo \
 	libappmenu_la-indicator-appmenu-marshal.lo \
 	libappmenu_la-window-menus.lo
 libappmenu_la_OBJECTS = $(am_libappmenu_la_OBJECTS)
@@ -269,13 +270,16 @@ libappmenu_la_SOURCES = \
 	application-menu-debug-server.h \
 	application-menu-registrar-server.h \
 	dbus-shared.h \
+	gdk-get-func.h \
+	gdk-get-func.c \
+	MwmUtil.h \
 	indicator-appmenu.c \
 	indicator-appmenu-marshal.c \
 	window-menus.c \
 	window-menus.h
 
 libappmenu_la_CFLAGS = $(INDICATOR_CFLAGS) -Wall -Wl,-Bsymbolic-functions -Wl,-z,defs -Wl,--as-needed -Werror
-libappmenu_la_LIBADD = $(INDICATOR_LIBS)
+libappmenu_la_LIBADD = $(INDICATOR_LIBS) -lX11
 libappmenu_la_LDFLAGS = -module -avoid-version
 
 ######################################
@@ -366,6 +370,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libappmenu_la-gdk-get-func.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libappmenu_la-indicator-appmenu-marshal.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libappmenu_la-indicator-appmenu.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libappmenu_la-window-menus.Plo@am__quote@
@@ -393,6 +398,14 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
+
+libappmenu_la-gdk-get-func.lo: gdk-get-func.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libappmenu_la_CFLAGS) $(CFLAGS) -MT libappmenu_la-gdk-get-func.lo -MD -MP -MF $(DEPDIR)/libappmenu_la-gdk-get-func.Tpo -c -o libappmenu_la-gdk-get-func.lo `test -f 'gdk-get-func.c' || echo '$(srcdir)/'`gdk-get-func.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libappmenu_la-gdk-get-func.Tpo $(DEPDIR)/libappmenu_la-gdk-get-func.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gdk-get-func.c' object='libappmenu_la-gdk-get-func.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libappmenu_la_CFLAGS) $(CFLAGS) -c -o libappmenu_la-gdk-get-func.lo `test -f 'gdk-get-func.c' || echo '$(srcdir)/'`gdk-get-func.c
 
 libappmenu_la-indicator-appmenu.lo: indicator-appmenu.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libappmenu_la_CFLAGS) $(CFLAGS) -MT libappmenu_la-indicator-appmenu.lo -MD -MP -MF $(DEPDIR)/libappmenu_la-indicator-appmenu.Tpo -c -o libappmenu_la-indicator-appmenu.lo `test -f 'indicator-appmenu.c' || echo '$(srcdir)/'`indicator-appmenu.c
