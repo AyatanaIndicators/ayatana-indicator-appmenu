@@ -117,7 +117,7 @@ gdk_window_get_mwm_hints (GdkWindow *window)
  * Returns: TRUE if the window has functions set, FALSE otherwise.
  **/
 gboolean
-gdk_window_get_functions(GdkWindow       *window,
+egg_window_get_functions(GdkWindow       *window,
 			   GdkWMFunction *functions)
 {
   MotifWmHints *hints;

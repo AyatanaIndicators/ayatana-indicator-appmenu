@@ -546,7 +546,7 @@ switch_active_window (IndicatorAppmenu * iapp, BamfWindow * active_window)
 	}
 
 	GdkWMFunction functions;
-	if (!gdk_window_get_functions(window, &functions)) {
+	if (!egg_window_get_functions(window, &functions)) {
 		g_object_unref(window);
 		return;
 	}
