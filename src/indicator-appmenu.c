@@ -542,11 +542,13 @@ switch_active_window (IndicatorAppmenu * iapp, BamfWindow * active_window)
 
 	GdkWindow * window = gdk_window_foreign_new(xid);
 	if (window == NULL) {
+		g_warning("Unable to get foreign window for: %d", xid);
 		return;
 	}
 
 	GdkWMFunction functions;
 	if (!egg_window_get_functions(window, &functions)) {
+		g_warning("Unable to get MWM functions for: %d", xid);
 		g_object_unref(window);
 		return;
 	}
