@@ -530,6 +530,7 @@ switch_active_window (IndicatorAppmenu * iapp, BamfWindow * active_window)
 	iapp->active_window = active_window;
 
 	if (iapp->close_item == NULL) {
+		g_warning("No close item!?!?!");
 		return;
 	}
 
