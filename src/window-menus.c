@@ -436,7 +436,7 @@ menu_entry_removed (DbusmenuMenuitem * root, DbusmenuMenuitem * oldentry, gpoint
 	g_return_if_fail(IS_WINDOW_MENUS(user_data));
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
 
-	if (priv->entries == NULL) {
+	if (priv->entries == NULL || priv->entries->len == 0) {
 		return;
 	}
 	
