@@ -435,6 +435,10 @@ menu_entry_removed (DbusmenuMenuitem * root, DbusmenuMenuitem * oldentry, gpoint
 {
 	g_return_if_fail(IS_WINDOW_MENUS(user_data));
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
+
+	if (priv->entries == NULL) {
+		return;
+	}
 	
 	/* TODO: find the menuitem */
 	IndicatorObjectEntry * entry = g_array_index(priv->entries, IndicatorObjectEntry *, priv->entries->len - 1);
