@@ -337,16 +337,23 @@ static void
 build_window_menus (IndicatorAppmenu * iapp)
 {
 	IndicatorObjectEntry entries[2] = {{0}, {0}};
+	GtkAccelGroup * agroup = gtk_accel_group_new();
+	GtkMenuItem * mi = NULL;
+	GtkStockItem stockitem;
 
 	/* File Menu */
-	entries[0].label = GTK_LABEL(gtk_label_new("File"));
+	if (!gtk_stock_lookup(GTK_STOCK_FILE, &stockitem)) {
+		g_warning("Unable to find the file menu stock item");
+		stockitem.label = "_File";
+	}
+	entries[0].label = GTK_LABEL(gtk_label_new_with_mnemonic(stockitem.label));
 	g_object_ref(G_OBJECT(entries[0].label));
 	gtk_widget_show(GTK_WIDGET(entries[0].label));
 
 	entries[0].menu = GTK_MENU(gtk_menu_new());
 	g_object_ref(G_OBJECT(entries[0].menu));
 
-	GtkMenuItem * mi = GTK_MENU_ITEM(gtk_menu_item_new_with_label("Close"));
+	mi = GTK_MENU_ITEM(gtk_image_menu_item_new_from_stock(GTK_STOCK_CLOSE, agroup));
 	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
 	gtk_widget_show(GTK_WIDGET(mi));
 	gtk_menu_append(entries[0].menu, GTK_WIDGET(mi));
@@ -354,43 +361,23 @@ build_window_menus (IndicatorAppmenu * iapp)
 	gtk_widget_show(GTK_WIDGET(entries[0].menu));
 
 	/* Edit Menu */
-	entries[1].label = GTK_LABEL(gtk_label_new("Edit"));
+	if (!gtk_stock_lookup(GTK_STOCK_EDIT, &stockitem)) {
+		g_warning("Unable to find the edit menu stock item");
+		stockitem.label = "_Edit";
+	}
+	entries[1].label = GTK_LABEL(gtk_label_new_with_mnemonic(stockitem.label));
 	g_object_ref(G_OBJECT(entries[1].label));
 	gtk_widget_show(GTK_WIDGET(entries[1].label));
 
 	entries[1].menu = GTK_MENU(gtk_menu_new());
 	g_object_ref(G_OBJECT(entries[1].menu));
 
-	mi = GTK_MENU_ITEM(gtk_menu_item_new_with_label("Undo"));
+	mi = GTK_MENU_ITEM(gtk_image_menu_item_new_from_stock(GTK_STOCK_UNDO, agroup));
 	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
 	gtk_widget_show(GTK_WIDGET(mi));
 	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
 
-	mi = GTK_MENU_ITEM(gtk_menu_item_new_with_label("Redo"));
-	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
-	gtk_widget_show(GTK_WIDGET(mi));
-	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
-
-	mi = GTK_MENU_ITEM(gtk_separator_menu_item_new());
-	gtk_widget_show(GTK_WIDGET(mi));
-	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
-
-	mi = GTK_MENU_ITEM(gtk_menu_item_new_with_label("Cut"));
-	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
-	gtk_widget_show(GTK_WIDGET(mi));
-	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
-
-	mi = GTK_MENU_ITEM(gtk_menu_item_new_with_label("Copy"));
-	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
-	gtk_widget_show(GTK_WIDGET(mi));
-	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
-
-	mi = GTK_MENU_ITEM(gtk_menu_item_new_with_label("Paste"));
-	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
-	gtk_widget_show(GTK_WIDGET(mi));
-	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
-
-	mi = GTK_MENU_ITEM(gtk_menu_item_new_with_label("Delete"));
+	mi = GTK_MENU_ITEM(gtk_image_menu_item_new_from_stock(GTK_STOCK_REDO, agroup));
 	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
 	gtk_widget_show(GTK_WIDGET(mi));
 	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
@@ -399,7 +386,31 @@ build_window_menus (IndicatorAppmenu * iapp)
 	gtk_widget_show(GTK_WIDGET(mi));
 	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
 
-	mi = GTK_MENU_ITEM(gtk_menu_item_new_with_label("Select All"));
+	mi = GTK_MENU_ITEM(gtk_image_menu_item_new_from_stock(GTK_STOCK_CUT, agroup));
+	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
+	gtk_widget_show(GTK_WIDGET(mi));
+	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
+
+	mi = GTK_MENU_ITEM(gtk_image_menu_item_new_from_stock(GTK_STOCK_COPY, agroup));
+	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
+	gtk_widget_show(GTK_WIDGET(mi));
+	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
+
+	mi = GTK_MENU_ITEM(gtk_image_menu_item_new_from_stock(GTK_STOCK_PASTE, agroup));
+	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
+	gtk_widget_show(GTK_WIDGET(mi));
+	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
+
+	mi = GTK_MENU_ITEM(gtk_image_menu_item_new_from_stock(GTK_STOCK_DELETE, agroup));
+	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
+	gtk_widget_show(GTK_WIDGET(mi));
+	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
+
+	mi = GTK_MENU_ITEM(gtk_separator_menu_item_new());
+	gtk_widget_show(GTK_WIDGET(mi));
+	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
+
+	mi = GTK_MENU_ITEM(gtk_image_menu_item_new_from_stock(GTK_STOCK_SELECT_ALL, agroup));
 	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
 	gtk_widget_show(GTK_WIDGET(mi));
 	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
@@ -517,7 +528,7 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * 
 		iapp->active_window = active_window;
 		return;
 	}
-	if (iapp->default_app == NULL && iapp->active_window == active_window) {
+	if (iapp->default_app == NULL && iapp->active_window == active_window && newdef == NULL) {
 		/* There's no application menus, but the active window hasn't
 		   changed.  So there's no change. */
 		return;
