@@ -30,6 +30,11 @@ destroy_cb (void)
 int
 main (int argv, char ** argc)
 {
+	if (argv != 2) {
+		g_print("'%s <JSON file>' is how you should use this program.\n", argc[0]);
+		return 1;
+	}
+
 	gtk_init(&argv, &argc);
 
 	window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
