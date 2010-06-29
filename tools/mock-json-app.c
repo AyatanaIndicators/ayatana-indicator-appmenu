@@ -44,6 +44,24 @@ register_cb (DBusGProxy *proxy, GError *error, gpointer userdata)
 	return;
 }
 
+static void
+dbus_owner_change (DBusGProxy * proxy, const gchar * name, const gchar * prev, const gchar * new, gpointer data)
+{
+	if (new == NULL || new[0] == '\0') {
+		/* We only care about folks coming on the bus.  Exit quickly otherwise. */
+		return;
+	}
+
+	if (g_strcmp0(name, DBUS_NAME)) {
+		/* We only care about this address, reject all others. */
+		return;
+	}
+
+	org_ayatana_WindowMenu_Registrar_register_window_async(registrar, GDK_WINDOW_XID (gtk_widget_get_window (window)), MENU_PATH, register_cb, NULL);
+
+	return;
+}
+
 static gboolean
 idle_func (gpointer user_data)
 {
@@ -58,6 +76,16 @@ idle_func (gpointer user_data)
 	g_return_val_if_fail(registrar != NULL, FALSE);
 
 	org_ayatana_WindowMenu_Registrar_register_window_async(registrar, GDK_WINDOW_XID (gtk_widget_get_window (window)), MENU_PATH, register_cb, NULL);
+
+	DBusGProxy * dbus_proxy = dbus_g_proxy_new_for_name(session_bus,
+		                                                DBUS_SERVICE_DBUS,
+		                                                DBUS_PATH_DBUS,
+		                                                DBUS_INTERFACE_DBUS);
+	dbus_g_proxy_add_signal(dbus_proxy, "NameOwnerChanged",
+	                        G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
+	                        G_TYPE_INVALID);
+	dbus_g_proxy_connect_signal(dbus_proxy, "NameOwnerChanged",
+	                            G_CALLBACK(dbus_owner_change), NULL, NULL);
 
 	return FALSE;
 }
