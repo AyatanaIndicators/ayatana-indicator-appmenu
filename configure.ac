@@ -53,6 +53,19 @@ AC_SUBST(INDICATOR_CFLAGS)
 AC_SUBST(INDICATOR_LIBS)
 
 ###########################
+# Test Dependencies
+###########################
+
+DBUSMENU_JSONLOADER_REQUIRED_VERSION=0.3.3
+
+PKG_CHECK_MODULES(INDICATORTEST,
+                  dbusmenu-jsonloader >= $DBUSMENU_JSONLOADER_REQUIRED_VERSION
+                 )
+
+AC_SUBST(INDICATORTEST_CFLAGS)
+AC_SUBST(INDICATORTEST_LIBS)
+
+###########################
 # Check to see if we're local
 ###########################
 
