@@ -1,12 +1,17 @@
 
 #include <gtk/gtk.h>
+#include <dbus/dbus-glib.h>
 #include <libdbusmenu-glib/server.h>
 #include <libdbusmenu-jsonloader/json-loader.h>
+
+#include "../src/dbus-shared.h"
+#include "../src/application-menu-registrar-client.h"
 
 #define MENU_PATH "/mock/json/app/menu"
 
 GtkWidget * window = NULL;
 DbusmenuServer * server = NULL;
+DBusGProxy * registrar = NULL;
 
 static gboolean
 idle_func (gpointer user_data)
@@ -16,6 +21,10 @@ idle_func (gpointer user_data)
 
 	DbusmenuServer * server = dbusmenu_server_new(MENU_PATH);
 	dbusmenu_server_set_root(server, root);
+
+	DBusGConnection * session_bus = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
+	registrar = dbus_g_proxy_new_for_name(session_bus, DBUS_NAME, REG_OBJECT, REG_IFACE);
+	g_return_val_if_fail(registrar != NULL, FALSE);
 
 	return FALSE;
 }
