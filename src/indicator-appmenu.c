@@ -528,7 +528,7 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * 
 		iapp->active_window = active_window;
 		return;
 	}
-	if (iapp->default_app == NULL && iapp->active_window == active_window) {
+	if (iapp->default_app == NULL && iapp->active_window == active_window && newdef == NULL) {
 		/* There's no application menus, but the active window hasn't
 		   changed.  So there's no change. */
 		return;
