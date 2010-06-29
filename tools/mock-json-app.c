@@ -1,5 +1,6 @@
 
 #include <gtk/gtk.h>
+#include <gdk/gdkx.h>
 #include <dbus/dbus-glib.h>
 #include <libdbusmenu-glib/server.h>
 #include <libdbusmenu-jsonloader/json-loader.h>
@@ -13,6 +14,15 @@ GtkWidget * window = NULL;
 DbusmenuServer * server = NULL;
 DBusGProxy * registrar = NULL;
 
+static void
+register_cb (DBusGProxy *proxy, GError *error, gpointer userdata)
+{
+	if (error != NULL) {
+		g_warning("Unable to register: %s", error->message);
+	}
+	return;
+}
+
 static gboolean
 idle_func (gpointer user_data)
 {
@@ -25,6 +35,8 @@ idle_func (gpointer user_data)
 	DBusGConnection * session_bus = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
 	registrar = dbus_g_proxy_new_for_name(session_bus, DBUS_NAME, REG_OBJECT, REG_IFACE);
 	g_return_val_if_fail(registrar != NULL, FALSE);
+
+	org_ayatana_WindowMenu_Registrar_register_window_async(registrar, GDK_WINDOW_XID (gtk_widget_get_window (window)), MENU_PATH, register_cb, NULL);
 
 	return FALSE;
 }
