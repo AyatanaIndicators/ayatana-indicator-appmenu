@@ -1,4 +1,4 @@
-indicator-appmenu (0.0.7-0ubuntu1~ppa2) UNRELEASED; urgency=low
+indicator-appmenu (0.0.7-0ubuntu1~ppa2) lucid; urgency=low
 
   * Upstream merge
     * Adding a new utility to make a mock application
@@ -8,7 +8,7 @@ indicator-appmenu (0.0.7-0ubuntu1~ppa2) UNRELEASED; urgency=low
   * debian/control: Adding build dep on dbusmenu-jsonloader-dev
   * Autogen
 
- -- Ted Gould <ted@ubuntu.com>  Wed, 30 Jun 2010 12:33:02 -0500
+ -- Ted Gould <ted@ubuntu.com>  Wed, 30 Jun 2010 12:36:25 -0500
 
 indicator-appmenu (0.0.7-0ubuntu1~ppa1) lucid; urgency=low
 
