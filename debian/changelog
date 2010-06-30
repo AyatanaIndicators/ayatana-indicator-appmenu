@@ -2,10 +2,13 @@ indicator-appmenu (0.0.7-0ubuntu1~ppa2) UNRELEASED; urgency=low
 
   * Upstream merge
     * Adding a new utility to make a mock application
+    * Fixing menus that are added after a window is shown
+    * Tracking the root item so that we can disconnect signals
+    * Switching to using stock menu items
   * debian/control: Adding build dep on dbusmenu-jsonloader-dev
   * Autogen
 
- -- Ted Gould <ted@ubuntu.com>  Wed, 30 Jun 2010 12:32:53 -0500
+ -- Ted Gould <ted@ubuntu.com>  Wed, 30 Jun 2010 12:33:02 -0500
 
 indicator-appmenu (0.0.7-0ubuntu1~ppa1) lucid; urgency=low
 
