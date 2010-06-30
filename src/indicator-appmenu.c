@@ -741,6 +741,8 @@ window_entry_removed (WindowMenus * mw, IndicatorObjectEntry * entry, gpointer u
   DEBUG INTERFACE
  **********************/
 
+/* Builds the error quark if we need it, otherwise just
+   returns the same value */
 static GQuark
 error_quark (void)
 {
@@ -753,6 +755,7 @@ error_quark (void)
 	return error_quark;
 }
 
+/* Unique error codes for debug interface */
 enum {
 	ERROR_NO_APPLICATIONS,
 	ERROR_NO_DEFAULT_APP
