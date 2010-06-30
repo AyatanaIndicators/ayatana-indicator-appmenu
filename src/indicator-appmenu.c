@@ -143,10 +143,10 @@ static gboolean _application_menu_debug_server_current_menu          (IndicatorA
                                                                       guint * windowid,
                                                                       gchar ** objectpath,
                                                                       gchar ** address,
-                                                                      GError * error);
+                                                                      GError ** error);
 static gboolean _application_menu_debug_server_all_menus             (IndicatorAppmenuDebug * iappd,
                                                                       GArray * entries,
-                                                                      GError * error);
+                                                                      GError ** error);
 
 /**********************
   DBus Interfaces
@@ -740,17 +740,33 @@ window_entry_removed (WindowMenus * mw, IndicatorObjectEntry * entry, gpointer u
 /**********************
   DEBUG INTERFACE
  **********************/
+
+static GQuark
+error_quark (void)
+{
+	static GQuark error_quark = 0;
+
+	if (error_quark == 0) {
+		error_quark = g_quark_from_static_string("indicator-appmenu");
+	}
+
+	return error_quark;
+}
+
+enum {
+	ERROR_NO_APPLICATIONS,
+	ERROR_NO_DEFAULT_APP
+};
+
 /* Get the current menu */
 static gboolean
-_application_menu_debug_server_current_menu (IndicatorAppmenuDebug * iappd, guint * windowid, gchar ** objectpath, gchar ** address, GError * error)
+_application_menu_debug_server_current_menu (IndicatorAppmenuDebug * iappd, guint * windowid, gchar ** objectpath, gchar ** address, GError ** error)
 {
 	IndicatorAppmenu * iapp = iappd->appmenu;
 
 	if (iapp->default_app == NULL) {
-		*windowid = 0;
-		*objectpath = g_strdup("/");
-		*address = g_strdup(":1.0");
-		return TRUE;
+		g_set_error_literal(error, error_quark(), ERROR_NO_DEFAULT_APP, "Not currently showing an application");
+		return FALSE;
 	}
 
 	*windowid = window_menus_get_xid(iapp->default_app);
@@ -762,11 +778,12 @@ _application_menu_debug_server_current_menu (IndicatorAppmenuDebug * iappd, guin
 
 /* Get all the menus we have */
 static gboolean
-_application_menu_debug_server_all_menus(IndicatorAppmenuDebug * iappd, GArray * entries, GError * error)
+_application_menu_debug_server_all_menus(IndicatorAppmenuDebug * iappd, GArray * entries, GError ** error)
 {
 	IndicatorAppmenu * iapp = iappd->appmenu;
 
 	if (iapp->apps == NULL) {
+		g_set_error_literal(error, error_quark(), ERROR_NO_APPLICATIONS, "No applications are registered");
 		return FALSE;
 	}
 
