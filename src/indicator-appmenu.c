@@ -863,6 +863,10 @@ menu_iterator (GtkWidget * widget, gpointer user_data)
 		g_array_append_val(strings, temp);
 	}
 
+	/* TODO: Handle Shortcuts */
+
+	/* TODO: Handle check/radio items */
+
 	GtkWidget * submenu = gtk_menu_item_get_submenu(GTK_MENU_ITEM(widget));
 	if (submenu != NULL) {
 		temp = g_strdup(", \"children-display\": \"submenu\"");
