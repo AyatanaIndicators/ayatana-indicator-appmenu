@@ -35,6 +35,7 @@ typedef struct _WindowMenusPrivate WindowMenusPrivate;
 struct _WindowMenusPrivate {
 	guint windowid;
 	DbusmenuGtkClient * client;
+	DbusmenuMenuitem * root;
 	DBusGProxy * props;
 	GArray * entries;
 };
@@ -113,6 +114,7 @@ window_menus_init (WindowMenus *self)
 
 	priv->client = NULL;
 	priv->props = NULL;
+	priv->root = NULL;
 
 	priv->entries = g_array_new(FALSE, FALSE, sizeof(IndicatorObjectEntry *));
 
@@ -126,6 +128,11 @@ window_menus_dispose (GObject *object)
 	g_signal_emit(object, signals[DESTROY], 0, TRUE);
 
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(object);
+
+	if (priv->root != NULL) {
+		g_object_unref(G_OBJECT(priv->root));
+		priv->root = NULL;
+	}
 
 	if (priv->client != NULL) {
 		g_object_unref(G_OBJECT(priv->client));
@@ -295,10 +302,20 @@ root_changed (DbusmenuClient * client, DbusmenuMenuitem * new_root, gpointer use
 		menu_entry_removed(NULL, NULL, user_data);
 	}
 
+	if (priv->root != NULL) {
+		g_signal_handlers_disconnect_by_func(G_OBJECT(priv->root), G_CALLBACK(menu_entry_added), user_data);
+		g_signal_handlers_disconnect_by_func(G_OBJECT(priv->root), G_CALLBACK(menu_entry_removed), user_data);
+		g_object_unref(priv->root);
+	}
+
+	priv->root = new_root;
+
 	/* See if we've got new entries */
 	if (new_root == NULL) {
 		return;
 	}
+
+	g_object_ref(priv->root);
 
 	/* Set up signals */
 	g_signal_connect(G_OBJECT(new_root), DBUSMENU_MENUITEM_SIGNAL_CHILD_ADDED,   G_CALLBACK(menu_entry_added),   user_data);
@@ -435,6 +452,10 @@ menu_entry_removed (DbusmenuMenuitem * root, DbusmenuMenuitem * oldentry, gpoint
 {
 	g_return_if_fail(IS_WINDOW_MENUS(user_data));
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
+
+	if (priv->entries == NULL || priv->entries->len == 0) {
+		return;
+	}
 	
 	/* TODO: find the menuitem */
 	IndicatorObjectEntry * entry = g_array_index(priv->entries, IndicatorObjectEntry *, priv->entries->len - 1);

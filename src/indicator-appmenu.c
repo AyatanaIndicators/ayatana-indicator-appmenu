@@ -26,6 +26,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-bindings.h>
 #include <dbus/dbus-glib-lowlevel.h>
+#include <dbus/dbus-gtype-specialized.h>
 
 #include <libindicator/indicator.h>
 #include <libindicator/indicator-object.h>
@@ -143,10 +144,10 @@ static gboolean _application_menu_debug_server_current_menu          (IndicatorA
                                                                       guint * windowid,
                                                                       gchar ** objectpath,
                                                                       gchar ** address,
-                                                                      GError * error);
+                                                                      GError ** error);
 static gboolean _application_menu_debug_server_all_menus             (IndicatorAppmenuDebug * iappd,
-                                                                      GArray * entries,
-                                                                      GError * error);
+                                                                      GPtrArray ** entries,
+                                                                      GError ** error);
 
 /**********************
   DBus Interfaces
@@ -337,16 +338,23 @@ static void
 build_window_menus (IndicatorAppmenu * iapp)
 {
 	IndicatorObjectEntry entries[2] = {{0}, {0}};
+	GtkAccelGroup * agroup = gtk_accel_group_new();
+	GtkMenuItem * mi = NULL;
+	GtkStockItem stockitem;
 
 	/* File Menu */
-	entries[0].label = GTK_LABEL(gtk_label_new("File"));
+	if (!gtk_stock_lookup(GTK_STOCK_FILE, &stockitem)) {
+		g_warning("Unable to find the file menu stock item");
+		stockitem.label = "_File";
+	}
+	entries[0].label = GTK_LABEL(gtk_label_new_with_mnemonic(stockitem.label));
 	g_object_ref(G_OBJECT(entries[0].label));
 	gtk_widget_show(GTK_WIDGET(entries[0].label));
 
 	entries[0].menu = GTK_MENU(gtk_menu_new());
 	g_object_ref(G_OBJECT(entries[0].menu));
 
-	GtkMenuItem * mi = GTK_MENU_ITEM(gtk_menu_item_new_with_label("Close"));
+	mi = GTK_MENU_ITEM(gtk_image_menu_item_new_from_stock(GTK_STOCK_CLOSE, agroup));
 	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
 	gtk_widget_show(GTK_WIDGET(mi));
 	gtk_menu_append(entries[0].menu, GTK_WIDGET(mi));
@@ -354,43 +362,23 @@ build_window_menus (IndicatorAppmenu * iapp)
 	gtk_widget_show(GTK_WIDGET(entries[0].menu));
 
 	/* Edit Menu */
-	entries[1].label = GTK_LABEL(gtk_label_new("Edit"));
+	if (!gtk_stock_lookup(GTK_STOCK_EDIT, &stockitem)) {
+		g_warning("Unable to find the edit menu stock item");
+		stockitem.label = "_Edit";
+	}
+	entries[1].label = GTK_LABEL(gtk_label_new_with_mnemonic(stockitem.label));
 	g_object_ref(G_OBJECT(entries[1].label));
 	gtk_widget_show(GTK_WIDGET(entries[1].label));
 
 	entries[1].menu = GTK_MENU(gtk_menu_new());
 	g_object_ref(G_OBJECT(entries[1].menu));
 
-	mi = GTK_MENU_ITEM(gtk_menu_item_new_with_label("Undo"));
+	mi = GTK_MENU_ITEM(gtk_image_menu_item_new_from_stock(GTK_STOCK_UNDO, agroup));
 	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
 	gtk_widget_show(GTK_WIDGET(mi));
 	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
 
-	mi = GTK_MENU_ITEM(gtk_menu_item_new_with_label("Redo"));
-	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
-	gtk_widget_show(GTK_WIDGET(mi));
-	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
-
-	mi = GTK_MENU_ITEM(gtk_separator_menu_item_new());
-	gtk_widget_show(GTK_WIDGET(mi));
-	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
-
-	mi = GTK_MENU_ITEM(gtk_menu_item_new_with_label("Cut"));
-	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
-	gtk_widget_show(GTK_WIDGET(mi));
-	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
-
-	mi = GTK_MENU_ITEM(gtk_menu_item_new_with_label("Copy"));
-	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
-	gtk_widget_show(GTK_WIDGET(mi));
-	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
-
-	mi = GTK_MENU_ITEM(gtk_menu_item_new_with_label("Paste"));
-	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
-	gtk_widget_show(GTK_WIDGET(mi));
-	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
-
-	mi = GTK_MENU_ITEM(gtk_menu_item_new_with_label("Delete"));
+	mi = GTK_MENU_ITEM(gtk_image_menu_item_new_from_stock(GTK_STOCK_REDO, agroup));
 	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
 	gtk_widget_show(GTK_WIDGET(mi));
 	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
@@ -399,7 +387,31 @@ build_window_menus (IndicatorAppmenu * iapp)
 	gtk_widget_show(GTK_WIDGET(mi));
 	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
 
-	mi = GTK_MENU_ITEM(gtk_menu_item_new_with_label("Select All"));
+	mi = GTK_MENU_ITEM(gtk_image_menu_item_new_from_stock(GTK_STOCK_CUT, agroup));
+	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
+	gtk_widget_show(GTK_WIDGET(mi));
+	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
+
+	mi = GTK_MENU_ITEM(gtk_image_menu_item_new_from_stock(GTK_STOCK_COPY, agroup));
+	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
+	gtk_widget_show(GTK_WIDGET(mi));
+	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
+
+	mi = GTK_MENU_ITEM(gtk_image_menu_item_new_from_stock(GTK_STOCK_PASTE, agroup));
+	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
+	gtk_widget_show(GTK_WIDGET(mi));
+	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
+
+	mi = GTK_MENU_ITEM(gtk_image_menu_item_new_from_stock(GTK_STOCK_DELETE, agroup));
+	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
+	gtk_widget_show(GTK_WIDGET(mi));
+	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
+
+	mi = GTK_MENU_ITEM(gtk_separator_menu_item_new());
+	gtk_widget_show(GTK_WIDGET(mi));
+	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
+
+	mi = GTK_MENU_ITEM(gtk_image_menu_item_new_from_stock(GTK_STOCK_SELECT_ALL, agroup));
 	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
 	gtk_widget_show(GTK_WIDGET(mi));
 	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
@@ -517,7 +529,7 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * 
 		iapp->active_window = active_window;
 		return;
 	}
-	if (iapp->default_app == NULL && iapp->active_window == active_window) {
+	if (iapp->default_app == NULL && iapp->active_window == active_window && newdef == NULL) {
 		/* There's no application menus, but the active window hasn't
 		   changed.  So there's no change. */
 		return;
@@ -729,17 +741,36 @@ window_entry_removed (WindowMenus * mw, IndicatorObjectEntry * entry, gpointer u
 /**********************
   DEBUG INTERFACE
  **********************/
+
+/* Builds the error quark if we need it, otherwise just
+   returns the same value */
+static GQuark
+error_quark (void)
+{
+	static GQuark error_quark = 0;
+
+	if (error_quark == 0) {
+		error_quark = g_quark_from_static_string("indicator-appmenu");
+	}
+
+	return error_quark;
+}
+
+/* Unique error codes for debug interface */
+enum {
+	ERROR_NO_APPLICATIONS,
+	ERROR_NO_DEFAULT_APP
+};
+
 /* Get the current menu */
 static gboolean
-_application_menu_debug_server_current_menu (IndicatorAppmenuDebug * iappd, guint * windowid, gchar ** objectpath, gchar ** address, GError * error)
+_application_menu_debug_server_current_menu (IndicatorAppmenuDebug * iappd, guint * windowid, gchar ** objectpath, gchar ** address, GError ** error)
 {
 	IndicatorAppmenu * iapp = iappd->appmenu;
 
 	if (iapp->default_app == NULL) {
-		*windowid = 0;
-		*objectpath = g_strdup("/");
-		*address = g_strdup(":1.0");
-		return TRUE;
+		g_set_error_literal(error, error_quark(), ERROR_NO_DEFAULT_APP, "Not currently showing an application");
+		return FALSE;
 	}
 
 	*windowid = window_menus_get_xid(iapp->default_app);
@@ -751,12 +782,43 @@ _application_menu_debug_server_current_menu (IndicatorAppmenuDebug * iappd, guin
 
 /* Get all the menus we have */
 static gboolean
-_application_menu_debug_server_all_menus(IndicatorAppmenuDebug * iappd, GArray * entries, GError * error)
+_application_menu_debug_server_all_menus(IndicatorAppmenuDebug * iappd, GPtrArray ** entries, GError ** error)
 {
 	IndicatorAppmenu * iapp = iappd->appmenu;
 
 	if (iapp->apps == NULL) {
+		g_set_error_literal(error, error_quark(), ERROR_NO_APPLICATIONS, "No applications are registered");
 		return FALSE;
+	}
+
+	*entries = g_ptr_array_new();
+
+	GList * appkeys = NULL;
+	for (appkeys = g_hash_table_get_keys(iapp->apps); appkeys != NULL; appkeys = g_list_next(appkeys)) {
+		GValueArray * structval = g_value_array_new(3);
+		gpointer hash_val = g_hash_table_lookup(iapp->apps, appkeys->data);
+
+		if (hash_val == NULL) { continue; }
+
+		GValue winid = {0};
+		g_value_init(&winid, G_TYPE_UINT);
+		g_value_set_uint(&winid, window_menus_get_xid(WINDOW_MENUS(hash_val)));
+		g_value_array_append(structval, &winid);
+		g_value_unset(&winid);
+
+		GValue path = {0};
+		g_value_init(&path, DBUS_TYPE_G_OBJECT_PATH);
+		g_value_take_boxed(&path, window_menus_get_path(WINDOW_MENUS(hash_val)));
+		g_value_array_append(structval, &path);
+		g_value_unset(&path);
+
+		GValue address = {0};
+		g_value_init(&address, G_TYPE_STRING);
+		g_value_take_string(&address, window_menus_get_address(WINDOW_MENUS(hash_val)));
+		g_value_array_append(structval, &address);
+		g_value_unset(&address);
+
+		g_ptr_array_add(*entries, structval);
 	}
 
 	return TRUE;
