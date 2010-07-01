@@ -1,27 +1,21 @@
-indicator-appmenu (0.0.7-0ubuntu2) maverick; urgency=low
+indicator-appmenu (0.0.8-0ubuntu1~ppa1) UNRELEASED; urgency=low
 
-  * Backport upstream change to fix crash issues
-
- -- Sebastien Bacher <seb128@ubuntu.com>  Tue, 29 Jun 2010 23:27:06 +0200
-
-indicator-appmenu (0.0.7-0ubuntu1~ppa3) lucid; urgency=low
-
-  * debian/indicator-appmenu-tools.install: Adding to the 
-    new mock-json-app binary into the package.
-
- -- Ted Gould <ted@ubuntu.com>  Wed, 30 Jun 2010 13:22:08 -0500
-
-indicator-appmenu (0.0.7-0ubuntu1~ppa2) lucid; urgency=low
-
-  * Upstream merge
+  * New upstream release.
     * Adding a new utility to make a mock application
     * Fixing menus that are added after a window is shown
     * Tracking the root item so that we can disconnect signals
     * Switching to using stock menu items
   * debian/control: Adding build dep on dbusmenu-jsonloader-dev
-  * Autogen
+  * debian/indicator-appmenu-tools.install: Adding to the 
+    new mock-json-app binary into the package.
 
- -- Ted Gould <ted@ubuntu.com>  Wed, 30 Jun 2010 12:36:25 -0500
+ -- Ted Gould <ted@ubuntu.com>  Thu, 01 Jul 2010 09:13:34 -0500
+
+indicator-appmenu (0.0.7-0ubuntu2) maverick; urgency=low
+
+  * Backport upstream change to fix crash issues
+
+ -- Sebastien Bacher <seb128@ubuntu.com>  Tue, 29 Jun 2010 23:27:06 +0200
 
 indicator-appmenu (0.0.7-0ubuntu1) maverick; urgency=low
 

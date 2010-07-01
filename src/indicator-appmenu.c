@@ -26,6 +26,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-bindings.h>
 #include <dbus/dbus-glib-lowlevel.h>
+#include <dbus/dbus-gtype-specialized.h>
 
 #include <libindicator/indicator.h>
 #include <libindicator/indicator-object.h>
@@ -143,10 +144,10 @@ static gboolean _application_menu_debug_server_current_menu          (IndicatorA
                                                                       guint * windowid,
                                                                       gchar ** objectpath,
                                                                       gchar ** address,
-                                                                      GError * error);
+                                                                      GError ** error);
 static gboolean _application_menu_debug_server_all_menus             (IndicatorAppmenuDebug * iappd,
-                                                                      GArray * entries,
-                                                                      GError * error);
+                                                                      GPtrArray ** entries,
+                                                                      GError ** error);
 
 /**********************
   DBus Interfaces
@@ -740,17 +741,36 @@ window_entry_removed (WindowMenus * mw, IndicatorObjectEntry * entry, gpointer u
 /**********************
   DEBUG INTERFACE
  **********************/
+
+/* Builds the error quark if we need it, otherwise just
+   returns the same value */
+static GQuark
+error_quark (void)
+{
+	static GQuark error_quark = 0;
+
+	if (error_quark == 0) {
+		error_quark = g_quark_from_static_string("indicator-appmenu");
+	}
+
+	return error_quark;
+}
+
+/* Unique error codes for debug interface */
+enum {
+	ERROR_NO_APPLICATIONS,
+	ERROR_NO_DEFAULT_APP
+};
+
 /* Get the current menu */
 static gboolean
-_application_menu_debug_server_current_menu (IndicatorAppmenuDebug * iappd, guint * windowid, gchar ** objectpath, gchar ** address, GError * error)
+_application_menu_debug_server_current_menu (IndicatorAppmenuDebug * iappd, guint * windowid, gchar ** objectpath, gchar ** address, GError ** error)
 {
 	IndicatorAppmenu * iapp = iappd->appmenu;
 
 	if (iapp->default_app == NULL) {
-		*windowid = 0;
-		*objectpath = g_strdup("/");
-		*address = g_strdup(":1.0");
-		return TRUE;
+		g_set_error_literal(error, error_quark(), ERROR_NO_DEFAULT_APP, "Not currently showing an application");
+		return FALSE;
 	}
 
 	*windowid = window_menus_get_xid(iapp->default_app);
@@ -762,12 +782,43 @@ _application_menu_debug_server_current_menu (IndicatorAppmenuDebug * iappd, guin
 
 /* Get all the menus we have */
 static gboolean
-_application_menu_debug_server_all_menus(IndicatorAppmenuDebug * iappd, GArray * entries, GError * error)
+_application_menu_debug_server_all_menus(IndicatorAppmenuDebug * iappd, GPtrArray ** entries, GError ** error)
 {
 	IndicatorAppmenu * iapp = iappd->appmenu;
 
 	if (iapp->apps == NULL) {
+		g_set_error_literal(error, error_quark(), ERROR_NO_APPLICATIONS, "No applications are registered");
 		return FALSE;
+	}
+
+	*entries = g_ptr_array_new();
+
+	GList * appkeys = NULL;
+	for (appkeys = g_hash_table_get_keys(iapp->apps); appkeys != NULL; appkeys = g_list_next(appkeys)) {
+		GValueArray * structval = g_value_array_new(3);
+		gpointer hash_val = g_hash_table_lookup(iapp->apps, appkeys->data);
+
+		if (hash_val == NULL) { continue; }
+
+		GValue winid = {0};
+		g_value_init(&winid, G_TYPE_UINT);
+		g_value_set_uint(&winid, window_menus_get_xid(WINDOW_MENUS(hash_val)));
+		g_value_array_append(structval, &winid);
+		g_value_unset(&winid);
+
+		GValue path = {0};
+		g_value_init(&path, DBUS_TYPE_G_OBJECT_PATH);
+		g_value_take_boxed(&path, window_menus_get_path(WINDOW_MENUS(hash_val)));
+		g_value_array_append(structval, &path);
+		g_value_unset(&path);
+
+		GValue address = {0};
+		g_value_init(&address, G_TYPE_STRING);
+		g_value_take_string(&address, window_menus_get_address(WINDOW_MENUS(hash_val)));
+		g_value_array_append(structval, &address);
+		g_value_unset(&address);
+
+		g_ptr_array_add(*entries, structval);
 	}
 
 	return TRUE;
