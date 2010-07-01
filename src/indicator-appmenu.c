@@ -871,10 +871,23 @@ menu_iterator (GtkWidget * widget, gpointer user_data)
 		temp = g_strdup(", \"submenu\": [ ");
 		g_array_append_val(strings, temp);
 
+		guint old_len = strings->len;
+
 		gtk_container_foreach(GTK_CONTAINER(submenu), menu_iterator, strings);
 
-		temp = g_strdup("]");
-		g_array_append_val(strings, temp);
+		if (old_len == strings->len) {
+			temp = g_strdup("]");
+			g_array_append_val(strings, temp);
+		} else {
+			gchar * last_one = g_array_index(strings, gchar *, strings->len - 1);
+			guint lastlen = g_utf8_strlen(last_one, -1);
+
+			if (last_one[lastlen - 1] != ',') {
+				g_warning("Huh, this seems impossible.  Should be a comma at the end.");
+			}
+
+			last_one[lastlen - 1] = ']';
+		}
 	}
 
 	temp = g_strdup("},");
@@ -913,10 +926,23 @@ entry2json (IndicatorObjectEntry * entry, GArray * strings)
 		temp = g_strdup(", \"submenu\": [ ");
 		g_array_append_val(strings, temp);
 
+		guint old_len = strings->len;
+
 		gtk_container_foreach(GTK_CONTAINER(entry->menu), menu_iterator, strings);
 
-		temp = g_strdup("]");
-		g_array_append_val(strings, temp);
+		if (old_len == strings->len) {
+			temp = g_strdup("]");
+			g_array_append_val(strings, temp);
+		} else {
+			gchar * last_one = g_array_index(strings, gchar *, strings->len - 1);
+			guint lastlen = g_utf8_strlen(last_one, -1);
+
+			if (last_one[lastlen - 1] != ',') {
+				g_warning("Huh, this seems impossible.  Should be a comma at the end.");
+			}
+
+			last_one[lastlen - 1] = ']';
+		}
 	}
 
 
