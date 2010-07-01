@@ -1,4 +1,4 @@
-indicator-appmenu (0.0.8-0ubuntu1~ppa1) UNRELEASED; urgency=low
+indicator-appmenu (0.0.8-0ubuntu1~ppa1) lucid; urgency=low
 
   * New upstream release.
     * Adding a new utility to make a mock application
@@ -9,7 +9,7 @@ indicator-appmenu (0.0.8-0ubuntu1~ppa1) UNRELEASED; urgency=low
   * debian/indicator-appmenu-tools.install: Adding to the 
     new mock-json-app binary into the package.
 
- -- Ted Gould <ted@ubuntu.com>  Thu, 01 Jul 2010 09:13:34 -0500
+ -- Ted Gould <ted@ubuntu.com>  Thu, 01 Jul 2010 09:18:52 -0500
 
 indicator-appmenu (0.0.7-0ubuntu2) maverick; urgency=low
 
