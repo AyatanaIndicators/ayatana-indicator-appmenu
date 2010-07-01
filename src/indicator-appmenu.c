@@ -874,5 +874,5 @@ _application_menu_debug_server_j_so_ndump (IndicatorAppmenuDebug * iappd, guint 
 	g_strfreev((gchar **)strings->data);
 	g_array_free(strings, FALSE);
 
-	return FALSE;
+	return TRUE;
 }
