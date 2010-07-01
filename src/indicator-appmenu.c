@@ -829,6 +829,14 @@ _application_menu_debug_server_all_menus(IndicatorAppmenuDebug * iappd, GPtrArra
 	return TRUE;
 }
 
+/* Takes an entry and outputs it into the ptrarray */
+static void
+entry2json (IndicatorObjectEntry * entry, GArray * strings)
+{
+
+	return;
+}
+
 /* Make JSON out of our menus */
 static gboolean
 _application_menu_debug_server_j_so_ndump (IndicatorAppmenuDebug * iappd, guint windowid, gchar ** jsondata, GError ** error)
@@ -847,6 +855,23 @@ _application_menu_debug_server_j_so_ndump (IndicatorAppmenuDebug * iappd, guint 
 		return FALSE;
 	}
 
+	GArray * strings = g_array_new(TRUE, FALSE, sizeof(gchar *));
+	GList * entries = window_menus_get_entries(wm);
+	GList * entry;
+
+	gchar * temp = g_strdup("{");
+	g_array_append_val(strings, temp);
+
+	for (entry = entries; entry != NULL; entry = g_list_next(entry)) {
+		entry2json(entry->data, strings);
+	}
+
+	temp = g_strdup("}");
+	g_array_append_val(strings, temp);
+
+	*jsondata = g_strjoinv(NULL, (gchar **)strings->data);
+	g_strfreev((gchar **)strings->data);
+	g_array_free(strings, TRUE);
 
 	return FALSE;
 }
