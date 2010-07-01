@@ -26,6 +26,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-bindings.h>
 #include <dbus/dbus-glib-lowlevel.h>
+#include <dbus/dbus-gtype-specialized.h>
 
 #include <libindicator/indicator.h>
 #include <libindicator/indicator-object.h>
@@ -145,7 +146,7 @@ static gboolean _application_menu_debug_server_current_menu          (IndicatorA
                                                                       gchar ** address,
                                                                       GError ** error);
 static gboolean _application_menu_debug_server_all_menus             (IndicatorAppmenuDebug * iappd,
-                                                                      GArray * entries,
+                                                                      GValue * entries,
                                                                       GError ** error);
 
 /**********************
@@ -781,7 +782,7 @@ _application_menu_debug_server_current_menu (IndicatorAppmenuDebug * iappd, guin
 
 /* Get all the menus we have */
 static gboolean
-_application_menu_debug_server_all_menus(IndicatorAppmenuDebug * iappd, GArray * entries, GError ** error)
+_application_menu_debug_server_all_menus(IndicatorAppmenuDebug * iappd, GValue * entries, GError ** error)
 {
 	IndicatorAppmenu * iapp = iappd->appmenu;
 
@@ -789,6 +790,55 @@ _application_menu_debug_server_all_menus(IndicatorAppmenuDebug * iappd, GArray *
 		g_set_error_literal(error, error_quark(), ERROR_NO_APPLICATIONS, "No applications are registered");
 		return FALSE;
 	}
+
+	GType structtype = dbus_g_type_get_struct("GValueArray", G_TYPE_UINT, DBUS_TYPE_G_OBJECT_PATH, G_TYPE_STRING, G_TYPE_INVALID);
+	GType arraytype = dbus_g_type_get_collection("GPtrArray", structtype);
+
+	gpointer arraypntr = dbus_g_type_specialized_construct(arraytype);
+	g_value_init(entries, arraytype);
+	g_value_take_boxed(entries, arraypntr);
+
+	DBusGTypeSpecializedAppendContext ctx;
+	dbus_g_type_specialized_init_append(entries, &ctx);
+
+	GList * appkeys = NULL;
+	for (appkeys = g_hash_table_get_keys(iapp->apps); appkeys != NULL; appkeys = g_list_next(appkeys)) {
+		GValue structval = {0};
+		gpointer hash_val = g_hash_table_lookup(iapp->apps, appkeys->data);
+
+		if (hash_val == NULL) { continue; }
+
+		gpointer strctpntr = dbus_g_type_specialized_construct(structtype);
+		g_value_init(&structval, structtype);
+		g_value_take_boxed(&structval, strctpntr);
+
+		GValue winid = {0};
+		g_value_init(&winid, G_TYPE_UINT);
+		g_value_set_uint(&winid, window_menus_get_xid(WINDOW_MENUS(appkeys->data)));
+
+		GValue path = {0};
+		g_value_init(&path, DBUS_TYPE_G_OBJECT_PATH);
+		g_value_take_boxed(&path, window_menus_get_path(WINDOW_MENUS(appkeys->data)));
+
+		GValue address = {0};
+		g_value_init(&address, G_TYPE_STRING);
+		g_value_take_string(&address, window_menus_get_address(WINDOW_MENUS(appkeys->data)));
+
+		dbus_g_type_struct_set(&structval,
+		                       0, &winid,
+		                       1, &path,
+		                       2, &address,
+		                       G_MAXUINT);
+
+		g_value_unset(&winid);
+		g_value_unset(&path);
+		g_value_unset(&address);
+
+		dbus_g_type_specialized_collection_append(&ctx, &structval);
+		g_value_unset(&structval);
+	}
+
+	dbus_g_type_specialized_collection_end_append(&ctx);
 
 	return TRUE;
 }
