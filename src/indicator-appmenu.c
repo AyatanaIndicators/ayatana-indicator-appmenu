@@ -148,6 +148,10 @@ static gboolean _application_menu_debug_server_current_menu          (IndicatorA
 static gboolean _application_menu_debug_server_all_menus             (IndicatorAppmenuDebug * iappd,
                                                                       GPtrArray ** entries,
                                                                       GError ** error);
+static gboolean _application_menu_debug_server_j_so_ndump            (IndicatorAppmenuDebug * iappd,
+                                                                      guint windowid,
+                                                                      gchar ** jsondata,
+                                                                      GError ** error);
 
 /**********************
   DBus Interfaces
@@ -824,3 +828,11 @@ _application_menu_debug_server_all_menus(IndicatorAppmenuDebug * iappd, GPtrArra
 	return TRUE;
 }
 
+/* Make JSON out of our menus */
+static gboolean
+_application_menu_debug_server_j_so_ndump (IndicatorAppmenuDebug * iappd, guint windowid, gchar ** jsondata, GError ** error)
+{
+
+
+	return FALSE;
+}
