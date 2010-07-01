@@ -833,6 +833,52 @@ _application_menu_debug_server_all_menus(IndicatorAppmenuDebug * iappd, GPtrArra
 static void
 menu_iterator (GtkWidget * widget, gpointer user_data)
 {
+	GArray * strings = (GArray *)user_data;
+
+	gchar * temp = g_strdup("{");
+	g_array_append_val(strings, temp);
+
+	/* TODO: We need some sort of useful ID, but for now  we're
+	   just ensuring it's unique. */
+	temp = g_strdup_printf("\"id\": %d", strings->len);
+	g_array_append_val(strings, temp);
+
+	if (GTK_IS_SEPARATOR_MENU_ITEM(widget)) {
+		temp = g_strdup_printf("\"type\": \"%s\"", "separator");
+		g_array_append_val(strings, temp);
+	} else {
+		temp = g_strdup_printf("\"type\": \"%s\"", "standard");
+		g_array_append_val(strings, temp);
+	}
+
+	temp = g_strdup_printf(", \"enabled\": %s", gtk_widget_get_sensitive(GTK_WIDGET(widget)) ? "true" : "false");
+	g_array_append_val(strings, temp);
+
+	temp = g_strdup_printf(", \"visible\": %s", gtk_widget_get_visible(GTK_WIDGET(widget)) ? "true" : "false");
+	g_array_append_val(strings, temp);
+
+	const gchar * label = gtk_menu_item_get_label(GTK_MENU_ITEM(widget));
+	if (label != NULL) {
+		temp = g_strdup_printf(", \"label\": \"%s\"", label);
+		g_array_append_val(strings, temp);
+	}
+
+	GtkWidget * submenu = gtk_menu_item_get_submenu(GTK_MENU_ITEM(widget));
+	if (submenu != NULL) {
+		temp = g_strdup(", \"children-display\": \"submenu\"");
+		g_array_append_val(strings, temp);
+
+		temp = g_strdup(", \"submenu\": [ ");
+		g_array_append_val(strings, temp);
+
+		gtk_container_foreach(GTK_CONTAINER(submenu), menu_iterator, strings);
+
+		temp = g_strdup("]");
+		g_array_append_val(strings, temp);
+	}
+
+	temp = g_strdup("},");
+	g_array_append_val(strings, temp);
 
 	return;
 }
