@@ -988,13 +988,26 @@ _application_menu_debug_server_j_so_ndump (IndicatorAppmenuDebug * iappd, guint 
 		g_array_append_val(strings, temp);
 	}
 
+	guint old_len = strings->len;
+
 	for (entry = entries; entry != NULL; entry = g_list_next(entry)) {
 		entry2json(entry->data, strings);
 	}
 
 	if (entries != NULL) {
-		temp = g_strdup("]");
-		g_array_append_val(strings, temp);
+		if (old_len == strings->len) {
+			temp = g_strdup("]");
+			g_array_append_val(strings, temp);
+		} else {
+			gchar * last_one = g_array_index(strings, gchar *, strings->len - 1);
+			guint lastlen = g_utf8_strlen(last_one, -1);
+
+			if (last_one[lastlen - 1] != ',') {
+				g_warning("Huh, this seems impossible.  Should be a comma at the end.");
+			}
+
+			last_one[lastlen - 1] = ']';
+		}
 	}
 
 	g_list_free(entries);
