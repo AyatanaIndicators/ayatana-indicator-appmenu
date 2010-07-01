@@ -862,9 +862,23 @@ _application_menu_debug_server_j_so_ndump (IndicatorAppmenuDebug * iappd, guint 
 	gchar * temp = g_strdup("{");
 	g_array_append_val(strings, temp);
 
+	temp = g_strdup("\"id\": 0");
+	g_array_append_val(strings, temp);
+
+	if (entries != NULL) {
+		temp = g_strdup(", \"submenu\": [");
+		g_array_append_val(strings, temp);
+	}
+
 	for (entry = entries; entry != NULL; entry = g_list_next(entry)) {
 		entry2json(entry->data, strings);
 	}
+
+	if (entries != NULL) {
+		temp = g_strdup("]");
+		g_array_append_val(strings, temp);
+	}
+
 	g_list_free(entries);
 
 	temp = g_strdup("}");
