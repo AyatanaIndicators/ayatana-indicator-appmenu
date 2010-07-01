@@ -1,3 +1,9 @@
+indicator-appmenu (0.0.7-0ubuntu2) maverick; urgency=low
+
+  * Backport upstream change to fix crash issues
+
+ -- Sebastien Bacher <seb128@ubuntu.com>  Tue, 29 Jun 2010 23:27:06 +0200
+
 indicator-appmenu (0.0.7-0ubuntu1~ppa3) lucid; urgency=low
 
   * debian/indicator-appmenu-tools.install: Adding to the 
@@ -17,7 +23,7 @@ indicator-appmenu (0.0.7-0ubuntu1~ppa2) lucid; urgency=low
 
  -- Ted Gould <ted@ubuntu.com>  Wed, 30 Jun 2010 12:36:25 -0500
 
-indicator-appmenu (0.0.7-0ubuntu1~ppa1) lucid; urgency=low
+indicator-appmenu (0.0.7-0ubuntu1) maverick; urgency=low
 
   * New upstream release.
     * Accelerator support (LP: #586978)
