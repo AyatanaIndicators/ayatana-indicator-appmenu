@@ -829,10 +829,53 @@ _application_menu_debug_server_all_menus(IndicatorAppmenuDebug * iappd, GPtrArra
 	return TRUE;
 }
 
+/* Do something for each menu item */
+static void
+menu_iterator (GtkWidget * widget, gpointer user_data)
+{
+
+	return;
+}
+
 /* Takes an entry and outputs it into the ptrarray */
 static void
 entry2json (IndicatorObjectEntry * entry, GArray * strings)
 {
+	gchar * temp = g_strdup("{");
+	g_array_append_val(strings, temp);
+
+	/* TODO: We need some sort of useful ID, but for now  we're
+	   just ensuring it's unique. */
+	temp = g_strdup_printf("\"id\": %d", strings->len);
+	g_array_append_val(strings, temp);
+
+	if (entry->label != NULL) {
+		temp = g_strdup_printf(", \"label\": \"%s\"", gtk_label_get_label(entry->label));
+		g_array_append_val(strings, temp);
+
+		temp = g_strdup_printf(", \"enabled\": %s", gtk_widget_get_sensitive(GTK_WIDGET(entry->label)) ? "true" : "false");
+		g_array_append_val(strings, temp);
+
+		temp = g_strdup_printf(", \"visible\": %s", gtk_widget_get_visible(GTK_WIDGET(entry->label)) ? "true" : "false");
+		g_array_append_val(strings, temp);
+	}
+
+	if (entry->menu != NULL) {
+		temp = g_strdup(", \"children-display\": \"submenu\"");
+		g_array_append_val(strings, temp);
+
+		temp = g_strdup(", \"submenu\": [ ");
+		g_array_append_val(strings, temp);
+
+		gtk_container_foreach(GTK_CONTAINER(entry->menu), menu_iterator, strings);
+
+		temp = g_strdup("]");
+		g_array_append_val(strings, temp);
+	}
+
+
+	temp = g_strdup("},");
+	g_array_append_val(strings, temp);
 
 	return;
 }
