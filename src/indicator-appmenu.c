@@ -763,7 +763,8 @@ error_quark (void)
 /* Unique error codes for debug interface */
 enum {
 	ERROR_NO_APPLICATIONS,
-	ERROR_NO_DEFAULT_APP
+	ERROR_NO_DEFAULT_APP,
+	ERROR_WINDOW_NOT_FOUND
 };
 
 /* Get the current menu */
@@ -832,6 +833,19 @@ _application_menu_debug_server_all_menus(IndicatorAppmenuDebug * iappd, GPtrArra
 static gboolean
 _application_menu_debug_server_j_so_ndump (IndicatorAppmenuDebug * iappd, guint windowid, gchar ** jsondata, GError ** error)
 {
+	IndicatorAppmenu * iapp = iappd->appmenu;
+	WindowMenus * wm = NULL;
+
+	if (windowid == 0) {
+		wm = iapp->default_app;
+	} else {
+		wm = WINDOW_MENUS(g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid)));
+	}
+
+	if (wm == NULL) {
+		g_set_error_literal(error, error_quark(), ERROR_WINDOW_NOT_FOUND, "Window not found");
+		return FALSE;
+	}
 
 
 	return FALSE;
