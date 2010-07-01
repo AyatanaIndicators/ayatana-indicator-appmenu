@@ -866,6 +866,9 @@ _application_menu_debug_server_j_so_ndump (IndicatorAppmenuDebug * iappd, guint 
 	g_array_append_val(strings, temp);
 
 	if (entries != NULL) {
+		temp = g_strdup(", \"children-display\": \"submenu\"");
+		g_array_append_val(strings, temp);
+
 		temp = g_strdup(", \"submenu\": [");
 		g_array_append_val(strings, temp);
 	}
