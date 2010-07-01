@@ -844,10 +844,10 @@ menu_iterator (GtkWidget * widget, gpointer user_data)
 	g_array_append_val(strings, temp);
 
 	if (GTK_IS_SEPARATOR_MENU_ITEM(widget)) {
-		temp = g_strdup_printf("\"type\": \"%s\"", "separator");
+		temp = g_strdup_printf(", \"type\": \"%s\"", "separator");
 		g_array_append_val(strings, temp);
 	} else {
-		temp = g_strdup_printf("\"type\": \"%s\"", "standard");
+		temp = g_strdup_printf(", \"type\": \"%s\"", "standard");
 		g_array_append_val(strings, temp);
 	}
 
