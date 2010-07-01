@@ -872,7 +872,7 @@ _application_menu_debug_server_j_so_ndump (IndicatorAppmenuDebug * iappd, guint 
 
 	*jsondata = g_strjoinv(NULL, (gchar **)strings->data);
 	g_strfreev((gchar **)strings->data);
-	g_array_free(strings, TRUE);
+	g_array_free(strings, FALSE);
 
 	return FALSE;
 }
