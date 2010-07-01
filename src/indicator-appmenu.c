@@ -803,21 +803,19 @@ _application_menu_debug_server_all_menus(IndicatorAppmenuDebug * iappd, GPtrArra
 		GValue winid = {0};
 		g_value_init(&winid, G_TYPE_UINT);
 		g_value_set_uint(&winid, window_menus_get_xid(WINDOW_MENUS(hash_val)));
+		g_value_array_append(structval, &winid);
+		g_value_unset(&winid);
 
 		GValue path = {0};
 		g_value_init(&path, DBUS_TYPE_G_OBJECT_PATH);
 		g_value_take_boxed(&path, window_menus_get_path(WINDOW_MENUS(hash_val)));
+		g_value_array_append(structval, &path);
+		g_value_unset(&path);
 
 		GValue address = {0};
 		g_value_init(&address, G_TYPE_STRING);
 		g_value_take_string(&address, window_menus_get_address(WINDOW_MENUS(hash_val)));
-
-		g_value_array_append(structval, &winid);
-		g_value_array_append(structval, &path);
 		g_value_array_append(structval, &address);
-
-		g_value_unset(&winid);
-		g_value_unset(&path);
 		g_value_unset(&address);
 
 		g_ptr_array_add(*entries, structval);
