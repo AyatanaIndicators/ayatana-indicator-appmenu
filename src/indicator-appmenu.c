@@ -865,6 +865,7 @@ _application_menu_debug_server_j_so_ndump (IndicatorAppmenuDebug * iappd, guint 
 	for (entry = entries; entry != NULL; entry = g_list_next(entry)) {
 		entry2json(entry->data, strings);
 	}
+	g_list_free(entries);
 
 	temp = g_strdup("}");
 	g_array_append_val(strings, temp);
