@@ -814,15 +814,15 @@ _application_menu_debug_server_all_menus(IndicatorAppmenuDebug * iappd, GValue *
 
 		GValue winid = {0};
 		g_value_init(&winid, G_TYPE_UINT);
-		g_value_set_uint(&winid, window_menus_get_xid(WINDOW_MENUS(appkeys->data)));
+		g_value_set_uint(&winid, window_menus_get_xid(WINDOW_MENUS(hash_val)));
 
 		GValue path = {0};
 		g_value_init(&path, DBUS_TYPE_G_OBJECT_PATH);
-		g_value_take_boxed(&path, window_menus_get_path(WINDOW_MENUS(appkeys->data)));
+		g_value_take_boxed(&path, window_menus_get_path(WINDOW_MENUS(hash_val)));
 
 		GValue address = {0};
 		g_value_init(&address, G_TYPE_STRING);
-		g_value_take_string(&address, window_menus_get_address(WINDOW_MENUS(appkeys->data)));
+		g_value_take_string(&address, window_menus_get_address(WINDOW_MENUS(hash_val)));
 
 		dbus_g_type_struct_set(&structval,
 		                       0, &winid,
