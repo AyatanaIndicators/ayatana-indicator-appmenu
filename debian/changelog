@@ -1,4 +1,4 @@
-indicator-appmenu (0.0.8-0ubuntu1~ppa1) lucid; urgency=low
+indicator-appmenu (0.0.8-0ubuntu1) maverick; urgency=low
 
   * New upstream release.
     * Adding a new utility to make a mock application
