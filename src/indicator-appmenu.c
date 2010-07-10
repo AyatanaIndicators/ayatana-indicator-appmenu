@@ -32,6 +32,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <libindicator/indicator-object.h>
 
 #include <libdbusmenu-glib/menuitem.h>
+#include <libdbusmenu-glib/client.h>
 
 #include <libbamf/bamf-matcher.h>
 
@@ -873,7 +874,7 @@ key2string (GtkAccelKey * key, GArray * strings)
 {
 	gchar * temp = NULL;
 
-	temp = g_strdup(", \"shortcut\": [[");
+	temp = g_strdup(", \"" DBUSMENU_MENUITEM_PROP_SHORTCUT "\": [[");
 	g_array_append_val(strings, temp);
 
 	if (key->accel_mods & GDK_CONTROL_MASK) {
@@ -914,22 +915,22 @@ menu_iterator (GtkWidget * widget, gpointer user_data)
 	g_array_append_val(strings, temp);
 
 	if (GTK_IS_SEPARATOR_MENU_ITEM(widget)) {
-		temp = g_strdup_printf(", \"type\": \"%s\"", "separator");
+		temp = g_strdup_printf(", \"" DBUSMENU_MENUITEM_PROP_TYPE "\": \"%s\"", DBUSMENU_CLIENT_TYPES_SEPARATOR);
 		g_array_append_val(strings, temp);
 	} else {
-		temp = g_strdup_printf(", \"type\": \"%s\"", "standard");
+		temp = g_strdup_printf(", \"" DBUSMENU_MENUITEM_PROP_TYPE "\": \"%s\"", DBUSMENU_CLIENT_TYPES_DEFAULT);
 		g_array_append_val(strings, temp);
 	}
 
-	temp = g_strdup_printf(", \"enabled\": %s", gtk_widget_get_sensitive(GTK_WIDGET(widget)) ? "true" : "false");
+	temp = g_strdup_printf(", \"" DBUSMENU_MENUITEM_PROP_ENABLED "\": %s", gtk_widget_get_sensitive(GTK_WIDGET(widget)) ? "true" : "false");
 	g_array_append_val(strings, temp);
 
-	temp = g_strdup_printf(", \"visible\": %s", gtk_widget_get_visible(GTK_WIDGET(widget)) ? "true" : "false");
+	temp = g_strdup_printf(", \"" DBUSMENU_MENUITEM_PROP_VISIBLE "\": %s", gtk_widget_get_visible(GTK_WIDGET(widget)) ? "true" : "false");
 	g_array_append_val(strings, temp);
 
 	const gchar * label = gtk_menu_item_get_label(GTK_MENU_ITEM(widget));
 	if (label != NULL) {
-		temp = g_strdup_printf(", \"label\": \"%s\"", label);
+		temp = g_strdup_printf(", \"" DBUSMENU_MENUITEM_PROP_LABEL "\": \"%s\"", label);
 		g_array_append_val(strings, temp);
 	}
 
@@ -952,7 +953,7 @@ menu_iterator (GtkWidget * widget, gpointer user_data)
 
 	GtkWidget * submenu = gtk_menu_item_get_submenu(GTK_MENU_ITEM(widget));
 	if (submenu != NULL) {
-		temp = g_strdup(", \"children-display\": \"submenu\"");
+		temp = g_strdup(", \"" DBUSMENU_MENUITEM_PROP_CHILD_DISPLAY "\": \"" DBUSMENU_MENUITEM_CHILD_DISPLAY_SUBMENU "\"");
 		g_array_append_val(strings, temp);
 
 		temp = g_strdup(", \"submenu\": [ ");
@@ -996,18 +997,18 @@ entry2json (IndicatorObjectEntry * entry, GArray * strings)
 	g_array_append_val(strings, temp);
 
 	if (entry->label != NULL) {
-		temp = g_strdup_printf(", \"label\": \"%s\"", gtk_label_get_label(entry->label));
+		temp = g_strdup_printf(", \"" DBUSMENU_MENUITEM_PROP_LABEL "\": \"%s\"", gtk_label_get_label(entry->label));
 		g_array_append_val(strings, temp);
 
-		temp = g_strdup_printf(", \"enabled\": %s", gtk_widget_get_sensitive(GTK_WIDGET(entry->label)) ? "true" : "false");
+		temp = g_strdup_printf(", \"" DBUSMENU_MENUITEM_PROP_ENABLED "\": %s", gtk_widget_get_sensitive(GTK_WIDGET(entry->label)) ? "true" : "false");
 		g_array_append_val(strings, temp);
 
-		temp = g_strdup_printf(", \"visible\": %s", gtk_widget_get_visible(GTK_WIDGET(entry->label)) ? "true" : "false");
+		temp = g_strdup_printf(", \"" DBUSMENU_MENUITEM_PROP_VISIBLE "\": %s", gtk_widget_get_visible(GTK_WIDGET(entry->label)) ? "true" : "false");
 		g_array_append_val(strings, temp);
 	}
 
 	if (entry->menu != NULL) {
-		temp = g_strdup(", \"children-display\": \"submenu\"");
+		temp = g_strdup(", \"" DBUSMENU_MENUITEM_PROP_CHILD_DISPLAY "\": \"" DBUSMENU_MENUITEM_CHILD_DISPLAY_SUBMENU "\"");
 		g_array_append_val(strings, temp);
 
 		temp = g_strdup(", \"submenu\": [ ");
@@ -1068,7 +1069,7 @@ _application_menu_debug_server_j_so_ndump (IndicatorAppmenuDebug * iappd, guint 
 	g_array_append_val(strings, temp);
 
 	if (entries != NULL) {
-		temp = g_strdup(", \"children-display\": \"submenu\"");
+		temp = g_strdup(", \"" DBUSMENU_MENUITEM_PROP_CHILD_DISPLAY "\": \"" DBUSMENU_MENUITEM_CHILD_DISPLAY_SUBMENU "\"");
 		g_array_append_val(strings, temp);
 
 		temp = g_strdup(", \"submenu\": [");
