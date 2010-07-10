@@ -933,7 +933,8 @@ menu_iterator (GtkWidget * widget, gpointer user_data)
 		g_array_append_val(strings, temp);
 	}
 
-	/* TODO: Handle Shortcuts */
+	/* Deal with shortcuts, find the accel closure if we can and then
+	   turn that into a string */
 	GClosure * closure = NULL;
 	find_closure(widget, &closure);
 
