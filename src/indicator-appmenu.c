@@ -31,6 +31,8 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <libindicator/indicator.h>
 #include <libindicator/indicator-object.h>
 
+#include <libdbusmenu-glib/menuitem.h>
+
 #include <libbamf/bamf-matcher.h>
 
 #include "indicator-appmenu-marshal.h"
@@ -857,6 +859,46 @@ find_closure (GtkWidget * widget, gpointer user_data)
 	return;
 }
 
+/* Look at the closures in an accel group and find
+   the one that matches the one we've been passed */
+static gboolean
+find_group_closure (GtkAccelKey * key, GClosure * closure, gpointer user_data)
+{
+	return closure == user_data;
+}
+
+/* Turn the key codes into a string for the JSON output */
+static void
+key2string (GtkAccelKey * key, GArray * strings)
+{
+	gchar * temp = NULL;
+
+	temp = g_strdup(", \"shortcut\": [[");
+	g_array_append_val(strings, temp);
+
+	if (key->accel_mods & GDK_CONTROL_MASK) {
+		temp = g_strdup_printf("\"%s\", ", DBUSMENU_MENUITEM_SHORTCUT_CONTROL);
+		g_array_append_val(strings, temp);
+	}
+	if (key->accel_mods & GDK_MOD1_MASK) {
+		temp = g_strdup_printf("\"%s\", ", DBUSMENU_MENUITEM_SHORTCUT_ALT);
+		g_array_append_val(strings, temp);
+	}
+	if (key->accel_mods & GDK_SHIFT_MASK) {
+		temp = g_strdup_printf("\"%s\", ", DBUSMENU_MENUITEM_SHORTCUT_SHIFT);
+		g_array_append_val(strings, temp);
+	}
+	if (key->accel_mods & GDK_SUPER_MASK) {
+		temp = g_strdup_printf("\"%s\", ", DBUSMENU_MENUITEM_SHORTCUT_SUPER);
+		g_array_append_val(strings, temp);
+	}
+
+	temp = g_strdup_printf("\"%s\"]]", gdk_keyval_name(key->accel_key));
+	g_array_append_val(strings, temp);
+
+	return;
+}
+
 /* Do something for each menu item */
 static void
 menu_iterator (GtkWidget * widget, gpointer user_data)
@@ -894,6 +936,16 @@ menu_iterator (GtkWidget * widget, gpointer user_data)
 	/* TODO: Handle Shortcuts */
 	GClosure * closure = NULL;
 	find_closure(widget, &closure);
+
+	if (closure != NULL) {
+		GtkAccelGroup * group = gtk_accel_group_from_accel_closure(closure);
+		if (group != NULL) {
+			GtkAccelKey * key = gtk_accel_group_find(group, find_group_closure, closure);
+			if (key != NULL) {
+				key2string(key, strings);
+			}
+		}
+	}
 
 	/* TODO: Handle check/radio items */
 
