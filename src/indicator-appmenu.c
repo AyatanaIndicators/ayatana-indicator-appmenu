@@ -829,6 +829,34 @@ _application_menu_debug_server_all_menus(IndicatorAppmenuDebug * iappd, GPtrArra
 	return TRUE;
 }
 
+/* Looks to see if we can find an accel label to steal the
+   closure from */
+static void
+find_closure (GtkWidget * widget, gpointer user_data)
+{
+	GClosure ** closure = (GClosure **)user_data;
+
+	/* If we have one quit */
+	if (*closure != NULL) {
+		return;
+	}
+	
+	/* If we've got a label, steal its */
+	if (GTK_IS_ACCEL_LABEL(widget)) {
+		g_object_get (widget,
+		              "accel-closure", closure,
+		              NULL);
+		return;
+	}
+
+	/* If we've got a container, dig deeper */
+	if (GTK_IS_CONTAINER(widget)) {
+		gtk_container_foreach(GTK_CONTAINER(widget), find_closure, user_data);
+	}
+
+	return;
+}
+
 /* Do something for each menu item */
 static void
 menu_iterator (GtkWidget * widget, gpointer user_data)
@@ -864,6 +892,8 @@ menu_iterator (GtkWidget * widget, gpointer user_data)
 	}
 
 	/* TODO: Handle Shortcuts */
+	GClosure * closure = NULL;
+	find_closure(widget, &closure);
 
 	/* TODO: Handle check/radio items */
 
