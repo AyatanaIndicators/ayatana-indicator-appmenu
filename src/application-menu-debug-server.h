@@ -53,6 +53,55 @@ G_BEGIN_DECLS
 #endif /* !G_ENABLE_DEBUG */
 
 
+/* BOOLEAN:UINT,POINTER,POINTER */
+extern void dbus_glib_marshal__application_menu_debug_server_BOOLEAN__UINT_POINTER_POINTER (GClosure     *closure,
+                                                                                            GValue       *return_value,
+                                                                                            guint         n_param_values,
+                                                                                            const GValue *param_values,
+                                                                                            gpointer      invocation_hint,
+                                                                                            gpointer      marshal_data);
+void
+dbus_glib_marshal__application_menu_debug_server_BOOLEAN__UINT_POINTER_POINTER (GClosure     *closure,
+                                                                                GValue       *return_value G_GNUC_UNUSED,
+                                                                                guint         n_param_values,
+                                                                                const GValue *param_values,
+                                                                                gpointer      invocation_hint G_GNUC_UNUSED,
+                                                                                gpointer      marshal_data)
+{
+  typedef gboolean (*GMarshalFunc_BOOLEAN__UINT_POINTER_POINTER) (gpointer     data1,
+                                                                  guint        arg_1,
+                                                                  gpointer     arg_2,
+                                                                  gpointer     arg_3,
+                                                                  gpointer     data2);
+  register GMarshalFunc_BOOLEAN__UINT_POINTER_POINTER callback;
+  register GCClosure *cc = (GCClosure*) closure;
+  register gpointer data1, data2;
+  gboolean v_return;
+
+  g_return_if_fail (return_value != NULL);
+  g_return_if_fail (n_param_values == 4);
+
+  if (G_CCLOSURE_SWAP_DATA (closure))
+    {
+      data1 = closure->data;
+      data2 = g_value_peek_pointer (param_values + 0);
+    }
+  else
+    {
+      data1 = g_value_peek_pointer (param_values + 0);
+      data2 = closure->data;
+    }
+  callback = (GMarshalFunc_BOOLEAN__UINT_POINTER_POINTER) (marshal_data ? marshal_data : cc->callback);
+
+  v_return = callback (data1,
+                       g_marshal_value_peek_uint (param_values + 1),
+                       g_marshal_value_peek_pointer (param_values + 2),
+                       g_marshal_value_peek_pointer (param_values + 3),
+                       data2);
+
+  g_value_set_boolean (return_value, v_return);
+}
+
 /* BOOLEAN:POINTER,POINTER,POINTER,POINTER */
 extern void dbus_glib_marshal__application_menu_debug_server_BOOLEAN__POINTER_POINTER_POINTER_POINTER (GClosure     *closure,
                                                                                                        GValue       *return_value,
@@ -159,13 +208,14 @@ G_END_DECLS
 static const DBusGMethodInfo dbus_glib__application_menu_debug_server_methods[] = {
   { (GCallback) _application_menu_debug_server_current_menu, dbus_glib_marshal__application_menu_debug_server_BOOLEAN__POINTER_POINTER_POINTER_POINTER, 0 },
   { (GCallback) _application_menu_debug_server_all_menus, dbus_glib_marshal__application_menu_debug_server_BOOLEAN__POINTER_POINTER, 87 },
+  { (GCallback) _application_menu_debug_server_j_so_ndump, dbus_glib_marshal__application_menu_debug_server_BOOLEAN__UINT_POINTER_POINTER, 144 },
 };
 
 const DBusGObjectInfo dbus_glib__application_menu_debug_server_object_info = {
   0,
   dbus_glib__application_menu_debug_server_methods,
-  2,
-"org.ayatana.AppMenu.Debug\0CurrentMenu\0S\0windowID\0O\0F\0N\0u\0path\0O\0F\0N\0o\0address\0O\0F\0N\0s\0\0org.ayatana.AppMenu.Debug\0AllMenus\0S\0menus\0O\0F\0N\0a(uos)\0\0\0",
+  3,
+"org.ayatana.AppMenu.Debug\0CurrentMenu\0S\0windowID\0O\0F\0N\0u\0path\0O\0F\0N\0o\0address\0O\0F\0N\0s\0\0org.ayatana.AppMenu.Debug\0AllMenus\0S\0menus\0O\0F\0N\0a(uos)\0\0org.ayatana.AppMenu.Debug\0JSONDump\0S\0windowID\0I\0u\0menu-json\0O\0F\0N\0s\0\0\0",
 "\0",
 "\0"
 };
