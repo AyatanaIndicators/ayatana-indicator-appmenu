@@ -11,6 +11,10 @@
 		<method name="AllMenus">
 			<arg type="a(uos)" name="menus" direction="out" />
 		</method>
+		<method name="JSONDump">
+			<arg type="u" name="windowID" direction="in" />
+			<arg type="s" name="menu-json" direction="out" />
+		</method>
 
 	</interface>
 </node>

@@ -31,6 +31,9 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <libindicator/indicator.h>
 #include <libindicator/indicator-object.h>
 
+#include <libdbusmenu-glib/menuitem.h>
+#include <libdbusmenu-glib/client.h>
+
 #include <libbamf/bamf-matcher.h>
 
 #include "indicator-appmenu-marshal.h"
@@ -147,6 +150,10 @@ static gboolean _application_menu_debug_server_current_menu          (IndicatorA
                                                                       GError ** error);
 static gboolean _application_menu_debug_server_all_menus             (IndicatorAppmenuDebug * iappd,
                                                                       GPtrArray ** entries,
+                                                                      GError ** error);
+static gboolean _application_menu_debug_server_j_so_ndump            (IndicatorAppmenuDebug * iappd,
+                                                                      guint windowid,
+                                                                      gchar ** jsondata,
                                                                       GError ** error);
 
 /**********************
@@ -759,7 +766,8 @@ error_quark (void)
 /* Unique error codes for debug interface */
 enum {
 	ERROR_NO_APPLICATIONS,
-	ERROR_NO_DEFAULT_APP
+	ERROR_NO_DEFAULT_APP,
+	ERROR_WINDOW_NOT_FOUND
 };
 
 /* Get the current menu */
@@ -824,3 +832,280 @@ _application_menu_debug_server_all_menus(IndicatorAppmenuDebug * iappd, GPtrArra
 	return TRUE;
 }
 
+/* Looks to see if we can find an accel label to steal the
+   closure from */
+static void
+find_closure (GtkWidget * widget, gpointer user_data)
+{
+	GClosure ** closure = (GClosure **)user_data;
+
+	/* If we have one quit */
+	if (*closure != NULL) {
+		return;
+	}
+	
+	/* If we've got a label, steal its */
+	if (GTK_IS_ACCEL_LABEL(widget)) {
+		g_object_get (widget,
+		              "accel-closure", closure,
+		              NULL);
+		return;
+	}
+
+	/* If we've got a container, dig deeper */
+	if (GTK_IS_CONTAINER(widget)) {
+		gtk_container_foreach(GTK_CONTAINER(widget), find_closure, user_data);
+	}
+
+	return;
+}
+
+/* Look at the closures in an accel group and find
+   the one that matches the one we've been passed */
+static gboolean
+find_group_closure (GtkAccelKey * key, GClosure * closure, gpointer user_data)
+{
+	return closure == user_data;
+}
+
+/* Turn the key codes into a string for the JSON output */
+static void
+key2string (GtkAccelKey * key, GArray * strings)
+{
+	gchar * temp = NULL;
+
+	temp = g_strdup(", \"" DBUSMENU_MENUITEM_PROP_SHORTCUT "\": [[");
+	g_array_append_val(strings, temp);
+
+	if (key->accel_mods & GDK_CONTROL_MASK) {
+		temp = g_strdup_printf("\"%s\", ", DBUSMENU_MENUITEM_SHORTCUT_CONTROL);
+		g_array_append_val(strings, temp);
+	}
+	if (key->accel_mods & GDK_MOD1_MASK) {
+		temp = g_strdup_printf("\"%s\", ", DBUSMENU_MENUITEM_SHORTCUT_ALT);
+		g_array_append_val(strings, temp);
+	}
+	if (key->accel_mods & GDK_SHIFT_MASK) {
+		temp = g_strdup_printf("\"%s\", ", DBUSMENU_MENUITEM_SHORTCUT_SHIFT);
+		g_array_append_val(strings, temp);
+	}
+	if (key->accel_mods & GDK_SUPER_MASK) {
+		temp = g_strdup_printf("\"%s\", ", DBUSMENU_MENUITEM_SHORTCUT_SUPER);
+		g_array_append_val(strings, temp);
+	}
+
+	temp = g_strdup_printf("\"%s\"]]", gdk_keyval_name(key->accel_key));
+	g_array_append_val(strings, temp);
+
+	return;
+}
+
+/* Do something for each menu item */
+static void
+menu_iterator (GtkWidget * widget, gpointer user_data)
+{
+	GArray * strings = (GArray *)user_data;
+
+	gchar * temp = g_strdup("{");
+	g_array_append_val(strings, temp);
+
+	/* TODO: We need some sort of useful ID, but for now  we're
+	   just ensuring it's unique. */
+	temp = g_strdup_printf("\"id\": %d", strings->len);
+	g_array_append_val(strings, temp);
+
+	if (GTK_IS_SEPARATOR_MENU_ITEM(widget)) {
+		temp = g_strdup_printf(", \"" DBUSMENU_MENUITEM_PROP_TYPE "\": \"%s\"", DBUSMENU_CLIENT_TYPES_SEPARATOR);
+		g_array_append_val(strings, temp);
+	} else {
+		temp = g_strdup_printf(", \"" DBUSMENU_MENUITEM_PROP_TYPE "\": \"%s\"", DBUSMENU_CLIENT_TYPES_DEFAULT);
+		g_array_append_val(strings, temp);
+	}
+
+	temp = g_strdup_printf(", \"" DBUSMENU_MENUITEM_PROP_ENABLED "\": %s", gtk_widget_get_sensitive(GTK_WIDGET(widget)) ? "true" : "false");
+	g_array_append_val(strings, temp);
+
+	temp = g_strdup_printf(", \"" DBUSMENU_MENUITEM_PROP_VISIBLE "\": %s", gtk_widget_get_visible(GTK_WIDGET(widget)) ? "true" : "false");
+	g_array_append_val(strings, temp);
+
+	const gchar * label = gtk_menu_item_get_label(GTK_MENU_ITEM(widget));
+	if (label != NULL) {
+		temp = g_strdup_printf(", \"" DBUSMENU_MENUITEM_PROP_LABEL "\": \"%s\"", label);
+		g_array_append_val(strings, temp);
+	}
+
+	/* Deal with shortcuts, find the accel closure if we can and then
+	   turn that into a string */
+	GClosure * closure = NULL;
+	find_closure(widget, &closure);
+
+	if (closure != NULL) {
+		GtkAccelGroup * group = gtk_accel_group_from_accel_closure(closure);
+		if (group != NULL) {
+			GtkAccelKey * key = gtk_accel_group_find(group, find_group_closure, closure);
+			if (key != NULL) {
+				key2string(key, strings);
+			}
+		}
+	}
+
+	/* TODO: Handle check/radio items */
+
+	GtkWidget * submenu = gtk_menu_item_get_submenu(GTK_MENU_ITEM(widget));
+	if (submenu != NULL) {
+		temp = g_strdup(", \"" DBUSMENU_MENUITEM_PROP_CHILD_DISPLAY "\": \"" DBUSMENU_MENUITEM_CHILD_DISPLAY_SUBMENU "\"");
+		g_array_append_val(strings, temp);
+
+		temp = g_strdup(", \"submenu\": [ ");
+		g_array_append_val(strings, temp);
+
+		guint old_len = strings->len;
+
+		gtk_container_foreach(GTK_CONTAINER(submenu), menu_iterator, strings);
+
+		if (old_len == strings->len) {
+			temp = g_strdup("]");
+			g_array_append_val(strings, temp);
+		} else {
+			gchar * last_one = g_array_index(strings, gchar *, strings->len - 1);
+			guint lastlen = g_utf8_strlen(last_one, -1);
+
+			if (last_one[lastlen - 1] != ',') {
+				g_warning("Huh, this seems impossible.  Should be a comma at the end.");
+			}
+
+			last_one[lastlen - 1] = ']';
+		}
+	}
+
+	temp = g_strdup("},");
+	g_array_append_val(strings, temp);
+
+	return;
+}
+
+/* Takes an entry and outputs it into the ptrarray */
+static void
+entry2json (IndicatorObjectEntry * entry, GArray * strings)
+{
+	gchar * temp = g_strdup("{");
+	g_array_append_val(strings, temp);
+
+	/* TODO: We need some sort of useful ID, but for now  we're
+	   just ensuring it's unique. */
+	temp = g_strdup_printf("\"id\": %d", strings->len);
+	g_array_append_val(strings, temp);
+
+	if (entry->label != NULL) {
+		temp = g_strdup_printf(", \"" DBUSMENU_MENUITEM_PROP_LABEL "\": \"%s\"", gtk_label_get_label(entry->label));
+		g_array_append_val(strings, temp);
+
+		temp = g_strdup_printf(", \"" DBUSMENU_MENUITEM_PROP_ENABLED "\": %s", gtk_widget_get_sensitive(GTK_WIDGET(entry->label)) ? "true" : "false");
+		g_array_append_val(strings, temp);
+
+		temp = g_strdup_printf(", \"" DBUSMENU_MENUITEM_PROP_VISIBLE "\": %s", gtk_widget_get_visible(GTK_WIDGET(entry->label)) ? "true" : "false");
+		g_array_append_val(strings, temp);
+	}
+
+	if (entry->menu != NULL) {
+		temp = g_strdup(", \"" DBUSMENU_MENUITEM_PROP_CHILD_DISPLAY "\": \"" DBUSMENU_MENUITEM_CHILD_DISPLAY_SUBMENU "\"");
+		g_array_append_val(strings, temp);
+
+		temp = g_strdup(", \"submenu\": [ ");
+		g_array_append_val(strings, temp);
+
+		guint old_len = strings->len;
+
+		gtk_container_foreach(GTK_CONTAINER(entry->menu), menu_iterator, strings);
+
+		if (old_len == strings->len) {
+			temp = g_strdup("]");
+			g_array_append_val(strings, temp);
+		} else {
+			gchar * last_one = g_array_index(strings, gchar *, strings->len - 1);
+			guint lastlen = g_utf8_strlen(last_one, -1);
+
+			if (last_one[lastlen - 1] != ',') {
+				g_warning("Huh, this seems impossible.  Should be a comma at the end.");
+			}
+
+			last_one[lastlen - 1] = ']';
+		}
+	}
+
+
+	temp = g_strdup("},");
+	g_array_append_val(strings, temp);
+
+	return;
+}
+
+/* Make JSON out of our menus */
+static gboolean
+_application_menu_debug_server_j_so_ndump (IndicatorAppmenuDebug * iappd, guint windowid, gchar ** jsondata, GError ** error)
+{
+	IndicatorAppmenu * iapp = iappd->appmenu;
+	WindowMenus * wm = NULL;
+
+	if (windowid == 0) {
+		wm = iapp->default_app;
+	} else {
+		wm = WINDOW_MENUS(g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid)));
+	}
+
+	if (wm == NULL) {
+		g_set_error_literal(error, error_quark(), ERROR_WINDOW_NOT_FOUND, "Window not found");
+		return FALSE;
+	}
+
+	GArray * strings = g_array_new(TRUE, FALSE, sizeof(gchar *));
+	GList * entries = window_menus_get_entries(wm);
+	GList * entry;
+
+	gchar * temp = g_strdup("{");
+	g_array_append_val(strings, temp);
+
+	temp = g_strdup("\"id\": 0");
+	g_array_append_val(strings, temp);
+
+	if (entries != NULL) {
+		temp = g_strdup(", \"" DBUSMENU_MENUITEM_PROP_CHILD_DISPLAY "\": \"" DBUSMENU_MENUITEM_CHILD_DISPLAY_SUBMENU "\"");
+		g_array_append_val(strings, temp);
+
+		temp = g_strdup(", \"submenu\": [");
+		g_array_append_val(strings, temp);
+	}
+
+	guint old_len = strings->len;
+
+	for (entry = entries; entry != NULL; entry = g_list_next(entry)) {
+		entry2json(entry->data, strings);
+	}
+
+	if (entries != NULL) {
+		if (old_len == strings->len) {
+			temp = g_strdup("]");
+			g_array_append_val(strings, temp);
+		} else {
+			gchar * last_one = g_array_index(strings, gchar *, strings->len - 1);
+			guint lastlen = g_utf8_strlen(last_one, -1);
+
+			if (last_one[lastlen - 1] != ',') {
+				g_warning("Huh, this seems impossible.  Should be a comma at the end.");
+			}
+
+			last_one[lastlen - 1] = ']';
+		}
+	}
+
+	g_list_free(entries);
+
+	temp = g_strdup("}");
+	g_array_append_val(strings, temp);
+
+	*jsondata = g_strjoinv(NULL, (gchar **)strings->data);
+	g_strfreev((gchar **)strings->data);
+	g_array_free(strings, FALSE);
+
+	return TRUE;
+}
