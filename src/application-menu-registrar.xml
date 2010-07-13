@@ -64,7 +64,7 @@
 		</signal>
 		<signal name="WindowUnregistered">
 			<dox:d>Signals when the registrar removes a menu registration</dox:d>
-			<arg name="windowId" type="u"  direction="out">
+			<arg name="windowId" type="u" direction="out">
 				<dox:d>The XWindow ID of the window</dox:d>
 			</arg>
 		</signal>
