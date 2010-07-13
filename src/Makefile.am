@@ -35,7 +35,7 @@ glib_marshal_prefix = _indicator_appmenu_marshal
 ######################################
 
 DBUS_SPECS = \
-	application-menu-debug.xml \
+	application-menu-renderer.xml \
 	application-menu-registrar.xml
 
 %-client.h: %.xml
