@@ -166,6 +166,20 @@ static gboolean _application_menu_debug_server_j_so_ndump            (IndicatorA
                                                                       guint windowid,
                                                                       gchar ** jsondata,
                                                                       GError ** error);
+static gboolean _application_menu_renderer_server_get_current_menu   (IndicatorAppmenuDebug * iappd,
+                                                                      gchar ** objectpath,
+                                                                      gchar ** address,
+                                                                      GError ** error);
+static gboolean _application_menu_renderer_server_activate_menu_item (IndicatorAppmenuDebug * iappd,
+                                                                      GArray * menulist,
+                                                                      GError ** error);
+static gboolean _application_menu_renderer_server_dump_current_menu  (IndicatorAppmenuDebug * iappd,
+                                                                      gchar ** jsondata,
+                                                                      GError ** error);
+static gboolean _application_menu_renderer_server_dump_menu          (IndicatorAppmenuDebug * iappd,
+                                                                      guint windowid,
+                                                                      gchar ** jsondata,
+                                                                      GError ** error);
 
 /**********************
   DBus Interfaces
@@ -1141,3 +1155,32 @@ _application_menu_debug_server_j_so_ndump (IndicatorAppmenuDebug * iappd, guint 
 
 	return TRUE;
 }
+
+static gboolean
+_application_menu_renderer_server_get_current_menu (IndicatorAppmenuDebug * iappd, gchar ** objectpath, gchar ** address, GError ** error)
+{
+
+	return FALSE;
+}
+
+static gboolean
+_application_menu_renderer_server_activate_menu_item (IndicatorAppmenuDebug * iappd, GArray * menulist, GError ** error)
+{
+
+	return FALSE;
+}
+
+static gboolean
+_application_menu_renderer_server_dump_current_menu  (IndicatorAppmenuDebug * iappd, gchar ** jsondata, GError ** error)
+{
+
+	return FALSE;
+}
+
+static gboolean
+_application_menu_renderer_server_dump_menu (IndicatorAppmenuDebug * iappd, guint windowid, gchar ** jsondata, GError ** error)
+{
+
+	return FALSE;
+}
+
