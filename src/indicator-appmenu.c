@@ -345,7 +345,7 @@ G_DEFINE_TYPE (IndicatorAppmenuDebug, indicator_appmenu_debug, G_TYPE_OBJECT);
 static void
 indicator_appmenu_debug_class_init (IndicatorAppmenuDebugClass *klass)
 {
-	dbus_g_object_type_install_info(INDICATOR_APPMENU_DEBUG_TYPE, &dbus_glib__application_menu_debug_server_object_info);
+	dbus_g_object_type_install_info(INDICATOR_APPMENU_DEBUG_TYPE, &dbus_glib__application_menu_renderer_server_object_info);
 
 	return;
 }
