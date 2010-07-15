@@ -63,8 +63,8 @@ typedef struct _IndicatorAppmenuDebugClass IndicatorAppmenuDebugClass;
 struct _IndicatorAppmenuClass {
 	IndicatorObjectClass parent_class;
 
-	void (*window_registered) (IndicatorAppmenu * iapp, guint wid, gchar * path, gpointer user_data);
-	void (*window_unregistered) (IndicatorAppmenu * iapp, guint wid, gchar * path, gpointer user_data);
+	void (*window_registered) (IndicatorAppmenu * iapp, guint wid, gchar * address, gpointer path, gpointer user_data);
+	void (*window_unregistered) (IndicatorAppmenu * iapp, guint wid, gpointer user_data);
 };
 
 struct _IndicatorAppmenu {
@@ -212,15 +212,15 @@ indicator_appmenu_class_init (IndicatorAppmenuClass *klass)
 	                                      G_SIGNAL_RUN_LAST,
 	                                      G_STRUCT_OFFSET (IndicatorAppmenuClass, window_registered),
 	                                      NULL, NULL,
-	                                      _indicator_appmenu_marshal_VOID__UINT_STRING,
-	                                      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
+	                                      _indicator_appmenu_marshal_VOID__UINT_STRING_BOXED,
+	                                      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, DBUS_TYPE_G_OBJECT_PATH);
 	signals[WINDOW_UNREGISTERED] =  g_signal_new("window-unregistered",
 	                                      G_TYPE_FROM_CLASS(klass),
 	                                      G_SIGNAL_RUN_LAST,
 	                                      G_STRUCT_OFFSET (IndicatorAppmenuClass, window_unregistered),
 	                                      NULL, NULL,
-	                                      _indicator_appmenu_marshal_VOID__UINT_STRING,
-	                                      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
+	                                      _indicator_appmenu_marshal_VOID__UINT,
+	                                      G_TYPE_NONE, 1, G_TYPE_UINT);
 
 	dbus_g_object_type_install_info(INDICATOR_APPMENU_TYPE, &dbus_glib__application_menu_registrar_server_object_info);
 
@@ -695,17 +695,18 @@ menus_destroyed (GObject * menus, gpointer user_data)
 static gboolean
 _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, guint windowid, const gchar * objectpath, DBusGMethodInvocation * method)
 {
-	g_debug("Registering window ID %d with path %s from %s", windowid, objectpath, dbus_g_method_get_sender(method));
+	const gchar * sender = dbus_g_method_get_sender(method);
+	g_debug("Registering window ID %d with path %s from %s", windowid, objectpath, sender);
 
 	if (g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid)) == NULL && windowid != 0) {
-		WindowMenus * wm = window_menus_new(windowid, dbus_g_method_get_sender(method), objectpath);
+		WindowMenus * wm = window_menus_new(windowid, sender, objectpath);
 		g_return_val_if_fail(wm != NULL, FALSE);
 
 		g_signal_connect(G_OBJECT(wm), WINDOW_MENUS_SIGNAL_DESTROY, G_CALLBACK(menus_destroyed), iapp);
 
 		g_hash_table_insert(iapp->apps, GUINT_TO_POINTER(windowid), wm);
 
-		g_signal_emit(G_OBJECT(iapp), signals[WINDOW_REGISTERED], 0, windowid, objectpath, TRUE);
+		g_signal_emit(G_OBJECT(iapp), signals[WINDOW_REGISTERED], 0, windowid, sender, objectpath, TRUE);
 
 		/* Note: Does not cause ref */
 		BamfWindow * win = bamf_matcher_get_active_window(iapp->matcher);
@@ -713,9 +714,9 @@ _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, gui
 		active_window_changed(iapp->matcher, NULL, BAMF_VIEW(win), iapp);
 	} else {
 		if (windowid == 0) {
-			g_warning("Can't build windows for a NULL window ID %d with path %s from %s", windowid, objectpath, dbus_g_method_get_sender(method));
+			g_warning("Can't build windows for a NULL window ID %d with path %s from %s", windowid, objectpath, sender);
 		} else {
-			g_warning("Already have a menu for window ID %d with path %s from %s", windowid, objectpath, dbus_g_method_get_sender(method));
+			g_warning("Already have a menu for window ID %d with path %s from %s", windowid, objectpath, sender);
 		}
 	}
 
