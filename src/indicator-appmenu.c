@@ -129,6 +129,17 @@ static gboolean _application_menu_registrar_server_register_window   (IndicatorA
                                                                       guint windowid,
                                                                       const gchar * objectpath,
                                                                       DBusGMethodInvocation * method);
+static gboolean _application_menu_registrar_server_unregister_window (IndicatorAppmenu * iapp,
+                                                                      guint windowid,
+                                                                      GError ** error);
+static gboolean _application_menu_registrar_server_get_menu_for_window (IndicatorAppmenu * iapp,
+                                                                      guint windowid,
+                                                                      gchar ** objectpath,
+                                                                      gchar ** address,
+                                                                      GError ** error);
+static gboolean _application_menu_registrar_server_get_menus         (IndicatorAppmenu * iapp,
+                                                                      GPtrArray ** entries,
+                                                                      GError ** error);
 static void request_name_cb                                          (DBusGProxy *proxy,
                                                                       guint result,
                                                                       GError *error,
@@ -160,7 +171,7 @@ static gboolean _application_menu_debug_server_j_so_ndump            (IndicatorA
   DBus Interfaces
  **********************/
 #include "application-menu-registrar-server.h"
-#include "application-menu-debug-server.h"
+#include "application-menu-renderer-server.h"
 
 enum {
 	WINDOW_REGISTERED,
@@ -700,6 +711,27 @@ _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, gui
 
 	dbus_g_method_return(method);
 	return TRUE;
+}
+
+static gboolean
+_application_menu_registrar_server_unregister_window (IndicatorAppmenu * iapp, guint windowid, GError ** error)
+{
+
+	return FALSE;
+}
+
+static gboolean
+_application_menu_registrar_server_get_menu_for_window (IndicatorAppmenu * iapp, guint windowid, gchar ** objectpath, gchar ** address, GError ** error)
+{
+
+	return FALSE;
+}
+
+static gboolean
+_application_menu_registrar_server_get_menus (IndicatorAppmenu * iapp, GPtrArray ** entries, GError ** error)
+{
+
+	return FALSE;
 }
 
 /* Response to whether we got our name or not */
