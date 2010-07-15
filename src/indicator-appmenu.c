@@ -154,18 +154,6 @@ static void active_window_changed                                    (BamfMatche
                                                                       BamfView * oldview,
                                                                       BamfView * newview,
                                                                       gpointer user_data);
-static gboolean _application_menu_debug_server_current_menu          (IndicatorAppmenuDebug * iappd,
-                                                                      guint * windowid,
-                                                                      gchar ** objectpath,
-                                                                      gchar ** address,
-                                                                      GError ** error);
-static gboolean _application_menu_debug_server_all_menus             (IndicatorAppmenuDebug * iappd,
-                                                                      GPtrArray ** entries,
-                                                                      GError ** error);
-static gboolean _application_menu_debug_server_j_so_ndump            (IndicatorAppmenuDebug * iappd,
-                                                                      guint windowid,
-                                                                      gchar ** jsondata,
-                                                                      GError ** error);
 static gboolean _application_menu_renderer_server_get_current_menu   (IndicatorAppmenuDebug * iappd,
                                                                       gchar ** objectpath,
                                                                       gchar ** address,
@@ -180,6 +168,14 @@ static gboolean _application_menu_renderer_server_dump_menu          (IndicatorA
                                                                       guint windowid,
                                                                       gchar ** jsondata,
                                                                       GError ** error);
+static GQuark error_quark                                            (void);
+
+/* Unique error codes for debug interface */
+enum {
+	ERROR_NO_APPLICATIONS,
+	ERROR_NO_DEFAULT_APP,
+	ERROR_WINDOW_NOT_FOUND
+};
 
 /**********************
   DBus Interfaces
@@ -727,6 +723,7 @@ _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, gui
 	return TRUE;
 }
 
+/* Kindly remove an entry from our DB */
 static gboolean
 _application_menu_registrar_server_unregister_window (IndicatorAppmenu * iapp, guint windowid, GError ** error)
 {
@@ -734,18 +731,69 @@ _application_menu_registrar_server_unregister_window (IndicatorAppmenu * iapp, g
 	return FALSE;
 }
 
+/* Grab the menu information for a specific window */
 static gboolean
 _application_menu_registrar_server_get_menu_for_window (IndicatorAppmenu * iapp, guint windowid, gchar ** objectpath, gchar ** address, GError ** error)
 {
+	WindowMenus * wm = NULL;
 
-	return FALSE;
+	if (windowid == 0) {
+		wm = iapp->default_app;
+	} else {
+		wm = WINDOW_MENUS(g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid)));
+	}
+
+	if (wm == NULL) {
+		g_set_error_literal(error, error_quark(), ERROR_WINDOW_NOT_FOUND, "Window not found");
+		return FALSE;
+	}
+
+	*objectpath = window_menus_get_path(wm);
+	*address = window_menus_get_address(wm);
+
+	return TRUE;
 }
 
+/* Get all the menus we have */
 static gboolean
 _application_menu_registrar_server_get_menus (IndicatorAppmenu * iapp, GPtrArray ** entries, GError ** error)
 {
+	if (iapp->apps == NULL) {
+		g_set_error_literal(error, error_quark(), ERROR_NO_APPLICATIONS, "No applications are registered");
+		return FALSE;
+	}
 
-	return FALSE;
+	*entries = g_ptr_array_new();
+
+	GList * appkeys = NULL;
+	for (appkeys = g_hash_table_get_keys(iapp->apps); appkeys != NULL; appkeys = g_list_next(appkeys)) {
+		GValueArray * structval = g_value_array_new(3);
+		gpointer hash_val = g_hash_table_lookup(iapp->apps, appkeys->data);
+
+		if (hash_val == NULL) { continue; }
+
+		GValue winid = {0};
+		g_value_init(&winid, G_TYPE_UINT);
+		g_value_set_uint(&winid, window_menus_get_xid(WINDOW_MENUS(hash_val)));
+		g_value_array_append(structval, &winid);
+		g_value_unset(&winid);
+
+		GValue path = {0};
+		g_value_init(&path, DBUS_TYPE_G_OBJECT_PATH);
+		g_value_take_boxed(&path, window_menus_get_path(WINDOW_MENUS(hash_val)));
+		g_value_array_append(structval, &path);
+		g_value_unset(&path);
+
+		GValue address = {0};
+		g_value_init(&address, G_TYPE_STRING);
+		g_value_take_string(&address, window_menus_get_address(WINDOW_MENUS(hash_val)));
+		g_value_array_append(structval, &address);
+		g_value_unset(&address);
+
+		g_ptr_array_add(*entries, structval);
+	}
+
+	return TRUE;
 }
 
 /* Response to whether we got our name or not */
@@ -807,75 +855,6 @@ error_quark (void)
 	}
 
 	return error_quark;
-}
-
-/* Unique error codes for debug interface */
-enum {
-	ERROR_NO_APPLICATIONS,
-	ERROR_NO_DEFAULT_APP,
-	ERROR_WINDOW_NOT_FOUND
-};
-
-/* Get the current menu */
-static gboolean
-_application_menu_debug_server_current_menu (IndicatorAppmenuDebug * iappd, guint * windowid, gchar ** objectpath, gchar ** address, GError ** error)
-{
-	IndicatorAppmenu * iapp = iappd->appmenu;
-
-	if (iapp->default_app == NULL) {
-		g_set_error_literal(error, error_quark(), ERROR_NO_DEFAULT_APP, "Not currently showing an application");
-		return FALSE;
-	}
-
-	*windowid = window_menus_get_xid(iapp->default_app);
-	*objectpath = window_menus_get_path(iapp->default_app);
-	*address = window_menus_get_address(iapp->default_app);
-
-	return TRUE;
-}
-
-/* Get all the menus we have */
-static gboolean
-_application_menu_debug_server_all_menus(IndicatorAppmenuDebug * iappd, GPtrArray ** entries, GError ** error)
-{
-	IndicatorAppmenu * iapp = iappd->appmenu;
-
-	if (iapp->apps == NULL) {
-		g_set_error_literal(error, error_quark(), ERROR_NO_APPLICATIONS, "No applications are registered");
-		return FALSE;
-	}
-
-	*entries = g_ptr_array_new();
-
-	GList * appkeys = NULL;
-	for (appkeys = g_hash_table_get_keys(iapp->apps); appkeys != NULL; appkeys = g_list_next(appkeys)) {
-		GValueArray * structval = g_value_array_new(3);
-		gpointer hash_val = g_hash_table_lookup(iapp->apps, appkeys->data);
-
-		if (hash_val == NULL) { continue; }
-
-		GValue winid = {0};
-		g_value_init(&winid, G_TYPE_UINT);
-		g_value_set_uint(&winid, window_menus_get_xid(WINDOW_MENUS(hash_val)));
-		g_value_array_append(structval, &winid);
-		g_value_unset(&winid);
-
-		GValue path = {0};
-		g_value_init(&path, DBUS_TYPE_G_OBJECT_PATH);
-		g_value_take_boxed(&path, window_menus_get_path(WINDOW_MENUS(hash_val)));
-		g_value_array_append(structval, &path);
-		g_value_unset(&path);
-
-		GValue address = {0};
-		g_value_init(&address, G_TYPE_STRING);
-		g_value_take_string(&address, window_menus_get_address(WINDOW_MENUS(hash_val)));
-		g_value_array_append(structval, &address);
-		g_value_unset(&address);
-
-		g_ptr_array_add(*entries, structval);
-	}
-
-	return TRUE;
 }
 
 /* Looks to see if we can find an accel label to steal the
@@ -1086,9 +1065,41 @@ entry2json (IndicatorObjectEntry * entry, GArray * strings)
 	return;
 }
 
-/* Make JSON out of our menus */
+/* Grab the location of the dbusmenu of the current menu */
 static gboolean
-_application_menu_debug_server_j_so_ndump (IndicatorAppmenuDebug * iappd, guint windowid, gchar ** jsondata, GError ** error)
+_application_menu_renderer_server_get_current_menu (IndicatorAppmenuDebug * iappd, gchar ** objectpath, gchar ** address, GError ** error)
+{
+	IndicatorAppmenu * iapp = iappd->appmenu;
+
+	if (iapp->default_app == NULL) {
+		g_set_error_literal(error, error_quark(), ERROR_NO_DEFAULT_APP, "Not currently showing an application");
+		return FALSE;
+	}
+
+	*objectpath = window_menus_get_path(iapp->default_app);
+	*address = window_menus_get_address(iapp->default_app);
+
+	return TRUE;
+}
+
+/* Activate menu items through a script given as a parameter */
+static gboolean
+_application_menu_renderer_server_activate_menu_item (IndicatorAppmenuDebug * iappd, GArray * menulist, GError ** error)
+{
+
+	return FALSE;
+}
+
+/* Dump the current menu to a JSON file */
+static gboolean
+_application_menu_renderer_server_dump_current_menu  (IndicatorAppmenuDebug * iappd, gchar ** jsondata, GError ** error)
+{
+	return _application_menu_renderer_server_dump_menu(iappd, 0, jsondata, error);
+}
+
+/* Dump a specific window's menus to a JSON file */
+static gboolean
+_application_menu_renderer_server_dump_menu (IndicatorAppmenuDebug * iappd, guint windowid, gchar ** jsondata, GError ** error)
 {
 	IndicatorAppmenu * iapp = iappd->appmenu;
 	WindowMenus * wm = NULL;
@@ -1154,33 +1165,5 @@ _application_menu_debug_server_j_so_ndump (IndicatorAppmenuDebug * iappd, guint 
 	g_array_free(strings, FALSE);
 
 	return TRUE;
-}
-
-static gboolean
-_application_menu_renderer_server_get_current_menu (IndicatorAppmenuDebug * iappd, gchar ** objectpath, gchar ** address, GError ** error)
-{
-
-	return FALSE;
-}
-
-static gboolean
-_application_menu_renderer_server_activate_menu_item (IndicatorAppmenuDebug * iappd, GArray * menulist, GError ** error)
-{
-
-	return FALSE;
-}
-
-static gboolean
-_application_menu_renderer_server_dump_current_menu  (IndicatorAppmenuDebug * iappd, gchar ** jsondata, GError ** error)
-{
-
-	return FALSE;
-}
-
-static gboolean
-_application_menu_renderer_server_dump_menu (IndicatorAppmenuDebug * iappd, guint windowid, gchar ** jsondata, GError ** error)
-{
-
-	return FALSE;
 }
 
