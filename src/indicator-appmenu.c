@@ -727,6 +727,7 @@ _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, gui
 static gboolean
 _application_menu_registrar_server_unregister_window (IndicatorAppmenu * iapp, guint windowid, GError ** error)
 {
+	/* TODO: Do it */
 
 	return FALSE;
 }
@@ -1086,6 +1087,7 @@ _application_menu_renderer_server_get_current_menu (IndicatorAppmenuDebug * iapp
 static gboolean
 _application_menu_renderer_server_activate_menu_item (IndicatorAppmenuDebug * iappd, GArray * menulist, GError ** error)
 {
+	/* TODO: Do it */
 
 	return FALSE;
 }
