@@ -16,6 +16,7 @@
 		  address and object that provides the menu using the dbusmenu dbus interface.
 		</dox:d>
 		<method name="RegisterWindow">
+			<annotation name="org.freedesktop.DBus.GLib.Async" value="true" />
 			<dox:d><![CDATA[
 			  Associates a dbusmenu with a window
 	     
