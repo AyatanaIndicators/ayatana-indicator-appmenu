@@ -57,7 +57,7 @@ dbus_owner_change (DBusGProxy * proxy, const gchar * name, const gchar * prev, c
 		return;
 	}
 
-	org_ayatana_WindowMenu_Registrar_register_window_async(registrar, GDK_WINDOW_XID (gtk_widget_get_window (window)), MENU_PATH, register_cb, NULL);
+	org_ayatana_AppMenu_Registrar_register_window_async(registrar, GDK_WINDOW_XID (gtk_widget_get_window (window)), MENU_PATH, register_cb, NULL);
 
 	return;
 }
@@ -75,7 +75,7 @@ idle_func (gpointer user_data)
 	registrar = dbus_g_proxy_new_for_name(session_bus, DBUS_NAME, REG_OBJECT, REG_IFACE);
 	g_return_val_if_fail(registrar != NULL, FALSE);
 
-	org_ayatana_WindowMenu_Registrar_register_window_async(registrar, GDK_WINDOW_XID (gtk_widget_get_window (window)), MENU_PATH, register_cb, NULL);
+	org_ayatana_AppMenu_Registrar_register_window_async(registrar, GDK_WINDOW_XID (gtk_widget_get_window (window)), MENU_PATH, register_cb, NULL);
 
 	DBusGProxy * dbus_proxy = dbus_g_proxy_new_for_name(session_bus,
 		                                                DBUS_SERVICE_DBUS,

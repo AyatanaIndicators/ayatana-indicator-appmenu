@@ -1,0 +1,61 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node name="/org/ayatana/AppMenu/Renderer">
+	<dox:d><![CDATA[
+	  @mainpage
+	 
+	  A representation of the process used to render a menu into something visible
+	  to the user.  Many times this will be combined with a Registrar
+	  (@ref org::ayatana::AppMenu::Registrar) but that is not required.  The interface
+	  implemented by the Renderer is here: @ref org::ayatana::AppMenu::Registrar and
+	  used mostly for debugging the status of and testing the renderers.
+	    
+	  The actual menus are transported using the dbusmenu protocol which is available
+	  here: @ref org::ayatana::dbusmenu.
+	]]></dox:d>
+	<interface name="org.ayatana.AppMenu.Renderer">
+		<dox:d>
+		  An interface to register a menu from an application's window to be displayed in another
+		  window.  This manages that association between XWindow Window IDs and the dbus
+		  address and object that provides the menu using the dbusmenu dbus interface.
+		</dox:d>
+		<method name="GetCurrentMenu">
+			<dox:d>Get the location of the menu currently being displayed to the user.</dox:d>
+			<arg name="service" type="s" direction="out">
+				<dox:d>The address of the connection on DBus (e.g. :1.23 or org.example.service)</dox:d>
+			</arg>
+			<arg name="menuObjectPath" type="o" direction="out">
+				<dox:d>The path to the object which implements the org.ayatana.dbusmenu interface.</dox:d>
+			</arg>
+		</method>
+		<method name="ActivateMenuItem">
+			<dox:d>Activate menus via DBus</dox:d>
+			<annotation name="com.trolltech.QtDBus.QtTypeName.In0" value="QList&lt;int&gt;"/>
+			<arg name="menuItemPath" type="ai" direction="in">
+				<dox:d>
+				  An array of indexes of how to get to the menu item to activate.  The list only
+				  includes menu items that are visible to the user.  So if the array was something
+				  like [1, 2] it would be the first submenu, second item as if you looked at the
+				  menu using a mouse.
+				</dox:d>
+			</arg>
+		</method>
+		<method name="DumpCurrentMenu">
+			<dox:d>Turns the currently displayed menu into a JSON representation</dox:d>
+			<arg name="json" type="s" direction="out">
+				<dox:d>
+				  JSON describing the menu structure rendered by the renderer.  The format is
+				  described in the website https://wiki.ubuntu.com/DesktopExperienceTeam/ApplicationMenuXdTests#JSON%20format
+				</dox:d>
+			</arg>
+		</method>
+		<method name="DumpMenu">
+			<dox:d>Dumps JSON data describing the menus from a specific window.</dox:d>
+			<arg name="windowId" type="u" direction="in">
+				<dox:d>The XWindow ID of the window to get</dox:d>
+			</arg>
+			<arg name="json" type="s" direction="out">
+				<dox:d>JSON describing the menu structure rendered by the renderer.  Look at @DumpCurrentMenu for more information.</dox:d>
+			</arg>
+		</method>
+	</interface>
+</node>
