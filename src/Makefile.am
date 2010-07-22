@@ -12,7 +12,6 @@ include $(top_srcdir)/Makefile.am.marshal
 appmenulibdir = $(INDICATORDIR)
 appmenulib_LTLIBRARIES = libappmenu.la
 libappmenu_la_SOURCES = \
-	application-menu-debug-server.h \
 	application-menu-registrar-server.h \
 	dbus-shared.h \
 	indicator-appmenu.c \
