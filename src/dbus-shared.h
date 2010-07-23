@@ -20,11 +20,11 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 
-#define  DBUS_NAME   "org.ayatana.WindowMenu.Registrar"
+#define  DBUS_NAME   "org.ayatana.AppMenu.Registrar"
 
-#define  REG_IFACE  "org.ayatana.WindowMenu.Registrar"
-#define  REG_OBJECT "/org/ayatana/WindowMenu/Registrar"
+#define  REG_IFACE  "org.ayatana.AppMenu.Registrar"
+#define  REG_OBJECT "/org/ayatana/AppMenu/Registrar"
 
-#define  DEBUG_IFACE   "org.ayatana.AppMenu.Debug"
-#define  DEBUG_OBJECT "/org/ayatana/AppMenu/Debug"
+#define  DEBUG_IFACE   "org.ayatana.AppMenu.Renderer"
+#define  DEBUG_OBJECT "/org/ayatana/AppMenu/Renderer"
 

@@ -1,3 +1,10 @@
+indicator-appmenu (0.0.9-0ubuntu1) maverick; urgency=low
+
+  * New upstream release.
+    - DBus name change, s/WindowMenu/AppMenu/g
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Thu, 22 Jul 2010 15:15:25 +0200
+
 indicator-appmenu (0.0.8-0ubuntu1) maverick; urgency=low
 
   * New upstream release.

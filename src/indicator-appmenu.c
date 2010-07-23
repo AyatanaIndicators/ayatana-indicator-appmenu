@@ -31,6 +31,9 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <libindicator/indicator.h>
 #include <libindicator/indicator-object.h>
 
+#include <libdbusmenu-glib/menuitem.h>
+#include <libdbusmenu-glib/client.h>
+
 #include <libbamf/bamf-matcher.h>
 
 #include "indicator-appmenu-marshal.h"
@@ -60,8 +63,8 @@ typedef struct _IndicatorAppmenuDebugClass IndicatorAppmenuDebugClass;
 struct _IndicatorAppmenuClass {
 	IndicatorObjectClass parent_class;
 
-	void (*window_registered) (IndicatorAppmenu * iapp, guint wid, gchar * path, gpointer user_data);
-	void (*window_unregistered) (IndicatorAppmenu * iapp, guint wid, gchar * path, gpointer user_data);
+	void (*window_registered) (IndicatorAppmenu * iapp, guint wid, gchar * address, gpointer path, gpointer user_data);
+	void (*window_unregistered) (IndicatorAppmenu * iapp, guint wid, gpointer user_data);
 };
 
 struct _IndicatorAppmenu {
@@ -126,6 +129,17 @@ static gboolean _application_menu_registrar_server_register_window   (IndicatorA
                                                                       guint windowid,
                                                                       const gchar * objectpath,
                                                                       DBusGMethodInvocation * method);
+static gboolean _application_menu_registrar_server_unregister_window (IndicatorAppmenu * iapp,
+                                                                      guint windowid,
+                                                                      GError ** error);
+static gboolean _application_menu_registrar_server_get_menu_for_window (IndicatorAppmenu * iapp,
+                                                                      guint windowid,
+                                                                      gchar ** objectpath,
+                                                                      gchar ** address,
+                                                                      GError ** error);
+static gboolean _application_menu_registrar_server_get_menus         (IndicatorAppmenu * iapp,
+                                                                      GPtrArray ** entries,
+                                                                      GError ** error);
 static void request_name_cb                                          (DBusGProxy *proxy,
                                                                       guint result,
                                                                       GError *error,
@@ -140,20 +154,34 @@ static void active_window_changed                                    (BamfMatche
                                                                       BamfView * oldview,
                                                                       BamfView * newview,
                                                                       gpointer user_data);
-static gboolean _application_menu_debug_server_current_menu          (IndicatorAppmenuDebug * iappd,
-                                                                      guint * windowid,
+static gboolean _application_menu_renderer_server_get_current_menu   (IndicatorAppmenuDebug * iappd,
                                                                       gchar ** objectpath,
                                                                       gchar ** address,
                                                                       GError ** error);
-static gboolean _application_menu_debug_server_all_menus             (IndicatorAppmenuDebug * iappd,
-                                                                      GPtrArray ** entries,
+static gboolean _application_menu_renderer_server_activate_menu_item (IndicatorAppmenuDebug * iappd,
+                                                                      GArray * menulist,
                                                                       GError ** error);
+static gboolean _application_menu_renderer_server_dump_current_menu  (IndicatorAppmenuDebug * iappd,
+                                                                      gchar ** jsondata,
+                                                                      GError ** error);
+static gboolean _application_menu_renderer_server_dump_menu          (IndicatorAppmenuDebug * iappd,
+                                                                      guint windowid,
+                                                                      gchar ** jsondata,
+                                                                      GError ** error);
+static GQuark error_quark                                            (void);
+
+/* Unique error codes for debug interface */
+enum {
+	ERROR_NO_APPLICATIONS,
+	ERROR_NO_DEFAULT_APP,
+	ERROR_WINDOW_NOT_FOUND
+};
 
 /**********************
   DBus Interfaces
  **********************/
 #include "application-menu-registrar-server.h"
-#include "application-menu-debug-server.h"
+#include "application-menu-renderer-server.h"
 
 enum {
 	WINDOW_REGISTERED,
@@ -184,15 +212,15 @@ indicator_appmenu_class_init (IndicatorAppmenuClass *klass)
 	                                      G_SIGNAL_RUN_LAST,
 	                                      G_STRUCT_OFFSET (IndicatorAppmenuClass, window_registered),
 	                                      NULL, NULL,
-	                                      _indicator_appmenu_marshal_VOID__UINT_STRING,
-	                                      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
+	                                      _indicator_appmenu_marshal_VOID__UINT_STRING_BOXED,
+	                                      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, DBUS_TYPE_G_OBJECT_PATH);
 	signals[WINDOW_UNREGISTERED] =  g_signal_new("window-unregistered",
 	                                      G_TYPE_FROM_CLASS(klass),
 	                                      G_SIGNAL_RUN_LAST,
 	                                      G_STRUCT_OFFSET (IndicatorAppmenuClass, window_unregistered),
 	                                      NULL, NULL,
-	                                      _indicator_appmenu_marshal_VOID__UINT_STRING,
-	                                      G_TYPE_NONE, 2, G_TYPE_UINT, G_TYPE_STRING);
+	                                      _indicator_appmenu_marshal_VOID__UINT,
+	                                      G_TYPE_NONE, 1, G_TYPE_UINT);
 
 	dbus_g_object_type_install_info(INDICATOR_APPMENU_TYPE, &dbus_glib__application_menu_registrar_server_object_info);
 
@@ -313,7 +341,7 @@ G_DEFINE_TYPE (IndicatorAppmenuDebug, indicator_appmenu_debug, G_TYPE_OBJECT);
 static void
 indicator_appmenu_debug_class_init (IndicatorAppmenuDebugClass *klass)
 {
-	dbus_g_object_type_install_info(INDICATOR_APPMENU_DEBUG_TYPE, &dbus_glib__application_menu_debug_server_object_info);
+	dbus_g_object_type_install_info(INDICATOR_APPMENU_DEBUG_TYPE, &dbus_glib__application_menu_renderer_server_object_info);
 
 	return;
 }
@@ -667,17 +695,18 @@ menus_destroyed (GObject * menus, gpointer user_data)
 static gboolean
 _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, guint windowid, const gchar * objectpath, DBusGMethodInvocation * method)
 {
-	g_debug("Registering window ID %d with path %s from %s", windowid, objectpath, dbus_g_method_get_sender(method));
+	const gchar * sender = dbus_g_method_get_sender(method);
+	g_debug("Registering window ID %d with path %s from %s", windowid, objectpath, sender);
 
 	if (g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid)) == NULL && windowid != 0) {
-		WindowMenus * wm = window_menus_new(windowid, dbus_g_method_get_sender(method), objectpath);
+		WindowMenus * wm = window_menus_new(windowid, sender, objectpath);
 		g_return_val_if_fail(wm != NULL, FALSE);
 
 		g_signal_connect(G_OBJECT(wm), WINDOW_MENUS_SIGNAL_DESTROY, G_CALLBACK(menus_destroyed), iapp);
 
 		g_hash_table_insert(iapp->apps, GUINT_TO_POINTER(windowid), wm);
 
-		g_signal_emit(G_OBJECT(iapp), signals[WINDOW_REGISTERED], 0, windowid, objectpath, TRUE);
+		g_signal_emit(G_OBJECT(iapp), signals[WINDOW_REGISTERED], 0, windowid, sender, objectpath, TRUE);
 
 		/* Note: Does not cause ref */
 		BamfWindow * win = bamf_matcher_get_active_window(iapp->matcher);
@@ -685,13 +714,87 @@ _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, gui
 		active_window_changed(iapp->matcher, NULL, BAMF_VIEW(win), iapp);
 	} else {
 		if (windowid == 0) {
-			g_warning("Can't build windows for a NULL window ID %d with path %s from %s", windowid, objectpath, dbus_g_method_get_sender(method));
+			g_warning("Can't build windows for a NULL window ID %d with path %s from %s", windowid, objectpath, sender);
 		} else {
-			g_warning("Already have a menu for window ID %d with path %s from %s", windowid, objectpath, dbus_g_method_get_sender(method));
+			g_warning("Already have a menu for window ID %d with path %s from %s", windowid, objectpath, sender);
 		}
 	}
 
 	dbus_g_method_return(method);
+	return TRUE;
+}
+
+/* Kindly remove an entry from our DB */
+static gboolean
+_application_menu_registrar_server_unregister_window (IndicatorAppmenu * iapp, guint windowid, GError ** error)
+{
+	/* TODO: Do it */
+
+	return FALSE;
+}
+
+/* Grab the menu information for a specific window */
+static gboolean
+_application_menu_registrar_server_get_menu_for_window (IndicatorAppmenu * iapp, guint windowid, gchar ** objectpath, gchar ** address, GError ** error)
+{
+	WindowMenus * wm = NULL;
+
+	if (windowid == 0) {
+		wm = iapp->default_app;
+	} else {
+		wm = WINDOW_MENUS(g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid)));
+	}
+
+	if (wm == NULL) {
+		g_set_error_literal(error, error_quark(), ERROR_WINDOW_NOT_FOUND, "Window not found");
+		return FALSE;
+	}
+
+	*objectpath = window_menus_get_path(wm);
+	*address = window_menus_get_address(wm);
+
+	return TRUE;
+}
+
+/* Get all the menus we have */
+static gboolean
+_application_menu_registrar_server_get_menus (IndicatorAppmenu * iapp, GPtrArray ** entries, GError ** error)
+{
+	if (iapp->apps == NULL) {
+		g_set_error_literal(error, error_quark(), ERROR_NO_APPLICATIONS, "No applications are registered");
+		return FALSE;
+	}
+
+	*entries = g_ptr_array_new();
+
+	GList * appkeys = NULL;
+	for (appkeys = g_hash_table_get_keys(iapp->apps); appkeys != NULL; appkeys = g_list_next(appkeys)) {
+		GValueArray * structval = g_value_array_new(3);
+		gpointer hash_val = g_hash_table_lookup(iapp->apps, appkeys->data);
+
+		if (hash_val == NULL) { continue; }
+
+		GValue winid = {0};
+		g_value_init(&winid, G_TYPE_UINT);
+		g_value_set_uint(&winid, window_menus_get_xid(WINDOW_MENUS(hash_val)));
+		g_value_array_append(structval, &winid);
+		g_value_unset(&winid);
+
+		GValue path = {0};
+		g_value_init(&path, DBUS_TYPE_G_OBJECT_PATH);
+		g_value_take_boxed(&path, window_menus_get_path(WINDOW_MENUS(hash_val)));
+		g_value_array_append(structval, &path);
+		g_value_unset(&path);
+
+		GValue address = {0};
+		g_value_init(&address, G_TYPE_STRING);
+		g_value_take_string(&address, window_menus_get_address(WINDOW_MENUS(hash_val)));
+		g_value_array_append(structval, &address);
+		g_value_unset(&address);
+
+		g_ptr_array_add(*entries, structval);
+	}
+
 	return TRUE;
 }
 
@@ -756,15 +859,217 @@ error_quark (void)
 	return error_quark;
 }
 
-/* Unique error codes for debug interface */
-enum {
-	ERROR_NO_APPLICATIONS,
-	ERROR_NO_DEFAULT_APP
-};
+/* Looks to see if we can find an accel label to steal the
+   closure from */
+static void
+find_closure (GtkWidget * widget, gpointer user_data)
+{
+	GClosure ** closure = (GClosure **)user_data;
 
-/* Get the current menu */
+	/* If we have one quit */
+	if (*closure != NULL) {
+		return;
+	}
+	
+	/* If we've got a label, steal its */
+	if (GTK_IS_ACCEL_LABEL(widget)) {
+		g_object_get (widget,
+		              "accel-closure", closure,
+		              NULL);
+		return;
+	}
+
+	/* If we've got a container, dig deeper */
+	if (GTK_IS_CONTAINER(widget)) {
+		gtk_container_foreach(GTK_CONTAINER(widget), find_closure, user_data);
+	}
+
+	return;
+}
+
+/* Look at the closures in an accel group and find
+   the one that matches the one we've been passed */
 static gboolean
-_application_menu_debug_server_current_menu (IndicatorAppmenuDebug * iappd, guint * windowid, gchar ** objectpath, gchar ** address, GError ** error)
+find_group_closure (GtkAccelKey * key, GClosure * closure, gpointer user_data)
+{
+	return closure == user_data;
+}
+
+/* Turn the key codes into a string for the JSON output */
+static void
+key2string (GtkAccelKey * key, GArray * strings)
+{
+	gchar * temp = NULL;
+
+	temp = g_strdup(", \"" DBUSMENU_MENUITEM_PROP_SHORTCUT "\": [[");
+	g_array_append_val(strings, temp);
+
+	if (key->accel_mods & GDK_CONTROL_MASK) {
+		temp = g_strdup_printf("\"%s\", ", DBUSMENU_MENUITEM_SHORTCUT_CONTROL);
+		g_array_append_val(strings, temp);
+	}
+	if (key->accel_mods & GDK_MOD1_MASK) {
+		temp = g_strdup_printf("\"%s\", ", DBUSMENU_MENUITEM_SHORTCUT_ALT);
+		g_array_append_val(strings, temp);
+	}
+	if (key->accel_mods & GDK_SHIFT_MASK) {
+		temp = g_strdup_printf("\"%s\", ", DBUSMENU_MENUITEM_SHORTCUT_SHIFT);
+		g_array_append_val(strings, temp);
+	}
+	if (key->accel_mods & GDK_SUPER_MASK) {
+		temp = g_strdup_printf("\"%s\", ", DBUSMENU_MENUITEM_SHORTCUT_SUPER);
+		g_array_append_val(strings, temp);
+	}
+
+	temp = g_strdup_printf("\"%s\"]]", gdk_keyval_name(key->accel_key));
+	g_array_append_val(strings, temp);
+
+	return;
+}
+
+/* Do something for each menu item */
+static void
+menu_iterator (GtkWidget * widget, gpointer user_data)
+{
+	GArray * strings = (GArray *)user_data;
+
+	gchar * temp = g_strdup("{");
+	g_array_append_val(strings, temp);
+
+	/* TODO: We need some sort of useful ID, but for now  we're
+	   just ensuring it's unique. */
+	temp = g_strdup_printf("\"id\": %d", strings->len);
+	g_array_append_val(strings, temp);
+
+	if (GTK_IS_SEPARATOR_MENU_ITEM(widget)) {
+		temp = g_strdup_printf(", \"" DBUSMENU_MENUITEM_PROP_TYPE "\": \"%s\"", DBUSMENU_CLIENT_TYPES_SEPARATOR);
+		g_array_append_val(strings, temp);
+	} else {
+		temp = g_strdup_printf(", \"" DBUSMENU_MENUITEM_PROP_TYPE "\": \"%s\"", DBUSMENU_CLIENT_TYPES_DEFAULT);
+		g_array_append_val(strings, temp);
+	}
+
+	temp = g_strdup_printf(", \"" DBUSMENU_MENUITEM_PROP_ENABLED "\": %s", gtk_widget_get_sensitive(GTK_WIDGET(widget)) ? "true" : "false");
+	g_array_append_val(strings, temp);
+
+	temp = g_strdup_printf(", \"" DBUSMENU_MENUITEM_PROP_VISIBLE "\": %s", gtk_widget_get_visible(GTK_WIDGET(widget)) ? "true" : "false");
+	g_array_append_val(strings, temp);
+
+	const gchar * label = gtk_menu_item_get_label(GTK_MENU_ITEM(widget));
+	if (label != NULL) {
+		temp = g_strdup_printf(", \"" DBUSMENU_MENUITEM_PROP_LABEL "\": \"%s\"", label);
+		g_array_append_val(strings, temp);
+	}
+
+	/* Deal with shortcuts, find the accel closure if we can and then
+	   turn that into a string */
+	GClosure * closure = NULL;
+	find_closure(widget, &closure);
+
+	if (closure != NULL) {
+		GtkAccelGroup * group = gtk_accel_group_from_accel_closure(closure);
+		if (group != NULL) {
+			GtkAccelKey * key = gtk_accel_group_find(group, find_group_closure, closure);
+			if (key != NULL) {
+				key2string(key, strings);
+			}
+		}
+	}
+
+	/* TODO: Handle check/radio items */
+
+	GtkWidget * submenu = gtk_menu_item_get_submenu(GTK_MENU_ITEM(widget));
+	if (submenu != NULL) {
+		temp = g_strdup(", \"" DBUSMENU_MENUITEM_PROP_CHILD_DISPLAY "\": \"" DBUSMENU_MENUITEM_CHILD_DISPLAY_SUBMENU "\"");
+		g_array_append_val(strings, temp);
+
+		temp = g_strdup(", \"submenu\": [ ");
+		g_array_append_val(strings, temp);
+
+		guint old_len = strings->len;
+
+		gtk_container_foreach(GTK_CONTAINER(submenu), menu_iterator, strings);
+
+		if (old_len == strings->len) {
+			temp = g_strdup("]");
+			g_array_append_val(strings, temp);
+		} else {
+			gchar * last_one = g_array_index(strings, gchar *, strings->len - 1);
+			guint lastlen = g_utf8_strlen(last_one, -1);
+
+			if (last_one[lastlen - 1] != ',') {
+				g_warning("Huh, this seems impossible.  Should be a comma at the end.");
+			}
+
+			last_one[lastlen - 1] = ']';
+		}
+	}
+
+	temp = g_strdup("},");
+	g_array_append_val(strings, temp);
+
+	return;
+}
+
+/* Takes an entry and outputs it into the ptrarray */
+static void
+entry2json (IndicatorObjectEntry * entry, GArray * strings)
+{
+	gchar * temp = g_strdup("{");
+	g_array_append_val(strings, temp);
+
+	/* TODO: We need some sort of useful ID, but for now  we're
+	   just ensuring it's unique. */
+	temp = g_strdup_printf("\"id\": %d", strings->len);
+	g_array_append_val(strings, temp);
+
+	if (entry->label != NULL) {
+		temp = g_strdup_printf(", \"" DBUSMENU_MENUITEM_PROP_LABEL "\": \"%s\"", gtk_label_get_label(entry->label));
+		g_array_append_val(strings, temp);
+
+		temp = g_strdup_printf(", \"" DBUSMENU_MENUITEM_PROP_ENABLED "\": %s", gtk_widget_get_sensitive(GTK_WIDGET(entry->label)) ? "true" : "false");
+		g_array_append_val(strings, temp);
+
+		temp = g_strdup_printf(", \"" DBUSMENU_MENUITEM_PROP_VISIBLE "\": %s", gtk_widget_get_visible(GTK_WIDGET(entry->label)) ? "true" : "false");
+		g_array_append_val(strings, temp);
+	}
+
+	if (entry->menu != NULL) {
+		temp = g_strdup(", \"" DBUSMENU_MENUITEM_PROP_CHILD_DISPLAY "\": \"" DBUSMENU_MENUITEM_CHILD_DISPLAY_SUBMENU "\"");
+		g_array_append_val(strings, temp);
+
+		temp = g_strdup(", \"submenu\": [ ");
+		g_array_append_val(strings, temp);
+
+		guint old_len = strings->len;
+
+		gtk_container_foreach(GTK_CONTAINER(entry->menu), menu_iterator, strings);
+
+		if (old_len == strings->len) {
+			temp = g_strdup("]");
+			g_array_append_val(strings, temp);
+		} else {
+			gchar * last_one = g_array_index(strings, gchar *, strings->len - 1);
+			guint lastlen = g_utf8_strlen(last_one, -1);
+
+			if (last_one[lastlen - 1] != ',') {
+				g_warning("Huh, this seems impossible.  Should be a comma at the end.");
+			}
+
+			last_one[lastlen - 1] = ']';
+		}
+	}
+
+
+	temp = g_strdup("},");
+	g_array_append_val(strings, temp);
+
+	return;
+}
+
+/* Grab the location of the dbusmenu of the current menu */
+static gboolean
+_application_menu_renderer_server_get_current_menu (IndicatorAppmenuDebug * iappd, gchar ** objectpath, gchar ** address, GError ** error)
 {
 	IndicatorAppmenu * iapp = iappd->appmenu;
 
@@ -773,53 +1078,94 @@ _application_menu_debug_server_current_menu (IndicatorAppmenuDebug * iappd, guin
 		return FALSE;
 	}
 
-	*windowid = window_menus_get_xid(iapp->default_app);
 	*objectpath = window_menus_get_path(iapp->default_app);
 	*address = window_menus_get_address(iapp->default_app);
 
 	return TRUE;
 }
 
-/* Get all the menus we have */
+/* Activate menu items through a script given as a parameter */
 static gboolean
-_application_menu_debug_server_all_menus(IndicatorAppmenuDebug * iappd, GPtrArray ** entries, GError ** error)
+_application_menu_renderer_server_activate_menu_item (IndicatorAppmenuDebug * iappd, GArray * menulist, GError ** error)
+{
+	/* TODO: Do it */
+
+	return FALSE;
+}
+
+/* Dump the current menu to a JSON file */
+static gboolean
+_application_menu_renderer_server_dump_current_menu  (IndicatorAppmenuDebug * iappd, gchar ** jsondata, GError ** error)
+{
+	return _application_menu_renderer_server_dump_menu(iappd, 0, jsondata, error);
+}
+
+/* Dump a specific window's menus to a JSON file */
+static gboolean
+_application_menu_renderer_server_dump_menu (IndicatorAppmenuDebug * iappd, guint windowid, gchar ** jsondata, GError ** error)
 {
 	IndicatorAppmenu * iapp = iappd->appmenu;
+	WindowMenus * wm = NULL;
 
-	if (iapp->apps == NULL) {
-		g_set_error_literal(error, error_quark(), ERROR_NO_APPLICATIONS, "No applications are registered");
+	if (windowid == 0) {
+		wm = iapp->default_app;
+	} else {
+		wm = WINDOW_MENUS(g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid)));
+	}
+
+	if (wm == NULL) {
+		g_set_error_literal(error, error_quark(), ERROR_WINDOW_NOT_FOUND, "Window not found");
 		return FALSE;
 	}
 
-	*entries = g_ptr_array_new();
+	GArray * strings = g_array_new(TRUE, FALSE, sizeof(gchar *));
+	GList * entries = window_menus_get_entries(wm);
+	GList * entry;
 
-	GList * appkeys = NULL;
-	for (appkeys = g_hash_table_get_keys(iapp->apps); appkeys != NULL; appkeys = g_list_next(appkeys)) {
-		GValueArray * structval = g_value_array_new(3);
-		gpointer hash_val = g_hash_table_lookup(iapp->apps, appkeys->data);
+	gchar * temp = g_strdup("{");
+	g_array_append_val(strings, temp);
 
-		if (hash_val == NULL) { continue; }
+	temp = g_strdup("\"id\": 0");
+	g_array_append_val(strings, temp);
 
-		GValue winid = {0};
-		g_value_init(&winid, G_TYPE_UINT);
-		g_value_set_uint(&winid, window_menus_get_xid(WINDOW_MENUS(hash_val)));
-		g_value_array_append(structval, &winid);
-		g_value_unset(&winid);
+	if (entries != NULL) {
+		temp = g_strdup(", \"" DBUSMENU_MENUITEM_PROP_CHILD_DISPLAY "\": \"" DBUSMENU_MENUITEM_CHILD_DISPLAY_SUBMENU "\"");
+		g_array_append_val(strings, temp);
 
-		GValue path = {0};
-		g_value_init(&path, DBUS_TYPE_G_OBJECT_PATH);
-		g_value_take_boxed(&path, window_menus_get_path(WINDOW_MENUS(hash_val)));
-		g_value_array_append(structval, &path);
-		g_value_unset(&path);
-
-		GValue address = {0};
-		g_value_init(&address, G_TYPE_STRING);
-		g_value_take_string(&address, window_menus_get_address(WINDOW_MENUS(hash_val)));
-		g_value_array_append(structval, &address);
-		g_value_unset(&address);
-
-		g_ptr_array_add(*entries, structval);
+		temp = g_strdup(", \"submenu\": [");
+		g_array_append_val(strings, temp);
 	}
+
+	guint old_len = strings->len;
+
+	for (entry = entries; entry != NULL; entry = g_list_next(entry)) {
+		entry2json(entry->data, strings);
+	}
+
+	if (entries != NULL) {
+		if (old_len == strings->len) {
+			temp = g_strdup("]");
+			g_array_append_val(strings, temp);
+		} else {
+			gchar * last_one = g_array_index(strings, gchar *, strings->len - 1);
+			guint lastlen = g_utf8_strlen(last_one, -1);
+
+			if (last_one[lastlen - 1] != ',') {
+				g_warning("Huh, this seems impossible.  Should be a comma at the end.");
+			}
+
+			last_one[lastlen - 1] = ']';
+		}
+	}
+
+	g_list_free(entries);
+
+	temp = g_strdup("}");
+	g_array_append_val(strings, temp);
+
+	*jsondata = g_strjoinv(NULL, (gchar **)strings->data);
+	g_strfreev((gchar **)strings->data);
+	g_array_free(strings, FALSE);
 
 	return TRUE;
 }
