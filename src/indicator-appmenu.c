@@ -650,6 +650,10 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 	guint32 xid = 0;
 
 	while (window != NULL && menus == NULL) {
+		if (!bamf_view_user_visible(BAMF_VIEW(window))) {
+			window = NULL;
+		}
+
 		xid = bamf_window_get_xid(window);
 	
 		menus = g_hash_table_lookup(appmenu->apps, GUINT_TO_POINTER(xid));
