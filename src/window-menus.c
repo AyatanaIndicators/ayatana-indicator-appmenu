@@ -38,6 +38,7 @@ struct _WindowMenusPrivate {
 	DbusmenuMenuitem * root;
 	DBusGProxy * props;
 	GArray * entries;
+	gboolean error_state;
 };
 
 #define WINDOW_MENUS_GET_PRIVATE(o) \
@@ -49,6 +50,7 @@ enum {
 	ENTRY_ADDED,
 	ENTRY_REMOVED,
 	DESTROY,
+	ERROR_STATE,
 	LAST_SIGNAL
 };
 
@@ -102,6 +104,13 @@ window_menus_class_init (WindowMenusClass *klass)
 	                                      NULL, NULL,
 	                                      g_cclosure_marshal_VOID__VOID,
 	                                      G_TYPE_NONE, 0, G_TYPE_NONE);
+	signals[ERROR_STATE] =   g_signal_new(WINDOW_MENUS_SIGNAL_ERROR_STATE,
+	                                      G_TYPE_FROM_CLASS(klass),
+	                                      G_SIGNAL_RUN_LAST,
+	                                      G_STRUCT_OFFSET (WindowMenusClass, error_state),
+	                                      NULL, NULL,
+	                                      g_cclosure_marshal_VOID__BOOLEAN,
+	                                      G_TYPE_NONE, 1, G_TYPE_BOOLEAN, G_TYPE_NONE);
 
 	return;
 }
@@ -115,6 +124,7 @@ window_menus_init (WindowMenus *self)
 	priv->client = NULL;
 	priv->props = NULL;
 	priv->root = NULL;
+	priv->error_state = FALSE;
 
 	priv->entries = g_array_new(FALSE, FALSE, sizeof(IndicatorObjectEntry *));
 
@@ -500,4 +510,13 @@ window_menus_get_address (WindowMenus * wm)
 	gchar * retval = g_value_dup_string(&obj);
 	g_value_unset(&obj);
 	return retval;
+}
+
+/* Return whether we're in an error state or not */
+gboolean
+window_menus_get_error_state (WindowMenus * wm)
+{
+	g_return_val_if_fail(IS_WINDOW_MENUS(wm), TRUE);
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
+	return priv->error_state;
 }

@@ -38,6 +38,7 @@ G_BEGIN_DECLS
 #define WINDOW_MENUS_SIGNAL_ENTRY_ADDED    "entry-added"
 #define WINDOW_MENUS_SIGNAL_ENTRY_REMOVED  "entry-removed"
 #define WINDOW_MENUS_SIGNAL_DESTROY        "destroy"
+#define WINDOW_MENUS_SIGNAL_ERROR_STATE    "error-state"
 
 typedef struct _WindowMenus      WindowMenus;
 typedef struct _WindowMenusClass WindowMenusClass;
@@ -50,6 +51,7 @@ struct _WindowMenusClass {
 	void (*entry_removed) (WindowMenus * wm, IndicatorObjectEntry * entry, gpointer user_data);
 
 	void (*destroy)       (WindowMenus * wm, gpointer user_data);
+	void (*error_state)   (WindowMenus * wm, gboolean state, gpointer user_data);
 };
 
 struct _WindowMenus {
@@ -64,6 +66,8 @@ guint window_menus_get_location (WindowMenus * wm, IndicatorObjectEntry * entry)
 guint window_menus_get_xid (WindowMenus * wm);
 gchar * window_menus_get_path (WindowMenus * wm);
 gchar * window_menus_get_address (WindowMenus * wm);
+
+gboolean window_menus_get_error_state (WindowMenus * wm);
 
 G_END_DECLS
 
