@@ -191,7 +191,31 @@ window_menus_finalize (GObject *object)
 static void
 event_status (DbusmenuClient * client, DbusmenuMenuitem * mi, gchar * event, GValue * evdata, guint timestamp, GError * error, gpointer user_data)
 {
+	g_return_if_fail(IS_WINDOW_MENUS(user_data));
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
 
+	/* We don't care about status where there are no errors
+	   when we're in a happy state, just let them go. */
+	if (error == NULL && priv->error_state == FALSE) {
+		return;
+	}
+
+	/* Oh, things are working now! */
+	if (error == NULL) {
+		priv->error_state = FALSE;
+		g_signal_emit(G_OBJECT(user_data), signals[ERROR_STATE], 0, priv->error_state, TRUE);
+
+		/* TODO: Fix menu items */
+
+		return;
+	}
+
+	/* Uhg, means that events are breaking, now we need to
+	   try and handle that case. */
+	priv->error_state = TRUE;
+	g_signal_emit(G_OBJECT(user_data), signals[ERROR_STATE], 0, priv->error_state, TRUE);
+
+	/* TODO: Fix menu items */
 
 	return;
 }
