@@ -1,3 +1,10 @@
+indicator-appmenu (0.0.9-0ubuntu2~ted1) UNRELEASED; urgency=low
+
+  * Upstream Merge
+    * Handle event errors
+
+ -- Ted Gould <ted@ubuntu.com>  Fri, 27 Aug 2010 12:43:10 -0500
+
 indicator-appmenu (0.0.9-0ubuntu1) maverick; urgency=low
 
   * New upstream release.

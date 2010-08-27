@@ -38,6 +38,19 @@ struct _WindowMenusPrivate {
 	DbusmenuMenuitem * root;
 	DBusGProxy * props;
 	GArray * entries;
+	gboolean error_state;
+	guint   retry_timer;
+	gint    retry_id;
+	gchar * retry_name;
+	GValue  retry_data;
+	guint   retry_timestamp;
+};
+
+typedef struct _WMEntry WMEntry;
+struct _WMEntry {
+	IndicatorObjectEntry ioentry;
+	gboolean disabled;
+	gboolean hidden;
 };
 
 #define WINDOW_MENUS_GET_PRIVATE(o) \
@@ -49,6 +62,7 @@ enum {
 	ENTRY_ADDED,
 	ENTRY_REMOVED,
 	DESTROY,
+	ERROR_STATE,
 	LAST_SIGNAL
 };
 
@@ -102,6 +116,13 @@ window_menus_class_init (WindowMenusClass *klass)
 	                                      NULL, NULL,
 	                                      g_cclosure_marshal_VOID__VOID,
 	                                      G_TYPE_NONE, 0, G_TYPE_NONE);
+	signals[ERROR_STATE] =   g_signal_new(WINDOW_MENUS_SIGNAL_ERROR_STATE,
+	                                      G_TYPE_FROM_CLASS(klass),
+	                                      G_SIGNAL_RUN_LAST,
+	                                      G_STRUCT_OFFSET (WindowMenusClass, error_state),
+	                                      NULL, NULL,
+	                                      g_cclosure_marshal_VOID__BOOLEAN,
+	                                      G_TYPE_NONE, 1, G_TYPE_BOOLEAN, G_TYPE_NONE);
 
 	return;
 }
@@ -115,8 +136,9 @@ window_menus_init (WindowMenus *self)
 	priv->client = NULL;
 	priv->props = NULL;
 	priv->root = NULL;
+	priv->error_state = FALSE;
 
-	priv->entries = g_array_new(FALSE, FALSE, sizeof(IndicatorObjectEntry *));
+	priv->entries = g_array_new(FALSE, FALSE, sizeof(WMEntry *));
 
 	return;
 }
@@ -142,6 +164,15 @@ window_menus_dispose (GObject *object)
 	if (priv->props != NULL) {
 		g_object_unref(G_OBJECT(priv->props));
 		priv->props = NULL;
+	}
+
+	if (priv->retry_timer != 0) {
+		g_source_remove(priv->retry_timer);
+		priv->retry_timer = 0;
+		g_value_unset(&priv->retry_data);
+		g_value_reset(&priv->retry_data);
+		g_free(priv->retry_name);
+		priv->retry_name = NULL;
 	}
 
 	G_OBJECT_CLASS (window_menus_parent_class)->dispose (object);
@@ -174,6 +205,90 @@ window_menus_finalize (GObject *object)
 	}
 
 	G_OBJECT_CLASS (window_menus_parent_class)->finalize (object);
+	return;
+}
+
+/* Retry the event sending to the server to see if we can get things
+   working again. */
+static gboolean
+retry_event (gpointer user_data)
+{
+	g_return_val_if_fail(IS_WINDOW_MENUS(user_data), FALSE);
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
+
+	dbusmenu_client_send_event(DBUSMENU_CLIENT(priv->client), priv->retry_id, priv->retry_name, &priv->retry_data, priv->retry_timestamp);
+
+	priv->retry_timer = 0;
+	g_value_unset(&priv->retry_data);
+	g_value_reset(&priv->retry_data);
+	g_free(priv->retry_name);
+	priv->retry_name = NULL;
+
+	return FALSE;
+}
+
+/* Listen to whether our events are successfully sent */
+static void
+event_status (DbusmenuClient * client, DbusmenuMenuitem * mi, gchar * event, GValue * evdata, guint timestamp, GError * error, gpointer user_data)
+{
+	g_return_if_fail(IS_WINDOW_MENUS(user_data));
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
+
+	/* We don't care about status where there are no errors
+	   when we're in a happy state, just let them go. */
+	if (error == NULL && priv->error_state == FALSE) {
+		return;
+	}
+	int i;
+
+	/* Oh, things are working now! */
+	if (error == NULL) {
+		priv->error_state = FALSE;
+		g_signal_emit(G_OBJECT(user_data), signals[ERROR_STATE], 0, priv->error_state, TRUE);
+
+		for (i = 0; i < priv->entries->len; i++) {
+			IndicatorObjectEntry * entry = g_array_index(priv->entries, IndicatorObjectEntry *, i);
+			window_menus_entry_restore(WINDOW_MENUS(user_data), entry);
+		}
+
+		if (priv->retry_timer != 0) {
+			g_source_remove(priv->retry_timer);
+			priv->retry_timer = 0;
+			g_value_unset(&priv->retry_data);
+			g_value_reset(&priv->retry_data);
+			g_free(priv->retry_name);
+			priv->retry_name = NULL;
+		}
+
+		return;
+	}
+
+	/* Uhg, means that events are breaking, now we need to
+	   try and handle that case. */
+	priv->error_state = TRUE;
+	g_signal_emit(G_OBJECT(user_data), signals[ERROR_STATE], 0, priv->error_state, TRUE);
+
+	for (i = 0; i < priv->entries->len; i++) {
+		IndicatorObjectEntry * entry = g_array_index(priv->entries, IndicatorObjectEntry *, i);
+
+		if (entry->label != NULL) {
+			gtk_widget_set_sensitive(GTK_WIDGET(entry->label), FALSE);
+		}
+		if (entry->image != NULL) {
+			gtk_widget_set_sensitive(GTK_WIDGET(entry->image), FALSE);
+		}
+	}
+
+	if (priv->retry_timer == 0) {
+		priv->retry_timer = g_timeout_add_seconds(1, retry_event, user_data);
+
+		priv->retry_id = dbusmenu_menuitem_get_id(mi);
+		priv->retry_name = g_strdup(event);
+		g_value_init(&priv->retry_data, G_VALUE_TYPE(evdata));
+		g_value_copy(evdata, &priv->retry_data);
+		priv->retry_timestamp = timestamp;
+	}
+
 	return;
 }
 
@@ -214,6 +329,7 @@ window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * d
 	dbusmenu_gtkclient_set_accel_group(priv->client, agroup);
 
 	g_signal_connect(G_OBJECT(priv->client), DBUSMENU_GTKCLIENT_SIGNAL_ROOT_CHANGED, G_CALLBACK(root_changed),   newmenu);
+	g_signal_connect(G_OBJECT(priv->client), DBUSMENU_CLIENT_SIGNAL_EVENT_RESULT, G_CALLBACK(event_status), newmenu);
 
 	DbusmenuMenuitem * root = dbusmenu_client_get_root(DBUSMENU_CLIENT(priv->client));
 	if (root != NULL) {
@@ -383,15 +499,19 @@ static void
 menu_prop_changed (DbusmenuMenuitem * item, const gchar * property, const GValue * value, gpointer user_data)
 {
 	IndicatorObjectEntry * entry = (IndicatorObjectEntry *)user_data;
+	WMEntry * wmentry = (WMEntry *)user_data;
 
 	if (!g_strcmp0(property, DBUSMENU_MENUITEM_PROP_VISIBLE)) {
 		if (g_value_get_boolean(value)) {
 			gtk_widget_show(GTK_WIDGET(entry->label));
+			wmentry->hidden = FALSE;
 		} else {
 			gtk_widget_hide(GTK_WIDGET(entry->label));
+			wmentry->hidden = TRUE;
 		}
 	} else if (!g_strcmp0(property, DBUSMENU_MENUITEM_PROP_ENABLED)) {
 		gtk_widget_set_sensitive(GTK_WIDGET(entry->label), g_value_get_boolean(value));
+		wmentry->disabled = !g_value_get_boolean(value);
 	} else if (!g_strcmp0(property, DBUSMENU_MENUITEM_PROP_LABEL)) {
 		gtk_label_set_text(entry->label, g_value_get_string(value));
 	}
@@ -409,7 +529,8 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 	g_signal_handlers_disconnect_by_func(G_OBJECT(child), menu_child_realized, user_data);
 
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE((((gpointer *)user_data)[0]));
-	IndicatorObjectEntry * entry = g_new0(IndicatorObjectEntry, 1);
+	WMEntry * wmentry = g_new0(WMEntry, 1);
+	IndicatorObjectEntry * entry = &wmentry->ioentry;
 
 	entry->label = GTK_LABEL(gtk_label_new_with_mnemonic(dbusmenu_menuitem_property_get(newentry, DBUSMENU_MENUITEM_PROP_LABEL)));
 
@@ -429,15 +550,21 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 	g_signal_connect(G_OBJECT(newentry), DBUSMENU_MENUITEM_SIGNAL_PROPERTY_CHANGED, G_CALLBACK(menu_prop_changed), entry);
 
 	if (dbusmenu_menuitem_property_get_value(newentry, DBUSMENU_MENUITEM_PROP_VISIBLE) != NULL
-		&& dbusmenu_menuitem_property_get_bool(newentry, DBUSMENU_MENUITEM_PROP_VISIBLE) == FALSE)
+		&& dbusmenu_menuitem_property_get_bool(newentry, DBUSMENU_MENUITEM_PROP_VISIBLE) == FALSE) {
 		gtk_widget_hide(GTK_WIDGET(entry->label));
-	else
+		wmentry->hidden = TRUE;
+	} else {
 		gtk_widget_show(GTK_WIDGET(entry->label));
+		wmentry->hidden = FALSE;
+	}
 
-	if (dbusmenu_menuitem_property_get_value (newentry, DBUSMENU_MENUITEM_PROP_ENABLED) != NULL)
-		gtk_widget_set_sensitive(GTK_WIDGET(entry->label), dbusmenu_menuitem_property_get_bool(newentry, DBUSMENU_MENUITEM_PROP_ENABLED));
+	if (dbusmenu_menuitem_property_get_value (newentry, DBUSMENU_MENUITEM_PROP_ENABLED) != NULL) {
+		gboolean sensitive = dbusmenu_menuitem_property_get_bool(newentry, DBUSMENU_MENUITEM_PROP_ENABLED);
+		gtk_widget_set_sensitive(GTK_WIDGET(entry->label), sensitive);
+		wmentry->disabled = !sensitive;
+	}
 
-	g_array_append_val(priv->entries, entry);
+	g_array_append_val(priv->entries, wmentry);
 
 	g_signal_emit(G_OBJECT((((gpointer *)user_data)[0])), signals[ENTRY_ADDED], 0, entry, TRUE);
 
@@ -500,4 +627,42 @@ window_menus_get_address (WindowMenus * wm)
 	gchar * retval = g_value_dup_string(&obj);
 	g_value_unset(&obj);
 	return retval;
+}
+
+/* Return whether we're in an error state or not */
+gboolean
+window_menus_get_error_state (WindowMenus * wm)
+{
+	g_return_val_if_fail(IS_WINDOW_MENUS(wm), TRUE);
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
+	return priv->error_state;
+}
+
+/* Regain whether we're supposed to be hidden or disabled, we
+   want to keep that if that's the case, otherwise bring back
+   to the base state */
+void
+window_menus_entry_restore (WindowMenus * wm, IndicatorObjectEntry * entry)
+{
+	WMEntry * wmentry = (WMEntry *)entry;
+
+	if (entry->label != NULL) {
+		gtk_widget_set_sensitive(GTK_WIDGET(entry->label), !wmentry->disabled);
+		if (wmentry->hidden) {
+			gtk_widget_hide(GTK_WIDGET(entry->label));
+		} else {
+			gtk_widget_show(GTK_WIDGET(entry->label));
+		}
+	}
+
+	if (entry->image != NULL) {
+		gtk_widget_set_sensitive(GTK_WIDGET(entry->image), !wmentry->disabled);
+		if (wmentry->hidden) {
+			gtk_widget_hide(GTK_WIDGET(entry->image));
+		} else {
+			gtk_widget_show(GTK_WIDGET(entry->image));
+		}
+	}
+
+	return;
 }
