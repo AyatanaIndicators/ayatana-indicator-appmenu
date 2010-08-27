@@ -213,6 +213,7 @@ window_menus_finalize (GObject *object)
 static gboolean
 retry_event (gpointer user_data)
 {
+	g_debug("Retrying event");
 	g_return_val_if_fail(IS_WINDOW_MENUS(user_data), FALSE);
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
 
@@ -231,6 +232,7 @@ retry_event (gpointer user_data)
 static void
 event_status (DbusmenuClient * client, DbusmenuMenuitem * mi, gchar * event, GValue * evdata, guint timestamp, GError * error, gpointer user_data)
 {
+	g_debug("Getting an event status");
 	g_return_if_fail(IS_WINDOW_MENUS(user_data));
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
 
@@ -243,6 +245,7 @@ event_status (DbusmenuClient * client, DbusmenuMenuitem * mi, gchar * event, GVa
 
 	/* Oh, things are working now! */
 	if (error == NULL) {
+		g_debug("Error state repaired");
 		priv->error_state = FALSE;
 		g_signal_emit(G_OBJECT(user_data), signals[ERROR_STATE], 0, priv->error_state, TRUE);
 
@@ -280,6 +283,7 @@ event_status (DbusmenuClient * client, DbusmenuMenuitem * mi, gchar * event, GVa
 	}
 
 	if (priv->retry_timer == 0) {
+		g_debug("Setting up retry timer");
 		priv->retry_timer = g_timeout_add_seconds(1, retry_event, user_data);
 
 		priv->retry_id = dbusmenu_menuitem_get_id(mi);
