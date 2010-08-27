@@ -434,15 +434,19 @@ static void
 menu_prop_changed (DbusmenuMenuitem * item, const gchar * property, const GValue * value, gpointer user_data)
 {
 	IndicatorObjectEntry * entry = (IndicatorObjectEntry *)user_data;
+	WMEntry * wmentry = (WMEntry *)user_data;
 
 	if (!g_strcmp0(property, DBUSMENU_MENUITEM_PROP_VISIBLE)) {
 		if (g_value_get_boolean(value)) {
 			gtk_widget_show(GTK_WIDGET(entry->label));
+			wmentry->hidden = FALSE;
 		} else {
 			gtk_widget_hide(GTK_WIDGET(entry->label));
+			wmentry->hidden = TRUE;
 		}
 	} else if (!g_strcmp0(property, DBUSMENU_MENUITEM_PROP_ENABLED)) {
 		gtk_widget_set_sensitive(GTK_WIDGET(entry->label), g_value_get_boolean(value));
+		wmentry->disabled = !g_value_get_boolean(value);
 	} else if (!g_strcmp0(property, DBUSMENU_MENUITEM_PROP_LABEL)) {
 		gtk_label_set_text(entry->label, g_value_get_string(value));
 	}
@@ -481,13 +485,19 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 	g_signal_connect(G_OBJECT(newentry), DBUSMENU_MENUITEM_SIGNAL_PROPERTY_CHANGED, G_CALLBACK(menu_prop_changed), entry);
 
 	if (dbusmenu_menuitem_property_get_value(newentry, DBUSMENU_MENUITEM_PROP_VISIBLE) != NULL
-		&& dbusmenu_menuitem_property_get_bool(newentry, DBUSMENU_MENUITEM_PROP_VISIBLE) == FALSE)
+		&& dbusmenu_menuitem_property_get_bool(newentry, DBUSMENU_MENUITEM_PROP_VISIBLE) == FALSE) {
 		gtk_widget_hide(GTK_WIDGET(entry->label));
-	else
+		wmentry->hidden = TRUE;
+	} else {
 		gtk_widget_show(GTK_WIDGET(entry->label));
+		wmentry->hidden = FALSE;
+	}
 
-	if (dbusmenu_menuitem_property_get_value (newentry, DBUSMENU_MENUITEM_PROP_ENABLED) != NULL)
-		gtk_widget_set_sensitive(GTK_WIDGET(entry->label), dbusmenu_menuitem_property_get_bool(newentry, DBUSMENU_MENUITEM_PROP_ENABLED));
+	if (dbusmenu_menuitem_property_get_value (newentry, DBUSMENU_MENUITEM_PROP_ENABLED) != NULL) {
+		gboolean sensitive = dbusmenu_menuitem_property_get_bool(newentry, DBUSMENU_MENUITEM_PROP_ENABLED);
+		gtk_widget_set_sensitive(GTK_WIDGET(entry->label), sensitive);
+		wmentry->disabled = !sensitive;
+	}
 
 	g_array_append_val(priv->entries, wmentry);
 
