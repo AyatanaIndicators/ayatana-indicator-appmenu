@@ -39,6 +39,11 @@ struct _WindowMenusPrivate {
 	DBusGProxy * props;
 	GArray * entries;
 	gboolean error_state;
+	guint   retry_timer;
+	gint    retry_id;
+	gchar * retry_name;
+	GValue  retry_data;
+	guint   retry_timestamp;
 };
 
 typedef struct _WMEntry WMEntry;
@@ -161,6 +166,15 @@ window_menus_dispose (GObject *object)
 		priv->props = NULL;
 	}
 
+	if (priv->retry_timer != 0) {
+		g_source_remove(priv->retry_timer);
+		priv->retry_timer = 0;
+		g_value_unset(&priv->retry_data);
+		g_value_reset(&priv->retry_data);
+		g_free(priv->retry_name);
+		priv->retry_name = NULL;
+	}
+
 	G_OBJECT_CLASS (window_menus_parent_class)->dispose (object);
 	return;
 }
@@ -194,6 +208,25 @@ window_menus_finalize (GObject *object)
 	return;
 }
 
+/* Retry the event sending to the server to see if we can get things
+   working again. */
+static gboolean
+retry_event (gpointer user_data)
+{
+	g_return_val_if_fail(IS_WINDOW_MENUS(user_data), FALSE);
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
+
+	dbusmenu_client_send_event(DBUSMENU_CLIENT(priv->client), priv->retry_id, priv->retry_name, &priv->retry_data, priv->retry_timestamp);
+
+	priv->retry_timer = 0;
+	g_value_unset(&priv->retry_data);
+	g_value_reset(&priv->retry_data);
+	g_free(priv->retry_name);
+	priv->retry_name = NULL;
+
+	return FALSE;
+}
+
 /* Listen to whether our events are successfully sent */
 static void
 event_status (DbusmenuClient * client, DbusmenuMenuitem * mi, gchar * event, GValue * evdata, guint timestamp, GError * error, gpointer user_data)
@@ -218,6 +251,15 @@ event_status (DbusmenuClient * client, DbusmenuMenuitem * mi, gchar * event, GVa
 			window_menus_entry_restore(WINDOW_MENUS(user_data), entry);
 		}
 
+		if (priv->retry_timer != 0) {
+			g_source_remove(priv->retry_timer);
+			priv->retry_timer = 0;
+			g_value_unset(&priv->retry_data);
+			g_value_reset(&priv->retry_data);
+			g_free(priv->retry_name);
+			priv->retry_name = NULL;
+		}
+
 		return;
 	}
 
@@ -237,7 +279,15 @@ event_status (DbusmenuClient * client, DbusmenuMenuitem * mi, gchar * event, GVa
 		}
 	}
 
-	/* TODO: Setup retry */
+	if (priv->retry_timer == 0) {
+		priv->retry_timer = g_timeout_add_seconds(1, retry_event, user_data);
+
+		priv->retry_id = dbusmenu_menuitem_get_id(mi);
+		priv->retry_name = g_strdup(event);
+		g_value_init(&priv->retry_data, G_VALUE_TYPE(evdata));
+		g_value_copy(evdata, &priv->retry_data);
+		priv->retry_timestamp = timestamp;
+	}
 
 	return;
 }
