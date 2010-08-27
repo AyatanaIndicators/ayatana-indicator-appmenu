@@ -41,6 +41,13 @@ struct _WindowMenusPrivate {
 	gboolean error_state;
 };
 
+typedef struct _WMEntry WMEntry;
+struct _WMEntry {
+	IndicatorObjectEntry ioentry;
+	gboolean disabled;
+	gboolean hidden;
+};
+
 #define WINDOW_MENUS_GET_PRIVATE(o) \
 (G_TYPE_INSTANCE_GET_PRIVATE ((o), WINDOW_MENUS_TYPE, WindowMenusPrivate))
 
@@ -126,7 +133,7 @@ window_menus_init (WindowMenus *self)
 	priv->root = NULL;
 	priv->error_state = FALSE;
 
-	priv->entries = g_array_new(FALSE, FALSE, sizeof(IndicatorObjectEntry *));
+	priv->entries = g_array_new(FALSE, FALSE, sizeof(WMEntry *));
 
 	return;
 }
@@ -453,7 +460,8 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 	g_signal_handlers_disconnect_by_func(G_OBJECT(child), menu_child_realized, user_data);
 
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE((((gpointer *)user_data)[0]));
-	IndicatorObjectEntry * entry = g_new0(IndicatorObjectEntry, 1);
+	WMEntry * wmentry = g_new0(WMEntry, 1);
+	IndicatorObjectEntry * entry = &wmentry->ioentry;
 
 	entry->label = GTK_LABEL(gtk_label_new_with_mnemonic(dbusmenu_menuitem_property_get(newentry, DBUSMENU_MENUITEM_PROP_LABEL)));
 
@@ -481,7 +489,7 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 	if (dbusmenu_menuitem_property_get_value (newentry, DBUSMENU_MENUITEM_PROP_ENABLED) != NULL)
 		gtk_widget_set_sensitive(GTK_WIDGET(entry->label), dbusmenu_menuitem_property_get_bool(newentry, DBUSMENU_MENUITEM_PROP_ENABLED));
 
-	g_array_append_val(priv->entries, entry);
+	g_array_append_val(priv->entries, wmentry);
 
 	g_signal_emit(G_OBJECT((((gpointer *)user_data)[0])), signals[ENTRY_ADDED], 0, entry, TRUE);
 
