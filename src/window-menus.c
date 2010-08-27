@@ -187,6 +187,15 @@ window_menus_finalize (GObject *object)
 	return;
 }
 
+/* Listen to whether our events are successfully sent */
+static void
+event_status (DbusmenuClient * client, DbusmenuMenuitem * mi, gchar * event, GValue * evdata, guint timestamp, GError * error, gpointer user_data)
+{
+
+
+	return;
+}
+
 /* Build a new window menus object and attach to the signals to build
    up the representative menu. */
 WindowMenus *
@@ -224,6 +233,7 @@ window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * d
 	dbusmenu_gtkclient_set_accel_group(priv->client, agroup);
 
 	g_signal_connect(G_OBJECT(priv->client), DBUSMENU_GTKCLIENT_SIGNAL_ROOT_CHANGED, G_CALLBACK(root_changed),   newmenu);
+	g_signal_connect(G_OBJECT(priv->client), DBUSMENU_CLIENT_SIGNAL_EVENT_RESULT, G_CALLBACK(event_status), newmenu);
 
 	DbusmenuMenuitem * root = dbusmenu_client_get_root(DBUSMENU_CLIENT(priv->client));
 	if (root != NULL) {
