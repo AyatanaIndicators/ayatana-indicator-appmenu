@@ -562,3 +562,32 @@ window_menus_get_error_state (WindowMenus * wm)
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
 	return priv->error_state;
 }
+
+/* Regain whether we're supposed to be hidden or disabled, we
+   want to keep that if that's the case, otherwise bring back
+   to the base state */
+void
+window_menus_entry_restore (WindowMenus * wm, IndicatorObjectEntry * entry)
+{
+	WMEntry * wmentry = (WMEntry *)entry;
+
+	if (entry->label != NULL) {
+		gtk_widget_set_sensitive(GTK_WIDGET(entry->label), !wmentry->disabled);
+		if (wmentry->hidden) {
+			gtk_widget_hide(GTK_WIDGET(entry->label));
+		} else {
+			gtk_widget_show(GTK_WIDGET(entry->label));
+		}
+	}
+
+	if (entry->image != NULL) {
+		gtk_widget_set_sensitive(GTK_WIDGET(entry->image), !wmentry->disabled);
+		if (wmentry->hidden) {
+			gtk_widget_hide(GTK_WIDGET(entry->image));
+		} else {
+			gtk_widget_show(GTK_WIDGET(entry->image));
+		}
+	}
+
+	return;
+}

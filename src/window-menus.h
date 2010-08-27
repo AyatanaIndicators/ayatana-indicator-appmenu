@@ -68,6 +68,7 @@ gchar * window_menus_get_path (WindowMenus * wm);
 gchar * window_menus_get_address (WindowMenus * wm);
 
 gboolean window_menus_get_error_state (WindowMenus * wm);
+void window_menus_entry_restore (WindowMenus * wm, IndicatorObjectEntry * entry);
 
 G_END_DECLS
 
