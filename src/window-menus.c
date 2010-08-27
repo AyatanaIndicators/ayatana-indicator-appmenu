@@ -206,13 +206,17 @@ event_status (DbusmenuClient * client, DbusmenuMenuitem * mi, gchar * event, GVa
 	if (error == NULL && priv->error_state == FALSE) {
 		return;
 	}
+	int i;
 
 	/* Oh, things are working now! */
 	if (error == NULL) {
 		priv->error_state = FALSE;
 		g_signal_emit(G_OBJECT(user_data), signals[ERROR_STATE], 0, priv->error_state, TRUE);
 
-		/* TODO: Fix menu items */
+		for (i = 0; i < priv->entries->len; i++) {
+			IndicatorObjectEntry * entry = g_array_index(priv->entries, IndicatorObjectEntry *, i);
+			window_menus_entry_restore(WINDOW_MENUS(user_data), entry);
+		}
 
 		return;
 	}
@@ -222,7 +226,18 @@ event_status (DbusmenuClient * client, DbusmenuMenuitem * mi, gchar * event, GVa
 	priv->error_state = TRUE;
 	g_signal_emit(G_OBJECT(user_data), signals[ERROR_STATE], 0, priv->error_state, TRUE);
 
-	/* TODO: Fix menu items */
+	for (i = 0; i < priv->entries->len; i++) {
+		IndicatorObjectEntry * entry = g_array_index(priv->entries, IndicatorObjectEntry *, i);
+
+		if (entry->label != NULL) {
+			gtk_widget_set_sensitive(GTK_WIDGET(entry->label), FALSE);
+		}
+		if (entry->image != NULL) {
+			gtk_widget_set_sensitive(GTK_WIDGET(entry->image), FALSE);
+		}
+	}
+
+	/* TODO: Setup retry */
 
 	return;
 }
