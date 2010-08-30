@@ -621,8 +621,12 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * 
 	for (entries = entry_head; entries != NULL; entries = g_list_next(entries)) {
 		IndicatorObjectEntry * entry = (IndicatorObjectEntry *)entries->data;
 
-		if (entry->label != NULL) {
-			gtk_widget_show(GTK_WIDGET(entry->label));
+		if (iapp->default_app != NULL) {
+			window_menus_entry_restore(iapp->default_app, entry);
+		} else {
+			if (entry->label != NULL) {
+				gtk_widget_show(GTK_WIDGET(entry->label));
+			}
 		}
 
 		g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_ADDED_ID, 0, entries->data, TRUE);
