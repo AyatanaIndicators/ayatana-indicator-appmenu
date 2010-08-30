@@ -1,3 +1,12 @@
+indicator-appmenu (0.0.9-0ubuntu2~ppa1) UNRELEASED; urgency=low
+
+  * Upstream Merge
+    * Handle event errors
+    * Only show menus for user visible windows
+    * Only restoring if WindowMenus are involved
+
+ -- Ted Gould <ted@ubuntu.com>  Mon, 30 Aug 2010 10:20:24 -0500
+
 indicator-appmenu (0.0.9-0ubuntu1) maverick; urgency=low
 
   * New upstream release.
