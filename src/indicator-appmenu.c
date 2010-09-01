@@ -82,6 +82,8 @@ struct _IndicatorAppmenu {
 	GArray * window_menus;
 	GArray * desktop_menus;
 
+	GHashTable * desktop_windows;
+
 	IndicatorAppmenuDebug * debug;
 };
 
@@ -241,6 +243,9 @@ indicator_appmenu_init (IndicatorAppmenu *self)
 	self->window_menus = g_array_sized_new(FALSE, FALSE, sizeof(IndicatorObjectEntry), 2);
 	self->desktop_menus = g_array_sized_new(FALSE, FALSE, sizeof(IndicatorObjectEntry), 2);
 
+	/* Setup the cache of windows with possible desktop entries */
+	self->desktop_windows = g_hash_table_new(g_direct_hash, g_direct_equal);
+
 	build_window_menus(self);
 	build_desktop_menus(self);
 
@@ -303,6 +308,11 @@ indicator_appmenu_dispose (GObject *object)
 	if (iapp->debug != NULL) {
 		g_object_unref(iapp->debug);
 		iapp->debug = NULL;
+	}
+
+	if (iapp->desktop_windows != NULL) {
+		g_hash_table_destroy(iapp->desktop_windows);
+		iapp->desktop_windows = NULL;
 	}
 
 	G_OBJECT_CLASS (indicator_appmenu_parent_class)->dispose (object);
