@@ -128,6 +128,12 @@ static void switch_default_app                                       (IndicatorA
                                                                       WindowMenus * newdef,
                                                                       BamfWindow * active_window);
 static void find_desktop_windows                                     (IndicatorAppmenu * iapp);
+static void new_window                                               (BamfMatcher * matcher,
+                                                                      BamfView * view,
+                                                                      gpointer user_data);
+static void old_window                                               (BamfMatcher * matcher,
+                                                                      BamfView * view,
+                                                                      gpointer user_data);
 static gboolean _application_menu_registrar_server_register_window   (IndicatorAppmenu * iapp,
                                                                       guint windowid,
                                                                       const gchar * objectpath,
@@ -258,6 +264,10 @@ indicator_appmenu_init (IndicatorAppmenu *self)
 		g_warning("Unable to get BAMF matcher, can not watch applications switch!");
 	} else {
 		g_signal_connect(G_OBJECT(self->matcher), "active-window-changed", G_CALLBACK(active_window_changed), self);
+
+		/* Desktop window tracking */
+		g_signal_connect(G_OBJECT(self->matcher), "view-opened", G_CALLBACK(new_window), self);
+		g_signal_connect(G_OBJECT(self->matcher), "view-closed", G_CALLBACK(old_window), self);
 	}
 
 	find_desktop_windows(self);
@@ -507,6 +517,24 @@ find_desktop_windows (IndicatorAppmenu * iapp)
 			g_hash_table_insert(iapp->desktop_windows, GUINT_TO_POINTER(bamf_window_get_xid(window)), GINT_TO_POINTER(TRUE));
 		}
 	}
+
+	return;
+}
+
+/* When new windows are born, we check to see if they're desktop
+   windows. */
+static void
+new_window (BamfMatcher * matcher, BamfView * view, gpointer user_data)
+{
+
+
+	return;
+}
+
+/* When windows leave us, this function gets called */
+static void
+old_window (BamfMatcher * matcher, BamfView * view, gpointer user_data)
+{
 
 	return;
 }
