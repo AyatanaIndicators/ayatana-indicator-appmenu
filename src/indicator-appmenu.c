@@ -518,6 +518,8 @@ find_desktop_windows (IndicatorAppmenu * iapp)
 		}
 	}
 
+	g_list_free(windows);
+
 	return;
 }
 
