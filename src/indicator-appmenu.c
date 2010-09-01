@@ -526,7 +526,17 @@ find_desktop_windows (IndicatorAppmenu * iapp)
 static void
 new_window (BamfMatcher * matcher, BamfView * view, gpointer user_data)
 {
+	BamfWindow * window = BAMF_WINDOW(view);
+	if (window == NULL) {
+		return;
+	}
 
+	if (bamf_window_get_window_type(window) != BAMF_WINDOW_DESKTOP) {
+		return;
+	}
+
+	IndicatorAppmenu * iapp = INDICATOR_APPMENU(user_data);
+	g_hash_table_insert(iapp->desktop_windows, GUINT_TO_POINTER(bamf_window_get_xid(window)), GINT_TO_POINTER(TRUE));
 
 	return;
 }
@@ -535,6 +545,17 @@ new_window (BamfMatcher * matcher, BamfView * view, gpointer user_data)
 static void
 old_window (BamfMatcher * matcher, BamfView * view, gpointer user_data)
 {
+	BamfWindow * window = BAMF_WINDOW(view);
+	if (window == NULL) {
+		return;
+	}
+
+	if (bamf_window_get_window_type(window) != BAMF_WINDOW_DESKTOP) {
+		return;
+	}
+
+	IndicatorAppmenu * iapp = INDICATOR_APPMENU(user_data);
+	g_hash_table_remove(iapp->desktop_windows, GUINT_TO_POINTER(bamf_window_get_xid(window)));
 
 	return;
 }
