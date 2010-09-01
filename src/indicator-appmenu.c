@@ -127,6 +127,7 @@ static guint get_location                                            (IndicatorO
 static void switch_default_app                                       (IndicatorAppmenu * iapp,
                                                                       WindowMenus * newdef,
                                                                       BamfWindow * active_window);
+static void find_desktop_windows                                     (IndicatorAppmenu * iapp);
 static gboolean _application_menu_registrar_server_register_window   (IndicatorAppmenu * iapp,
                                                                       guint windowid,
                                                                       const gchar * objectpath,
@@ -258,6 +259,8 @@ indicator_appmenu_init (IndicatorAppmenu *self)
 	} else {
 		g_signal_connect(G_OBJECT(self->matcher), "active-window-changed", G_CALLBACK(active_window_changed), self);
 	}
+
+	find_desktop_windows(self);
 
 	/* Register this object on DBus */
 	DBusGConnection * connection = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
@@ -485,6 +488,25 @@ build_desktop_menus (IndicatorAppmenu * iapp)
 
 	/* Copy the entries on the stack into the array */
 	g_array_insert_vals(iapp->desktop_menus, 0, entries, 1);
+
+	return;
+}
+
+/* Puts all the desktop windows into the hash table so that we
+   can have a nice list of them. */
+static void
+find_desktop_windows (IndicatorAppmenu * iapp)
+{
+	GList * windows = bamf_matcher_get_windows(iapp->matcher);
+	GList * lwindow;
+
+	for (lwindow = windows; lwindow != NULL; lwindow = g_list_next(lwindow)) {
+		BamfWindow * window = BAMF_WINDOW(lwindow->data);
+
+		if (bamf_window_get_window_type(window) == BAMF_WINDOW_DESKTOP) {
+			g_hash_table_insert(iapp->desktop_windows, GUINT_TO_POINTER(bamf_window_get_xid(window)), GINT_TO_POINTER(TRUE));
+		}
+	}
 
 	return;
 }
