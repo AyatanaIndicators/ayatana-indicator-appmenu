@@ -1,3 +1,10 @@
+indicator-appmenu (0.0.9-0ubuntu2~ppa2~desktop1) UNRELEASED; urgency=low
+
+  * Upstream Merge
+    * Detect and show the menus on desktop windows
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 02 Sep 2010 15:29:57 -0500
+
 indicator-appmenu (0.0.9-0ubuntu2~ppa1) maverick; urgency=low
 
   * Upstream Merge
