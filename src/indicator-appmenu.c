@@ -758,7 +758,11 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 	g_debug("Switching to windows from XID %d", xid);
 
 	/* Note: This function can handle menus being NULL */
-	switch_default_app(appmenu, menus, BAMF_WINDOW(newview));
+	if (xid == 0) {
+		switch_default_app(appmenu, NULL, NULL);
+	} else {
+		switch_default_app(appmenu, menus, BAMF_WINDOW(newview));
+	}
 
 	return;
 }
