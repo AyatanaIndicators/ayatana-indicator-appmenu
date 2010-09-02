@@ -780,6 +780,8 @@ menus_destroyed (GObject * menus, gpointer user_data)
 	WindowMenus * wm = WINDOW_MENUS(menus);
 	IndicatorAppmenu * iapp = INDICATOR_APPMENU(user_data);
 
+	/* TODO Check for desktop menus */
+
 	/* If we're it, let's remove ourselves and BAMF will probably
 	   give us a new entry in a bit. */
 	if (iapp->default_app == wm) {
@@ -812,6 +814,8 @@ _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, gui
 		g_hash_table_insert(iapp->apps, GUINT_TO_POINTER(windowid), wm);
 
 		g_signal_emit(G_OBJECT(iapp), signals[WINDOW_REGISTERED], 0, windowid, sender, objectpath, TRUE);
+
+		/* TODO: Check if a desktop window */
 
 		/* Note: Does not cause ref */
 		BamfWindow * win = bamf_matcher_get_active_window(iapp->matcher);
