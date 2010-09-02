@@ -516,7 +516,17 @@ build_desktop_menus (IndicatorAppmenu * iapp)
 static void
 determine_new_desktop (IndicatorAppmenu * iapp)
 {
+	GList * keys = g_hash_table_get_keys(iapp->desktop_windows);
+	GList * key;
 
+	for (key = keys; key != NULL; key = g_list_next(key)) {
+		guint xid = GPOINTER_TO_UINT(key->data);
+		gpointer pwm = g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(xid));
+		if (pwm != NULL) {
+			g_debug("Found window %X with desktop menus", xid);
+			iapp->desktop_menu = WINDOW_MENUS(pwm);
+		}
+	}
 
 	return;
 }
