@@ -83,6 +83,7 @@ struct _IndicatorAppmenu {
 	GArray * desktop_menus;
 
 	GHashTable * desktop_windows;
+	WindowMenus * desktop_menu;
 
 	IndicatorAppmenuDebug * debug;
 };
@@ -252,6 +253,7 @@ indicator_appmenu_init (IndicatorAppmenu *self)
 
 	/* Setup the cache of windows with possible desktop entries */
 	self->desktop_windows = g_hash_table_new(g_direct_hash, g_direct_equal);
+	self->desktop_menu = NULL; /* Starts NULL until found */
 
 	build_window_menus(self);
 	build_desktop_menus(self);
@@ -326,6 +328,13 @@ indicator_appmenu_dispose (GObject *object)
 	if (iapp->desktop_windows != NULL) {
 		g_hash_table_destroy(iapp->desktop_windows);
 		iapp->desktop_windows = NULL;
+	}
+
+	if (iapp->desktop_menu != NULL) {
+		/* Wait, nothing here?  Yup.  We're not referencing the
+		   menus here they're already attached to the window ID.
+		   We're just keeping an efficient pointer to them. */
+		iapp->desktop_menu = NULL;
 	}
 
 	G_OBJECT_CLASS (indicator_appmenu_parent_class)->dispose (object);
