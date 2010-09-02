@@ -520,11 +520,8 @@ find_desktop_windows (IndicatorAppmenu * iapp)
 	GList * lwindow;
 
 	for (lwindow = windows; lwindow != NULL; lwindow = g_list_next(lwindow)) {
-		BamfWindow * window = BAMF_WINDOW(lwindow->data);
-
-		if (bamf_window_get_window_type(window) == BAMF_WINDOW_DESKTOP) {
-			g_hash_table_insert(iapp->desktop_windows, GUINT_TO_POINTER(bamf_window_get_xid(window)), GINT_TO_POINTER(TRUE));
-		}
+		BamfView * view = BAMF_VIEW(lwindow->data);
+		new_window(iapp->matcher, view, iapp);
 	}
 
 	g_list_free(windows);
