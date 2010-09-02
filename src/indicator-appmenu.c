@@ -547,7 +547,15 @@ new_window (BamfMatcher * matcher, BamfView * view, gpointer user_data)
 	}
 
 	IndicatorAppmenu * iapp = INDICATOR_APPMENU(user_data);
-	g_hash_table_insert(iapp->desktop_windows, GUINT_TO_POINTER(bamf_window_get_xid(window)), GINT_TO_POINTER(TRUE));
+	guint xid = bamf_window_get_xid(window);
+	g_hash_table_insert(iapp->desktop_windows, GUINT_TO_POINTER(xid), GINT_TO_POINTER(TRUE));
+
+	gpointer pwm = g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(xid));
+	if (pwm != NULL) {
+		WindowMenus * wm = WINDOW_MENUS(pwm);
+		iapp->desktop_menu = wm;
+		/* TODO: Check if we're showing these and switch them. */
+	}
 
 	return;
 }
