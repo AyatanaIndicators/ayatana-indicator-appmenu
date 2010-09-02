@@ -80,7 +80,6 @@ struct _IndicatorAppmenu {
 	gulong sig_entry_removed;
 
 	GArray * window_menus;
-	GArray * desktop_menus;
 
 	GHashTable * desktop_windows;
 	WindowMenus * desktop_menu;
@@ -121,7 +120,6 @@ static void indicator_appmenu_finalize                               (GObject *o
 static void indicator_appmenu_debug_class_init                       (IndicatorAppmenuDebugClass *klass);
 static void indicator_appmenu_debug_init                             (IndicatorAppmenuDebug *self);
 static void build_window_menus                                       (IndicatorAppmenu * iapp);
-static void build_desktop_menus                                      (IndicatorAppmenu * iapp);
 static GList * get_entries                                           (IndicatorObject * io);
 static guint get_location                                            (IndicatorObject * io,
                                                                       IndicatorObjectEntry * entry);
@@ -249,14 +247,12 @@ indicator_appmenu_init (IndicatorAppmenu *self)
 
 	/* Setup the entries for the fallbacks */
 	self->window_menus = g_array_sized_new(FALSE, FALSE, sizeof(IndicatorObjectEntry), 2);
-	self->desktop_menus = g_array_sized_new(FALSE, FALSE, sizeof(IndicatorObjectEntry), 2);
 
 	/* Setup the cache of windows with possible desktop entries */
 	self->desktop_windows = g_hash_table_new(g_direct_hash, g_direct_equal);
 	self->desktop_menu = NULL; /* Starts NULL until found */
 
 	build_window_menus(self);
-	build_desktop_menus(self);
 
 	/* Get the default BAMF matcher */
 	self->matcher = bamf_matcher_get_default();
@@ -353,14 +349,6 @@ indicator_appmenu_finalize (GObject *object)
 		}
 		g_array_free(iapp->window_menus, TRUE);
 		iapp->window_menus = NULL;
-	}
-
-	if (iapp->desktop_menus != NULL) {
-		if (iapp->desktop_menus->len != 0) {
-			g_warning("Desktop menus weren't free'd in dispose!");
-		}
-		g_array_free(iapp->desktop_menus, TRUE);
-		iapp->desktop_menus = NULL;
 	}
 
 	G_OBJECT_CLASS (indicator_appmenu_parent_class)->finalize (object);
@@ -484,33 +472,6 @@ build_window_menus (IndicatorAppmenu * iapp)
 	return;
 }
 
-/* Create the default desktop menus */
-static void
-build_desktop_menus (IndicatorAppmenu * iapp)
-{
-	IndicatorObjectEntry entries[1] = {{0}};
-
-	/* File Menu */
-	entries[0].label = GTK_LABEL(gtk_label_new("Desktop"));
-	g_object_ref(G_OBJECT(entries[0].label));
-	gtk_widget_show(GTK_WIDGET(entries[0].label));
-
-	entries[0].menu = GTK_MENU(gtk_menu_new());
-	g_object_ref(G_OBJECT(entries[0].menu));
-
-	GtkMenuItem * mi = GTK_MENU_ITEM(gtk_menu_item_new_with_label("Desktop Menus will go here"));
-	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
-	gtk_widget_show(GTK_WIDGET(mi));
-	gtk_menu_append(entries[0].menu, GTK_WIDGET(mi));
-
-	gtk_widget_show(GTK_WIDGET(entries[0].menu));
-
-	/* Copy the entries on the stack into the array */
-	g_array_insert_vals(iapp->desktop_menus, 0, entries, 1);
-
-	return;
-}
-
 /* Determine which windows should be used as the desktop
    menus. */
 static void
@@ -609,18 +570,19 @@ get_entries (IndicatorObject * io)
 		return window_menus_get_entries(iapp->default_app);
 	}
 
-	GArray * entryarray;
 	if (iapp->active_window == NULL) {
-		entryarray = iapp->desktop_menus;
-	} else {
-		entryarray = iapp->window_menus;
+		if (iapp->desktop_menu == NULL) {
+			return NULL;
+		} else {
+			return window_menus_get_entries(iapp->desktop_menu);
+		}
 	}
 
 	GList * output = NULL;
 	int i;
 
-	for (i = 0; i < entryarray->len; i++) {
-		output = g_list_append(output, &g_array_index(entryarray, IndicatorObjectEntry, i));
+	for (i = 0; i < iapp->window_menus->len; i++) {
+		output = g_list_append(output, &g_array_index(iapp->window_menus, IndicatorObjectEntry, i));
 	}
 
 	return output;
@@ -647,15 +609,9 @@ get_location (IndicatorObject * io, IndicatorObjectEntry * entry)
 			count = 0;
 		}
 	} else {
-		/* Find the location in the desktop menus */
-		for (count = 0; count < iapp->desktop_menus->len; count++) {
-			if (entry == &g_array_index(iapp->desktop_menus, IndicatorObjectEntry, count)) {
-				break;
-			}
-		}
-		if (count == iapp->desktop_menus->len) {
-			g_warning("Unable to find entry in default window menus");
-			count = 0;
+		/* Find the location in the desktop menu */
+		if (iapp->desktop_menu != NULL) {
+			count = window_menus_get_location(iapp->desktop_menu, entry);
 		}
 	}
 	return count;
@@ -743,8 +699,14 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * 
 		if (iapp->default_app != NULL) {
 			window_menus_entry_restore(iapp->default_app, entry);
 		} else {
-			if (entry->label != NULL) {
-				gtk_widget_show(GTK_WIDGET(entry->label));
+			if (iapp->active_window == NULL) {
+				/* Desktop Menus */
+				window_menus_entry_restore(iapp->desktop_menu, entry);
+			} else {
+				/* Window Menus */
+				if (entry->label != NULL) {
+					gtk_widget_show(GTK_WIDGET(entry->label));
+				}
 			}
 		}
 
