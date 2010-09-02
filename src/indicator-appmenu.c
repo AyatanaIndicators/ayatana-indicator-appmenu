@@ -571,7 +571,9 @@ new_window (BamfMatcher * matcher, BamfView * view, gpointer user_data)
 	if (pwm != NULL) {
 		WindowMenus * wm = WINDOW_MENUS(pwm);
 		iapp->desktop_menu = wm;
-		/* TODO: Check if we're showing these and switch them. */
+		if (iapp->active_window == NULL && iapp->default_app == NULL) {
+			switch_default_app(iapp, NULL, NULL);
+		}
 	}
 
 	return;
