@@ -511,6 +511,16 @@ build_desktop_menus (IndicatorAppmenu * iapp)
 	return;
 }
 
+/* Determine which windows should be used as the desktop
+   menus. */
+static void
+determine_new_desktop (IndicatorAppmenu * iapp)
+{
+
+
+	return;
+}
+
 /* Puts all the desktop windows into the hash table so that we
    can have a nice list of them. */
 static void
@@ -777,16 +787,9 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 static void
 menus_destroyed (GObject * menus, gpointer user_data)
 {
+	gboolean reload_menus = FALSE;
 	WindowMenus * wm = WINDOW_MENUS(menus);
 	IndicatorAppmenu * iapp = INDICATOR_APPMENU(user_data);
-
-	/* TODO Check for desktop menus */
-
-	/* If we're it, let's remove ourselves and BAMF will probably
-	   give us a new entry in a bit. */
-	if (iapp->default_app == wm) {
-		switch_default_app(iapp, NULL, NULL);
-	}
 
 	guint xid = window_menus_get_xid(wm);
 	g_return_if_fail(xid != 0);
@@ -794,6 +797,24 @@ menus_destroyed (GObject * menus, gpointer user_data)
 	g_hash_table_steal(iapp->apps, GUINT_TO_POINTER(xid));
 
 	g_debug("Removing menus for %d", xid);
+
+	if (iapp->desktop_menu == wm) {
+		iapp->desktop_menu = NULL;
+		determine_new_desktop(iapp);
+		if (iapp->default_app == NULL && iapp->active_window == NULL) {
+			reload_menus = TRUE;
+		}
+	}
+
+	/* If we're it, let's remove ourselves and BAMF will probably
+	   give us a new entry in a bit. */
+	if (iapp->default_app == wm) {
+		reload_menus = TRUE;
+	}
+
+	if (reload_menus) {
+		switch_default_app(iapp, NULL, NULL);
+	}
 
 	return;
 }
