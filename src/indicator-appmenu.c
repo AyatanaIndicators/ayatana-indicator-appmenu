@@ -814,7 +814,10 @@ _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, gui
 
 		g_signal_emit(G_OBJECT(iapp), signals[WINDOW_REGISTERED], 0, windowid, sender, objectpath, TRUE);
 
-		/* TODO: Check if a desktop window */
+		gpointer pdesktop = g_hash_table_lookup(iapp->desktop_windows, GUINT_TO_POINTER(windowid));
+		if (pdesktop != NULL) {
+			determine_new_desktop(iapp);
+		}
 
 		/* Note: Does not cause ref */
 		BamfWindow * win = bamf_matcher_get_active_window(iapp->matcher);
