@@ -484,7 +484,7 @@ determine_new_desktop (IndicatorAppmenu * iapp)
 		guint xid = GPOINTER_TO_UINT(key->data);
 		gpointer pwm = g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(xid));
 		if (pwm != NULL) {
-			g_debug("Found window %X with desktop menus", xid);
+			g_debug("Setting Desktop Menus to: %X", xid);
 			iapp->desktop_menu = WINDOW_MENUS(pwm);
 		}
 	}
@@ -528,10 +528,13 @@ new_window (BamfMatcher * matcher, BamfView * view, gpointer user_data)
 	guint xid = bamf_window_get_xid(window);
 	g_hash_table_insert(iapp->desktop_windows, GUINT_TO_POINTER(xid), GINT_TO_POINTER(TRUE));
 
+	g_debug("New Desktop Window: %X", xid);
+
 	gpointer pwm = g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(xid));
 	if (pwm != NULL) {
 		WindowMenus * wm = WINDOW_MENUS(pwm);
 		iapp->desktop_menu = wm;
+		g_debug("Setting Desktop Menus to: %X", xid);
 		if (iapp->active_window == NULL && iapp->default_app == NULL) {
 			switch_default_app(iapp, NULL, NULL);
 		}
