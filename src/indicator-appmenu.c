@@ -755,6 +755,10 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 		window = BAMF_WINDOW(newview);
 	}
 
+	if (window != NULL && bamf_window_get_window_type(window) == BAMF_WINDOW_DESKTOP) {
+		window = NULL;
+	}
+
 	IndicatorAppmenu * appmenu = INDICATOR_APPMENU(user_data);
 
 	WindowMenus * menus = NULL;
