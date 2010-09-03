@@ -549,9 +549,8 @@ switch_active_window (IndicatorAppmenu * iapp, BamfWindow * active_window)
 
 	GdkWMFunction functions;
 	if (!egg_window_get_functions(window, &functions)) {
-		g_warning("Unable to get MWM functions for: %d", xid);
-		g_object_unref(window);
-		return;
+		g_debug("Unable to get MWM functions for: %d", xid);
+		functions = GDK_FUNC_ALL;
 	}
 
 	if (functions & GDK_FUNC_ALL || functions & GDK_FUNC_CLOSE) {
