@@ -162,6 +162,8 @@ GTKDOC_REBASE = @GTKDOC_REBASE@
 HTML_DIR = @HTML_DIR@
 INDICATORDIR = @INDICATORDIR@
 INDICATORICONSDIR = @INDICATORICONSDIR@
+INDICATORTEST_CFLAGS = @INDICATORTEST_CFLAGS@
+INDICATORTEST_LIBS = @INDICATORTEST_LIBS@
 INDICATOR_CFLAGS = @INDICATOR_CFLAGS@
 INDICATOR_LIBS = @INDICATOR_LIBS@
 INSTALL = @INSTALL@
@@ -195,6 +197,8 @@ PACKAGE_URL = @PACKAGE_URL@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 PKG_CONFIG = @PKG_CONFIG@
+PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
+PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
 RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
@@ -267,7 +271,6 @@ marshal_c = $(glib_marshal_list:.list=.c)
 appmenulibdir = $(INDICATORDIR)
 appmenulib_LTLIBRARIES = libappmenu.la
 libappmenu_la_SOURCES = \
-	application-menu-debug-server.h \
 	application-menu-registrar-server.h \
 	dbus-shared.h \
 	gdk-get-func.h \
@@ -292,7 +295,7 @@ glib_marshal_prefix = _indicator_appmenu_marshal
 # DBus Love
 ######################################
 DBUS_SPECS = \
-	application-menu-debug.xml \
+	application-menu-renderer.xml \
 	application-menu-registrar.xml
 
 all: $(BUILT_SOURCES)

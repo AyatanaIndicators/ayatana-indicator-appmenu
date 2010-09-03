@@ -1,3 +1,76 @@
+indicator-appmenu (0.0.9-0ubuntu2~ppa2~desktop3~close1) UNRELEASED; urgency=low
+
+  * Upstream Merge
+    * Bringing up-to-date
+
+ -- Ted Gould <ted@ubuntu.com>  Fri, 03 Sep 2010 11:35:29 -0500
+
+indicator-appmenu (0.0.9-0ubuntu2~ppa2~desktop2) maverick; urgency=low
+
+  * Upstream Merge
+  	* Better handling of the XID 0 case.
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 02 Sep 2010 16:04:30 -0500
+
+indicator-appmenu (0.0.9-0ubuntu2~ppa2~desktop1) maverick; urgency=low
+
+  * Upstream Merge
+    * Detect and show the menus on desktop windows
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 02 Sep 2010 15:30:55 -0500
+
+indicator-appmenu (0.0.9-0ubuntu2~ppa1) maverick; urgency=low
+
+  * Upstream Merge
+    * Handle event errors
+    * Only show menus for user visible windows
+    * Only restoring if WindowMenus are involved
+
+ -- Ted Gould <ted@ubuntu.com>  Mon, 30 Aug 2010 10:26:44 -0500
+
+indicator-appmenu (0.0.9-0ubuntu1) maverick; urgency=low
+
+  * New upstream release.
+    - DBus name change, s/WindowMenu/AppMenu/g
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Thu, 22 Jul 2010 15:15:25 +0200
+
+indicator-appmenu (0.0.8-0ubuntu2~ppa1) lucid; urgency=low
+
+  * Merge upstream
+    * Adding in a debug interface for getting JSON data from the
+      applet directly.
+
+ -- Ted Gould <ted@ubuntu.com>  Mon, 12 Jul 2010 17:09:24 -0500
+
+indicator-appmenu (0.0.8-0ubuntu1) maverick; urgency=low
+
+  * New upstream release.
+    * Adding a new utility to make a mock application
+    * Fixing menus that are added after a window is shown
+    * Tracking the root item so that we can disconnect signals
+    * Switching to using stock menu items
+  * debian/control: Adding build dep on dbusmenu-jsonloader-dev
+  * debian/indicator-appmenu-tools.install: Adding to the 
+    new mock-json-app binary into the package.
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 01 Jul 2010 09:18:52 -0500
+
+indicator-appmenu (0.0.7-0ubuntu2) maverick; urgency=low
+
+  * Backport upstream change to fix crash issues
+
+ -- Sebastien Bacher <seb128@ubuntu.com>  Tue, 29 Jun 2010 23:27:06 +0200
+
+indicator-appmenu (0.0.7-0ubuntu1) maverick; urgency=low
+
+  * New upstream release.
+    * Accelerator support (LP: #586978)
+    * Setting the window ID and debug check
+  * debian/control: Updating libdbusmenu*-dev to 0.3.3
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 24 Jun 2010 10:54:52 -0500
+
 indicator-appmenu (0.0.7-0ubuntu1~ppa2~close1) lucid; urgency=low
 
   * Upstream Merge
