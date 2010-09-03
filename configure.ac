@@ -1,11 +1,11 @@
 
-AC_INIT(indicator-appmenu, 0.0.7, ted@canonical.com)
+AC_INIT(indicator-appmenu, 0.0.9, ted@canonical.com)
 AC_COPYRIGHT([Copyright 2010 Canonical])
 
 AC_PREREQ(2.53)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(indicator-appmenu, 0.0.7)
+AM_INIT_AUTOMAKE(indicator-appmenu, 0.0.9)
 
 AM_MAINTAINER_MODE
 
@@ -51,6 +51,19 @@ PKG_CHECK_MODULES(INDICATOR, gtk+-2.0 >= $GTK_REQUIRED_VERSION
 
 AC_SUBST(INDICATOR_CFLAGS)
 AC_SUBST(INDICATOR_LIBS)
+
+###########################
+# Test Dependencies
+###########################
+
+DBUSMENU_JSONLOADER_REQUIRED_VERSION=0.3.3
+
+PKG_CHECK_MODULES(INDICATORTEST,
+                  dbusmenu-jsonloader >= $DBUSMENU_JSONLOADER_REQUIRED_VERSION
+                 )
+
+AC_SUBST(INDICATORTEST_CFLAGS)
+AC_SUBST(INDICATORTEST_LIBS)
 
 ###########################
 # Check to see if we're local

@@ -12,7 +12,6 @@ include $(top_srcdir)/Makefile.am.marshal
 appmenulibdir = $(INDICATORDIR)
 appmenulib_LTLIBRARIES = libappmenu.la
 libappmenu_la_SOURCES = \
-	application-menu-debug-server.h \
 	application-menu-registrar-server.h \
 	dbus-shared.h \
 	gdk-get-func.h \
@@ -38,7 +37,7 @@ glib_marshal_prefix = _indicator_appmenu_marshal
 ######################################
 
 DBUS_SPECS = \
-	application-menu-debug.xml \
+	application-menu-renderer.xml \
 	application-menu-registrar.xml
 
 %-client.h: %.xml
