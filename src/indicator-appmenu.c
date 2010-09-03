@@ -489,6 +489,8 @@ determine_new_desktop (IndicatorAppmenu * iapp)
 		}
 	}
 
+	g_list_free(keys);
+
 	return;
 }
 
