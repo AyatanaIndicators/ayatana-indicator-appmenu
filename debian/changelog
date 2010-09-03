@@ -2,8 +2,9 @@ indicator-appmenu (0.0.9-0ubuntu2~ppa2~desktop3~close1) UNRELEASED; urgency=low
 
   * Upstream Merge
     * Bringing up-to-date
+    * New close functionality
 
- -- Ted Gould <ted@ubuntu.com>  Fri, 03 Sep 2010 11:35:29 -0500
+ -- Ted Gould <ted@ubuntu.com>  Fri, 03 Sep 2010 11:37:23 -0500
 
 indicator-appmenu (0.0.9-0ubuntu2~ppa2~desktop2) maverick; urgency=low
 

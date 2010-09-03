@@ -23,6 +23,9 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "config.h"
 #endif
 
+#include <X11/Xlib.h>
+#include <gdk/gdkx.h>
+
 #include <dbus/dbus-glib.h>
 #include <dbus/dbus-glib-bindings.h>
 #include <dbus/dbus-glib-lowlevel.h>
@@ -385,6 +388,46 @@ indicator_appmenu_debug_init (IndicatorAppmenuDebug *self)
 	return;
 }
 
+/* Close the current application using magic */
+static void
+close_current (GtkMenuItem * mi, gpointer user_data)
+{
+	IndicatorAppmenu * iapp = INDICATOR_APPMENU(user_data);
+
+	if (iapp->active_window == NULL) {
+		g_warning("Can't close a window we don't have.  NULL not cool.");
+		return;
+	}
+
+	guint xid = bamf_window_get_xid(iapp->active_window);
+	guint timestamp = gdk_event_get_time(NULL);
+
+	XEvent xev;
+
+	xev.xclient.type = ClientMessage;
+	xev.xclient.serial = 0;
+	xev.xclient.send_event = True;
+	xev.xclient.display = gdk_x11_get_default_xdisplay ();
+	xev.xclient.window = xid;
+	xev.xclient.message_type = gdk_x11_atom_to_xatom (gdk_atom_intern ("_NET_CLOSE_WINDOW", TRUE));
+	xev.xclient.format = 32;
+	xev.xclient.data.l[0] = timestamp;
+	xev.xclient.data.l[1] = 2; /* Client type pager, so it listens to us */
+	xev.xclient.data.l[2] = 0;
+	xev.xclient.data.l[3] = 0;
+	xev.xclient.data.l[4] = 0;
+
+	gdk_error_trap_push ();
+	XSendEvent (gdk_x11_get_default_xdisplay (),
+	            gdk_x11_get_default_root_xwindow (),
+	            False,
+	            SubstructureRedirectMask | SubstructureNotifyMask,
+	            &xev);
+	gdk_error_trap_pop ();
+
+	return;
+}
+
 /* Create the default window menus */
 static void
 build_window_menus (IndicatorAppmenu * iapp)
@@ -408,6 +451,7 @@ build_window_menus (IndicatorAppmenu * iapp)
 
 	mi = GTK_MENU_ITEM(gtk_image_menu_item_new_from_stock(GTK_STOCK_CLOSE, agroup));
 	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
+	g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(close_current), iapp);
 	gtk_widget_show(GTK_WIDGET(mi));
 	gtk_menu_append(entries[0].menu, GTK_WIDGET(mi));
 	iapp->close_item = mi;
@@ -637,6 +681,7 @@ switch_active_window (IndicatorAppmenu * iapp, BamfWindow * active_window)
 	iapp->active_window = active_window;
 
 	if (iapp->close_item == NULL) {
+		g_warning("No close item!?!?!");
 		return;
 	}
 
@@ -649,13 +694,14 @@ switch_active_window (IndicatorAppmenu * iapp, BamfWindow * active_window)
 
 	GdkWindow * window = gdk_window_foreign_new(xid);
 	if (window == NULL) {
+		g_warning("Unable to get foreign window for: %d", xid);
 		return;
 	}
 
 	GdkWMFunction functions;
 	if (!egg_window_get_functions(window, &functions)) {
-		g_object_unref(window);
-		return;
+		g_debug("Unable to get MWM functions for: %d", xid);
+		functions = GDK_FUNC_ALL;
 	}
 
 	if (functions & GDK_FUNC_ALL || functions & GDK_FUNC_CLOSE) {
