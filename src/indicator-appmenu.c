@@ -828,6 +828,8 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 		if (window == NULL) {
 			g_warning("Active window changed to View thats not a window.");
 		}
+	} else {
+		g_debug("Active window is: NULL");
 	}
 
 	if (window != NULL && bamf_window_get_window_type(window) == BAMF_WINDOW_DESKTOP) {
