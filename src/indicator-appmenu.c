@@ -843,13 +843,6 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 	guint32 xid = 0;
 
 	while (window != NULL && menus == NULL) {
-		if (!bamf_view_user_visible(BAMF_VIEW(window))) {
-			/* If we got menus from somewhere else, we'll still keep them
-			   but, we don't want to keep going up the stack here. */
-			window = NULL;
-			continue;
-		}
-
 		xid = bamf_window_get_xid(window);
 	
 		menus = g_hash_table_lookup(appmenu->apps, GUINT_TO_POINTER(xid));
