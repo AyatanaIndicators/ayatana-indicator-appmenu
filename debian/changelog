@@ -1,9 +1,9 @@
-indicator-appmenu (0.0.9-0ubuntu2~ppa3~dialogdesktop4) UNRELEASED; urgency=low
+indicator-appmenu (0.0.9-0ubuntu2~ppa3~dialogdesktop4) maverick; urgency=low
 
   * Upstream Merge
     * Debugging
 
- -- Ted Gould <ted@ubuntu.com>  Tue, 07 Sep 2010 15:47:16 -0500
+ -- Ted Gould <ted@ubuntu.com>  Tue, 07 Sep 2010 15:50:40 -0500
 
 indicator-appmenu (0.0.9-0ubuntu2~ppa3~dialogdesktop3) maverick; urgency=low
 
