@@ -1,9 +1,9 @@
-indicator-appmenu (0.0.9-0ubuntu2~ppa3~dialogdesktop5) UNRELEASED; urgency=low
+indicator-appmenu (0.0.9-0ubuntu2~ppa3~dialogdesktop5) maverick; urgency=low
 
   * Upstream Merge
     * Remove user_visible check
 
- -- Ted Gould <ted@ubuntu.com>  Tue, 07 Sep 2010 17:08:20 -0500
+ -- Ted Gould <ted@ubuntu.com>  Tue, 07 Sep 2010 17:09:46 -0500
 
 indicator-appmenu (0.0.9-0ubuntu2~ppa3~dialogdesktop4) maverick; urgency=low
 
