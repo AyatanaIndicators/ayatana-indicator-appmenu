@@ -838,7 +838,10 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 
 	while (window != NULL && menus == NULL) {
 		if (!bamf_view_user_visible(BAMF_VIEW(window))) {
+			/* If we got menus from somewhere else, we'll still keep them
+			   but, we don't want to keep going up the stack here. */
 			window = NULL;
+			continue;
 		}
 
 		xid = bamf_window_get_xid(window);
@@ -850,12 +853,17 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 		}
 	}
 
-	g_debug("Switching to windows from XID %d", xid);
-
-	/* Note: This function can handle menus being NULL */
-	if (xid == 0) {
+	if (window == NULL && menus == NULL) {
+		/* If in the end, we didn't have a window that we got the
+		   menus from, well, okay.  Let's just say there isn't a
+		   window and now menus. */
+		g_debug("Switching to menus from desktop");
 		switch_default_app(appmenu, NULL, NULL);
 	} else {
+		/* Note: We're not using window here, but re-casting the
+		   newwindow variable.  Which means we stay where we were
+		   but get the menus from parents. */
+		g_debug("Switching to menus from XID %d", xid);
 		switch_default_app(appmenu, menus, BAMF_WINDOW(newview));
 	}
 
