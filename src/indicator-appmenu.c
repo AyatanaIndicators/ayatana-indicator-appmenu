@@ -825,9 +825,13 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 
 	if (newview != NULL) {
 		window = BAMF_WINDOW(newview);
+		if (window == NULL) {
+			g_warning("Active window changed to View thats not a window.");
+		}
 	}
 
 	if (window != NULL && bamf_window_get_window_type(window) == BAMF_WINDOW_DESKTOP) {
+		g_debug("Switched to window with a type of 'desktop'");
 		window = NULL;
 	}
 
