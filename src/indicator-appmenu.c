@@ -849,6 +849,7 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 		menus = g_hash_table_lookup(appmenu->apps, GUINT_TO_POINTER(xid));
 
 		if (menus == NULL) {
+			g_debug("Looking for parent window on XID %d", xid);
 			window = bamf_window_get_transient(window);
 		}
 	}
