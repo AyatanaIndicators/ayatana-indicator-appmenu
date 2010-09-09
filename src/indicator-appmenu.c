@@ -833,8 +833,9 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 	}
 
 	if (window != NULL && bamf_window_get_window_type(window) == BAMF_WINDOW_DESKTOP) {
-		g_debug("Switched to window with a type of 'desktop'");
-		window = NULL;
+		g_debug("Switching to menus from desktop");
+		switch_default_app(appmenu, NULL, NULL);
+		return;
 	}
 
 	IndicatorAppmenu * appmenu = INDICATOR_APPMENU(user_data);
@@ -853,19 +854,11 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 		}
 	}
 
-	if (window == NULL && menus == NULL) {
-		/* If in the end, we didn't have a window that we got the
-		   menus from, well, okay.  Let's just say there isn't a
-		   window and now menus. */
-		g_debug("Switching to menus from desktop");
-		switch_default_app(appmenu, NULL, NULL);
-	} else {
-		/* Note: We're not using window here, but re-casting the
-		   newwindow variable.  Which means we stay where we were
-		   but get the menus from parents. */
-		g_debug("Switching to menus from XID %d", xid);
-		switch_default_app(appmenu, menus, BAMF_WINDOW(newview));
-	}
+	/* Note: We're not using window here, but re-casting the
+	   newwindow variable.  Which means we stay where we were
+	   but get the menus from parents. */
+	g_debug("Switching to menus from XID %d", xid);
+	switch_default_app(appmenu, menus, BAMF_WINDOW(newview));
 
 	return;
 }

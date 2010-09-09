@@ -1,3 +1,10 @@
+indicator-appmenu (0.0.9-0ubuntu2~ppa3~dialogdesktop6) UNRELEASED; urgency=low
+
+  * Upstream Merge
+    * Switching how they get pushed in
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 09 Sep 2010 09:31:13 -0500
+
 indicator-appmenu (0.0.9-0ubuntu2~ppa3~dialogdesktop5) maverick; urgency=low
 
   * Upstream Merge
