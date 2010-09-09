@@ -832,13 +832,13 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 		g_debug("Active window is: NULL");
 	}
 
+	IndicatorAppmenu * appmenu = INDICATOR_APPMENU(user_data);
+
 	if (window != NULL && bamf_window_get_window_type(window) == BAMF_WINDOW_DESKTOP) {
 		g_debug("Switching to menus from desktop");
 		switch_default_app(appmenu, NULL, NULL);
 		return;
 	}
-
-	IndicatorAppmenu * appmenu = INDICATOR_APPMENU(user_data);
 
 	WindowMenus * menus = NULL;
 	guint32 xid = 0;
