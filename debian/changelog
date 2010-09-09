@@ -1,27 +1,12 @@
-indicator-appmenu (0.0.9-0ubuntu2~ppa3) UNRELEASED; urgency=low
+indicator-appmenu (0.0.10-0ubuntu1~ppa1) UNRELEASED; urgency=low
 
-  * Upstream Merge
-    * Fix dialogs showing up as desktop
-
- -- Ted Gould <ted@ubuntu.com>  Thu, 09 Sep 2010 09:45:47 -0500
-
-indicator-appmenu (0.0.9-0ubuntu2~ppa2) maverick; urgency=low
-
-  * Upstream Merge
+  * New upstream release
     * Detect and show the menus on desktop windows (LP: #591168)
     * Have the close item in the default menu work
-  * Autogen
-
- -- Ted Gould <ted@ubuntu.com>  Fri, 03 Sep 2010 14:29:06 -0500
-
-indicator-appmenu (0.0.9-0ubuntu2~ppa1) maverick; urgency=low
-
-  * Upstream Merge
     * Handle event errors
-    * Only show menus for user visible windows
     * Only restoring if WindowMenus are involved
 
- -- Ted Gould <ted@ubuntu.com>  Mon, 30 Aug 2010 10:26:44 -0500
+ -- Ted Gould <ted@ubuntu.com>  Thu, 09 Sep 2010 10:53:24 -0500
 
 indicator-appmenu (0.0.9-0ubuntu1) maverick; urgency=low
 
