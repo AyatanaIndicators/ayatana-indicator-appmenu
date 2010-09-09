@@ -258,8 +258,7 @@ static const DBusGMethodInfo dbus_glib__application_menu_registrar_server_method
   { (GCallback) _application_menu_registrar_server_get_menus, dbus_glib_marshal__application_menu_registrar_server_BOOLEAN__POINTER_POINTER, 245 },
 };
 
-const DBusGObjectInfo dbus_glib__application_menu_registrar_server_object_info = {
-  0,
+const DBusGObjectInfo dbus_glib__application_menu_registrar_server_object_info = {  1,
   dbus_glib__application_menu_registrar_server_methods,
   4,
 "org.ayatana.AppMenu.Registrar\0RegisterWindow\0A\0windowId\0I\0u\0menuObjectPath\0I\0o\0\0org.ayatana.AppMenu.Registrar\0UnregisterWindow\0S\0windowId\0I\0u\0\0org.ayatana.AppMenu.Registrar\0GetMenuForWindow\0S\0windowId\0I\0u\0service\0O\0F\0N\0s\0menuObjectPath\0O\0F\0N\0o\0\0org.ayatana.AppMenu.Registrar\0GetMenus\0S\0menus\0O\0F\0N\0a(uso)\0\0\0",
