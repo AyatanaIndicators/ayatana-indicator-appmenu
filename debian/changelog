@@ -1,4 +1,4 @@
-indicator-appmenu (0.0.10-0ubuntu1~ppa1) UNRELEASED; urgency=low
+indicator-appmenu (0.0.10-0ubuntu1~ppa1) maverick; urgency=low
 
   * New upstream release
     * Detect and show the menus on desktop windows (LP: #591168)
@@ -6,7 +6,7 @@ indicator-appmenu (0.0.10-0ubuntu1~ppa1) UNRELEASED; urgency=low
     * Handle event errors
     * Only restoring if WindowMenus are involved
 
- -- Ted Gould <ted@ubuntu.com>  Thu, 09 Sep 2010 10:53:24 -0500
+ -- Ted Gould <ted@ubuntu.com>  Thu, 09 Sep 2010 11:16:48 -0500
 
 indicator-appmenu (0.0.9-0ubuntu1) maverick; urgency=low
 
