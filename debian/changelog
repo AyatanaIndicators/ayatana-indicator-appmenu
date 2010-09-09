@@ -1,3 +1,10 @@
+indicator-appmenu (0.0.9-0ubuntu2~ppa3) UNRELEASED; urgency=low
+
+  * Upstream Merge
+    * Fix dialogs showing up as desktop
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 09 Sep 2010 09:45:47 -0500
+
 indicator-appmenu (0.0.9-0ubuntu2~ppa2) maverick; urgency=low
 
   * Upstream Merge
