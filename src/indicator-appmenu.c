@@ -825,39 +825,40 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 
 	if (newview != NULL) {
 		window = BAMF_WINDOW(newview);
-	}
-
-	if (window != NULL && bamf_window_get_window_type(window) == BAMF_WINDOW_DESKTOP) {
-		window = NULL;
+		if (window == NULL) {
+			g_warning("Active window changed to View thats not a window.");
+		}
+	} else {
+		g_debug("Active window is: NULL");
 	}
 
 	IndicatorAppmenu * appmenu = INDICATOR_APPMENU(user_data);
+
+	if (window != NULL && bamf_window_get_window_type(window) == BAMF_WINDOW_DESKTOP) {
+		g_debug("Switching to menus from desktop");
+		switch_default_app(appmenu, NULL, NULL);
+		return;
+	}
 
 	WindowMenus * menus = NULL;
 	guint32 xid = 0;
 
 	while (window != NULL && menus == NULL) {
-		if (!bamf_view_user_visible(BAMF_VIEW(window))) {
-			window = NULL;
-		}
-
 		xid = bamf_window_get_xid(window);
 	
 		menus = g_hash_table_lookup(appmenu->apps, GUINT_TO_POINTER(xid));
 
 		if (menus == NULL) {
+			g_debug("Looking for parent window on XID %d", xid);
 			window = bamf_window_get_transient(window);
 		}
 	}
 
-	g_debug("Switching to windows from XID %d", xid);
-
-	/* Note: This function can handle menus being NULL */
-	if (xid == 0) {
-		switch_default_app(appmenu, NULL, NULL);
-	} else {
-		switch_default_app(appmenu, menus, BAMF_WINDOW(newview));
-	}
+	/* Note: We're not using window here, but re-casting the
+	   newwindow variable.  Which means we stay where we were
+	   but get the menus from parents. */
+	g_debug("Switching to menus from XID %d", xid);
+	switch_default_app(appmenu, menus, BAMF_WINDOW(newview));
 
 	return;
 }
