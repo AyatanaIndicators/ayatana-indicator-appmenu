@@ -620,15 +620,30 @@ get_entries (IndicatorObject * io)
 	g_return_val_if_fail(IS_INDICATOR_APPMENU(io), NULL);
 	IndicatorAppmenu * iapp = INDICATOR_APPMENU(io);
 
+	/* If we have a focused app with menus, use it's windows */
 	if (iapp->default_app != NULL) {
 		return window_menus_get_entries(iapp->default_app);
 	}
 
+	/* Else, let's go with desktop windows if there isn't a focused window */
 	if (iapp->active_window == NULL) {
 		if (iapp->desktop_menu == NULL) {
 			return NULL;
 		} else {
 			return window_menus_get_entries(iapp->desktop_menu);
+		}
+	}
+
+	/* Oh, now we're looking at stubs. */
+
+	BamfApplication * app = bamf_matcher_get_application_for_window(iapp->matcher, iapp->active_window);
+	if (app != NULL) {
+		/* First check to see if we can find an app, then if we can
+		   check to see if it has an opinion on whether we should
+		   show the stubs or not. */
+		if (bamf_application_get_show_stubs(app) == FALSE) {
+			/* If it blocks them, fall out. */
+			return NULL;
 		}
 	}
 
