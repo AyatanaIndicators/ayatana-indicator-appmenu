@@ -1,9 +1,9 @@
-indicator-appmenu (0.0.10-0ubuntu1~ppa2~black1) UNRELEASED; urgency=low
+indicator-appmenu (0.0.10-0ubuntu1~ppa2~black1) maverick; urgency=low
 
   * Upstream Merge
     * Check to see if an app wants stubs shown
 
- -- Ted Gould <ted@ubuntu.com>  Fri, 10 Sep 2010 21:24:44 -0500
+ -- Ted Gould <ted@ubuntu.com>  Fri, 10 Sep 2010 21:25:41 -0500
 
 indicator-appmenu (0.0.10-0ubuntu1~ppa1) maverick; urgency=low
 
