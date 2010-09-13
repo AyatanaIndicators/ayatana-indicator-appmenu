@@ -641,7 +641,7 @@ get_entries (IndicatorObject * io)
 		/* First check to see if we can find an app, then if we can
 		   check to see if it has an opinion on whether we should
 		   show the stubs or not. */
-		if (bamf_application_get_show_stubs(app) == FALSE) {
+		if (bamf_application_get_show_menu_stubs(app) == FALSE) {
 			/* If it blocks them, fall out. */
 			return NULL;
 		}
