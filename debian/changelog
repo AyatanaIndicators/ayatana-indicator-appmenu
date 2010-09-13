@@ -1,9 +1,9 @@
-indicator-appmenu (0.0.10-0ubuntu1~ppa2~black2) UNRELEASED; urgency=low
+indicator-appmenu (0.0.10-0ubuntu1~ppa2~black2) maverick; urgency=low
 
   * Upstream Merge
     * Updating to new BAMF
 
- -- Ted Gould <ted@ubuntu.com>  Mon, 13 Sep 2010 15:44:04 -0500
+ -- Ted Gould <ted@ubuntu.com>  Mon, 13 Sep 2010 15:44:54 -0500
 
 indicator-appmenu (0.0.10-0ubuntu1~ppa2~black1) maverick; urgency=low
 
