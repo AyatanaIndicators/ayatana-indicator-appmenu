@@ -615,7 +615,19 @@ old_window (BamfMatcher * matcher, BamfView * view, gpointer user_data)
 
 /* List of desktop files that shouldn't have menu stubs. */
 const static gchar * stubs_blacklist[] = {
+	/* Firefox */
 	"/usr/share/applications/firefox.desktop",
+	/* Open Office */
+	"/usr/share/applications/openoffice.org-base.desktop",
+	"/usr/share/applications/openoffice.org-impress.desktop",
+	"/usr/share/applications/openoffice.org-calc.desktop",
+	"/usr/share/applications/openoffice.org-math.desktop",
+	"/usr/share/applications/openoffice.org-draw.desktop",
+	"/usr/share/applications/openoffice.org-writer.desktop",
+	/* Blender */
+	"/usr/share/applications/blender-fullscreen.desktop",
+	"/usr/share/applications/blender-windowed.desktop",
+
 	NULL
 };
 
