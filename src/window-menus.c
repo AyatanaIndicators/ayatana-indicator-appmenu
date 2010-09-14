@@ -321,7 +321,7 @@ item_activate (DbusmenuClient * client, DbusmenuMenuitem * item, guint timestamp
 		/* Ugly, ugly hack.  I shouldn't have used guint in the function
 		   above, but now I have to do this.  Ew! */
 		GList * children = dbusmenu_menuitem_get_children(priv->root);
-		if (children->data != item) {
+		if (children == NULL || children->data != item) {
 			return;
 		}
 	}
