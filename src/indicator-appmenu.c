@@ -613,6 +613,48 @@ old_window (BamfMatcher * matcher, BamfView * view, gpointer user_data)
 	return;
 }
 
+/* List of desktop files that shouldn't have menu stubs. */
+const static gchar * stubs_blacklist[] = {
+	/* Firefox */
+	"/usr/share/applications/firefox.desktop",
+	/* Open Office */
+	"/usr/share/applications/openoffice.org-base.desktop",
+	"/usr/share/applications/openoffice.org-impress.desktop",
+	"/usr/share/applications/openoffice.org-calc.desktop",
+	"/usr/share/applications/openoffice.org-math.desktop",
+	"/usr/share/applications/openoffice.org-draw.desktop",
+	"/usr/share/applications/openoffice.org-writer.desktop",
+	/* Blender */
+	"/usr/share/applications/blender-fullscreen.desktop",
+	"/usr/share/applications/blender-windowed.desktop",
+
+	NULL
+};
+
+/* Check with BAMF, and then check the blacklist of desktop files
+   to see if any are there.  Otherwise, show the stubs. */
+gboolean
+show_menu_stubs (BamfApplication * app)
+{
+	if (bamf_application_get_show_menu_stubs(app) == FALSE) {
+		return FALSE;
+	}
+
+	const gchar * desktop_file = bamf_application_get_desktop_file(app);
+	if (desktop_file == NULL || desktop_file[0] == '\0') {
+		return TRUE;
+	}
+
+	int i;
+	for (i = 0; stubs_blacklist[i] != NULL; i++) {
+		if (g_strcmp0(stubs_blacklist[i], desktop_file) == 0) {
+			return FALSE;
+		}
+	}
+
+	return TRUE;
+}
+
 /* Get the current set of entries */
 static GList *
 get_entries (IndicatorObject * io)
@@ -641,7 +683,7 @@ get_entries (IndicatorObject * io)
 		/* First check to see if we can find an app, then if we can
 		   check to see if it has an opinion on whether we should
 		   show the stubs or not. */
-		if (bamf_application_get_show_menu_stubs(app) == FALSE) {
+		if (show_menu_stubs(app) == FALSE) {
 			/* If it blocks them, fall out. */
 			return NULL;
 		}
