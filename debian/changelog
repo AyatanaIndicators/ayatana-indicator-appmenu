@@ -1,10 +1,12 @@
-indicator-appmenu (0.0.10-0ubuntu2~ppa1) maverick; urgency=low
+indicator-appmenu (0.0.10-0ubuntu2~ppa1) UNRELEASED; urgency=low
 
   * Upstream Merge
     * Check to see if an app wants stubs shown (LP: #633211)
     * Adding a blacklist of known desktop files
+  * debian/control
+    * Bumped build depends for libbamf-dev to 0.2.47
 
- -- Ted Gould <ted@ubuntu.com>  Tue, 14 Sep 2010 16:12:15 -0500
+ -- Ted Gould <ted@ubuntu.com>  Tue, 14 Sep 2010 16:15:29 -0500
 
 indicator-appmenu (0.0.10-0ubuntu1) maverick; urgency=low
 
