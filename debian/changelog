@@ -1,9 +1,9 @@
-indicator-appmenu (0.0.10-0ubuntu1~ppa2~black3) UNRELEASED; urgency=low
+indicator-appmenu (0.0.10-0ubuntu1~ppa2~black3) maverick; urgency=low
 
   * Upstream Merge
     * Adding a blacklist of known desktop files
 
- -- Ted Gould <ted@ubuntu.com>  Tue, 14 Sep 2010 09:05:53 -0500
+ -- Ted Gould <ted@ubuntu.com>  Tue, 14 Sep 2010 09:08:29 -0500
 
 indicator-appmenu (0.0.10-0ubuntu1~ppa2~black2) maverick; urgency=low
 
