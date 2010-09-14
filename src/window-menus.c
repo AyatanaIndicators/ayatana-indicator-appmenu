@@ -28,6 +28,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <glib.h>
 
 #include "window-menus.h"
+#include "indicator-appmenu-marshal.h"
 
 /* Private parts */
 
@@ -63,6 +64,7 @@ enum {
 	ENTRY_REMOVED,
 	DESTROY,
 	ERROR_STATE,
+	SHOW_MENU,
 	LAST_SIGNAL
 };
 
@@ -123,6 +125,13 @@ window_menus_class_init (WindowMenusClass *klass)
 	                                      NULL, NULL,
 	                                      g_cclosure_marshal_VOID__BOOLEAN,
 	                                      G_TYPE_NONE, 1, G_TYPE_BOOLEAN, G_TYPE_NONE);
+	signals[SHOW_MENU] =     g_signal_new(WINDOW_MENUS_SIGNAL_SHOW_MENU,
+	                                      G_TYPE_FROM_CLASS(klass),
+	                                      G_SIGNAL_RUN_LAST,
+	                                      G_STRUCT_OFFSET (WindowMenusClass, show_menu),
+	                                      NULL, NULL,
+	                                      _indicator_appmenu_marshal_VOID__POINTER_UINT,
+	                                      G_TYPE_NONE, 2, G_TYPE_POINTER, G_TYPE_UINT, G_TYPE_NONE);
 
 	return;
 }
