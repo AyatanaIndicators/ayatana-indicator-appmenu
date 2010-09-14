@@ -312,6 +312,22 @@ item_activate (DbusmenuClient * client, DbusmenuMenuitem * item, guint timestamp
 	g_return_if_fail(IS_WINDOW_MENUS(user_data));
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
 
+	if (priv->root == NULL) {
+		return;
+	}
+
+	guint position = dbusmenu_menuitem_get_position(priv->root, item);
+	if (position == 0) {
+		/* Ugly, ugly hack.  I shouldn't have used guint in the function
+		   above, but now I have to do this.  Ew! */
+		GList * children = dbusmenu_menuitem_get_children(priv->root);
+		if (children->data != item) {
+			return;
+		}
+	}
+
+	IndicatorObjectEntry * entry = &g_array_index(priv->entries, IndicatorObjectEntry, position);
+	g_signal_emit(G_OBJECT(user_data), signals[SHOW_MENU], 0, entry, timestamp, TRUE);
 
 	return;
 }
