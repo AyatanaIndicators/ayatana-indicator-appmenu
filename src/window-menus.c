@@ -304,6 +304,18 @@ event_status (DbusmenuClient * client, DbusmenuMenuitem * mi, gchar * event, GVa
 	return;
 }
 
+/* Called when a menu item wants to be displayed.  We need to see if
+   it's one of our root items and pass it up if so. */
+static void
+item_activate (DbusmenuClient * client, DbusmenuMenuitem * item, guint timestamp, gpointer user_data)
+{
+	g_return_if_fail(IS_WINDOW_MENUS(user_data));
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
+
+
+	return;
+}
+
 /* Build a new window menus object and attach to the signals to build
    up the representative menu. */
 WindowMenus *
@@ -342,6 +354,7 @@ window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * d
 
 	g_signal_connect(G_OBJECT(priv->client), DBUSMENU_GTKCLIENT_SIGNAL_ROOT_CHANGED, G_CALLBACK(root_changed),   newmenu);
 	g_signal_connect(G_OBJECT(priv->client), DBUSMENU_CLIENT_SIGNAL_EVENT_RESULT, G_CALLBACK(event_status), newmenu);
+	g_signal_connect(G_OBJECT(priv->client), DBUSMENU_CLIENT_SIGNAL_ITEM_ACTIVATE, G_CALLBACK(item_activate), newmenu);
 
 	DbusmenuMenuitem * root = dbusmenu_client_get_root(DBUSMENU_CLIENT(priv->client));
 	if (root != NULL) {
