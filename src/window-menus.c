@@ -28,6 +28,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <glib.h>
 
 #include "window-menus.h"
+#include "indicator-appmenu-marshal.h"
 
 /* Private parts */
 
@@ -63,6 +64,7 @@ enum {
 	ENTRY_REMOVED,
 	DESTROY,
 	ERROR_STATE,
+	SHOW_MENU,
 	LAST_SIGNAL
 };
 
@@ -123,6 +125,13 @@ window_menus_class_init (WindowMenusClass *klass)
 	                                      NULL, NULL,
 	                                      g_cclosure_marshal_VOID__BOOLEAN,
 	                                      G_TYPE_NONE, 1, G_TYPE_BOOLEAN, G_TYPE_NONE);
+	signals[SHOW_MENU] =     g_signal_new(WINDOW_MENUS_SIGNAL_SHOW_MENU,
+	                                      G_TYPE_FROM_CLASS(klass),
+	                                      G_SIGNAL_RUN_LAST,
+	                                      G_STRUCT_OFFSET (WindowMenusClass, show_menu),
+	                                      NULL, NULL,
+	                                      _indicator_appmenu_marshal_VOID__POINTER_UINT,
+	                                      G_TYPE_NONE, 2, G_TYPE_POINTER, G_TYPE_UINT, G_TYPE_NONE);
 
 	return;
 }
@@ -295,6 +304,34 @@ event_status (DbusmenuClient * client, DbusmenuMenuitem * mi, gchar * event, GVa
 	return;
 }
 
+/* Called when a menu item wants to be displayed.  We need to see if
+   it's one of our root items and pass it up if so. */
+static void
+item_activate (DbusmenuClient * client, DbusmenuMenuitem * item, guint timestamp, gpointer user_data)
+{
+	g_return_if_fail(IS_WINDOW_MENUS(user_data));
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
+
+	if (priv->root == NULL) {
+		return;
+	}
+
+	guint position = dbusmenu_menuitem_get_position(priv->root, item);
+	if (position == 0) {
+		/* Ugly, ugly hack.  I shouldn't have used guint in the function
+		   above, but now I have to do this.  Ew! */
+		GList * children = dbusmenu_menuitem_get_children(priv->root);
+		if (children == NULL || children->data != item) {
+			return;
+		}
+	}
+
+	IndicatorObjectEntry * entry = &g_array_index(priv->entries, IndicatorObjectEntry, position);
+	g_signal_emit(G_OBJECT(user_data), signals[SHOW_MENU], 0, entry, timestamp, TRUE);
+
+	return;
+}
+
 /* Build a new window menus object and attach to the signals to build
    up the representative menu. */
 WindowMenus *
@@ -333,6 +370,7 @@ window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * d
 
 	g_signal_connect(G_OBJECT(priv->client), DBUSMENU_GTKCLIENT_SIGNAL_ROOT_CHANGED, G_CALLBACK(root_changed),   newmenu);
 	g_signal_connect(G_OBJECT(priv->client), DBUSMENU_CLIENT_SIGNAL_EVENT_RESULT, G_CALLBACK(event_status), newmenu);
+	g_signal_connect(G_OBJECT(priv->client), DBUSMENU_CLIENT_SIGNAL_ITEM_ACTIVATE, G_CALLBACK(item_activate), newmenu);
 
 	DbusmenuMenuitem * root = dbusmenu_client_get_root(DBUSMENU_CLIENT(priv->client));
 	if (root != NULL) {
