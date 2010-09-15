@@ -622,6 +622,8 @@ old_window (BamfMatcher * matcher, BamfView * view, gpointer user_data)
 const static gchar * stubs_blacklist[] = {
 	/* Firefox */
 	"/usr/share/applications/firefox.desktop",
+	/* Thunderbird */
+	"/usr/share/applications/thunderbird.desktop",
 	/* Open Office */
 	"/usr/share/applications/openoffice.org-base.desktop",
 	"/usr/share/applications/openoffice.org-impress.desktop",
