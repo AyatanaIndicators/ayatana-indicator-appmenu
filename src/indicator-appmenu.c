@@ -74,6 +74,9 @@ struct _IndicatorAppmenuClass {
 struct _IndicatorAppmenu {
 	IndicatorObject parent;
 
+	gboolean object_registered;
+	gulong retry_registration;
+
 	WindowMenus * default_app;
 	GHashTable * apps;
 
@@ -256,6 +259,8 @@ indicator_appmenu_init (IndicatorAppmenu *self)
 	self->matcher = NULL;
 	self->active_window = NULL;
 	self->close_item = NULL;
+	self->object_registered = FALSE;
+	self->retry_registration = 0;
 
 	/* Setup the entries for the fallbacks */
 	self->window_menus = g_array_sized_new(FALSE, FALSE, sizeof(IndicatorObjectEntry), 2);
@@ -312,6 +317,12 @@ static void
 indicator_appmenu_dispose (GObject *object)
 {
 	IndicatorAppmenu * iapp = INDICATOR_APPMENU(object);
+
+	/* Don't register if we're dying! */
+	if (iapp->retry_registration != 0) {
+		g_source_remove(iapp->retry_registration);
+		iapp->retry_registration = 0;
+	}
 
 	/* bring down the matcher before resetting to no menu so we don't
 	   get match signals */
