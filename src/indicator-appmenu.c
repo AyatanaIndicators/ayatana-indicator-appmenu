@@ -74,7 +74,6 @@ struct _IndicatorAppmenuClass {
 struct _IndicatorAppmenu {
 	IndicatorObject parent;
 
-	gboolean object_registered;
 	gulong retry_registration;
 
 	WindowMenus * default_app;
@@ -191,6 +190,7 @@ static gboolean _application_menu_renderer_server_dump_menu          (IndicatorA
                                                                       gchar ** jsondata,
                                                                       GError ** error);
 static GQuark error_quark                                            (void);
+static gboolean retry_registration                                   (gpointer user_data);
 
 /* Unique error codes for debug interface */
 enum {
@@ -259,7 +259,6 @@ indicator_appmenu_init (IndicatorAppmenu *self)
 	self->matcher = NULL;
 	self->active_window = NULL;
 	self->close_item = NULL;
-	self->object_registered = FALSE;
 	self->retry_registration = 0;
 
 	/* Setup the entries for the fallbacks */
@@ -288,22 +287,36 @@ indicator_appmenu_init (IndicatorAppmenu *self)
 	find_desktop_windows(self);
 
 	/* Register this object on DBus */
+	gboolean sent_registration = FALSE;
 	DBusGConnection * connection = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
-	dbus_g_connection_register_g_object(connection,
-	                                    REG_OBJECT,
-	                                    G_OBJECT(self));
+	if (connection != NULL) {
+		dbus_g_connection_register_g_object(connection,
+		                                    REG_OBJECT,
+		                                    G_OBJECT(self));
 
-	/* Request a name so others can find us */
-	DBusGProxy * dbus_proxy = dbus_g_proxy_new_for_name_owner(connection,
-	                                                   DBUS_SERVICE_DBUS,
-	                                                   DBUS_PATH_DBUS,
-	                                                   DBUS_INTERFACE_DBUS,
-	                                                   NULL);
-	org_freedesktop_DBus_request_name_async (dbus_proxy,
-	                                         DBUS_NAME,
-	                                         DBUS_NAME_FLAG_DO_NOT_QUEUE,
-	                                         request_name_cb,
-	                                         self);
+		/* Request a name so others can find us */
+		DBusGProxy * dbus_proxy = dbus_g_proxy_new_for_name_owner(connection,
+		                                                   DBUS_SERVICE_DBUS,
+		                                                   DBUS_PATH_DBUS,
+		                                                   DBUS_INTERFACE_DBUS,
+		                                                   NULL);
+		if (dbus_proxy != NULL) {
+			org_freedesktop_DBus_request_name_async (dbus_proxy,
+		                                         	DBUS_NAME,
+		                                         	DBUS_NAME_FLAG_DO_NOT_QUEUE,
+		                                         	request_name_cb,
+		                                         	self);
+			sent_registration = TRUE;
+		} else {
+			g_warning("Unable to get proxy to DBus daemon");
+		}
+	} else {
+		g_warning("Unable to connect to session bus");
+	}
+
+	if (!sent_registration) {
+		self->retry_registration = g_timeout_add_seconds(1, retry_registration, self);
+	}
 
 	/* Setup debug interface */
 	self->debug = g_object_new(INDICATOR_APPMENU_DEBUG_TYPE, NULL);
@@ -402,6 +415,15 @@ indicator_appmenu_debug_init (IndicatorAppmenuDebug *self)
 	                                    G_OBJECT(self));
 
 	return;
+}
+
+/* If we weren't able to register on the bus, then we need
+   to try it all again. */
+static gboolean
+retry_registration (gpointer user_data)
+{
+
+	return FALSE;
 }
 
 /* Close the current application using magic */
