@@ -637,6 +637,7 @@ const static gchar * stubs_blacklist[] = {
 	/* Chrome */
 	"/usr/share/applications/chromium-browser.desktop",
 	"/opt/google/chrome/google-chrome.desktop",
+	"/usr/local/share/applications/google-chrome.desktop",
 
 	NULL
 };
