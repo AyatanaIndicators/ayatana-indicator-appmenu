@@ -1,3 +1,10 @@
+indicator-appmenu (0.0.11-0ubuntu4~ppa2~dbus1) UNRELEASED; urgency=low
+
+  * Upstream Merge
+    * Making better dbus session bus error handling
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 16 Sep 2010 13:55:43 -0500
+
 indicator-appmenu (0.0.11-0ubuntu4~ppa1) maverick; urgency=low
 
   * Upstream Merge
