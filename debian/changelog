@@ -1,3 +1,9 @@
+indicator-appmenu (0.0.11-0ubuntu2) maverick; urgency=low
+
+  * Cherry pick fix for maximized windows getting closed (LP: #637108)
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Thu, 16 Sep 2010 08:59:12 -0400
+
 indicator-appmenu (0.0.11-0ubuntu1) maverick; urgency=low
 
   * New upstream release.

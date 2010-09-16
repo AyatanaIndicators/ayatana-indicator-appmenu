@@ -1,3 +1,1 @@
-
-gboolean egg_window_get_functions(GdkWindow       *window, GdkWMFunction *functions);
-
+gboolean egg_xid_get_functions (Window window, GdkWMFunction *functions);

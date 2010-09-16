@@ -757,15 +757,9 @@ switch_active_window (IndicatorAppmenu * iapp, BamfWindow * active_window)
 	if (xid == 0) {
 		return;
 	}
-
-	GdkWindow * window = gdk_window_foreign_new(xid);
-	if (window == NULL) {
-		g_warning("Unable to get foreign window for: %d", xid);
-		return;
-	}
-
+ 
 	GdkWMFunction functions;
-	if (!egg_window_get_functions(window, &functions)) {
+	if (!egg_xid_get_functions(xid, &functions)) {
 		g_debug("Unable to get MWM functions for: %d", xid);
 		functions = GDK_FUNC_ALL;
 	}
@@ -773,8 +767,6 @@ switch_active_window (IndicatorAppmenu * iapp, BamfWindow * active_window)
 	if (functions & GDK_FUNC_ALL || functions & GDK_FUNC_CLOSE) {
 		gtk_widget_set_sensitive(GTK_WIDGET(iapp->close_item), TRUE);
 	}
-
-	g_object_unref(window);
 
 	return;
 }
@@ -794,6 +786,7 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * 
 		switch_active_window(iapp, active_window);
 		return;
 	}
+
 	if (iapp->default_app == NULL && iapp->active_window == active_window && newdef == NULL) {
 		/* There's no application menus, but the active window hasn't
 		   changed.  So there's no change. */
@@ -801,6 +794,7 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * 
 	}
 
 	entry_head = indicator_object_get_entries(INDICATOR_OBJECT(iapp));
+
 
 	for (entries = entry_head; entries != NULL; entries = g_list_next(entries)) {
 		IndicatorObjectEntry * entry = (IndicatorObjectEntry *)entries->data;
@@ -817,6 +811,7 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * 
 	}
 
 	g_list_free(entry_head);
+
 	
 	/* Disconnect signals */
 	if (iapp->sig_entry_added != 0) {
