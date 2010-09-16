@@ -634,6 +634,9 @@ const static gchar * stubs_blacklist[] = {
 	/* Blender */
 	"/usr/share/applications/blender-fullscreen.desktop",
 	"/usr/share/applications/blender-windowed.desktop",
+	/* Chrome */
+	"/usr/share/applications/chromium-browser.desktop",
+	"/opt/google/chrome/google-chrome.desktop",
 
 	NULL
 };
