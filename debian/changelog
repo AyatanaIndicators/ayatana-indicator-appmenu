@@ -1,3 +1,10 @@
+indicator-appmenu (0.0.11-0ubuntu4~ppa2~dbus2) UNRELEASED; urgency=low
+
+  * Upstream Merge
+    * Tracking an error as well
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 16 Sep 2010 14:09:23 -0500
+
 indicator-appmenu (0.0.11-0ubuntu4~ppa2~dbus1) maverick; urgency=low
 
   * Upstream Merge

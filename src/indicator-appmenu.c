@@ -288,8 +288,9 @@ indicator_appmenu_init (IndicatorAppmenu *self)
 
 	/* Register this object on DBus */
 	gboolean sent_registration = FALSE;
-	DBusGConnection * connection = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
-	if (connection != NULL) {
+	GError * error = NULL;
+	DBusGConnection * connection = dbus_g_bus_get(DBUS_BUS_SESSION, &error);
+	if (connection != NULL && error == NULL) {
 		dbus_g_connection_register_g_object(connection,
 		                                    REG_OBJECT,
 		                                    G_OBJECT(self));
