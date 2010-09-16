@@ -21,3 +21,5 @@ src/libappmenu_la-gdk-get-func.lo
 tools/mock-json-app
 tools/.deps
 tools/.libs
+src/application-menu-renderer-client.h
+src/application-menu-renderer-server.h
