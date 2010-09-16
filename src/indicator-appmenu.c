@@ -422,8 +422,37 @@ indicator_appmenu_debug_init (IndicatorAppmenuDebug *self)
 static gboolean
 retry_registration (gpointer user_data)
 {
+	g_return_val_if_fail(IS_INDICATOR_APPMENU(user_data), FALSE);
+	IndicatorAppmenu * iapp = INDICATOR_APPMENU(user_data);
 
-	return FALSE;
+	DBusGConnection * connection = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
+	if (connection != NULL) {
+		dbus_g_connection_register_g_object(connection,
+		                                    REG_OBJECT,
+		                                    G_OBJECT(iapp));
+
+		/* Request a name so others can find us */
+		DBusGProxy * dbus_proxy = dbus_g_proxy_new_for_name_owner(connection,
+		                                                   DBUS_SERVICE_DBUS,
+		                                                   DBUS_PATH_DBUS,
+		                                                   DBUS_INTERFACE_DBUS,
+		                                                   NULL);
+		if (dbus_proxy != NULL) {
+			org_freedesktop_DBus_request_name_async (dbus_proxy,
+		                                         	DBUS_NAME,
+		                                         	DBUS_NAME_FLAG_DO_NOT_QUEUE,
+		                                         	request_name_cb,
+		                                         	iapp);
+			iapp->retry_registration = 0;
+			return FALSE;
+		} else {
+			g_warning("Unable to get proxy to DBus daemon");
+		}
+	} else {
+		g_warning("Unable to connect to session bus");
+	}
+
+	return TRUE;
 }
 
 /* Close the current application using magic */
