@@ -80,7 +80,7 @@
      GDK_WINDOW_TYPE (window) != GDK_WINDOW_OFFSCREEN)
 
 static MotifWmHints *
-gdk_window_get_mwm_hints (GdkWindow *window)
+gdk_xid_get_mwm_hints (Window window)
 {
   GdkDisplay *display;
   Atom hints_atom = None;
@@ -90,14 +90,11 @@ gdk_window_get_mwm_hints (GdkWindow *window)
   gulong nitems;
   gulong bytes_after;
   
-  if (GDK_WINDOW_DESTROYED (window))
-    return NULL;
-
-  display = gdk_drawable_get_display (window);
+  display = gdk_display_get_default ();
   
   hints_atom = gdk_x11_get_xatom_by_name_for_display (display, _XA_MOTIF_WM_HINTS);
 
-  XGetWindowProperty (GDK_DISPLAY_XDISPLAY (display), GDK_WINDOW_XID (window),
+  XGetWindowProperty (GDK_DISPLAY_XDISPLAY (display), window,
 		      hints_atom, 0, sizeof (MotifWmHints)/sizeof (long),
 		      False, AnyPropertyType, &type, &format, &nitems,
 		      &bytes_after, &data);
@@ -110,33 +107,29 @@ gdk_window_get_mwm_hints (GdkWindow *window)
 
 /**
  * gdk_window_get_functions:
- * @window: The toplevel #GdkWindow to get the functions from
+ * @window: The toplevel #X11Window to get the functions for
  * @functions: The window functions will be written here
  *
  * Returns the functions set on the GdkWindow with #gdk_window_set_functions
  * Returns: TRUE if the window has functions set, FALSE otherwise.
  **/
 gboolean
-egg_window_get_functions(GdkWindow       *window,
-			   GdkWMFunction *functions)
+egg_xid_get_functions (Window window,
+                       GdkWMFunction *functions)
 {
   MotifWmHints *hints;
   gboolean result = FALSE;
 
-  if (GDK_WINDOW_DESTROYED (window) ||
-      !WINDOW_IS_TOPLEVEL_OR_FOREIGN (window))
-    return FALSE;
-  
-  hints = gdk_window_get_mwm_hints (window);
+  hints = gdk_xid_get_mwm_hints (window);
   
   if (hints)
     {
       if (hints->flags & MWM_HINTS_FUNCTIONS)
-	{
-	  if (functions)
-	    *functions = hints->functions;
-	  result = TRUE;
-	}
+        {
+          if (functions)
+            *functions = hints->functions;
+          result = TRUE;
+        }
       
       XFree (hints);
     }
