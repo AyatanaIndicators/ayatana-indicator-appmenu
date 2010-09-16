@@ -1,3 +1,9 @@
+indicator-appmenu (0.0.11-0ubuntu3) maverick; urgency=low
+
+  * Cherry pick fix to blacklist chrome and chromium 
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Thu, 16 Sep 2010 11:31:02 -0400
+
 indicator-appmenu (0.0.11-0ubuntu2) maverick; urgency=low
 
   * Cherry pick fix for maximized windows getting closed (LP: #637108)
