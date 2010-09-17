@@ -130,6 +130,9 @@ static void build_window_menus                                       (IndicatorA
 static GList * get_entries                                           (IndicatorObject * io);
 static guint get_location                                            (IndicatorObject * io,
                                                                       IndicatorObjectEntry * entry);
+static void entry_activate                                           (IndicatorObject * io,
+                                                                      IndicatorObjectEntry * entry,
+                                                                      guint timestamp);
 static void switch_default_app                                       (IndicatorAppmenu * iapp,
                                                                       WindowMenus * newdef,
                                                                       BamfWindow * active_window);
@@ -225,6 +228,7 @@ indicator_appmenu_class_init (IndicatorAppmenuClass *klass)
 
 	ioclass->get_entries = get_entries;
 	ioclass->get_location = get_location;
+	ioclass->entry_activate = entry_activate;
 
 	signals[WINDOW_REGISTERED] =  g_signal_new("window-registered",
 	                                      G_TYPE_FROM_CLASS(klass),
@@ -737,6 +741,14 @@ get_location (IndicatorObject * io, IndicatorObjectEntry * entry)
 		}
 	}
 	return count;
+}
+
+/* Responds to a menuitem being activated on the panel. */
+static void
+entry_activate (IndicatorObject * io, IndicatorObjectEntry * entry, guint timestamp)
+{
+
+	return;
 }
 
 /* A helper for switch_default_app that takes care of the
