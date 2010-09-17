@@ -52,6 +52,7 @@ struct _WMEntry {
 	IndicatorObjectEntry ioentry;
 	gboolean disabled;
 	gboolean hidden;
+	DbusmenuMenuitem * mi;
 };
 
 #define WINDOW_MENUS_GET_PRIVATE(o) \
@@ -572,6 +573,8 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE((((gpointer *)user_data)[0]));
 	WMEntry * wmentry = g_new0(WMEntry, 1);
 	IndicatorObjectEntry * entry = &wmentry->ioentry;
+
+	wmentry->mi = newentry;
 
 	entry->label = GTK_LABEL(gtk_label_new_with_mnemonic(dbusmenu_menuitem_property_get(newentry, DBUSMENU_MENUITEM_PROP_LABEL)));
 
