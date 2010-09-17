@@ -747,6 +747,21 @@ get_location (IndicatorObject * io, IndicatorObjectEntry * entry)
 static void
 entry_activate (IndicatorObject * io, IndicatorObjectEntry * entry, guint timestamp)
 {
+	IndicatorAppmenu * iapp = INDICATOR_APPMENU(io);
+
+	if (iapp->default_app != NULL) {
+		window_menus_entry_activate(iapp->default_app, entry, timestamp);
+		return;
+	}
+
+	if (iapp->active_window == NULL) {
+		if (iapp->desktop_menu != NULL) {
+			window_menus_entry_activate(iapp->desktop_menu, entry, timestamp);
+		}
+		return;
+	}
+
+	/* Else we've got stubs, and the stubs don't care. */
 
 	return;
 }
