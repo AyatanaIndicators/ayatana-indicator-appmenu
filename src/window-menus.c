@@ -716,7 +716,7 @@ window_menus_entry_restore (WindowMenus * wm, IndicatorObjectEntry * entry)
 void
 window_menus_entry_activate (WindowMenus * wm, IndicatorObjectEntry * entry, guint timestamp)
 {
-
-
+	WMEntry * wme = (WMEntry *)entry;
+	dbusmenu_menuitem_send_about_to_show(wme->mi, NULL, NULL);
 	return;
 }
