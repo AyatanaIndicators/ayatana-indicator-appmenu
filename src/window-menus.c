@@ -707,3 +707,13 @@ window_menus_entry_restore (WindowMenus * wm, IndicatorObjectEntry * entry)
 
 	return;
 }
+
+/* Signaled when the menu item is activated on the panel so we
+   can pass it down the stack. */
+void
+window_menus_entry_activate (WindowMenus * wm, IndicatorObjectEntry * entry, guint timestamp)
+{
+
+
+	return;
+}
