@@ -326,7 +326,7 @@ item_activate (DbusmenuClient * client, DbusmenuMenuitem * item, guint timestamp
 		}
 	}
 
-	IndicatorObjectEntry * entry = &g_array_index(priv->entries, IndicatorObjectEntry, position);
+	IndicatorObjectEntry * entry = g_array_index(priv->entries, IndicatorObjectEntry *, position);
 	g_signal_emit(G_OBJECT(user_data), signals[SHOW_MENU], 0, entry, timestamp, TRUE);
 
 	return;
