@@ -1,10 +1,10 @@
-indicator-appmenu (0.0.11-0ubuntu4~ppa3~ats1) UNRELEASED; urgency=low
+indicator-appmenu (0.0.11-0ubuntu4~ppa3~ats1) maverick; urgency=low
 
   * Upstream Merge
     * Bringing in support for recieving the about to show information
       for libindicator and passing it down to dbusmenu
 
- -- Ted Gould <ted@ubuntu.com>  Sun, 19 Sep 2010 13:55:34 -0500
+ -- Ted Gould <ted@ubuntu.com>  Sun, 19 Sep 2010 13:59:09 -0500
 
 indicator-appmenu (0.0.11-0ubuntu4~ppa2) maverick; urgency=low
 
