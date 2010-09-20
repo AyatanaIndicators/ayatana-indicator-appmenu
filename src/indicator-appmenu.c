@@ -428,6 +428,7 @@ close_current (GtkMenuItem * mi, gpointer user_data)
 	            False,
 	            SubstructureRedirectMask | SubstructureNotifyMask,
 	            &xev);
+  gdk_flush ();
 	gdk_error_trap_pop ();
 
 	return;
