@@ -1,11 +1,11 @@
-indicator-appmenu (0.0.11-0ubuntu4~ppa4) UNRELEASED; urgency=low
+indicator-appmenu (0.0.11-0ubuntu4~ppa4) maverick; urgency=low
 
   * Upstream Merge
     * Handling the activate signal from libindicator (LP: #637692)
     * Building Changelog and AUTHORS from Bazaar
   * debian/control: Bumping libindicator-dev required version
 
- -- Ted Gould <ted@ubuntu.com>  Tue, 21 Sep 2010 16:25:21 -0500
+ -- Ted Gould <ted@ubuntu.com>  Tue, 21 Sep 2010 16:26:06 -0500
 
 indicator-appmenu (0.0.11-0ubuntu4~ppa3) maverick; urgency=low
 
