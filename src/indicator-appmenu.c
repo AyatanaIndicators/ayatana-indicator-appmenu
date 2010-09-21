@@ -132,6 +132,9 @@ static void build_window_menus                                       (IndicatorA
 static GList * get_entries                                           (IndicatorObject * io);
 static guint get_location                                            (IndicatorObject * io,
                                                                       IndicatorObjectEntry * entry);
+static void entry_activate                                           (IndicatorObject * io,
+                                                                      IndicatorObjectEntry * entry,
+                                                                      guint timestamp);
 static void switch_default_app                                       (IndicatorAppmenu * iapp,
                                                                       WindowMenus * newdef,
                                                                       BamfWindow * active_window);
@@ -228,6 +231,7 @@ indicator_appmenu_class_init (IndicatorAppmenuClass *klass)
 
 	ioclass->get_entries = get_entries;
 	ioclass->get_location = get_location;
+	ioclass->entry_activate = entry_activate;
 
 	signals[WINDOW_REGISTERED] =  g_signal_new("window-registered",
 	                                      G_TYPE_FROM_CLASS(klass),
@@ -801,6 +805,29 @@ get_location (IndicatorObject * io, IndicatorObjectEntry * entry)
 		}
 	}
 	return count;
+}
+
+/* Responds to a menuitem being activated on the panel. */
+static void
+entry_activate (IndicatorObject * io, IndicatorObjectEntry * entry, guint timestamp)
+{
+	IndicatorAppmenu * iapp = INDICATOR_APPMENU(io);
+
+	if (iapp->default_app != NULL) {
+		window_menus_entry_activate(iapp->default_app, entry, timestamp);
+		return;
+	}
+
+	if (iapp->active_window == NULL) {
+		if (iapp->desktop_menu != NULL) {
+			window_menus_entry_activate(iapp->desktop_menu, entry, timestamp);
+		}
+		return;
+	}
+
+	/* Else we've got stubs, and the stubs don't care. */
+
+	return;
 }
 
 /* Checks to see we cared about a window that's going
