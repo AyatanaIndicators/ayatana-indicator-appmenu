@@ -74,6 +74,8 @@ struct _IndicatorAppmenuClass {
 struct _IndicatorAppmenu {
 	IndicatorObject parent;
 
+	gulong retry_registration;
+
 	WindowMenus * default_app;
 	GHashTable * apps;
 
@@ -191,6 +193,7 @@ static gboolean _application_menu_renderer_server_dump_menu          (IndicatorA
                                                                       gchar ** jsondata,
                                                                       GError ** error);
 static GQuark error_quark                                            (void);
+static gboolean retry_registration                                   (gpointer user_data);
 
 /* Unique error codes for debug interface */
 enum {
@@ -260,6 +263,7 @@ indicator_appmenu_init (IndicatorAppmenu *self)
 	self->matcher = NULL;
 	self->active_window = NULL;
 	self->close_item = NULL;
+	self->retry_registration = 0;
 
 	/* Setup the entries for the fallbacks */
 	self->window_menus = g_array_sized_new(FALSE, FALSE, sizeof(IndicatorObjectEntry), 2);
@@ -287,22 +291,37 @@ indicator_appmenu_init (IndicatorAppmenu *self)
 	find_desktop_windows(self);
 
 	/* Register this object on DBus */
-	DBusGConnection * connection = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
-	dbus_g_connection_register_g_object(connection,
-	                                    REG_OBJECT,
-	                                    G_OBJECT(self));
+	gboolean sent_registration = FALSE;
+	GError * error = NULL;
+	DBusGConnection * connection = dbus_g_bus_get(DBUS_BUS_SESSION, &error);
+	if (connection != NULL && error == NULL) {
+		dbus_g_connection_register_g_object(connection,
+		                                    REG_OBJECT,
+		                                    G_OBJECT(self));
 
-	/* Request a name so others can find us */
-	DBusGProxy * dbus_proxy = dbus_g_proxy_new_for_name_owner(connection,
-	                                                   DBUS_SERVICE_DBUS,
-	                                                   DBUS_PATH_DBUS,
-	                                                   DBUS_INTERFACE_DBUS,
-	                                                   NULL);
-	org_freedesktop_DBus_request_name_async (dbus_proxy,
-	                                         DBUS_NAME,
-	                                         DBUS_NAME_FLAG_DO_NOT_QUEUE,
-	                                         request_name_cb,
-	                                         self);
+		/* Request a name so others can find us */
+		DBusGProxy * dbus_proxy = dbus_g_proxy_new_for_name_owner(connection,
+		                                                   DBUS_SERVICE_DBUS,
+		                                                   DBUS_PATH_DBUS,
+		                                                   DBUS_INTERFACE_DBUS,
+		                                                   NULL);
+		if (dbus_proxy != NULL) {
+			org_freedesktop_DBus_request_name_async (dbus_proxy,
+		                                         	DBUS_NAME,
+		                                         	DBUS_NAME_FLAG_DO_NOT_QUEUE,
+		                                         	request_name_cb,
+		                                         	self);
+			sent_registration = TRUE;
+		} else {
+			g_warning("Unable to get proxy to DBus daemon");
+		}
+	} else {
+		g_warning("Unable to connect to session bus");
+	}
+
+	if (!sent_registration) {
+		self->retry_registration = g_timeout_add_seconds(1, retry_registration, self);
+	}
 
 	/* Setup debug interface */
 	self->debug = g_object_new(INDICATOR_APPMENU_DEBUG_TYPE, NULL);
@@ -316,6 +335,12 @@ static void
 indicator_appmenu_dispose (GObject *object)
 {
 	IndicatorAppmenu * iapp = INDICATOR_APPMENU(object);
+
+	/* Don't register if we're dying! */
+	if (iapp->retry_registration != 0) {
+		g_source_remove(iapp->retry_registration);
+		iapp->retry_registration = 0;
+	}
 
 	/* bring down the matcher before resetting to no menu so we don't
 	   get match signals */
@@ -397,6 +422,44 @@ indicator_appmenu_debug_init (IndicatorAppmenuDebug *self)
 	return;
 }
 
+/* If we weren't able to register on the bus, then we need
+   to try it all again. */
+static gboolean
+retry_registration (gpointer user_data)
+{
+	g_return_val_if_fail(IS_INDICATOR_APPMENU(user_data), FALSE);
+	IndicatorAppmenu * iapp = INDICATOR_APPMENU(user_data);
+
+	DBusGConnection * connection = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
+	if (connection != NULL) {
+		dbus_g_connection_register_g_object(connection,
+		                                    REG_OBJECT,
+		                                    G_OBJECT(iapp));
+
+		/* Request a name so others can find us */
+		DBusGProxy * dbus_proxy = dbus_g_proxy_new_for_name_owner(connection,
+		                                                   DBUS_SERVICE_DBUS,
+		                                                   DBUS_PATH_DBUS,
+		                                                   DBUS_INTERFACE_DBUS,
+		                                                   NULL);
+		if (dbus_proxy != NULL) {
+			org_freedesktop_DBus_request_name_async (dbus_proxy,
+		                                         	DBUS_NAME,
+		                                         	DBUS_NAME_FLAG_DO_NOT_QUEUE,
+		                                         	request_name_cb,
+		                                         	iapp);
+			iapp->retry_registration = 0;
+			return FALSE;
+		} else {
+			g_warning("Unable to get proxy to DBus daemon");
+		}
+	} else {
+		g_warning("Unable to connect to session bus");
+	}
+
+	return TRUE;
+}
+
 /* Close the current application using magic */
 static void
 close_current (GtkMenuItem * mi, gpointer user_data)
@@ -432,6 +495,7 @@ close_current (GtkMenuItem * mi, gpointer user_data)
 	            False,
 	            SubstructureRedirectMask | SubstructureNotifyMask,
 	            &xev);
+  gdk_flush ();
 	gdk_error_trap_pop ();
 
 	return;
@@ -766,6 +830,31 @@ entry_activate (IndicatorObject * io, IndicatorObjectEntry * entry, guint timest
 	return;
 }
 
+/* Checks to see we cared about a window that's going
+   away, so that we can deal with that */
+static void
+window_finalized_is_active (gpointer user_data, GObject * old_window)
+{
+	g_return_if_fail(IS_INDICATOR_APPMENU(user_data));
+	IndicatorAppmenu * iapp = INDICATOR_APPMENU(user_data);
+
+	/* Pointer comparison as we can't really trust any of the
+	   pointers to do any dereferencing */
+	if ((gpointer)iapp->active_window != (gpointer)old_window) {
+		/* Ah, no issue, we weren't caring about this one
+		   anyway. */
+		return;
+	}
+
+	iapp->active_window = NULL;
+
+	/* We're going to a state where we don't know what the active
+	   window is, hopefully BAMF will save us */
+	active_window_changed (iapp->matcher, NULL, NULL, iapp);
+
+	return;
+}
+
 /* A helper for switch_default_app that takes care of the
    switching of the active window variable */
 static void
@@ -775,7 +864,12 @@ switch_active_window (IndicatorAppmenu * iapp, BamfWindow * active_window)
 		return;
 	}
 
+	if (iapp->active_window != NULL) {
+		g_object_weak_unref(G_OBJECT(iapp->active_window), window_finalized_is_active, iapp);
+	}
+
 	iapp->active_window = active_window;
+	g_object_weak_ref(G_OBJECT(active_window), window_finalized_is_active, iapp);
 
 	if (iapp->close_item == NULL) {
 		g_warning("No close item!?!?!");
