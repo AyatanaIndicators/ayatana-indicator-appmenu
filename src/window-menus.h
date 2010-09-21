@@ -73,6 +73,8 @@ gchar * window_menus_get_address (WindowMenus * wm);
 gboolean window_menus_get_error_state (WindowMenus * wm);
 void window_menus_entry_restore (WindowMenus * wm, IndicatorObjectEntry * entry);
 
+void window_menus_entry_activate (WindowMenus * wm, IndicatorObjectEntry * entry, guint timestamp);
+
 G_END_DECLS
 
 #endif

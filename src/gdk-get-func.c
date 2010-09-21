@@ -84,11 +84,12 @@ gdk_xid_get_mwm_hints (Window window)
 {
   GdkDisplay *display;
   Atom hints_atom = None;
-  guchar *data;
+  guchar *data = NULL;
   Atom type;
   gint format;
   gulong nitems;
   gulong bytes_after;
+  int ret = 0;
   
   display = gdk_display_get_default ();
   
@@ -100,7 +101,11 @@ gdk_xid_get_mwm_hints (Window window)
 		      False, AnyPropertyType, &type, &format, &nitems,
 		      &bytes_after, &data);
   gdk_flush ();
-  gdk_error_trap_pop ();
+  if ((ret = gdk_error_trap_pop ()))
+    {
+      g_warning ("%s: Unable to get hints for %u: Error Code: %d", G_STRFUNC, (guint32)window, ret);
+      return NULL;
+    }
 
   if (type == None)
     return NULL;
