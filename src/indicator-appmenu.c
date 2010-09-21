@@ -491,6 +491,7 @@ close_current (GtkMenuItem * mi, gpointer user_data)
 	            False,
 	            SubstructureRedirectMask | SubstructureNotifyMask,
 	            &xev);
+  gdk_flush ();
 	gdk_error_trap_pop ();
 
 	return;
@@ -802,6 +803,31 @@ get_location (IndicatorObject * io, IndicatorObjectEntry * entry)
 	return count;
 }
 
+/* Checks to see we cared about a window that's going
+   away, so that we can deal with that */
+static void
+window_finalized_is_active (gpointer user_data, GObject * old_window)
+{
+	g_return_if_fail(IS_INDICATOR_APPMENU(user_data));
+	IndicatorAppmenu * iapp = INDICATOR_APPMENU(user_data);
+
+	/* Pointer comparison as we can't really trust any of the
+	   pointers to do any dereferencing */
+	if ((gpointer)iapp->active_window != (gpointer)old_window) {
+		/* Ah, no issue, we weren't caring about this one
+		   anyway. */
+		return;
+	}
+
+	iapp->active_window = NULL;
+
+	/* We're going to a state where we don't know what the active
+	   window is, hopefully BAMF will save us */
+	active_window_changed (iapp->matcher, NULL, NULL, iapp);
+
+	return;
+}
+
 /* A helper for switch_default_app that takes care of the
    switching of the active window variable */
 static void
@@ -811,7 +837,12 @@ switch_active_window (IndicatorAppmenu * iapp, BamfWindow * active_window)
 		return;
 	}
 
+	if (iapp->active_window != NULL) {
+		g_object_weak_unref(G_OBJECT(iapp->active_window), window_finalized_is_active, iapp);
+	}
+
 	iapp->active_window = active_window;
+	g_object_weak_ref(G_OBJECT(active_window), window_finalized_is_active, iapp);
 
 	if (iapp->close_item == NULL) {
 		g_warning("No close item!?!?!");

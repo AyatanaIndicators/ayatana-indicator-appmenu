@@ -94,10 +94,13 @@ gdk_xid_get_mwm_hints (Window window)
   
   hints_atom = gdk_x11_get_xatom_by_name_for_display (display, _XA_MOTIF_WM_HINTS);
 
+  gdk_error_trap_push ();
   XGetWindowProperty (GDK_DISPLAY_XDISPLAY (display), window,
 		      hints_atom, 0, sizeof (MotifWmHints)/sizeof (long),
 		      False, AnyPropertyType, &type, &format, &nitems,
 		      &bytes_after, &data);
+  gdk_flush ();
+  gdk_error_trap_pop ();
 
   if (type == None)
     return NULL;
