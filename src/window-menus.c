@@ -554,7 +554,7 @@ menu_prop_changed (DbusmenuMenuitem * item, const gchar * property, const GValue
 		gtk_widget_set_sensitive(GTK_WIDGET(entry->label), g_value_get_boolean(value));
 		wmentry->disabled = !g_value_get_boolean(value);
 	} else if (!g_strcmp0(property, DBUSMENU_MENUITEM_PROP_LABEL)) {
-		gtk_label_set_text(entry->label, g_value_get_string(value));
+		gtk_label_set_text_with_mnemonic(entry->label, g_value_get_string(value));
 	}
 
 	return;
