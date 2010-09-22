@@ -64,6 +64,13 @@ typedef struct _IndicatorAppmenuClass IndicatorAppmenuClass;
 typedef struct _IndicatorAppmenuDebug      IndicatorAppmenuDebug;
 typedef struct _IndicatorAppmenuDebugClass IndicatorAppmenuDebugClass;
 
+typedef enum _ActiveStubsState ActiveStubsState;
+enum _ActiveStubsState {
+	STUBS_UNKNOWN,
+	STUBS_SHOW,
+	STUBS_HIDE
+};
+
 struct _IndicatorAppmenuClass {
 	IndicatorObjectClass parent_class;
 
@@ -81,6 +88,7 @@ struct _IndicatorAppmenu {
 
 	BamfMatcher * matcher;
 	BamfWindow * active_window;
+	ActiveStubsState active_stubs;
 
 	gulong sig_entry_added;
 	gulong sig_entry_removed;
@@ -262,6 +270,7 @@ indicator_appmenu_init (IndicatorAppmenu *self)
 	self->apps = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_object_unref);
 	self->matcher = NULL;
 	self->active_window = NULL;
+	self->active_stubs = STUBS_UNKNOWN;
 	self->close_item = NULL;
 	self->retry_registration = 0;
 
@@ -757,15 +766,23 @@ get_entries (IndicatorObject * io)
 
 	/* Oh, now we're looking at stubs. */
 
-	BamfApplication * app = bamf_matcher_get_application_for_window(iapp->matcher, iapp->active_window);
-	if (app != NULL) {
-		/* First check to see if we can find an app, then if we can
-		   check to see if it has an opinion on whether we should
-		   show the stubs or not. */
-		if (show_menu_stubs(app) == FALSE) {
-			/* If it blocks them, fall out. */
-			return NULL;
+	if (iapp->active_stubs == STUBS_UNKNOWN) {
+		iapp->active_stubs = STUBS_SHOW;
+
+		BamfApplication * app = bamf_matcher_get_application_for_window(iapp->matcher, iapp->active_window);
+		if (app != NULL) {
+			/* First check to see if we can find an app, then if we can
+			   check to see if it has an opinion on whether we should
+			   show the stubs or not. */
+			if (show_menu_stubs(app) == FALSE) {
+				/* If it blocks them, fall out. */
+				iapp->active_stubs = STUBS_HIDE;
+			}
 		}
+	}
+
+	if (iapp->active_stubs == STUBS_HIDE) {
+		return NULL;
 	}
 
 	GList * output = NULL;
@@ -867,6 +884,7 @@ switch_active_window (IndicatorAppmenu * iapp, BamfWindow * active_window)
 	}
 
 	iapp->active_window = active_window;
+	iapp->active_stubs = STUBS_UNKNOWN;
 
 	if (active_window != NULL) {
 		g_object_weak_ref(G_OBJECT(active_window), window_finalized_is_active, iapp);
