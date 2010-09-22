@@ -879,7 +879,7 @@ switch_active_window (IndicatorAppmenu * iapp, BamfWindow * active_window)
 	gtk_widget_set_sensitive(GTK_WIDGET(iapp->close_item), FALSE);
 
 	guint xid = bamf_window_get_xid(iapp->active_window);
-	if (xid == 0 || bamf_view_is_closed (BAMF_VIEW (iapp->active_window)) {
+	if (xid == 0 || bamf_view_is_closed (BAMF_VIEW (iapp->active_window))) {
 		return;
 	}
  
