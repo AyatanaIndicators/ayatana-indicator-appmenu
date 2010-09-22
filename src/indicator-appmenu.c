@@ -869,7 +869,10 @@ switch_active_window (IndicatorAppmenu * iapp, BamfWindow * active_window)
 	}
 
 	iapp->active_window = active_window;
-	g_object_weak_ref(G_OBJECT(active_window), window_finalized_is_active, iapp);
+
+	if (active_window != NULL) {
+		g_object_weak_ref(G_OBJECT(active_window), window_finalized_is_active, iapp);
+	}
 
 	if (iapp->close_item == NULL) {
 		g_warning("No close item!?!?!");
@@ -877,6 +880,10 @@ switch_active_window (IndicatorAppmenu * iapp, BamfWindow * active_window)
 	}
 
 	gtk_widget_set_sensitive(GTK_WIDGET(iapp->close_item), FALSE);
+
+	if (iapp->active_window == NULL) {
+		return;
+	}
 
 	guint xid = bamf_window_get_xid(iapp->active_window);
 	if (xid == 0 || bamf_view_is_closed (BAMF_VIEW (iapp->active_window))) {
