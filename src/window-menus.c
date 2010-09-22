@@ -52,6 +52,7 @@ struct _WMEntry {
 	IndicatorObjectEntry ioentry;
 	gboolean disabled;
 	gboolean hidden;
+	DbusmenuMenuitem * mi;
 };
 
 #define WINDOW_MENUS_GET_PRIVATE(o) \
@@ -326,7 +327,7 @@ item_activate (DbusmenuClient * client, DbusmenuMenuitem * item, guint timestamp
 		}
 	}
 
-	IndicatorObjectEntry * entry = &g_array_index(priv->entries, IndicatorObjectEntry, position);
+	IndicatorObjectEntry * entry = g_array_index(priv->entries, IndicatorObjectEntry *, position);
 	g_signal_emit(G_OBJECT(user_data), signals[SHOW_MENU], 0, entry, timestamp, TRUE);
 
 	return;
@@ -554,7 +555,7 @@ menu_prop_changed (DbusmenuMenuitem * item, const gchar * property, const GValue
 		gtk_widget_set_sensitive(GTK_WIDGET(entry->label), g_value_get_boolean(value));
 		wmentry->disabled = !g_value_get_boolean(value);
 	} else if (!g_strcmp0(property, DBUSMENU_MENUITEM_PROP_LABEL)) {
-		gtk_label_set_text(entry->label, g_value_get_string(value));
+		gtk_label_set_text_with_mnemonic(entry->label, g_value_get_string(value));
 	}
 
 	return;
@@ -572,6 +573,8 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE((((gpointer *)user_data)[0]));
 	WMEntry * wmentry = g_new0(WMEntry, 1);
 	IndicatorObjectEntry * entry = &wmentry->ioentry;
+
+	wmentry->mi = newentry;
 
 	entry->label = GTK_LABEL(gtk_label_new_with_mnemonic(dbusmenu_menuitem_property_get(newentry, DBUSMENU_MENUITEM_PROP_LABEL)));
 
@@ -705,5 +708,15 @@ window_menus_entry_restore (WindowMenus * wm, IndicatorObjectEntry * entry)
 		}
 	}
 
+	return;
+}
+
+/* Signaled when the menu item is activated on the panel so we
+   can pass it down the stack. */
+void
+window_menus_entry_activate (WindowMenus * wm, IndicatorObjectEntry * entry, guint timestamp)
+{
+	WMEntry * wme = (WMEntry *)entry;
+	dbusmenu_menuitem_send_about_to_show(wme->mi, NULL, NULL);
 	return;
 }
