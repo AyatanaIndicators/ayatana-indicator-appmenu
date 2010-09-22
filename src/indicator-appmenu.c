@@ -1057,7 +1057,11 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 	   newwindow variable.  Which means we stay where we were
 	   but get the menus from parents. */
 	g_debug("Switching to menus from XID %d", xid);
-	switch_default_app(appmenu, menus, BAMF_WINDOW(newview));
+	if (newview != NULL) {
+		switch_default_app(appmenu, menus, BAMF_WINDOW(newview));
+	} else {
+		switch_default_app(appmenu, menus, NULL);
+	}
 
 	return;
 }
