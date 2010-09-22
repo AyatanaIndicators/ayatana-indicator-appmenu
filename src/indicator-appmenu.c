@@ -846,8 +846,6 @@ window_finalized_is_active (gpointer user_data, GObject * old_window)
 		return;
 	}
 
-	iapp->active_window = NULL;
-
 	/* We're going to a state where we don't know what the active
 	   window is, hopefully BAMF will save us */
 	active_window_changed (iapp->matcher, NULL, NULL, iapp);
