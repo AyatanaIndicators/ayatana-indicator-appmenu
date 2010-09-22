@@ -466,8 +466,8 @@ close_current (GtkMenuItem * mi, gpointer user_data)
 {
 	IndicatorAppmenu * iapp = INDICATOR_APPMENU(user_data);
 
-	if (iapp->active_window == NULL) {
-		g_warning("Can't close a window we don't have.  NULL not cool.");
+	if (!BAMF_IS_WINDOW (iapp->active_window) || bamf_view_is_closed (BAMF_VIEW (iapp->active_window))) {
+		g_warning("Can't close a window we don't have. Window is either non-existent or recently closed.");
 		return;
 	}
 
@@ -879,7 +879,7 @@ switch_active_window (IndicatorAppmenu * iapp, BamfWindow * active_window)
 	gtk_widget_set_sensitive(GTK_WIDGET(iapp->close_item), FALSE);
 
 	guint xid = bamf_window_get_xid(iapp->active_window);
-	if (xid == 0) {
+	if (xid == 0 || bamf_view_is_closed (BAMF_VIEW (iapp->active_window))) {
 		return;
 	}
  
