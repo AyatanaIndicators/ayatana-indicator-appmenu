@@ -1,11 +1,17 @@
-indicator-appmenu (0.0.12-0ubuntu1) UNRELEASED; urgency=low
+indicator-appmenu (0.0.12-0ubuntu2) UNRELEASED; urgency=low
 
   * New upstream realease:
     - Fix Action for top-level dropdown menu item not activated (LP: #637692)
   * debian/control:
-    - debian/control: depends on latest libindicator-dev for ABI change
+    - depends on latest libindicator-dev for ABI change
+    - depends on latest bamf with distro patch
+  * debian/rules:
+    - add a patch system
+  * debian/patches/01_bzr_fix_race_condition.patch:
+    - This patch ensures that windows which are already closed according to bamf
+      are not passed on for processing in mutter. (Jason Smith) (LP: #645355)
 
- -- Didier Roche <didrocks@ubuntu.com>  Wed, 22 Sep 2010 14:30:30 +0200
+ -- Didier Roche <didrocks@ubuntu.com>  Wed, 22 Sep 2010 18:52:36 +0200
 
 indicator-appmenu (0.0.11-0ubuntu3) maverick; urgency=low
 
