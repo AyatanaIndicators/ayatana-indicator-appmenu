@@ -26,45 +26,6 @@ indicator-appmenu (0.0.12-0ubuntu1) maverick; urgency=low
 
  -- Didier Roche <didrocks@ubuntu.com>  Wed, 22 Sep 2010 20:09:47 +0200
 
-indicator-appmenu (0.0.11-0ubuntu4~ppa5) maverick; urgency=low
-
-  * Upstream Merge
-    * mnemonic fix for KDE apps
-
- -- Ted Gould <ted@ubuntu.com>  Tue, 21 Sep 2010 16:38:51 -0500
-
-indicator-appmenu (0.0.11-0ubuntu4~ppa4) maverick; urgency=low
-
-  * Upstream Merge
-    * Handling the activate signal from libindicator (LP: #637692)
-    * Building Changelog and AUTHORS from Bazaar
-  * debian/control: Bumping libindicator-dev required version
-
- -- Ted Gould <ted@ubuntu.com>  Tue, 21 Sep 2010 16:26:06 -0500
-
-indicator-appmenu (0.0.11-0ubuntu4~ppa3) maverick; urgency=low
-
-  * Upstream Merge
-    * Making better dbus session bus error handling
-    * Fix X error handling
-    * Weak ref on the BAMF active window incase it dies
-
- -- Ted Gould <ted@ubuntu.com>  Tue, 21 Sep 2010 09:49:25 -0500
-
-indicator-appmenu (0.0.11-0ubuntu4~ppa2) maverick; urgency=low
-
-  * Upstream Merge
-    * Fixing a data type
-
- -- Ted Gould <ted@ubuntu.com>  Sun, 19 Sep 2010 13:54:44 -0500
-
-indicator-appmenu (0.0.11-0ubuntu4~ppa1) maverick; urgency=low
-
-  * Upstream Merge
-    * Syncing to trunk
-
- -- Ted Gould <ted@ubuntu.com>  Thu, 16 Sep 2010 13:55:01 -0500
-
 indicator-appmenu (0.0.11-0ubuntu3) maverick; urgency=low
 
   * Cherry pick fix to blacklist chrome and chromium 
