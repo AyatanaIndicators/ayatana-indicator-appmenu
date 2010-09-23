@@ -514,7 +514,7 @@ close_current (GtkMenuItem * mi, gpointer user_data)
 static void
 build_window_menus (IndicatorAppmenu * iapp)
 {
-	IndicatorObjectEntry entries[2] = {{0}, {0}};
+	IndicatorObjectEntry entries[1] = {{0}};
 	GtkAccelGroup * agroup = gtk_accel_group_new();
 	GtkMenuItem * mi = NULL;
 	GtkStockItem stockitem;
@@ -540,65 +540,8 @@ build_window_menus (IndicatorAppmenu * iapp)
 
 	gtk_widget_show(GTK_WIDGET(entries[0].menu));
 
-	/* Edit Menu */
-	if (!gtk_stock_lookup(GTK_STOCK_EDIT, &stockitem)) {
-		g_warning("Unable to find the edit menu stock item");
-		stockitem.label = "_Edit";
-	}
-	entries[1].label = GTK_LABEL(gtk_label_new_with_mnemonic(stockitem.label));
-	g_object_ref(G_OBJECT(entries[1].label));
-	gtk_widget_show(GTK_WIDGET(entries[1].label));
-
-	entries[1].menu = GTK_MENU(gtk_menu_new());
-	g_object_ref(G_OBJECT(entries[1].menu));
-
-	mi = GTK_MENU_ITEM(gtk_image_menu_item_new_from_stock(GTK_STOCK_UNDO, agroup));
-	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
-	gtk_widget_show(GTK_WIDGET(mi));
-	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
-
-	mi = GTK_MENU_ITEM(gtk_image_menu_item_new_from_stock(GTK_STOCK_REDO, agroup));
-	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
-	gtk_widget_show(GTK_WIDGET(mi));
-	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
-
-	mi = GTK_MENU_ITEM(gtk_separator_menu_item_new());
-	gtk_widget_show(GTK_WIDGET(mi));
-	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
-
-	mi = GTK_MENU_ITEM(gtk_image_menu_item_new_from_stock(GTK_STOCK_CUT, agroup));
-	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
-	gtk_widget_show(GTK_WIDGET(mi));
-	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
-
-	mi = GTK_MENU_ITEM(gtk_image_menu_item_new_from_stock(GTK_STOCK_COPY, agroup));
-	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
-	gtk_widget_show(GTK_WIDGET(mi));
-	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
-
-	mi = GTK_MENU_ITEM(gtk_image_menu_item_new_from_stock(GTK_STOCK_PASTE, agroup));
-	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
-	gtk_widget_show(GTK_WIDGET(mi));
-	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
-
-	mi = GTK_MENU_ITEM(gtk_image_menu_item_new_from_stock(GTK_STOCK_DELETE, agroup));
-	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
-	gtk_widget_show(GTK_WIDGET(mi));
-	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
-
-	mi = GTK_MENU_ITEM(gtk_separator_menu_item_new());
-	gtk_widget_show(GTK_WIDGET(mi));
-	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
-
-	mi = GTK_MENU_ITEM(gtk_image_menu_item_new_from_stock(GTK_STOCK_SELECT_ALL, agroup));
-	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
-	gtk_widget_show(GTK_WIDGET(mi));
-	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
-
-	gtk_widget_show(GTK_WIDGET(entries[1].menu));
-
 	/* Copy the entries on the stack into the array */
-	g_array_insert_vals(iapp->window_menus, 0, entries, 2);
+	g_array_insert_vals(iapp->window_menus, 0, entries, 1);
 
 	return;
 }
