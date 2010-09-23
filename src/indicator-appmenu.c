@@ -64,6 +64,13 @@ typedef struct _IndicatorAppmenuClass IndicatorAppmenuClass;
 typedef struct _IndicatorAppmenuDebug      IndicatorAppmenuDebug;
 typedef struct _IndicatorAppmenuDebugClass IndicatorAppmenuDebugClass;
 
+typedef enum _ActiveStubsState ActiveStubsState;
+enum _ActiveStubsState {
+	STUBS_UNKNOWN,
+	STUBS_SHOW,
+	STUBS_HIDE
+};
+
 struct _IndicatorAppmenuClass {
 	IndicatorObjectClass parent_class;
 
@@ -81,6 +88,7 @@ struct _IndicatorAppmenu {
 
 	BamfMatcher * matcher;
 	BamfWindow * active_window;
+	ActiveStubsState active_stubs;
 
 	gulong sig_entry_added;
 	gulong sig_entry_removed;
@@ -262,6 +270,7 @@ indicator_appmenu_init (IndicatorAppmenu *self)
 	self->apps = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_object_unref);
 	self->matcher = NULL;
 	self->active_window = NULL;
+	self->active_stubs = STUBS_UNKNOWN;
 	self->close_item = NULL;
 	self->retry_registration = 0;
 
@@ -466,8 +475,8 @@ close_current (GtkMenuItem * mi, gpointer user_data)
 {
 	IndicatorAppmenu * iapp = INDICATOR_APPMENU(user_data);
 
-	if (iapp->active_window == NULL) {
-		g_warning("Can't close a window we don't have.  NULL not cool.");
+	if (!BAMF_IS_WINDOW (iapp->active_window) || bamf_view_is_closed (BAMF_VIEW (iapp->active_window))) {
+		g_warning("Can't close a window we don't have. Window is either non-existent or recently closed.");
 		return;
 	}
 
@@ -505,7 +514,7 @@ close_current (GtkMenuItem * mi, gpointer user_data)
 static void
 build_window_menus (IndicatorAppmenu * iapp)
 {
-	IndicatorObjectEntry entries[2] = {{0}, {0}};
+	IndicatorObjectEntry entries[1] = {{0}};
 	GtkAccelGroup * agroup = gtk_accel_group_new();
 	GtkMenuItem * mi = NULL;
 	GtkStockItem stockitem;
@@ -531,65 +540,8 @@ build_window_menus (IndicatorAppmenu * iapp)
 
 	gtk_widget_show(GTK_WIDGET(entries[0].menu));
 
-	/* Edit Menu */
-	if (!gtk_stock_lookup(GTK_STOCK_EDIT, &stockitem)) {
-		g_warning("Unable to find the edit menu stock item");
-		stockitem.label = "_Edit";
-	}
-	entries[1].label = GTK_LABEL(gtk_label_new_with_mnemonic(stockitem.label));
-	g_object_ref(G_OBJECT(entries[1].label));
-	gtk_widget_show(GTK_WIDGET(entries[1].label));
-
-	entries[1].menu = GTK_MENU(gtk_menu_new());
-	g_object_ref(G_OBJECT(entries[1].menu));
-
-	mi = GTK_MENU_ITEM(gtk_image_menu_item_new_from_stock(GTK_STOCK_UNDO, agroup));
-	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
-	gtk_widget_show(GTK_WIDGET(mi));
-	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
-
-	mi = GTK_MENU_ITEM(gtk_image_menu_item_new_from_stock(GTK_STOCK_REDO, agroup));
-	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
-	gtk_widget_show(GTK_WIDGET(mi));
-	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
-
-	mi = GTK_MENU_ITEM(gtk_separator_menu_item_new());
-	gtk_widget_show(GTK_WIDGET(mi));
-	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
-
-	mi = GTK_MENU_ITEM(gtk_image_menu_item_new_from_stock(GTK_STOCK_CUT, agroup));
-	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
-	gtk_widget_show(GTK_WIDGET(mi));
-	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
-
-	mi = GTK_MENU_ITEM(gtk_image_menu_item_new_from_stock(GTK_STOCK_COPY, agroup));
-	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
-	gtk_widget_show(GTK_WIDGET(mi));
-	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
-
-	mi = GTK_MENU_ITEM(gtk_image_menu_item_new_from_stock(GTK_STOCK_PASTE, agroup));
-	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
-	gtk_widget_show(GTK_WIDGET(mi));
-	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
-
-	mi = GTK_MENU_ITEM(gtk_image_menu_item_new_from_stock(GTK_STOCK_DELETE, agroup));
-	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
-	gtk_widget_show(GTK_WIDGET(mi));
-	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
-
-	mi = GTK_MENU_ITEM(gtk_separator_menu_item_new());
-	gtk_widget_show(GTK_WIDGET(mi));
-	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
-
-	mi = GTK_MENU_ITEM(gtk_image_menu_item_new_from_stock(GTK_STOCK_SELECT_ALL, agroup));
-	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
-	gtk_widget_show(GTK_WIDGET(mi));
-	gtk_menu_append(entries[1].menu, GTK_WIDGET(mi));
-
-	gtk_widget_show(GTK_WIDGET(entries[1].menu));
-
 	/* Copy the entries on the stack into the array */
-	g_array_insert_vals(iapp->window_menus, 0, entries, 2);
+	g_array_insert_vals(iapp->window_menus, 0, entries, 1);
 
 	return;
 }
@@ -702,10 +654,6 @@ const static gchar * stubs_blacklist[] = {
 	/* Blender */
 	"/usr/share/applications/blender-fullscreen.desktop",
 	"/usr/share/applications/blender-windowed.desktop",
-	/* Chrome */
-	"/usr/share/applications/chromium-browser.desktop",
-	"/opt/google/chrome/google-chrome.desktop",
-	"/usr/local/share/applications/google-chrome.desktop",
 
 	NULL
 };
@@ -757,20 +705,31 @@ get_entries (IndicatorObject * io)
 
 	/* Oh, now we're looking at stubs. */
 
-	BamfApplication * app = bamf_matcher_get_application_for_window(iapp->matcher, iapp->active_window);
-	if (app != NULL) {
-		/* First check to see if we can find an app, then if we can
-		   check to see if it has an opinion on whether we should
-		   show the stubs or not. */
-		if (show_menu_stubs(app) == FALSE) {
-			/* If it blocks them, fall out. */
-			return NULL;
+	if (iapp->active_stubs == STUBS_UNKNOWN) {
+		iapp->active_stubs = STUBS_SHOW;
+
+		BamfApplication * app = bamf_matcher_get_application_for_window(iapp->matcher, iapp->active_window);
+		if (app != NULL) {
+			/* First check to see if we can find an app, then if we can
+			   check to see if it has an opinion on whether we should
+			   show the stubs or not. */
+			if (show_menu_stubs(app) == FALSE) {
+				/* If it blocks them, fall out. */
+				iapp->active_stubs = STUBS_HIDE;
+			}
 		}
+	}
+
+	if (iapp->active_stubs == STUBS_HIDE) {
+		return NULL;
 	}
 
 	GList * output = NULL;
 	int i;
 
+	/* There is only one item in window_menus now, but there
+	   was more, and there is likely to be more in the future
+	   so we're leaving this here to avoid a possible bug. */
 	for (i = 0; i < iapp->window_menus->len; i++) {
 		output = g_list_append(output, &g_array_index(iapp->window_menus, IndicatorObjectEntry, i));
 	}
@@ -846,8 +805,6 @@ window_finalized_is_active (gpointer user_data, GObject * old_window)
 		return;
 	}
 
-	iapp->active_window = NULL;
-
 	/* We're going to a state where we don't know what the active
 	   window is, hopefully BAMF will save us */
 	active_window_changed (iapp->matcher, NULL, NULL, iapp);
@@ -869,7 +826,11 @@ switch_active_window (IndicatorAppmenu * iapp, BamfWindow * active_window)
 	}
 
 	iapp->active_window = active_window;
-	g_object_weak_ref(G_OBJECT(active_window), window_finalized_is_active, iapp);
+	iapp->active_stubs = STUBS_UNKNOWN;
+
+	if (active_window != NULL) {
+		g_object_weak_ref(G_OBJECT(active_window), window_finalized_is_active, iapp);
+	}
 
 	if (iapp->close_item == NULL) {
 		g_warning("No close item!?!?!");
@@ -878,8 +839,12 @@ switch_active_window (IndicatorAppmenu * iapp, BamfWindow * active_window)
 
 	gtk_widget_set_sensitive(GTK_WIDGET(iapp->close_item), FALSE);
 
+	if (iapp->active_window == NULL) {
+		return;
+	}
+
 	guint xid = bamf_window_get_xid(iapp->active_window);
-	if (xid == 0) {
+	if (xid == 0 || bamf_view_is_closed (BAMF_VIEW (iapp->active_window))) {
 		return;
 	}
  
@@ -1050,7 +1015,11 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 	   newwindow variable.  Which means we stay where we were
 	   but get the menus from parents. */
 	g_debug("Switching to menus from XID %d", xid);
-	switch_default_app(appmenu, menus, BAMF_WINDOW(newview));
+	if (newview != NULL) {
+		switch_default_app(appmenu, menus, BAMF_WINDOW(newview));
+	} else {
+		switch_default_app(appmenu, menus, NULL);
+	}
 
 	return;
 }
