@@ -1,4 +1,4 @@
-indicator-appmenu (0.0.12-0ubuntu2~ppa1) UNRELEASED; urgency=low
+indicator-appmenu (0.0.12-0ubuntu2~ppa1) maverick; urgency=low
 
   * Upstream Merge
     * Using the BAMF closed windows interface to detect short lived
@@ -7,7 +7,7 @@ indicator-appmenu (0.0.12-0ubuntu2~ppa1) UNRELEASED; urgency=low
   * debian/patches/01_bzr_fix_race_condition.patch: (merged upstream)
   * debian/control: Updating bamf dep to be more acurate
 
- -- Ted Gould <ted@ubuntu.com>  Thu, 23 Sep 2010 09:23:10 -0500
+ -- Ted Gould <ted@ubuntu.com>  Thu, 23 Sep 2010 09:25:05 -0500
 
 indicator-appmenu (0.0.12-0ubuntu1) maverick; urgency=low
 
