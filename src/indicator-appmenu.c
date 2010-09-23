@@ -731,6 +731,9 @@ get_entries (IndicatorObject * io)
 	GList * output = NULL;
 	int i;
 
+	/* There is only one item in window_menus now, but there
+	   was more, and there is likely to be more in the future
+	   so we're leaving this here to avoid a possible bug. */
 	for (i = 0; i < iapp->window_menus->len; i++) {
 		output = g_list_append(output, &g_array_index(iapp->window_menus, IndicatorObjectEntry, i));
 	}
