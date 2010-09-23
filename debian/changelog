@@ -2,10 +2,10 @@ indicator-appmenu (0.0.13-0ubuntu1~ppa1) maverick; urgency=low
 
   * New upstream release.
     * Using the BAMF closed windows interface to detect short lived
-      windows.
+      windows. (LP: #645355)
     * Tracking BAMF windows differently and caching stubs
-    * Droping Chrome from the blacklist of stubs
-    * Removing the Edit menu from the stubs
+    * Droping Chrome from the blacklist of stubs (LP: #646136)
+    * Removing the Edit menu from the stubs (LP: #646136)
   * debian/patches/01_bzr_fix_race_condition.patch: (merged upstream)
   * debian/control: Updating bamf dep to be more acurate
 
