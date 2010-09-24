@@ -368,6 +368,7 @@ window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * d
 	priv->client = dbusmenu_gtkclient_new((gchar *)dbus_addr, (gchar *)dbus_object);
 	GtkAccelGroup * agroup = gtk_accel_group_new();
 	dbusmenu_gtkclient_set_accel_group(priv->client, agroup);
+	g_object_unref(agroup);
 
 	g_signal_connect(G_OBJECT(priv->client), DBUSMENU_GTKCLIENT_SIGNAL_ROOT_CHANGED, G_CALLBACK(root_changed),   newmenu);
 	g_signal_connect(G_OBJECT(priv->client), DBUSMENU_CLIENT_SIGNAL_EVENT_RESULT, G_CALLBACK(event_status), newmenu);
