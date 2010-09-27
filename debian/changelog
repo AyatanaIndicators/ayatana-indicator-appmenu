@@ -1,3 +1,10 @@
+indicator-appmenu (0.0.13-0ubuntu2~ppa1) UNRELEASED; urgency=low
+
+  * Upstream Merge
+    * Add Eclipse to the blacklist (LP: #633828)
+
+ -- Ted Gould <ted@ubuntu.com>  Mon, 27 Sep 2010 12:02:59 -0500
+
 indicator-appmenu (0.0.13-0ubuntu1) maverick; urgency=low
 
   * New upstream release.
