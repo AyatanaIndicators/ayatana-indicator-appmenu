@@ -654,6 +654,8 @@ const static gchar * stubs_blacklist[] = {
 	/* Blender */
 	"/usr/share/applications/blender-fullscreen.desktop",
 	"/usr/share/applications/blender-windowed.desktop",
+	/* Eclipse */
+	"/usr/share/applications/eclipse.desktop",
 
 	NULL
 };
