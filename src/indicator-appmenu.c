@@ -535,7 +535,7 @@ build_window_menus (IndicatorAppmenu * iapp)
 	gtk_widget_set_sensitive(GTK_WIDGET(mi), FALSE);
 	g_signal_connect(G_OBJECT(mi), "activate", G_CALLBACK(close_current), iapp);
 	gtk_widget_show(GTK_WIDGET(mi));
-	gtk_menu_append(entries[0].menu, GTK_WIDGET(mi));
+	gtk_menu_shell_append(GTK_MENU_SHELL(entries[0].menu), GTK_WIDGET(mi));
 	iapp->close_item = mi;
 
 	gtk_widget_show(GTK_WIDGET(entries[0].menu));
