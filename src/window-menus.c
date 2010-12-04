@@ -317,7 +317,7 @@ item_activate (DbusmenuClient * client, DbusmenuMenuitem * item, guint timestamp
 		return;
 	}
 
-	guint position = dbusmenu_menuitem_get_position(priv->root, item);
+	guint position = dbusmenu_menuitem_get_position(item, priv->root);
 	if (position == 0) {
 		/* Ugly, ugly hack.  I shouldn't have used guint in the function
 		   above, but now I have to do this.  Ew! */
