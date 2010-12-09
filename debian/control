@@ -10,9 +10,9 @@ Build-Depends: debhelper (>= 5.0),
                scrollkeeper,
                intltool,
                libindicator-dev (>= 0.3.14),
-               libdbusmenu-gtk-dev (>= 0.3.7),
-               libdbusmenu-glib-dev (>= 0.3.7),
-               libdbusmenu-jsonloader-dev (>= 0.3.7),
+               libdbusmenu-gtk-dev (>= 0.3.90),
+               libdbusmenu-glib-dev (>= 0.3.90),
+               libdbusmenu-jsonloader-dev (>= 0.3.90),
                libbamf-dev (>= 0.2.54-0ubuntu1)
 Standards-Version: 3.8.4
 Homepage: http://launchpad.net/indicator-appmenu
