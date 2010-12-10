@@ -4,7 +4,7 @@ SUBDIRS = \
 	scripts \
 	tools
 
-DISTCHECK_CONFIGURE_FLAGS = --enable-localinstall
+DISTCHECK_CONFIGURE_FLAGS = --enable-localinstall --enable-deprecations
 
 dist-hook:
 	@if test -d "$(top_srcdir)/.bzr"; \
