@@ -1,9 +1,9 @@
-indicator-appmenu (0.0.13-0ubuntu2~ppa3) UNRELEASED; urgency=low
+indicator-appmenu (0.0.13-0ubuntu2~ppa3) natty; urgency=low
 
   * Upstream Merge
     * Fixing counting of menus for GEdit and others.
 
- -- Ted Gould <ted@ubuntu.com>  Fri, 10 Dec 2010 16:33:23 -0600
+ -- Ted Gould <ted@ubuntu.com>  Fri, 10 Dec 2010 16:34:34 -0600
 
 indicator-appmenu (0.0.13-0ubuntu2~ppa2) natty; urgency=low
 
