@@ -317,15 +317,31 @@ item_activate (DbusmenuClient * client, DbusmenuMenuitem * item, guint timestamp
 		return;
 	}
 
-	guint position = dbusmenu_menuitem_get_position(item, priv->root);
-	if (position == 0) {
-		/* Ugly, ugly hack.  I shouldn't have used guint in the function
-		   above, but now I have to do this.  Ew! */
-		GList * children = dbusmenu_menuitem_get_children(priv->root);
-		if (children == NULL || children->data != item) {
-			return;
+	GList * children = dbusmenu_menuitem_get_children(priv->root);
+	guint position = 0;
+	GList * child;
+
+	for (child = children; child != NULL; position++, child = g_list_next(child)) {
+		DbusmenuMenuitem * childmi = DBUSMENU_MENUITEM(child->data);
+
+		/* We're only putting items with children on the panel, so
+		   they're the only one with entires. */
+		if (dbusmenu_menuitem_get_children(childmi) == NULL) {
+			position--;
+			continue;
+		}
+
+		if (childmi == item) {
+			break;
 		}
 	}
+
+	/* Not found */
+	if (child == NULL) {
+		return;
+	}
+
+	g_return_if_fail(position < priv->entries->len);
 
 	IndicatorObjectEntry * entry = g_array_index(priv->entries, IndicatorObjectEntry *, position);
 	g_signal_emit(G_OBJECT(user_data), signals[SHOW_MENU], 0, entry, timestamp, TRUE);
