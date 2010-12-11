@@ -1,9 +1,9 @@
-indicator-appmenu (0.0.13-0ubuntu4) UNRELEASED; urgency=low
+indicator-appmenu (0.0.13-0ubuntu4) natty; urgency=low
 
   * debian/patches/01-shortcut-fix.patch: Fix the handling of showing
     the menus so it works with all menus in an application.
 
- -- Ted Gould <ted@ubuntu.com>  Fri, 10 Dec 2010 20:15:13 -0600
+ -- Ted Gould <ted@ubuntu.com>  Fri, 10 Dec 2010 20:17:44 -0600
 
 indicator-appmenu (0.0.13-0ubuntu3) natty; urgency=low
 
