@@ -12,7 +12,6 @@ include $(top_srcdir)/Makefile.am.marshal
 appmenulibdir = $(INDICATORDIR)
 appmenulib_LTLIBRARIES = libappmenu.la
 libappmenu_la_SOURCES = \
-	application-menu-registrar-server.h \
 	dbus-shared.h \
 	gdk-get-func.h \
 	gdk-get-func.c \
@@ -20,7 +19,11 @@ libappmenu_la_SOURCES = \
 	indicator-appmenu.c \
 	indicator-appmenu-marshal.c \
 	window-menus.c \
-	window-menus.h
+	window-menus.h \
+	gen-application-menu-renderer.xml.c \
+	gen-application-menu-renderer.xml.h \
+	gen-application-menu-registrar.xml.c \
+	gen-application-menu-registrar.xml.h
 libappmenu_la_CFLAGS = $(INDICATOR_CFLAGS) -Wall -Wl,-Bsymbolic-functions -Wl,-z,defs -Wl,--as-needed -Werror
 libappmenu_la_LIBADD = $(INDICATOR_LIBS) -lX11
 libappmenu_la_LDFLAGS = -module -avoid-version
@@ -40,23 +43,21 @@ DBUS_SPECS = \
 	application-menu-renderer.xml \
 	application-menu-registrar.xml
 
-%-client.h: %.xml
-	dbus-binding-tool \
-		--prefix=_$(notdir $(subst -,_,$(<:.xml=)))_client \
-		--mode=glib-client \
-		--output=$@ \
-		$<
+gen-%.xml.c: %.xml
+	@echo "Building $@ from $<"
+	@echo "const char * _$(subst -,_,$(subst .,_,$(basename $<))) = " > $@
+	@sed -e "s:\":\\\\\":g" -e s:^:\": -e s:\$$:\\\\n\": $< >> $@
+	@echo ";" >> $@
 
-%-server.h: %.xml
-	dbus-binding-tool \
-		--prefix=_$(notdir $(subst -,_,$(<:.xml=)))_server \
-		--mode=glib-server \
-		--output=$@ \
-		$<
+gen-%.xml.h: %.xml
+	@echo "Building $@ from $<"
+	@echo "extern const char * _$(subst -,_,$(subst .,_,$(basename $<)));" > $@
 
 BUILT_SOURCES += \
-	$(DBUS_SPECS:.xml=-client.h) \
-	$(DBUS_SPECS:.xml=-server.h)
+	gen-application-menu-renderer.xml.c \
+	gen-application-menu-renderer.xml.h \
+	gen-application-menu-registrar.xml.c \
+	gen-application-menu-registrar.xml.h
 
 CLEANFILES += $(BUILT_SOURCES)
 

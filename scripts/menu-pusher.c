@@ -20,12 +20,11 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <gtk/gtk.h>
-#include <dbus/dbus-glib.h>
+#include <gio/gio.h>
 #include <libdbusmenu-glib/menuitem.h>
 #include <libdbusmenu-glib/server.h>
 #include <libdbusmenu-gtk/menuitem.h>
 #include "../src/dbus-shared.h"
-#include "../src/application-menu-registrar-client.h"
 
 int
 main (int argv, char ** argc)
@@ -73,16 +72,18 @@ main (int argv, char ** argc)
 	dbusmenu_server_set_root(server, root);
 
 
-	DBusGConnection * session = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
-	g_return_val_if_fail(session != NULL, 1);
-
-	DBusGProxy * proxy = dbus_g_proxy_new_for_name_owner(session, DBUS_NAME, REG_OBJECT, REG_IFACE, NULL);
+	GDBusProxy * proxy = g_dbus_proxy_new_for_bus_sync(G_BUS_TYPE_SESSION,
+	                                                   G_DBUS_PROXY_FLAGS_NONE,
+	                                                   NULL, DBUS_NAME,
+	                                                   REG_OBJECT, REG_IFACE,
+	                                                   NULL, NULL);
 	g_return_val_if_fail(proxy != NULL, 1);
 
-	org_ayatana_AppMenu_Registrar_register_window(proxy, 0, "/this/is/a/long/object/path", NULL);
+	g_dbus_proxy_call_sync(proxy, "RegisterWindow",
+	                       g_variant_new("(uo)", 0, "/this/is/a/long/object/path"),
+	                       G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL);
 
 	gtk_main();
-
 
 	return 0;
 }

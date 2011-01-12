@@ -47,15 +47,15 @@ AC_CONFIG_MACRO_DIR(m4)
 ###########################
 
 GTK_REQUIRED_VERSION=2.12
+GIO_REQUIRED_VERSION=2.26
 INDICATOR_REQUIRED_VERSION=0.3.14
 DBUSMENUGTK_REQUIRED_VERSION=0.3.3
-DBUS_GLIB_REQUIRED_VERSION=0.82
 BAMF_REQUIRED_VERSION=0.2.53
 
 PKG_CHECK_MODULES(INDICATOR, gtk+-2.0 >= $GTK_REQUIRED_VERSION
+                             gio-2.0 >= $GIO_REQUIRED_VERSION
                              indicator >= $INDICATOR_REQUIRED_VERSION
-                             dbus-glib-1 >= $DBUS_GLIB_REQUIRED_VERSION
-                             dbusmenu-gtk >= $DBUSMENUGTK_REQUIRED_VERSION
+                             dbusmenu-gtk-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION
                              libbamf >= $BAMF_REQUIRED_VERSION)
 
 AC_SUBST(INDICATOR_CFLAGS)
@@ -68,7 +68,7 @@ AC_SUBST(INDICATOR_LIBS)
 DBUSMENU_JSONLOADER_REQUIRED_VERSION=0.3.3
 
 PKG_CHECK_MODULES(INDICATORTEST,
-                  dbusmenu-jsonloader >= $DBUSMENU_JSONLOADER_REQUIRED_VERSION
+                  dbusmenu-jsonloader-0.4 >= $DBUSMENU_JSONLOADER_REQUIRED_VERSION
                  )
 
 AC_SUBST(INDICATORTEST_CFLAGS)
