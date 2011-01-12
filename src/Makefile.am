@@ -24,7 +24,7 @@ libappmenu_la_SOURCES = \
 	gen-application-menu-renderer.xml.h \
 	gen-application-menu-registrar.xml.c \
 	gen-application-menu-registrar.xml.h
-libappmenu_la_CFLAGS = $(INDICATOR_CFLAGS) -Wall -Wl,-Bsymbolic-functions -Wl,-z,defs -Wl,--as-needed -Werror
+libappmenu_la_CFLAGS = $(INDICATOR_CFLAGS) -Wall -Wl,-Bsymbolic-functions -Wl,-z,defs -Wl,--as-needed -Werror -DG_LOG_DOMAIN=\"Indicator-Appmenu\"
 libappmenu_la_LIBADD = $(INDICATOR_LIBS) -lX11
 libappmenu_la_LDFLAGS = -module -avoid-version
 

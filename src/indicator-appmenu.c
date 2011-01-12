@@ -1044,7 +1044,7 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * 
 			gtk_widget_hide(GTK_WIDGET(entry->label));
 		}
 
-		if (entry->menu != NULL) {
+		if (entry->menu != NULL && gtk_menu_get_attach_widget(entry->menu) != NULL) {
 			gtk_menu_detach(entry->menu);
 		}
 
