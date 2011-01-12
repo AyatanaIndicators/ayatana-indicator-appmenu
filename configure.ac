@@ -75,6 +75,12 @@ AC_SUBST(INDICATORTEST_CFLAGS)
 AC_SUBST(INDICATORTEST_LIBS)
 
 ###########################
+# XSLT Processor
+###########################
+
+AC_PATH_PROG([XSLT_PROC], [xsltproc])
+
+###########################
 # Check to see if we're local
 ###########################
 

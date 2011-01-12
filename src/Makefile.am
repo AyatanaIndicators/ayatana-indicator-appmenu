@@ -46,7 +46,8 @@ DBUS_SPECS = \
 gen-%.xml.c: %.xml
 	@echo "Building $@ from $<"
 	@echo "const char * _$(subst -,_,$(subst .,_,$(basename $<))) = " > $@
-	@sed -e "s:\":\\\\\":g" -e s:^:\": -e s:\$$:\\\\n\": $< >> $@
+	@$(XSLT_PROC) $(srcdir)/clean-namespaces.xslt $< | \
+		sed -e "s:\":\\\\\":g" -e s:^:\": -e s:\$$:\\\\n\": >> $@
 	@echo ";" >> $@
 
 gen-%.xml.h: %.xml
@@ -61,4 +62,4 @@ BUILT_SOURCES += \
 
 CLEANFILES += $(BUILT_SOURCES)
 
-EXTRA_DIST += $(DBUS_SPECS)
+EXTRA_DIST += $(DBUS_SPECS) clean-namespaces.xslt
