@@ -1338,7 +1338,7 @@ bus_method_call (GDBusConnection * connection, const gchar * sender,
 
 	if (error != NULL) {
 		g_dbus_method_invocation_return_dbus_error(invocation,
-		                                           "org.ayatana.AppMenu.Error",
+		                                           "com.canonical.AppMenu.Error",
 		                                           error->message);
 		g_error_free(error);
 	} else {
@@ -1732,7 +1732,7 @@ dbg_bus_method_call (GDBusConnection * connection, const gchar * sender,
 
 	if (error != NULL) {
 		g_dbus_method_invocation_return_dbus_error(invocation,
-		                                           "org.ayatana.AppMenu.Error",
+		                                           "com.canonical.AppMenu.Error",
 		                                           error->message);
 		g_error_free(error);
 	} else {
