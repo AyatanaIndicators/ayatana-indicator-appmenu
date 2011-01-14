@@ -89,7 +89,9 @@ libappmenu_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am_libappmenu_la_OBJECTS = libappmenu_la-gdk-get-func.lo \
 	libappmenu_la-indicator-appmenu.lo \
 	libappmenu_la-indicator-appmenu-marshal.lo \
-	libappmenu_la-window-menus.lo
+	libappmenu_la-window-menus.lo \
+	libappmenu_la-gen-application-menu-renderer.xml.lo \
+	libappmenu_la-gen-application-menu-registrar.xml.lo
 libappmenu_la_OBJECTS = $(am_libappmenu_la_OBJECTS)
 AM_V_lt = $(am__v_lt_$(V))
 am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
@@ -205,6 +207,7 @@ SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
 VERSION = @VERSION@
+XSLT_PROC = @XSLT_PROC@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -259,9 +262,12 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 CLEANFILES = stamp-marshal $(BUILT_SOURCES)
 DISTCLEANFILES = $(marshal_h) $(marshal_c)
-BUILT_SOURCES = $(marshal_h) $(marshal_c) $(DBUS_SPECS:.xml=-client.h) \
-	$(DBUS_SPECS:.xml=-server.h)
-EXTRA_DIST = $(glib_marshal_list) $(DBUS_SPECS)
+BUILT_SOURCES = $(marshal_h) $(marshal_c) \
+	gen-application-menu-renderer.xml.c \
+	gen-application-menu-renderer.xml.h \
+	gen-application-menu-registrar.xml.c \
+	gen-application-menu-registrar.xml.h
+EXTRA_DIST = $(glib_marshal_list) $(DBUS_SPECS) clean-namespaces.xslt
 marshal_h = $(glib_marshal_list:.list=.h)
 marshal_c = $(glib_marshal_list:.list=.c)
 
@@ -271,7 +277,6 @@ marshal_c = $(glib_marshal_list:.list=.c)
 appmenulibdir = $(INDICATORDIR)
 appmenulib_LTLIBRARIES = libappmenu.la
 libappmenu_la_SOURCES = \
-	application-menu-registrar-server.h \
 	dbus-shared.h \
 	gdk-get-func.h \
 	gdk-get-func.c \
@@ -279,9 +284,13 @@ libappmenu_la_SOURCES = \
 	indicator-appmenu.c \
 	indicator-appmenu-marshal.c \
 	window-menus.c \
-	window-menus.h
+	window-menus.h \
+	gen-application-menu-renderer.xml.c \
+	gen-application-menu-renderer.xml.h \
+	gen-application-menu-registrar.xml.c \
+	gen-application-menu-registrar.xml.h
 
-libappmenu_la_CFLAGS = $(INDICATOR_CFLAGS) -Wall -Wl,-Bsymbolic-functions -Wl,-z,defs -Wl,--as-needed -Werror
+libappmenu_la_CFLAGS = $(INDICATOR_CFLAGS) -Wall -Wl,-Bsymbolic-functions -Wl,-z,defs -Wl,--as-needed -Werror -DG_LOG_DOMAIN=\"Indicator-Appmenu\"
 libappmenu_la_LIBADD = $(INDICATOR_LIBS) -lX11
 libappmenu_la_LDFLAGS = -module -avoid-version
 
@@ -374,6 +383,8 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libappmenu_la-gdk-get-func.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libappmenu_la-gen-application-menu-registrar.xml.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libappmenu_la-gen-application-menu-renderer.xml.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libappmenu_la-indicator-appmenu-marshal.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libappmenu_la-indicator-appmenu.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libappmenu_la-window-menus.Plo@am__quote@
@@ -433,6 +444,22 @@ libappmenu_la-window-menus.lo: window-menus.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='window-menus.c' object='libappmenu_la-window-menus.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libappmenu_la_CFLAGS) $(CFLAGS) -c -o libappmenu_la-window-menus.lo `test -f 'window-menus.c' || echo '$(srcdir)/'`window-menus.c
+
+libappmenu_la-gen-application-menu-renderer.xml.lo: gen-application-menu-renderer.xml.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libappmenu_la_CFLAGS) $(CFLAGS) -MT libappmenu_la-gen-application-menu-renderer.xml.lo -MD -MP -MF $(DEPDIR)/libappmenu_la-gen-application-menu-renderer.xml.Tpo -c -o libappmenu_la-gen-application-menu-renderer.xml.lo `test -f 'gen-application-menu-renderer.xml.c' || echo '$(srcdir)/'`gen-application-menu-renderer.xml.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libappmenu_la-gen-application-menu-renderer.xml.Tpo $(DEPDIR)/libappmenu_la-gen-application-menu-renderer.xml.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gen-application-menu-renderer.xml.c' object='libappmenu_la-gen-application-menu-renderer.xml.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libappmenu_la_CFLAGS) $(CFLAGS) -c -o libappmenu_la-gen-application-menu-renderer.xml.lo `test -f 'gen-application-menu-renderer.xml.c' || echo '$(srcdir)/'`gen-application-menu-renderer.xml.c
+
+libappmenu_la-gen-application-menu-registrar.xml.lo: gen-application-menu-registrar.xml.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libappmenu_la_CFLAGS) $(CFLAGS) -MT libappmenu_la-gen-application-menu-registrar.xml.lo -MD -MP -MF $(DEPDIR)/libappmenu_la-gen-application-menu-registrar.xml.Tpo -c -o libappmenu_la-gen-application-menu-registrar.xml.lo `test -f 'gen-application-menu-registrar.xml.c' || echo '$(srcdir)/'`gen-application-menu-registrar.xml.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libappmenu_la-gen-application-menu-registrar.xml.Tpo $(DEPDIR)/libappmenu_la-gen-application-menu-registrar.xml.Plo
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gen-application-menu-registrar.xml.c' object='libappmenu_la-gen-application-menu-registrar.xml.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libappmenu_la_CFLAGS) $(CFLAGS) -c -o libappmenu_la-gen-application-menu-registrar.xml.lo `test -f 'gen-application-menu-registrar.xml.c' || echo '$(srcdir)/'`gen-application-menu-registrar.xml.c
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -669,19 +696,16 @@ $(marshal_c): $(marshal_h)
 	&& cp xgen-mc $(marshal_c) \
 	&& rm -f xgen-mc
 
-%-client.h: %.xml
-	dbus-binding-tool \
-		--prefix=_$(notdir $(subst -,_,$(<:.xml=)))_client \
-		--mode=glib-client \
-		--output=$@ \
-		$<
+gen-%.xml.c: %.xml
+	@echo "Building $@ from $<"
+	@echo "const char * _$(subst -,_,$(subst .,_,$(basename $<))) = " > $@
+	@$(XSLT_PROC) $(srcdir)/clean-namespaces.xslt $< | \
+		sed -e "s:\":\\\\\":g" -e s:^:\": -e s:\$$:\\\\n\": >> $@
+	@echo ";" >> $@
 
-%-server.h: %.xml
-	dbus-binding-tool \
-		--prefix=_$(notdir $(subst -,_,$(<:.xml=)))_server \
-		--mode=glib-server \
-		--output=$@ \
-		$<
+gen-%.xml.h: %.xml
+	@echo "Building $@ from $<"
+	@echo "extern const char * _$(subst -,_,$(subst .,_,$(basename $<)));" > $@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

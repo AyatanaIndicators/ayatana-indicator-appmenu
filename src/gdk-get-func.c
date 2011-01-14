@@ -39,9 +39,7 @@
 #include <unistd.h>
 */
 #include <gdk/gdk.h>
-#include <gdk/gdkprivate.h>
 #include <gdk/gdkx.h>
-#include <gdk/gdkwindow.h>
 
 #include "MwmUtil.h"
 /*

@@ -1,11 +1,11 @@
 
-AC_INIT(indicator-appmenu, 0.0.13, ted@canonical.com)
+AC_INIT(indicator-appmenu, 0.1.90, ted@canonical.com)
 AC_COPYRIGHT([Copyright 2010 Canonical])
 
 AC_PREREQ(2.53)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(indicator-appmenu, 0.0.13)
+AM_INIT_AUTOMAKE(indicator-appmenu, 0.1.90)
 
 AM_MAINTAINER_MODE
 
@@ -25,6 +25,15 @@ AC_PATH_PROG([GLIB_GENMARSHAL], [glib-genmarshal])
 
 PKG_PROG_PKG_CONFIG
 
+AC_ARG_ENABLE([deprecations],
+  [AS_HELP_STRING([--enable-deprecations],
+    [allow deprecated API usage @<:@default=yes@:>@])],
+  [],
+  [enable_deprecations=yes])
+AS_IF([test "x$enable_deprecations" = xno],
+  [CFLAGS="$CFLAGS -DG_DISABLE_DEPRECATED -DGDK_DISABLE_DEPRECATED -DGDK_PIXBUF_DISABLE_DEPRECATED -DGTK_DISABLE_DEPRECATED -DGSEAL_ENABLE -DGTK_DISABLE_SINGLE_INCLUDES"]
+)
+
 ###########################
 # GTK Doc
 ###########################
@@ -38,15 +47,15 @@ AC_CONFIG_MACRO_DIR(m4)
 ###########################
 
 GTK_REQUIRED_VERSION=2.12
+GIO_REQUIRED_VERSION=2.26
 INDICATOR_REQUIRED_VERSION=0.3.14
 DBUSMENUGTK_REQUIRED_VERSION=0.3.3
-DBUS_GLIB_REQUIRED_VERSION=0.82
 BAMF_REQUIRED_VERSION=0.2.53
 
 PKG_CHECK_MODULES(INDICATOR, gtk+-2.0 >= $GTK_REQUIRED_VERSION
+                             gio-2.0 >= $GIO_REQUIRED_VERSION
                              indicator >= $INDICATOR_REQUIRED_VERSION
-                             dbus-glib-1 >= $DBUS_GLIB_REQUIRED_VERSION
-                             dbusmenu-gtk >= $DBUSMENUGTK_REQUIRED_VERSION
+                             dbusmenu-gtk-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION
                              libbamf >= $BAMF_REQUIRED_VERSION)
 
 AC_SUBST(INDICATOR_CFLAGS)
@@ -59,11 +68,17 @@ AC_SUBST(INDICATOR_LIBS)
 DBUSMENU_JSONLOADER_REQUIRED_VERSION=0.3.3
 
 PKG_CHECK_MODULES(INDICATORTEST,
-                  dbusmenu-jsonloader >= $DBUSMENU_JSONLOADER_REQUIRED_VERSION
+                  dbusmenu-jsonloader-0.4 >= $DBUSMENU_JSONLOADER_REQUIRED_VERSION
                  )
 
 AC_SUBST(INDICATORTEST_CFLAGS)
 AC_SUBST(INDICATORTEST_LIBS)
+
+###########################
+# XSLT Processor
+###########################
+
+AC_PATH_PROG([XSLT_PROC], [xsltproc])
 
 ###########################
 # Check to see if we're local
