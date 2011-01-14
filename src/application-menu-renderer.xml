@@ -1,5 +1,5 @@
 <!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
-<node name="/org/ayatana/AppMenu/Renderer">
+<node name="/org/ayatana/AppMenu/Renderer" xmlns:dox="http://www.ayatana.org/dbus/dox.dtd">
 	<dox:d><![CDATA[
 	  @mainpage
 	 

@@ -22,43 +22,49 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <gtk/gtk.h>
 #include <gdk/gdkx.h>
-#include <dbus/dbus-glib.h>
+#include <gio/gio.h>
 #include <libdbusmenu-glib/server.h>
 #include <libdbusmenu-jsonloader/json-loader.h>
 
 #include "../src/dbus-shared.h"
-#include "../src/application-menu-registrar-client.h"
 
 #define MENU_PATH "/mock/json/app/menu"
 
 GtkWidget * window = NULL;
 DbusmenuServer * server = NULL;
-DBusGProxy * registrar = NULL;
+GDBusProxy * registrar = NULL;
 
 static void
-register_cb (DBusGProxy *proxy, GError *error, gpointer userdata)
+dbus_owner_change (GObject *gobject, GParamSpec *pspec, gpointer user_data)
 {
+	GDBusProxy * proxy = G_DBUS_PROXY(gobject);
+
+	gchar * owner = g_dbus_proxy_get_name_owner(proxy);
+
+	if (owner == NULL || owner[0] == '\0') {
+		/* We only care about folks coming on the bus.  Exit quickly otherwise. */
+		g_free(owner);
+		return;
+	}
+
+	if (g_strcmp0(owner, DBUS_NAME)) {
+		/* We only care about this address, reject all others. */
+		g_free(owner);
+		return;
+	}
+
+	GError * error = NULL;
+	g_dbus_proxy_call_sync(registrar, "RegisterWindow",
+	                       g_variant_new("(uo)",
+	                                     GDK_WINDOW_XID (gtk_widget_get_window (window)),
+	                                     MENU_PATH),
+	                       G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL);
 	if (error != NULL) {
 		g_warning("Unable to register: %s", error->message);
-	}
-	return;
-}
-
-static void
-dbus_owner_change (DBusGProxy * proxy, const gchar * name, const gchar * prev, const gchar * new, gpointer data)
-{
-	if (new == NULL || new[0] == '\0') {
-		/* We only care about folks coming on the bus.  Exit quickly otherwise. */
-		return;
+		g_error_free(error);
 	}
 
-	if (g_strcmp0(name, DBUS_NAME)) {
-		/* We only care about this address, reject all others. */
-		return;
-	}
-
-	org_ayatana_AppMenu_Registrar_register_window_async(registrar, GDK_WINDOW_XID (gtk_widget_get_window (window)), MENU_PATH, register_cb, NULL);
-
+	g_free(owner);
 	return;
 }
 
@@ -71,21 +77,26 @@ idle_func (gpointer user_data)
 	DbusmenuServer * server = dbusmenu_server_new(MENU_PATH);
 	dbusmenu_server_set_root(server, root);
 
-	DBusGConnection * session_bus = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
-	registrar = dbus_g_proxy_new_for_name(session_bus, DBUS_NAME, REG_OBJECT, REG_IFACE);
+	registrar = g_dbus_proxy_new_for_bus_sync(G_BUS_TYPE_SESSION,
+	                                          G_DBUS_PROXY_FLAGS_NONE,
+	                                          NULL, DBUS_NAME,
+	                                          REG_OBJECT, REG_IFACE,
+	                                          NULL, NULL);
 	g_return_val_if_fail(registrar != NULL, FALSE);
 
-	org_ayatana_AppMenu_Registrar_register_window_async(registrar, GDK_WINDOW_XID (gtk_widget_get_window (window)), MENU_PATH, register_cb, NULL);
+	GError * error = NULL;
+	g_dbus_proxy_call_sync(registrar, "RegisterWindow",
+	                       g_variant_new("(uo)",
+	                                     GDK_WINDOW_XID (gtk_widget_get_window (window)),
+	                                     MENU_PATH),
+	                       G_DBUS_CALL_FLAGS_NONE, -1, NULL, &error);
+	if (error != NULL) {
+		g_warning("Unable to register: %s", error->message);
+		g_error_free(error);
+	}
 
-	DBusGProxy * dbus_proxy = dbus_g_proxy_new_for_name(session_bus,
-		                                                DBUS_SERVICE_DBUS,
-		                                                DBUS_PATH_DBUS,
-		                                                DBUS_INTERFACE_DBUS);
-	dbus_g_proxy_add_signal(dbus_proxy, "NameOwnerChanged",
-	                        G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING,
-	                        G_TYPE_INVALID);
-	dbus_g_proxy_connect_signal(dbus_proxy, "NameOwnerChanged",
-	                            G_CALLBACK(dbus_owner_change), NULL, NULL);
+	g_signal_connect(registrar, "notify::g-name-owner",
+	                 G_CALLBACK(dbus_owner_change), NULL);
 
 	return FALSE;
 }

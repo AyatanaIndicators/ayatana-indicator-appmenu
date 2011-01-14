@@ -24,8 +24,8 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #endif
 
 #include <libdbusmenu-gtk/menu.h>
-#include <dbus/dbus-glib.h>
 #include <glib.h>
+#include <gio/gio.h>
 
 #include "window-menus.h"
 #include "indicator-appmenu-marshal.h"
@@ -37,13 +37,14 @@ struct _WindowMenusPrivate {
 	guint windowid;
 	DbusmenuGtkClient * client;
 	DbusmenuMenuitem * root;
-	DBusGProxy * props;
+	GCancellable * props_cancel;
+	GDBusProxy * props;
 	GArray * entries;
 	gboolean error_state;
 	guint   retry_timer;
 	gint    retry_id;
 	gchar * retry_name;
-	GValue  retry_data;
+	GVariant * retry_data;
 	guint   retry_timestamp;
 };
 
@@ -77,12 +78,13 @@ static void window_menus_class_init (WindowMenusClass *klass);
 static void window_menus_init       (WindowMenus *self);
 static void window_menus_dispose    (GObject *object);
 static void window_menus_finalize   (GObject *object);
-static void properties_destroyed    (GObject * object, gpointer user_data);
+static void name_owner_changed      (GObject * gobject, GParamSpec * pspec, gpointer user_data);
 static void root_changed            (DbusmenuClient * client, DbusmenuMenuitem * new_root, gpointer user_data);
 static void menu_entry_added        (DbusmenuMenuitem * root, DbusmenuMenuitem * newentry, guint position, gpointer user_data);
 static void menu_entry_removed      (DbusmenuMenuitem * root, DbusmenuMenuitem * oldentry, gpointer user_data);
 static void menu_entry_realized     (DbusmenuMenuitem * newentry, gpointer user_data);
 static void menu_child_realized     (DbusmenuMenuitem * child, gpointer user_data);
+static void props_cb (GObject * object, GAsyncResult * res, gpointer user_data);
 
 G_DEFINE_TYPE (WindowMenus, window_menus, G_TYPE_OBJECT);
 
@@ -144,6 +146,7 @@ window_menus_init (WindowMenus *self)
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(self);
 
 	priv->client = NULL;
+	priv->props_cancel = NULL;
 	priv->props = NULL;
 	priv->root = NULL;
 	priv->error_state = FALSE;
@@ -176,11 +179,17 @@ window_menus_dispose (GObject *object)
 		priv->props = NULL;
 	}
 
+	if (priv->props_cancel != NULL) {
+		g_cancellable_cancel(priv->props_cancel);
+		g_object_unref(priv->props_cancel);
+		priv->props_cancel = NULL;
+	}
+
 	if (priv->retry_timer != 0) {
 		g_source_remove(priv->retry_timer);
 		priv->retry_timer = 0;
-		g_value_unset(&priv->retry_data);
-		g_value_reset(&priv->retry_data);
+		g_variant_unref(priv->retry_data);
+		priv->retry_data = NULL;
 		g_free(priv->retry_name);
 		priv->retry_name = NULL;
 	}
@@ -227,11 +236,11 @@ retry_event (gpointer user_data)
 	g_return_val_if_fail(IS_WINDOW_MENUS(user_data), FALSE);
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
 
-	dbusmenu_client_send_event(DBUSMENU_CLIENT(priv->client), priv->retry_id, priv->retry_name, &priv->retry_data, priv->retry_timestamp);
+	dbusmenu_client_send_event(DBUSMENU_CLIENT(priv->client), priv->retry_id, priv->retry_name, priv->retry_data, priv->retry_timestamp);
 
 	priv->retry_timer = 0;
-	g_value_unset(&priv->retry_data);
-	g_value_reset(&priv->retry_data);
+	g_variant_unref(priv->retry_data);
+	priv->retry_data = NULL;
 	g_free(priv->retry_name);
 	priv->retry_name = NULL;
 
@@ -240,7 +249,7 @@ retry_event (gpointer user_data)
 
 /* Listen to whether our events are successfully sent */
 static void
-event_status (DbusmenuClient * client, DbusmenuMenuitem * mi, gchar * event, GValue * evdata, guint timestamp, GError * error, gpointer user_data)
+event_status (DbusmenuClient * client, DbusmenuMenuitem * mi, gchar * event, GVariant * evdata, guint timestamp, GError * error, gpointer user_data)
 {
 	g_return_if_fail(IS_WINDOW_MENUS(user_data));
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
@@ -266,8 +275,8 @@ event_status (DbusmenuClient * client, DbusmenuMenuitem * mi, gchar * event, GVa
 		if (priv->retry_timer != 0) {
 			g_source_remove(priv->retry_timer);
 			priv->retry_timer = 0;
-			g_value_unset(&priv->retry_data);
-			g_value_reset(&priv->retry_data);
+			g_variant_unref(priv->retry_data);
+			priv->retry_data = NULL;
 			g_free(priv->retry_name);
 			priv->retry_name = NULL;
 		}
@@ -297,8 +306,7 @@ event_status (DbusmenuClient * client, DbusmenuMenuitem * mi, gchar * event, GVa
 
 		priv->retry_id = dbusmenu_menuitem_get_id(mi);
 		priv->retry_name = g_strdup(event);
-		g_value_init(&priv->retry_data, G_VALUE_TYPE(evdata));
-		g_value_copy(evdata, &priv->retry_data);
+		priv->retry_data = g_variant_ref(evdata);
 		priv->retry_timestamp = timestamp;
 	}
 
@@ -360,26 +368,22 @@ window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * d
 	g_return_val_if_fail(dbus_addr != NULL, NULL);
 	g_return_val_if_fail(dbus_object != NULL, NULL);
 
-	DBusGConnection * session_bus = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
-	g_return_val_if_fail(session_bus != NULL, NULL);
-
 	WindowMenus * newmenu = WINDOW_MENUS(g_object_new(WINDOW_MENUS_TYPE, NULL));
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(newmenu);
 
 	priv->windowid = windowid;
 
-	priv->props = dbus_g_proxy_new_for_name_owner(session_bus,
-	                                              dbus_addr,
-	                                              dbus_object,
-	                                              DBUS_INTERFACE_PROPERTIES,
-	                                              NULL);
-	if (priv->props == NULL) {
-		g_warning("Unable to get property proxy on '%s' object '%s'", dbus_addr, dbus_object);
-		g_object_unref(newmenu);
-		return NULL;
-	}
-
-	g_signal_connect(G_OBJECT(priv->props), "destroy", G_CALLBACK(properties_destroyed), newmenu);
+	/* Build the service proxy */
+	priv->props_cancel = g_cancellable_new();
+	g_dbus_proxy_new_for_bus(G_BUS_TYPE_SESSION,
+			         G_DBUS_PROXY_FLAGS_NONE,
+			         NULL,
+	                         dbus_addr,
+	                         dbus_object,
+	                         "org.freedesktop.DBus.Properties",
+			         priv->props_cancel,
+			         props_cb,
+		                 newmenu);
 
 	priv->client = dbusmenu_gtkclient_new((gchar *)dbus_addr, (gchar *)dbus_object);
 	GtkAccelGroup * agroup = gtk_accel_group_new();
@@ -398,17 +402,57 @@ window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * d
 	return newmenu;
 }
 
-/* Respond to the proxies getting destoryed.  I means that we need
-   to kill ourselves. */
+/* Callback from trying to create the proxy for the service, this
+   could include starting the service. */
 static void
-properties_destroyed (GObject * object, gpointer user_data)
+props_cb (GObject * object, GAsyncResult * res, gpointer user_data)
+{
+	GError * error = NULL;
+
+	WindowMenus * self = WINDOW_MENUS(user_data);
+	g_return_if_fail(self != NULL);
+
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(self);
+	GDBusProxy * proxy = g_dbus_proxy_new_for_bus_finish(res, &error);
+
+	if (priv->props_cancel != NULL) {
+		g_object_unref(priv->props_cancel);
+		priv->props_cancel = NULL;
+	}
+
+	if (error != NULL) {
+		g_error("Could not grab DBus proxy for window %u: %s", priv->windowid, error->message);
+		g_error_free(error);
+		return;
+	}
+
+	/* Okay, we're good to grab the proxy at this point, we're
+	sure that it's ours. */
+	priv->props = proxy;
+
+	g_signal_connect(proxy, "notify::g-name-owner", G_CALLBACK(name_owner_changed), self);
+
+	return;
+}
+
+/* Gets called when the proxy changes owners, which is usually when it
+   drops off of the bus. */
+static void
+name_owner_changed (GObject * gobject, GParamSpec * pspec, gpointer user_data)
 {
 	WindowMenus * wm = WINDOW_MENUS(user_data);
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
+	GDBusProxy * proxy = G_DBUS_PROXY(gobject);
 
-	priv->props = NULL;
+	gchar * owner = g_dbus_proxy_get_name_owner(proxy);
+	if (owner != NULL) {
+		/* OK, carry on */
+		g_free (owner);
+		return;
+	}
+
+	/* We should die now */
 	g_debug("Properties destroyed for window: %d", priv->windowid);
-
 	g_object_unref(G_OBJECT(wm));
 	return;
 }
@@ -555,13 +599,13 @@ menu_entry_realized (DbusmenuMenuitem * newentry, gpointer user_data)
 /* Respond to properties changing on the menu item so that we can
    properly hide and show them. */
 static void
-menu_prop_changed (DbusmenuMenuitem * item, const gchar * property, const GValue * value, gpointer user_data)
+menu_prop_changed (DbusmenuMenuitem * item, const gchar * property, GVariant * value, gpointer user_data)
 {
 	IndicatorObjectEntry * entry = (IndicatorObjectEntry *)user_data;
 	WMEntry * wmentry = (WMEntry *)user_data;
 
 	if (!g_strcmp0(property, DBUSMENU_MENUITEM_PROP_VISIBLE)) {
-		if (g_value_get_boolean(value)) {
+		if (g_variant_get_boolean(value)) {
 			gtk_widget_show(GTK_WIDGET(entry->label));
 			wmentry->hidden = FALSE;
 		} else {
@@ -569,10 +613,10 @@ menu_prop_changed (DbusmenuMenuitem * item, const gchar * property, const GValue
 			wmentry->hidden = TRUE;
 		}
 	} else if (!g_strcmp0(property, DBUSMENU_MENUITEM_PROP_ENABLED)) {
-		gtk_widget_set_sensitive(GTK_WIDGET(entry->label), g_value_get_boolean(value));
-		wmentry->disabled = !g_value_get_boolean(value);
+		gtk_widget_set_sensitive(GTK_WIDGET(entry->label), g_variant_get_boolean(value));
+		wmentry->disabled = !g_variant_get_boolean(value);
 	} else if (!g_strcmp0(property, DBUSMENU_MENUITEM_PROP_LABEL)) {
-		gtk_label_set_text_with_mnemonic(entry->label, g_value_get_string(value));
+		gtk_label_set_text_with_mnemonic(entry->label, g_variant_get_string(value, NULL));
 	}
 
 	return;
@@ -610,7 +654,7 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 
 	g_signal_connect(G_OBJECT(newentry), DBUSMENU_MENUITEM_SIGNAL_PROPERTY_CHANGED, G_CALLBACK(menu_prop_changed), entry);
 
-	if (dbusmenu_menuitem_property_get_value(newentry, DBUSMENU_MENUITEM_PROP_VISIBLE) != NULL
+	if (dbusmenu_menuitem_property_get_variant(newentry, DBUSMENU_MENUITEM_PROP_VISIBLE) != NULL
 		&& dbusmenu_menuitem_property_get_bool(newentry, DBUSMENU_MENUITEM_PROP_VISIBLE) == FALSE) {
 		gtk_widget_hide(GTK_WIDGET(entry->label));
 		wmentry->hidden = TRUE;
@@ -619,7 +663,7 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 		wmentry->hidden = FALSE;
 	}
 
-	if (dbusmenu_menuitem_property_get_value (newentry, DBUSMENU_MENUITEM_PROP_ENABLED) != NULL) {
+	if (dbusmenu_menuitem_property_get_variant (newentry, DBUSMENU_MENUITEM_PROP_ENABLED) != NULL) {
 		gboolean sensitive = dbusmenu_menuitem_property_get_bool(newentry, DBUSMENU_MENUITEM_PROP_ENABLED);
 		gtk_widget_set_sensitive(GTK_WIDGET(entry->label), sensitive);
 		wmentry->disabled = !sensitive;
