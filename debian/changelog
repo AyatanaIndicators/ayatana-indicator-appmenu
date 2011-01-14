@@ -1,3 +1,11 @@
+indicator-appmenu (0.1.90-0ubuntu1~ppa1) UNRELEASED; urgency=low
+
+  * New upstream release.
+    * GDBus Port
+    * Migration from ayatana.org to canonical.com
+
+ -- Ted Gould <ted@ubuntu.com>  Fri, 14 Jan 2011 12:08:42 -0600
+
 indicator-appmenu (0.0.13-0ubuntu4) natty; urgency=low
 
   * debian/patches/01-shortcut-fix.patch: Fix the handling of showing

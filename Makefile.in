@@ -185,6 +185,7 @@ SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
 VERSION = @VERSION@
+XSLT_PROC = @XSLT_PROC@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -242,7 +243,7 @@ SUBDIRS = \
 	scripts \
 	tools
 
-DISTCHECK_CONFIGURE_FLAGS = --enable-localinstall
+DISTCHECK_CONFIGURE_FLAGS = --enable-localinstall --enable-deprecations
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 

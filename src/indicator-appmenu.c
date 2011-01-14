@@ -25,11 +25,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <X11/Xlib.h>
 #include <gdk/gdkx.h>
-
-#include <dbus/dbus-glib.h>
-#include <dbus/dbus-glib-bindings.h>
-#include <dbus/dbus-glib-lowlevel.h>
-#include <dbus/dbus-gtype-specialized.h>
+#include <gio/gio.h>
 
 #include <libindicator/indicator.h>
 #include <libindicator/indicator-object.h>
@@ -39,6 +35,8 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <libbamf/bamf-matcher.h>
 
+#include "gen-application-menu-registrar.xml.h"
+#include "gen-application-menu-renderer.xml.h"
 #include "indicator-appmenu-marshal.h"
 #include "window-menus.h"
 #include "dbus-shared.h"
@@ -102,6 +100,10 @@ struct _IndicatorAppmenu {
 	WindowMenus * desktop_menu;
 
 	IndicatorAppmenuDebug * debug;
+
+	GDBusConnection * bus;
+	guint owner_id;
+	guint dbus_registration;
 };
 
 
@@ -124,6 +126,9 @@ struct _IndicatorAppmenuDebugClass {
 struct _IndicatorAppmenuDebug {
 	GObject parent;
 	IndicatorAppmenu * appmenu;
+	GCancellable * bus_cancel;
+	GDBusConnection * bus;
+	guint dbus_registration;
 };
 
 
@@ -136,6 +141,7 @@ static void indicator_appmenu_dispose                                (GObject *o
 static void indicator_appmenu_finalize                               (GObject *object);
 static void indicator_appmenu_debug_class_init                       (IndicatorAppmenuDebugClass *klass);
 static void indicator_appmenu_debug_init                             (IndicatorAppmenuDebug *self);
+static void indicator_appmenu_debug_dispose                          (GObject *object);
 static void build_window_menus                                       (IndicatorAppmenu * iapp);
 static GList * get_entries                                           (IndicatorObject * io);
 static guint get_location                                            (IndicatorObject * io,
@@ -153,25 +159,6 @@ static void new_window                                               (BamfMatche
 static void old_window                                               (BamfMatcher * matcher,
                                                                       BamfView * view,
                                                                       gpointer user_data);
-static gboolean _application_menu_registrar_server_register_window   (IndicatorAppmenu * iapp,
-                                                                      guint windowid,
-                                                                      const gchar * objectpath,
-                                                                      DBusGMethodInvocation * method);
-static gboolean _application_menu_registrar_server_unregister_window (IndicatorAppmenu * iapp,
-                                                                      guint windowid,
-                                                                      GError ** error);
-static gboolean _application_menu_registrar_server_get_menu_for_window (IndicatorAppmenu * iapp,
-                                                                      guint windowid,
-                                                                      gchar ** objectpath,
-                                                                      gchar ** address,
-                                                                      GError ** error);
-static gboolean _application_menu_registrar_server_get_menus         (IndicatorAppmenu * iapp,
-                                                                      GPtrArray ** entries,
-                                                                      GError ** error);
-static void request_name_cb                                          (DBusGProxy *proxy,
-                                                                      guint result,
-                                                                      GError *error,
-                                                                      gpointer userdata);
 static void window_entry_added                                       (WindowMenus * mw,
                                                                       IndicatorObjectEntry * entry,
                                                                       gpointer user_data);
@@ -186,22 +173,36 @@ static void active_window_changed                                    (BamfMatche
                                                                       BamfView * oldview,
                                                                       BamfView * newview,
                                                                       gpointer user_data);
-static gboolean _application_menu_renderer_server_get_current_menu   (IndicatorAppmenuDebug * iappd,
-                                                                      gchar ** objectpath,
-                                                                      gchar ** address,
-                                                                      GError ** error);
-static gboolean _application_menu_renderer_server_activate_menu_item (IndicatorAppmenuDebug * iappd,
-                                                                      GArray * menulist,
-                                                                      GError ** error);
-static gboolean _application_menu_renderer_server_dump_current_menu  (IndicatorAppmenuDebug * iappd,
-                                                                      gchar ** jsondata,
-                                                                      GError ** error);
-static gboolean _application_menu_renderer_server_dump_menu          (IndicatorAppmenuDebug * iappd,
-                                                                      guint windowid,
-                                                                      gchar ** jsondata,
-                                                                      GError ** error);
 static GQuark error_quark                                            (void);
 static gboolean retry_registration                                   (gpointer user_data);
+static void bus_method_call                                          (GDBusConnection * connection,
+                                                                      const gchar * sender,
+                                                                      const gchar * path,
+                                                                      const gchar * interface,
+                                                                      const gchar * method,
+                                                                      GVariant * params,
+                                                                      GDBusMethodInvocation * invocation,
+                                                                      gpointer user_data);
+static void on_bus_acquired                                          (GDBusConnection * connection,
+                                                                      const gchar * name,
+                                                                      gpointer user_data);
+static void on_name_acquired                                         (GDBusConnection * connection,
+                                                                      const gchar * name,
+                                                                      gpointer user_data);
+static void on_name_lost                                             (GDBusConnection * connection,
+                                                                      const gchar * name,
+                                                                      gpointer user_data);
+static void dbg_bus_method_call                                      (GDBusConnection * connection,
+                                                                      const gchar * sender,
+                                                                      const gchar * path,
+                                                                      const gchar * interface,
+                                                                      const gchar * method,
+                                                                      GVariant * params,
+                                                                      GDBusMethodInvocation * invocation,
+                                                                      gpointer user_data);
+static void dbg_bus_get_cb                                           (GObject * object,
+                                                                      GAsyncResult * res,
+                                                                      gpointer user_data);
 
 /* Unique error codes for debug interface */
 enum {
@@ -213,16 +214,21 @@ enum {
 /**********************
   DBus Interfaces
  **********************/
-#include "application-menu-registrar-server.h"
-#include "application-menu-renderer-server.h"
-
-enum {
-	WINDOW_REGISTERED,
-	WINDOW_UNREGISTERED,
-	LAST_SIGNAL
+static GDBusNodeInfo *      node_info = NULL;
+static GDBusInterfaceInfo * interface_info = NULL;
+static GDBusInterfaceVTable interface_table = {
+       method_call:    bus_method_call,
+       get_property:   NULL, /* No properties */
+       set_property:   NULL  /* No properties */
 };
 
-static guint signals[LAST_SIGNAL] = { 0 };
+static GDBusNodeInfo *      dbg_node_info = NULL;
+static GDBusInterfaceInfo * dbg_interface_info = NULL;
+static GDBusInterfaceVTable dbg_interface_table = {
+       method_call:    dbg_bus_method_call,
+       get_property:   NULL, /* No properties */
+       set_property:   NULL  /* No properties */
+};
 
 G_DEFINE_TYPE (IndicatorAppmenu, indicator_appmenu, INDICATOR_OBJECT_TYPE);
 
@@ -241,22 +247,24 @@ indicator_appmenu_class_init (IndicatorAppmenuClass *klass)
 	ioclass->get_location = get_location;
 	ioclass->entry_activate = entry_activate;
 
-	signals[WINDOW_REGISTERED] =  g_signal_new("window-registered",
-	                                      G_TYPE_FROM_CLASS(klass),
-	                                      G_SIGNAL_RUN_LAST,
-	                                      G_STRUCT_OFFSET (IndicatorAppmenuClass, window_registered),
-	                                      NULL, NULL,
-	                                      _indicator_appmenu_marshal_VOID__UINT_STRING_BOXED,
-	                                      G_TYPE_NONE, 3, G_TYPE_UINT, G_TYPE_STRING, DBUS_TYPE_G_OBJECT_PATH);
-	signals[WINDOW_UNREGISTERED] =  g_signal_new("window-unregistered",
-	                                      G_TYPE_FROM_CLASS(klass),
-	                                      G_SIGNAL_RUN_LAST,
-	                                      G_STRUCT_OFFSET (IndicatorAppmenuClass, window_unregistered),
-	                                      NULL, NULL,
-	                                      _indicator_appmenu_marshal_VOID__UINT,
-	                                      G_TYPE_NONE, 1, G_TYPE_UINT);
+	/* Setting up the DBus interfaces */
+	if (node_info == NULL) {
+		GError * error = NULL;
 
-	dbus_g_object_type_install_info(INDICATOR_APPMENU_TYPE, &dbus_glib__application_menu_registrar_server_object_info);
+		node_info = g_dbus_node_info_new_for_xml(_application_menu_registrar, &error);
+		if (error != NULL) {
+			g_error("Unable to parse Application Menu Interface description: %s", error->message);
+			g_error_free(error);
+		}
+	}
+
+	if (interface_info == NULL) {
+		interface_info = g_dbus_node_info_lookup_interface(node_info, REG_IFACE);
+
+		if (interface_info == NULL) {
+			g_error("Unable to find interface '" REG_IFACE "'");
+		}
+	}
 
 	return;
 }
@@ -273,6 +281,9 @@ indicator_appmenu_init (IndicatorAppmenu *self)
 	self->active_stubs = STUBS_UNKNOWN;
 	self->close_item = NULL;
 	self->retry_registration = 0;
+	self->bus = NULL;
+	self->owner_id = 0;
+	self->dbus_registration = 0;
 
 	/* Setup the entries for the fallbacks */
 	self->window_menus = g_array_sized_new(FALSE, FALSE, sizeof(IndicatorObjectEntry), 2);
@@ -299,44 +310,90 @@ indicator_appmenu_init (IndicatorAppmenu *self)
 
 	find_desktop_windows(self);
 
-	/* Register this object on DBus */
-	gboolean sent_registration = FALSE;
-	GError * error = NULL;
-	DBusGConnection * connection = dbus_g_bus_get(DBUS_BUS_SESSION, &error);
-	if (connection != NULL && error == NULL) {
-		dbus_g_connection_register_g_object(connection,
-		                                    REG_OBJECT,
-		                                    G_OBJECT(self));
-
-		/* Request a name so others can find us */
-		DBusGProxy * dbus_proxy = dbus_g_proxy_new_for_name_owner(connection,
-		                                                   DBUS_SERVICE_DBUS,
-		                                                   DBUS_PATH_DBUS,
-		                                                   DBUS_INTERFACE_DBUS,
-		                                                   NULL);
-		if (dbus_proxy != NULL) {
-			org_freedesktop_DBus_request_name_async (dbus_proxy,
-		                                         	DBUS_NAME,
-		                                         	DBUS_NAME_FLAG_DO_NOT_QUEUE,
-		                                         	request_name_cb,
-		                                         	self);
-			sent_registration = TRUE;
-		} else {
-			g_warning("Unable to get proxy to DBus daemon");
-		}
-	} else {
-		g_warning("Unable to connect to session bus");
-	}
-
-	if (!sent_registration) {
-		self->retry_registration = g_timeout_add_seconds(1, retry_registration, self);
-	}
+	/* Request a name so others can find us */
+	retry_registration(self);
 
 	/* Setup debug interface */
 	self->debug = g_object_new(INDICATOR_APPMENU_DEBUG_TYPE, NULL);
 	self->debug->appmenu = self;
 
 	return;
+}
+
+/* If we weren't able to register on the bus, then we need
+   to try it all again. */
+static gboolean
+retry_registration (gpointer user_data)
+{
+	g_return_val_if_fail(IS_INDICATOR_APPMENU(user_data), FALSE);
+	IndicatorAppmenu * iapp = INDICATOR_APPMENU(user_data);
+
+	iapp->owner_id = g_bus_own_name (G_BUS_TYPE_SESSION,
+	                                 DBUS_NAME,
+	                                 G_BUS_NAME_OWNER_FLAGS_NONE,
+	                                 iapp->dbus_registration == 0 ? on_bus_acquired : NULL,
+	                                 on_name_acquired,
+	                                 on_name_lost,
+	                                 g_object_ref(iapp),
+	                                 g_object_unref);
+
+	return TRUE;
+}
+
+static void
+on_bus_acquired (GDBusConnection * connection, const gchar * name,
+                 gpointer user_data)
+{
+	IndicatorAppmenu * iapp = INDICATOR_APPMENU(user_data);
+	GError * error = NULL;
+
+	iapp->bus = connection;
+
+	/* Now register our object on our new connection */
+	iapp->dbus_registration = g_dbus_connection_register_object(connection,
+	                                                            REG_OBJECT,
+	                                                            interface_info,
+	                                                            &interface_table,
+	                                                            user_data,
+	                                                            NULL,
+	                                                            &error);
+
+	if (error != NULL) {
+		g_error("Unable to register the object to DBus: %s", error->message);
+		g_error_free(error);
+		g_bus_unown_name(iapp->owner_id);
+		iapp->owner_id = 0;
+		iapp->retry_registration = g_timeout_add_seconds(1, retry_registration, iapp);
+		return;
+	}
+
+	return;	
+}
+
+static void
+on_name_acquired (GDBusConnection * connection, const gchar * name,
+                  gpointer user_data)
+{
+}
+
+static void
+on_name_lost (GDBusConnection * connection, const gchar * name,
+              gpointer user_data)
+{
+	IndicatorAppmenu * iapp = INDICATOR_APPMENU(user_data);
+
+	if (connection == NULL) {
+		g_error("OMG! Unable to get a connection to DBus");
+	}
+	else {
+		g_error("Unable to claim the name %s", DBUS_NAME);
+	}
+
+	/* We can rest assured no one will register with us, but let's
+	   just ensure we're not showing anything. */
+	switch_default_app(iapp, NULL, NULL);
+
+	iapp->owner_id = 0;
 }
 
 /* Object refs decrement */
@@ -349,6 +406,22 @@ indicator_appmenu_dispose (GObject *object)
 	if (iapp->retry_registration != 0) {
 		g_source_remove(iapp->retry_registration);
 		iapp->retry_registration = 0;
+	}
+
+	if (iapp->dbus_registration != 0) {
+		g_dbus_connection_unregister_object(iapp->bus, iapp->dbus_registration);
+		/* Don't care if it fails, there's nothing we can do */
+		iapp->dbus_registration = 0;
+	}
+
+	if (iapp->bus != NULL) {
+		g_object_unref(iapp->bus);
+		iapp->bus = NULL;
+	}
+
+	if (iapp->owner_id != 0) {
+		g_bus_unown_name(iapp->owner_id);
+		iapp->owner_id = 0;
 	}
 
 	/* bring down the matcher before resetting to no menu so we don't
@@ -411,7 +484,28 @@ G_DEFINE_TYPE (IndicatorAppmenuDebug, indicator_appmenu_debug, G_TYPE_OBJECT);
 static void
 indicator_appmenu_debug_class_init (IndicatorAppmenuDebugClass *klass)
 {
-	dbus_g_object_type_install_info(INDICATOR_APPMENU_DEBUG_TYPE, &dbus_glib__application_menu_renderer_server_object_info);
+	GObjectClass *object_class = G_OBJECT_CLASS (klass);
+
+	object_class->dispose = indicator_appmenu_debug_dispose;
+
+	/* Setting up the DBus interfaces */
+	if (dbg_node_info == NULL) {
+		GError * error = NULL;
+
+		dbg_node_info = g_dbus_node_info_new_for_xml(_application_menu_renderer, &error);
+		if (error != NULL) {
+			g_error("Unable to parse Application Menu Renderer Interface description: %s", error->message);
+			g_error_free(error);
+		}
+	}
+
+	if (dbg_interface_info == NULL) {
+		dbg_interface_info = g_dbus_node_info_lookup_interface(dbg_node_info, DEBUG_IFACE);
+
+		if (dbg_interface_info == NULL) {
+			g_error("Unable to find interface '" DEBUG_IFACE "'");
+		}
+	}
 
 	return;
 }
@@ -421,52 +515,107 @@ static void
 indicator_appmenu_debug_init (IndicatorAppmenuDebug *self)
 {
 	self->appmenu = NULL;
+	self->bus_cancel = NULL;
+	self->bus = NULL;
+	self->dbus_registration = 0;
 
 	/* Register this object on DBus */
-	DBusGConnection * connection = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
-	dbus_g_connection_register_g_object(connection,
-	                                    DEBUG_OBJECT,
-	                                    G_OBJECT(self));
+	self->bus_cancel = g_cancellable_new();
+	g_bus_get(G_BUS_TYPE_SESSION,
+	          self->bus_cancel,
+	          dbg_bus_get_cb,
+	          self);
 
 	return;
 }
 
-/* If we weren't able to register on the bus, then we need
-   to try it all again. */
-static gboolean
-retry_registration (gpointer user_data)
+static void
+dbg_bus_get_cb (GObject * object, GAsyncResult * res, gpointer user_data)
 {
-	g_return_val_if_fail(IS_INDICATOR_APPMENU(user_data), FALSE);
-	IndicatorAppmenu * iapp = INDICATOR_APPMENU(user_data);
+	GError * error = NULL;
+	GDBusConnection * connection = g_bus_get_finish(res, &error);
 
-	DBusGConnection * connection = dbus_g_bus_get(DBUS_BUS_SESSION, NULL);
-	if (connection != NULL) {
-		dbus_g_connection_register_g_object(connection,
-		                                    REG_OBJECT,
-		                                    G_OBJECT(iapp));
-
-		/* Request a name so others can find us */
-		DBusGProxy * dbus_proxy = dbus_g_proxy_new_for_name_owner(connection,
-		                                                   DBUS_SERVICE_DBUS,
-		                                                   DBUS_PATH_DBUS,
-		                                                   DBUS_INTERFACE_DBUS,
-		                                                   NULL);
-		if (dbus_proxy != NULL) {
-			org_freedesktop_DBus_request_name_async (dbus_proxy,
-		                                         	DBUS_NAME,
-		                                         	DBUS_NAME_FLAG_DO_NOT_QUEUE,
-		                                         	request_name_cb,
-		                                         	iapp);
-			iapp->retry_registration = 0;
-			return FALSE;
-		} else {
-			g_warning("Unable to get proxy to DBus daemon");
-		}
-	} else {
-		g_warning("Unable to connect to session bus");
+	if (error != NULL) {
+		g_error("OMG! Unable to get a connection to DBus: %s", error->message);
+		g_error_free(error);
+		return;
 	}
 
-	return TRUE;
+	IndicatorAppmenuDebug * iappd = (IndicatorAppmenuDebug *)user_data;
+
+	g_warn_if_fail(iappd->bus == NULL);
+	iappd->bus = connection;
+
+	if (iappd->bus_cancel != NULL) {
+		g_object_unref(iappd->bus_cancel);
+		iappd->bus_cancel = NULL;
+	}
+
+	/* Now register our object on our new connection */
+	iappd->dbus_registration = g_dbus_connection_register_object(iappd->bus,
+	                                                             DEBUG_OBJECT,
+	                                                             dbg_interface_info,
+	                                                             &dbg_interface_table,
+	                                                             user_data,
+	                                                             NULL,
+	                                                             &error);
+
+	if (error != NULL) {
+		g_error("Unable to register the object to DBus: %s", error->message);
+		g_error_free(error);
+		return;
+	}
+
+	return;	
+}
+
+/* Object refs decrement */
+static void
+indicator_appmenu_debug_dispose (GObject *object)
+{
+	IndicatorAppmenuDebug * iappd = INDICATOR_APPMENU_DEBUG(object);
+
+	if (iappd->dbus_registration != 0) {
+		g_dbus_connection_unregister_object(iappd->bus, iappd->dbus_registration);
+		/* Don't care if it fails, there's nothing we can do */
+		iappd->dbus_registration = 0;
+	}
+
+	if (iappd->bus != NULL) {
+		g_object_unref(iappd->bus);
+		iappd->bus = NULL;
+	}
+
+	if (iappd->bus_cancel != NULL) {
+		g_cancellable_cancel(iappd->bus_cancel);
+		g_object_unref(iappd->bus_cancel);
+		iappd->bus_cancel = NULL;
+	}
+
+	G_OBJECT_CLASS (indicator_appmenu_debug_parent_class)->dispose (object);
+	return;
+}
+
+static void
+emit_signal (IndicatorAppmenu * iapp, const gchar * name, GVariant * variant)
+{
+	GError * error = NULL;
+
+	g_dbus_connection_emit_signal (iapp->bus,
+		                       NULL,
+		                       REG_OBJECT,
+		                       REG_IFACE,
+		                       name,
+		                       variant,
+		                       &error);
+
+	if (error != NULL) {
+		g_error("Unable to send %s signal: %s", name, error->message);
+		g_error_free(error);
+		return;
+	}
+
+	return;
 }
 
 /* Close the current application using magic */
@@ -895,7 +1044,7 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * 
 			gtk_widget_hide(GTK_WIDGET(entry->label));
 		}
 
-		if (entry->menu != NULL) {
+		if (entry->menu != NULL && gtk_menu_get_attach_widget(entry->menu) != NULL) {
 			gtk_menu_detach(entry->menu);
 		}
 
@@ -1064,10 +1213,10 @@ menus_destroyed (GObject * menus, gpointer user_data)
 }
 
 /* A new window wishes to register it's windows with us */
-static gboolean
-_application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, guint windowid, const gchar * objectpath, DBusGMethodInvocation * method)
+static GVariant *
+register_window (IndicatorAppmenu * iapp, guint windowid, const gchar * objectpath,
+                 const gchar * sender)
 {
-	const gchar * sender = dbus_g_method_get_sender(method);
 	g_debug("Registering window ID %d with path %s from %s", windowid, objectpath, sender);
 
 	if (g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid)) == NULL && windowid != 0) {
@@ -1078,7 +1227,8 @@ _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, gui
 
 		g_hash_table_insert(iapp->apps, GUINT_TO_POINTER(windowid), wm);
 
-		g_signal_emit(G_OBJECT(iapp), signals[WINDOW_REGISTERED], 0, windowid, sender, objectpath, TRUE);
+		emit_signal(iapp, "WindowRegistered",
+		            g_variant_new("(uso)", windowid, sender, objectpath));
 
 		gpointer pdesktop = g_hash_table_lookup(iapp->desktop_windows, GUINT_TO_POINTER(windowid));
 		if (pdesktop != NULL) {
@@ -1097,22 +1247,21 @@ _application_menu_registrar_server_register_window (IndicatorAppmenu * iapp, gui
 		}
 	}
 
-	dbus_g_method_return(method);
-	return TRUE;
+	return g_variant_new("()");
 }
 
 /* Kindly remove an entry from our DB */
-static gboolean
-_application_menu_registrar_server_unregister_window (IndicatorAppmenu * iapp, guint windowid, GError ** error)
+static GVariant *
+unregister_window (IndicatorAppmenu * iapp, guint windowid)
 {
 	/* TODO: Do it */
 
-	return FALSE;
+	return g_variant_new("()");
 }
 
 /* Grab the menu information for a specific window */
-static gboolean
-_application_menu_registrar_server_get_menu_for_window (IndicatorAppmenu * iapp, guint windowid, gchar ** objectpath, gchar ** address, GError ** error)
+static GVariant *
+get_menu_for_window (IndicatorAppmenu * iapp, guint windowid, GError ** error)
 {
 	WindowMenus * wm = NULL;
 
@@ -1124,81 +1273,77 @@ _application_menu_registrar_server_get_menu_for_window (IndicatorAppmenu * iapp,
 
 	if (wm == NULL) {
 		g_set_error_literal(error, error_quark(), ERROR_WINDOW_NOT_FOUND, "Window not found");
-		return FALSE;
+		return NULL;
 	}
 
-	*objectpath = window_menus_get_path(wm);
-	*address = window_menus_get_address(wm);
-
-	return TRUE;
+	return g_variant_new("(so)", window_menus_get_address(wm),
+	                     window_menus_get_path(wm));
 }
 
 /* Get all the menus we have */
-static gboolean
-_application_menu_registrar_server_get_menus (IndicatorAppmenu * iapp, GPtrArray ** entries, GError ** error)
+static GVariant *
+get_menus (IndicatorAppmenu * iapp, GError ** error)
 {
 	if (iapp->apps == NULL) {
 		g_set_error_literal(error, error_quark(), ERROR_NO_APPLICATIONS, "No applications are registered");
-		return FALSE;
+		return NULL;
 	}
 
-	*entries = g_ptr_array_new();
-
+	GVariantBuilder * builder = g_variant_builder_new (G_VARIANT_TYPE_ARRAY);
 	GList * appkeys = NULL;
 	for (appkeys = g_hash_table_get_keys(iapp->apps); appkeys != NULL; appkeys = g_list_next(appkeys)) {
-		GValueArray * structval = g_value_array_new(3);
 		gpointer hash_val = g_hash_table_lookup(iapp->apps, appkeys->data);
 
 		if (hash_val == NULL) { continue; }
 
-		GValue winid = {0};
-		g_value_init(&winid, G_TYPE_UINT);
-		g_value_set_uint(&winid, window_menus_get_xid(WINDOW_MENUS(hash_val)));
-		g_value_array_append(structval, &winid);
-		g_value_unset(&winid);
-
-		GValue path = {0};
-		g_value_init(&path, DBUS_TYPE_G_OBJECT_PATH);
-		g_value_take_boxed(&path, window_menus_get_path(WINDOW_MENUS(hash_val)));
-		g_value_array_append(structval, &path);
-		g_value_unset(&path);
-
-		GValue address = {0};
-		g_value_init(&address, G_TYPE_STRING);
-		g_value_take_string(&address, window_menus_get_address(WINDOW_MENUS(hash_val)));
-		g_value_array_append(structval, &address);
-		g_value_unset(&address);
-
-		g_ptr_array_add(*entries, structval);
+		g_variant_builder_add (builder, "(uso)",
+		                       window_menus_get_xid(WINDOW_MENUS(hash_val)),
+		                       window_menus_get_path(WINDOW_MENUS(hash_val)),
+		                       window_menus_get_address(WINDOW_MENUS(hash_val)));
 	}
 
-	return TRUE;
+	return g_variant_new("(a(uso))", builder);
 }
 
-/* Response to whether we got our name or not */
+/* A method has been called from our dbus inteface.  Figure out what it
+   is and dispatch it. */
 static void
-request_name_cb (DBusGProxy *proxy, guint result, GError * inerror, gpointer userdata)
+bus_method_call (GDBusConnection * connection, const gchar * sender,
+                 const gchar * path, const gchar * interface,
+                 const gchar * method, GVariant * params,
+                 GDBusMethodInvocation * invocation, gpointer user_data)
 {
-	gboolean error = FALSE;
+	IndicatorAppmenu * iapp = INDICATOR_APPMENU(user_data);
+	GVariant * retval = NULL;
+	GError * error = NULL;
 
-	if (inerror != NULL) {
-		g_warning("Unable to get name request: %s", inerror->message);
-		error = TRUE;
+	if (g_strcmp0(method, "RegisterWindow") == 0) {
+		guint32 xid;
+		const gchar * path;
+		g_variant_get(params, "(u&o)", &xid, &path);
+		retval = register_window(iapp, xid, path, sender);
+	} else if (g_strcmp0(method, "UnregisterWindow") == 0) {
+		guint32 xid;
+		g_variant_get(params, "(u)", &xid);
+		retval = unregister_window(iapp, xid);
+	} else if (g_strcmp0(method, "GetMenuForWindow") == 0) {
+		guint32 xid;
+		g_variant_get(params, "(u)", &xid);
+		retval = get_menu_for_window(iapp, xid, &error);
+	} else if (g_strcmp0(method, "GetMenus") == 0) {
+		retval = get_menus(iapp, &error);
+	} else {
+		g_warning("Calling method '%s' on the indicator service and it's unknown", method);
 	}
 
-	if (!error && result != DBUS_REQUEST_NAME_REPLY_PRIMARY_OWNER && result != DBUS_REQUEST_NAME_REPLY_ALREADY_OWNER) {
-		g_warning("The dbus name we want is already taken");
-		error = TRUE;
+	if (error != NULL) {
+		g_dbus_method_invocation_return_dbus_error(invocation,
+		                                           "com.canonical.AppMenu.Error",
+		                                           error->message);
+		g_error_free(error);
+	} else {
+		g_dbus_method_invocation_return_value(invocation, retval);
 	}
-
-	if (error) {
-		/* We can rest assured no one will register with us, but let's
-		   just ensure we're not showing anything. */
-		switch_default_app(INDICATOR_APPMENU(userdata), NULL, NULL);
-	}
-
-	g_object_unref(proxy);
-
 	return;
 }
 
@@ -1453,44 +1598,36 @@ entry2json (IndicatorObjectEntry * entry, GArray * strings)
 }
 
 /* Grab the location of the dbusmenu of the current menu */
-static gboolean
-_application_menu_renderer_server_get_current_menu (IndicatorAppmenuDebug * iappd, gchar ** objectpath, gchar ** address, GError ** error)
+static GVariant *
+get_current_menu (IndicatorAppmenuDebug * iappd, GError ** error)
 {
 	IndicatorAppmenu * iapp = iappd->appmenu;
 
 	if (iapp->default_app == NULL) {
 		g_set_error_literal(error, error_quark(), ERROR_NO_DEFAULT_APP, "Not currently showing an application");
-		return FALSE;
+		return NULL;
 	}
 
-	*objectpath = window_menus_get_path(iapp->default_app);
-	*address = window_menus_get_address(iapp->default_app);
-
-	return TRUE;
+	return g_variant_new("(so)", window_menus_get_address(iapp->default_app),
+	                     window_menus_get_path(iapp->default_app));
 }
 
 /* Activate menu items through a script given as a parameter */
-static gboolean
-_application_menu_renderer_server_activate_menu_item (IndicatorAppmenuDebug * iappd, GArray * menulist, GError ** error)
+static GVariant *
+activate_menu_item (IndicatorAppmenuDebug * iappd, GVariantIter * iter, GError ** error)
 {
 	/* TODO: Do it */
 
-	return FALSE;
-}
-
-/* Dump the current menu to a JSON file */
-static gboolean
-_application_menu_renderer_server_dump_current_menu  (IndicatorAppmenuDebug * iappd, gchar ** jsondata, GError ** error)
-{
-	return _application_menu_renderer_server_dump_menu(iappd, 0, jsondata, error);
+	return g_variant_new("()");
 }
 
 /* Dump a specific window's menus to a JSON file */
-static gboolean
-_application_menu_renderer_server_dump_menu (IndicatorAppmenuDebug * iappd, guint windowid, gchar ** jsondata, GError ** error)
+static GVariant *
+dump_menu (IndicatorAppmenuDebug * iappd, guint windowid, GError ** error)
 {
 	IndicatorAppmenu * iapp = iappd->appmenu;
 	WindowMenus * wm = NULL;
+	gchar * jsondata = NULL;
 
 	if (windowid == 0) {
 		wm = iapp->default_app;
@@ -1500,7 +1637,7 @@ _application_menu_renderer_server_dump_menu (IndicatorAppmenuDebug * iappd, guin
 
 	if (wm == NULL) {
 		g_set_error_literal(error, error_quark(), ERROR_WINDOW_NOT_FOUND, "Window not found");
-		return FALSE;
+		return NULL;
 	}
 
 	GArray * strings = g_array_new(TRUE, FALSE, sizeof(gchar *));
@@ -1548,10 +1685,59 @@ _application_menu_renderer_server_dump_menu (IndicatorAppmenuDebug * iappd, guin
 	temp = g_strdup("}");
 	g_array_append_val(strings, temp);
 
-	*jsondata = g_strjoinv(NULL, (gchar **)strings->data);
+	jsondata = g_strjoinv(NULL, (gchar **)strings->data);
 	g_strfreev((gchar **)strings->data);
 	g_array_free(strings, FALSE);
 
-	return TRUE;
+	GVariant * rv = g_variant_new("(s)", jsondata);
+	g_free(jsondata);
+	return rv;
+}
+
+/* Dump the current menu to a JSON file */
+static GVariant *
+dump_current_menu  (IndicatorAppmenuDebug * iappd, GError ** error)
+{
+	return dump_menu(iappd, 0, error);
+}
+
+/* A method has been called from our dbus inteface.  Figure out what it
+   is and dispatch it. */
+static void
+dbg_bus_method_call (GDBusConnection * connection, const gchar * sender,
+                     const gchar * path, const gchar * interface,
+                     const gchar * method, GVariant * params,
+                     GDBusMethodInvocation * invocation, gpointer user_data)
+{
+	IndicatorAppmenuDebug * iappd = INDICATOR_APPMENU_DEBUG(user_data);
+	GVariant * retval = NULL;
+	GError * error = NULL;
+
+	if (g_strcmp0(method, "GetCurrentMenu") == 0) {
+		retval = get_current_menu(iappd, &error);
+	} else if (g_strcmp0(method, "ActivateMenuItem") == 0) {
+		GVariantIter *iter;
+		g_variant_get(params, "(ai)", &iter);
+		retval = activate_menu_item(iappd, iter, &error);
+		g_variant_iter_free(iter);
+	} else if (g_strcmp0(method, "DumpCurrentMenu") == 0) {
+		retval = dump_current_menu(iappd, &error);
+	} else if (g_strcmp0(method, "DumpMenu") == 0) {
+		guint32 xid;
+		g_variant_get(params, "(u)", &xid);
+		retval = dump_menu(iappd, xid, &error);
+	} else {
+		g_warning("Calling method '%s' on the indicator service and it's unknown", method);
+	}
+
+	if (error != NULL) {
+		g_dbus_method_invocation_return_dbus_error(invocation,
+		                                           "com.canonical.AppMenu.Error",
+		                                           error->message);
+		g_error_free(error);
+	} else {
+		g_dbus_method_invocation_return_value(invocation, retval);
+	}
+	return;
 }
 
