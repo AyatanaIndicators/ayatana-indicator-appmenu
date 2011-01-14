@@ -1,18 +1,18 @@
 <!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
-<node name="/org/ayatana/AppMenu/Renderer" xmlns:dox="http://www.ayatana.org/dbus/dox.dtd">
+<node name="/com/canonical/AppMenu/Renderer" xmlns:dox="http://www.canonical.com/dbus/dox.dtd">
 	<dox:d><![CDATA[
 	  @mainpage
 	 
 	  A representation of the process used to render a menu into something visible
 	  to the user.  Many times this will be combined with a Registrar
-	  (@ref org::ayatana::AppMenu::Registrar) but that is not required.  The interface
-	  implemented by the Renderer is here: @ref org::ayatana::AppMenu::Registrar and
+	  (@ref com::canonical::AppMenu::Registrar) but that is not required.  The interface
+	  implemented by the Renderer is here: @ref com::canonical::AppMenu::Registrar and
 	  used mostly for debugging the status of and testing the renderers.
 	    
 	  The actual menus are transported using the dbusmenu protocol which is available
-	  here: @ref org::ayatana::dbusmenu.
+	  here: @ref com::canonical::dbusmenu.
 	]]></dox:d>
-	<interface name="org.ayatana.AppMenu.Renderer">
+	<interface name="com.canonical.AppMenu.Renderer">
 		<dox:d>
 		  An interface to register a menu from an application's window to be displayed in another
 		  window.  This manages that association between XWindow Window IDs and the dbus
@@ -24,7 +24,7 @@
 				<dox:d>The address of the connection on DBus (e.g. :1.23 or org.example.service)</dox:d>
 			</arg>
 			<arg name="menuObjectPath" type="o" direction="out">
-				<dox:d>The path to the object which implements the org.ayatana.dbusmenu interface.</dox:d>
+				<dox:d>The path to the object which implements the com.canonical.dbusmenu interface.</dox:d>
 			</arg>
 		</method>
 		<method name="ActivateMenuItem">
