@@ -1,11 +1,18 @@
-indicator-appmenu (0.1.90-0ubuntu1~ppa1) natty; urgency=low
+indicator-appmenu (0.1.90-0ubuntu1) natty; urgency=low
 
+  [ Ted Gould ]
   * New upstream release.
     * GDBus Port
     * Migration from ayatana.org to canonical.com
   * debian/patches/01-shortcut-fix.patch: Merged upstream
 
- -- Ted Gould <ted@ubuntu.com>  Fri, 14 Jan 2011 12:10:42 -0600
+  [ Ken VanDine ]
+  * debian/control
+    - Bumped build depends for dbusmenu to >= 0.3.91
+    - Bumped build depends for libindicator to >= 0.3.16
+    - Dropped build depends for libdbus-glib-1-dev
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Fri, 14 Jan 2011 12:22:13 -0600
 
 indicator-appmenu (0.0.13-0ubuntu4) natty; urgency=low
 
