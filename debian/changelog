@@ -1,3 +1,10 @@
+indicator-appmenu (0.1.91-0ubuntu1) natty; urgency=low
+
+  * New upstream release.
+    * Using BAMF to watch for window destruction (LP: #703769)
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 20 Jan 2011 08:49:37 -0600
+
 indicator-appmenu (0.1.90-0ubuntu1) natty; urgency=low
 
   [ Ted Gould ]
