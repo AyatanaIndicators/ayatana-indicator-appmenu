@@ -740,11 +740,11 @@ find_desktop_windows (IndicatorAppmenu * iapp)
 static void
 new_window (BamfMatcher * matcher, BamfView * view, gpointer user_data)
 {
-	BamfWindow * window = BAMF_WINDOW(view);
-	if (window == NULL) {
+	if (view == NULL || !BAMF_IS_WINDOW(view)) {
 		return;
 	}
 
+	BamfWindow * window = BAMF_WINDOW(view);
 	if (bamf_window_get_window_type(window) != BAMF_WINDOW_DESKTOP) {
 		return;
 	}
@@ -772,11 +772,11 @@ new_window (BamfMatcher * matcher, BamfView * view, gpointer user_data)
 static void
 old_window (BamfMatcher * matcher, BamfView * view, gpointer user_data)
 {
-	BamfWindow * window = BAMF_WINDOW(view);
-	if (window == NULL) {
+	if (view == NULL || !BAMF_IS_WINDOW(view)) {
 		return;
 	}
 
+	BamfWindow * window = BAMF_WINDOW(view);
 	if (bamf_window_get_window_type(window) != BAMF_WINDOW_DESKTOP) {
 		return;
 	}
