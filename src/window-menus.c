@@ -409,8 +409,10 @@ window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * d
 	}
 
 	priv->app = bamf_matcher_get_application_for_xid(bamf_matcher_get_default(), windowid);
-	g_object_ref(priv->app);
-	priv->window_removed_id = g_signal_connect(G_OBJECT(priv->app), "window-removed", G_CALLBACK(window_removed), newmenu);
+	if (priv->app) {
+		g_object_ref(priv->app);
+		priv->window_removed_id = g_signal_connect(G_OBJECT(priv->app), "window-removed", G_CALLBACK(window_removed), newmenu);
+	}
 
 	return newmenu;
 }
