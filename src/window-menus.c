@@ -244,7 +244,7 @@ window_menus_finalize (GObject *object)
 			entry = g_array_index(priv->entries, IndicatorObjectEntry *, i);
 			entry_free(entry);
 		}
-		g_array_free(priv->entries, FALSE);
+		g_array_free(priv->entries, TRUE);
 		priv->entries = NULL;
 	}
 
