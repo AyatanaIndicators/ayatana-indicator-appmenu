@@ -207,6 +207,28 @@ window_menus_dispose (GObject *object)
 	return;
 }
 
+static void
+entry_free(IndicatorObjectEntry * entry)
+{
+	g_return_if_fail(entry != NULL);
+
+	if (entry->label != NULL) {
+		g_object_unref(entry->label);
+		entry->label = NULL;
+	}
+	if (entry->image != NULL) {
+		g_object_unref(entry->image);
+		entry->image = NULL;
+	}
+	if (entry->menu != NULL) {
+		g_signal_handlers_disconnect_by_func(entry->menu, G_CALLBACK(gtk_widget_destroyed), &entry->menu);
+		g_object_unref(entry->menu);
+		entry->menu = NULL;
+	}
+
+	g_free(entry);
+}
+
 /* Free memory */
 static void
 window_menus_finalize (GObject *object)
@@ -220,15 +242,9 @@ window_menus_finalize (GObject *object)
 		for (i = 0; i < priv->entries->len; i++) {
 			IndicatorObjectEntry * entry;
 			entry = g_array_index(priv->entries, IndicatorObjectEntry *, i);
-			
-			if (entry->label != NULL) {
-				g_object_unref(entry->label);
-			}
-			if (entry->menu != NULL) {
-				g_object_unref(entry->menu);
-			}
+			entry_free(entry);
 		}
-		g_array_free(priv->entries, TRUE);
+		g_array_free(priv->entries, FALSE);
 		priv->entries = NULL;
 	}
 
@@ -657,6 +673,7 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 	} else {
 		g_object_ref(entry->menu);
 		gtk_menu_detach(entry->menu);
+		g_signal_connect(entry->menu, "destroy", G_CALLBACK(gtk_widget_destroyed), &entry->menu);
 	}
 
 	g_signal_connect(G_OBJECT(newentry), DBUSMENU_MENUITEM_SIGNAL_PROPERTY_CHANGED, G_CALLBACK(menu_prop_changed), entry);
@@ -702,7 +719,7 @@ menu_entry_removed (DbusmenuMenuitem * root, DbusmenuMenuitem * oldentry, gpoint
 
 	g_signal_emit(G_OBJECT(user_data), signals[ENTRY_REMOVED], 0, entry, TRUE);
 
-	g_free(entry);
+	entry_free(entry);
 
 	return;
 }
