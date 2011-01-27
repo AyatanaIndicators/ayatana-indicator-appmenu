@@ -1,4 +1,4 @@
-indicator-appmenu (0.1.92-0ubuntu1~ppa1) UNRELEASED; urgency=low
+indicator-appmenu (0.1.92-0ubuntu1~ppa1) natty; urgency=low
 
   * New upstream release.
     * Stopping a crash when menus disappear
@@ -7,7 +7,7 @@ indicator-appmenu (0.1.92-0ubuntu1~ppa1) UNRELEASED; urgency=low
     * Check to ensure that what we get back from BAMF is non-NULL
       before connecting to it.
 
- -- Ted Gould <ted@ubuntu.com>  Thu, 27 Jan 2011 16:14:29 -0600
+ -- Ted Gould <ted@ubuntu.com>  Thu, 27 Jan 2011 16:16:21 -0600
 
 indicator-appmenu (0.1.91-0ubuntu1) natty; urgency=low
 
