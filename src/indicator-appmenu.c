@@ -979,6 +979,9 @@ switch_active_window (IndicatorAppmenu * iapp, BamfWindow * active_window)
 	iapp->active_window = active_window;
 	iapp->active_stubs = STUBS_UNKNOWN;
 
+	/* Close any existing open menu by showing a null entry */
+	window_show_menu(iapp->default_app, NULL, gtk_get_current_event_time(), iapp);
+
 	if (active_window != NULL) {
 		g_object_weak_ref(G_OBJECT(active_window), window_finalized_is_active, iapp);
 	}
