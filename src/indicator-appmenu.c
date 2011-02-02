@@ -776,13 +776,17 @@ old_window (BamfMatcher * matcher, BamfView * view, gpointer user_data)
 		return;
 	}
 
-	BamfWindow * window = BAMF_WINDOW(view);
-	if (bamf_window_get_window_type(window) != BAMF_WINDOW_DESKTOP) {
-		return;
-	}
-
 	IndicatorAppmenu * iapp = INDICATOR_APPMENU(user_data);
-	g_hash_table_remove(iapp->desktop_windows, GUINT_TO_POINTER(bamf_window_get_xid(window)));
+	BamfWindow * window = BAMF_WINDOW(view);
+	guint32 xid = bamf_window_get_xid(window);
+
+	if (bamf_window_get_window_type(window) == BAMF_WINDOW_DESKTOP) {
+		g_hash_table_remove(iapp->desktop_windows, GUINT_TO_POINTER(xid));
+	}
+	else {
+		g_debug("Window removed for window: %d", xid);
+		g_hash_table_remove(iapp->apps, GUINT_TO_POINTER(xid));
+	}
 
 	return;
 }
