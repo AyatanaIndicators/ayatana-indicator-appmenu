@@ -640,8 +640,6 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 {
 	DbusmenuMenuitem * newentry = (DbusmenuMenuitem *)(((gpointer *)user_data)[1]);
 
-	g_object_unref(newentry);
-
 	/* Only care about the first */
 	g_signal_handlers_disconnect_by_func(G_OBJECT(child), menu_child_realized, user_data);
 
@@ -688,6 +686,7 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 
 	g_signal_emit(G_OBJECT((((gpointer *)user_data)[0])), signals[ENTRY_ADDED], 0, entry, TRUE);
 
+	g_object_unref(newentry);
 	g_free(user_data);
 
 	return;
