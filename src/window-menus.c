@@ -328,6 +328,26 @@ event_status (DbusmenuClient * client, DbusmenuMenuitem * mi, gchar * event, GVa
 	return;
 }
 
+static IndicatorObjectEntry *
+get_entry(WindowMenus *wm, DbusmenuMenuitem * item, guint *index)
+{
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
+
+	guint position = 0;
+	for (position = 0; position < priv->entries->len; ++position) {
+		WMEntry * entry = g_array_index(priv->entries, WMEntry *, position);
+		if (entry->mi == item) {
+			if (index != NULL) {
+				*index = position;
+			}
+			return &entry->ioentry;
+		}
+	}
+
+	/* Not found */
+	return NULL;
+}
+
 /* Called when a menu item wants to be displayed.  We need to see if
    it's one of our root items and pass it up if so. */
 static void
@@ -340,33 +360,12 @@ item_activate (DbusmenuClient * client, DbusmenuMenuitem * item, guint timestamp
 		return;
 	}
 
-	GList * children = dbusmenu_menuitem_get_children(priv->root);
-	guint position = 0;
-	GList * child;
-
-	for (child = children; child != NULL; position++, child = g_list_next(child)) {
-		DbusmenuMenuitem * childmi = DBUSMENU_MENUITEM(child->data);
-
-		/* We're only putting items with children on the panel, so
-		   they're the only one with entires. */
-		if (dbusmenu_menuitem_get_children(childmi) == NULL) {
-			position--;
-			continue;
-		}
-
-		if (childmi == item) {
-			break;
-		}
-	}
-
-	/* Not found */
-	if (child == NULL) {
+	IndicatorObjectEntry * entry = get_entry(WINDOW_MENUS(user_data), item, NULL);
+	if (entry == NULL) {
+		/* Not found */
 		return;
 	}
 
-	g_return_if_fail(position < priv->entries->len);
-
-	IndicatorObjectEntry * entry = g_array_index(priv->entries, IndicatorObjectEntry *, position);
 	g_signal_emit(G_OBJECT(user_data), signals[SHOW_MENU], 0, entry, timestamp, TRUE);
 
 	return;
@@ -681,9 +680,14 @@ menu_entry_removed (DbusmenuMenuitem * root, DbusmenuMenuitem * oldentry, gpoint
 		return;
 	}
 	
-	/* TODO: find the menuitem */
-	IndicatorObjectEntry * entry = g_array_index(priv->entries, IndicatorObjectEntry *, priv->entries->len - 1);
-	g_array_remove_index(priv->entries, priv->entries->len - 1);
+	guint position;
+	IndicatorObjectEntry * entry = get_entry(WINDOW_MENUS(user_data), oldentry, &position);
+	if (entry == NULL) {
+		/* Not found */
+		return;
+	}
+
+	g_array_remove_index(priv->entries, position);
 
 	g_signal_emit(G_OBJECT(user_data), signals[ENTRY_REMOVED], 0, entry, TRUE);
 
