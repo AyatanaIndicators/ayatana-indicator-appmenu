@@ -1,4 +1,4 @@
-indicator-appmenu (0.1.93-0ubuntu1~ppa1) UNRELEASED; urgency=low
+indicator-appmenu (0.1.93-0ubuntu1~ppa1) natty; urgency=low
 
   * New upstream release.
     * Remove the signals on menu items we're no longer caring
@@ -8,7 +8,7 @@ indicator-appmenu (0.1.93-0ubuntu1~ppa1) UNRELEASED; urgency=low
     * Watch window closing at the indicator level instead of
       the window level to make it less racy
 
- -- Ted Gould <ted@ubuntu.com>  Thu, 03 Feb 2011 14:39:05 -0600
+ -- Ted Gould <ted@ubuntu.com>  Thu, 03 Feb 2011 14:44:17 -0600
 
 indicator-appmenu (0.1.92-0ubuntu1) natty; urgency=low
 
