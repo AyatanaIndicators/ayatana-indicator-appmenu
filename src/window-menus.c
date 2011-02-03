@@ -26,7 +26,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <libdbusmenu-gtk/menu.h>
 #include <glib.h>
 #include <gio/gio.h>
-#include <libbamf/bamf-matcher.h>
 
 #include "window-menus.h"
 #include "indicator-appmenu-marshal.h"
@@ -47,8 +46,6 @@ struct _WindowMenusPrivate {
 	gchar * retry_name;
 	GVariant * retry_data;
 	guint   retry_timestamp;
-	BamfApplication *app;
-	gulong window_removed_id;
 };
 
 typedef struct _WMEntry WMEntry;
@@ -81,11 +78,11 @@ static void window_menus_class_init (WindowMenusClass *klass);
 static void window_menus_init       (WindowMenus *self);
 static void window_menus_dispose    (GObject *object);
 static void window_menus_finalize   (GObject *object);
-static void window_removed          (GObject * gobject, BamfView * view, gpointer user_data);
 static void root_changed            (DbusmenuClient * client, DbusmenuMenuitem * new_root, gpointer user_data);
 static void menu_entry_added        (DbusmenuMenuitem * root, DbusmenuMenuitem * newentry, guint position, gpointer user_data);
 static void menu_entry_removed      (DbusmenuMenuitem * root, DbusmenuMenuitem * oldentry, gpointer user_data);
 static void menu_entry_realized     (DbusmenuMenuitem * newentry, gpointer user_data);
+static void menu_prop_changed       (DbusmenuMenuitem * item, const gchar * property, GVariant * value, gpointer user_data);
 static void menu_child_realized     (DbusmenuMenuitem * child, gpointer user_data);
 static void props_cb (GObject * object, GAsyncResult * res, gpointer user_data);
 
@@ -167,12 +164,6 @@ window_menus_dispose (GObject *object)
 
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(object);
 
-	if (priv->app != NULL) {
-		g_signal_handler_disconnect(priv->app, priv->window_removed_id);
-		g_object_unref(G_OBJECT(priv->app));
-		priv->app = NULL;
-	}
-
 	if (priv->root != NULL) {
 		g_object_unref(G_OBJECT(priv->root));
 		priv->root = NULL;
@@ -211,6 +202,13 @@ static void
 entry_free(IndicatorObjectEntry * entry)
 {
 	g_return_if_fail(entry != NULL);
+	WMEntry * wmentry = (WMEntry *)entry;
+
+	if (wmentry->mi != NULL) {
+		g_signal_handlers_disconnect_by_func(wmentry->mi, G_CALLBACK(menu_prop_changed), &wmentry->ioentry);
+		g_object_unref(G_OBJECT(wmentry->mi));
+		wmentry->mi = NULL;
+	}
 
 	if (entry->label != NULL) {
 		g_object_unref(entry->label);
@@ -229,6 +227,27 @@ entry_free(IndicatorObjectEntry * entry)
 	g_free(entry);
 }
 
+static void
+free_entries(GObject *object, gboolean should_signal)
+{
+	g_return_if_fail(IS_WINDOW_MENUS(object));
+
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(object);
+
+	if (priv->entries != NULL) {
+		int i;
+		for (i = 0; i < priv->entries->len; i++) {
+			IndicatorObjectEntry * entry;
+			entry = g_array_index(priv->entries, IndicatorObjectEntry *, i);
+			g_array_remove_index(priv->entries, i);
+			if (should_signal) {			
+				g_signal_emit(object, signals[ENTRY_REMOVED], 0, entry, TRUE);
+			}
+			entry_free(entry);
+		}
+	}
+}
+
 /* Free memory */
 static void
 window_menus_finalize (GObject *object)
@@ -237,13 +256,9 @@ window_menus_finalize (GObject *object)
 
 	g_debug("Window Menus Object finalizing for: %d", priv->windowid);
 
+	free_entries(object, FALSE);
+
 	if (priv->entries != NULL) {
-		int i;
-		for (i = 0; i < priv->entries->len; i++) {
-			IndicatorObjectEntry * entry;
-			entry = g_array_index(priv->entries, IndicatorObjectEntry *, i);
-			entry_free(entry);
-		}
 		g_array_free(priv->entries, TRUE);
 		priv->entries = NULL;
 	}
@@ -338,6 +353,26 @@ event_status (DbusmenuClient * client, DbusmenuMenuitem * mi, gchar * event, GVa
 	return;
 }
 
+static IndicatorObjectEntry *
+get_entry(WindowMenus *wm, DbusmenuMenuitem * item, guint *index)
+{
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
+
+	guint position = 0;
+	for (position = 0; position < priv->entries->len; ++position) {
+		WMEntry * entry = g_array_index(priv->entries, WMEntry *, position);
+		if (entry->mi == item) {
+			if (index != NULL) {
+				*index = position;
+			}
+			return &entry->ioentry;
+		}
+	}
+
+	/* Not found */
+	return NULL;
+}
+
 /* Called when a menu item wants to be displayed.  We need to see if
    it's one of our root items and pass it up if so. */
 static void
@@ -350,33 +385,12 @@ item_activate (DbusmenuClient * client, DbusmenuMenuitem * item, guint timestamp
 		return;
 	}
 
-	GList * children = dbusmenu_menuitem_get_children(priv->root);
-	guint position = 0;
-	GList * child;
-
-	for (child = children; child != NULL; position++, child = g_list_next(child)) {
-		DbusmenuMenuitem * childmi = DBUSMENU_MENUITEM(child->data);
-
-		/* We're only putting items with children on the panel, so
-		   they're the only one with entires. */
-		if (dbusmenu_menuitem_get_children(childmi) == NULL) {
-			position--;
-			continue;
-		}
-
-		if (childmi == item) {
-			break;
-		}
-	}
-
-	/* Not found */
-	if (child == NULL) {
+	IndicatorObjectEntry * entry = get_entry(WINDOW_MENUS(user_data), item, NULL);
+	if (entry == NULL) {
+		/* Not found */
 		return;
 	}
 
-	g_return_if_fail(position < priv->entries->len);
-
-	IndicatorObjectEntry * entry = g_array_index(priv->entries, IndicatorObjectEntry *, position);
 	g_signal_emit(G_OBJECT(user_data), signals[SHOW_MENU], 0, entry, timestamp, TRUE);
 
 	return;
@@ -424,12 +438,6 @@ window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * d
 		root_changed(DBUSMENU_CLIENT(priv->client), root, newmenu);
 	}
 
-	priv->app = bamf_matcher_get_application_for_xid(bamf_matcher_get_default(), windowid);
-	if (priv->app) {
-		g_object_ref(priv->app);
-		priv->window_removed_id = g_signal_connect(G_OBJECT(priv->app), "window-removed", G_CALLBACK(window_removed), newmenu);
-	}
-
 	return newmenu;
 }
 
@@ -462,24 +470,6 @@ props_cb (GObject * object, GAsyncResult * res, gpointer user_data)
 	priv->props = proxy;
 
 	return;
-}
-
-static void
-window_removed (GObject * gobject, BamfView * view, gpointer user_data)
-{
-	WindowMenus * wm = WINDOW_MENUS(user_data);
-	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
-
-	if (!BAMF_IS_WINDOW(view)) {
-		return;
-	}
-
-	BamfWindow * window = BAMF_WINDOW(view);
-
-	if (bamf_window_get_xid(window) == priv->windowid) {
-		g_debug("Window removed for window: %d", priv->windowid);
-		g_object_unref(G_OBJECT(wm));
-	}
 }
 
 /* Get the location of this entry */
@@ -542,9 +532,7 @@ root_changed (DbusmenuClient * client, DbusmenuMenuitem * new_root, gpointer use
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
 
 	/* Remove the old entries */
-	while (priv->entries->len != 0) {
-		menu_entry_removed(NULL, NULL, user_data);
-	}
+	free_entries(G_OBJECT(user_data), TRUE);
 
 	if (priv->root != NULL) {
 		g_signal_handlers_disconnect_by_func(G_OBJECT(priv->root), G_CALLBACK(menu_entry_added), user_data);
@@ -604,7 +592,7 @@ menu_entry_realized (DbusmenuMenuitem * newentry, gpointer user_data)
 		if (children != NULL) {
 			gpointer * data = g_new(gpointer, 2);
 			data[0] = user_data;
-			data[1] = newentry;
+			data[1] = g_object_ref(newentry);
 
 			g_signal_connect(G_OBJECT(children->data), DBUSMENU_MENUITEM_SIGNAL_REALIZED, G_CALLBACK(menu_child_realized), data);
 		} else {
@@ -613,7 +601,8 @@ menu_entry_realized (DbusmenuMenuitem * newentry, gpointer user_data)
 	} else {
 		gpointer * data = g_new(gpointer, 2);
 		data[0] = user_data;
-		data[1] = newentry;
+		data[1] = g_object_ref(newentry);
+		/* child_realized does an unref */
 
 		menu_child_realized(NULL, data);
 	}
@@ -661,6 +650,7 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 	IndicatorObjectEntry * entry = &wmentry->ioentry;
 
 	wmentry->mi = newentry;
+	g_object_ref(G_OBJECT(wmentry->mi));
 
 	entry->label = GTK_LABEL(gtk_label_new_with_mnemonic(dbusmenu_menuitem_property_get(newentry, DBUSMENU_MENUITEM_PROP_LABEL)));
 
@@ -699,6 +689,7 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 
 	g_signal_emit(G_OBJECT((((gpointer *)user_data)[0])), signals[ENTRY_ADDED], 0, entry, TRUE);
 
+	g_object_unref(newentry);
 	g_free(user_data);
 
 	return;
@@ -709,19 +700,26 @@ static void
 menu_entry_removed (DbusmenuMenuitem * root, DbusmenuMenuitem * oldentry, gpointer user_data)
 {
 	g_return_if_fail(IS_WINDOW_MENUS(user_data));
+	g_return_if_fail(DBUSMENU_IS_MENUITEM(oldentry));
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
 
 	if (priv->entries == NULL || priv->entries->len == 0) {
 		return;
 	}
-	
-	/* TODO: find the menuitem */
-	IndicatorObjectEntry * entry = g_array_index(priv->entries, IndicatorObjectEntry *, priv->entries->len - 1);
-	g_array_remove_index(priv->entries, priv->entries->len - 1);
 
-	g_signal_emit(G_OBJECT(user_data), signals[ENTRY_REMOVED], 0, entry, TRUE);
+	guint position;
+	IndicatorObjectEntry * entry = get_entry(WINDOW_MENUS(user_data), oldentry, &position);
 
-	entry_free(entry);
+	if (entry != NULL) {
+		g_array_remove_index(priv->entries, position);
+		g_signal_emit(G_OBJECT(user_data), signals[ENTRY_REMOVED], 0, entry, TRUE);
+		entry_free(entry);
+	} else {
+		/* We've been called before menu_child_realized fired,
+		 * so there isn't a WMEntry yet. Don't be going ahead
+		 * and creating one if this menu item continues to live! */
+		g_signal_handlers_disconnect_by_func(G_OBJECT(oldentry), G_CALLBACK(menu_entry_realized), user_data);
+	}
 
 	return;
 }

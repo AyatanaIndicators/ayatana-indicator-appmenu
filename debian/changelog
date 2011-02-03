@@ -1,3 +1,15 @@
+indicator-appmenu (0.1.93-0ubuntu1) natty; urgency=low
+
+  * New upstream release.
+    * Remove the signals on menu items we're no longer caring
+      about (LP: #706941)
+    * Close open menus when switching windows (LP: #709305)
+    * Find the correct entry to remove when removing entries
+    * Watch window closing at the indicator level instead of
+      the window level to make it less racy
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 03 Feb 2011 14:44:17 -0600
+
 indicator-appmenu (0.1.92-0ubuntu1) natty; urgency=low
 
   * New upstream release.
