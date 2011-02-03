@@ -197,10 +197,42 @@ window_menus_dispose (GObject *object)
 	return;
 }
 
+/* Respond to properties changing on the menu item so that we can
+   properly hide and show them. */
+static void
+menu_prop_changed (DbusmenuMenuitem * item, const gchar * property, GVariant * value, gpointer user_data)
+{
+	IndicatorObjectEntry * entry = (IndicatorObjectEntry *)user_data;
+	WMEntry * wmentry = (WMEntry *)user_data;
+
+	if (!g_strcmp0(property, DBUSMENU_MENUITEM_PROP_VISIBLE)) {
+		if (g_variant_get_boolean(value)) {
+			gtk_widget_show(GTK_WIDGET(entry->label));
+			wmentry->hidden = FALSE;
+		} else {
+			gtk_widget_hide(GTK_WIDGET(entry->label));
+			wmentry->hidden = TRUE;
+		}
+	} else if (!g_strcmp0(property, DBUSMENU_MENUITEM_PROP_ENABLED)) {
+		gtk_widget_set_sensitive(GTK_WIDGET(entry->label), g_variant_get_boolean(value));
+		wmentry->disabled = !g_variant_get_boolean(value);
+	} else if (!g_strcmp0(property, DBUSMENU_MENUITEM_PROP_LABEL)) {
+		gtk_label_set_text_with_mnemonic(entry->label, g_variant_get_string(value, NULL));
+	}
+
+	return;
+}
+
 static void
 entry_free(IndicatorObjectEntry * entry)
 {
 	g_return_if_fail(entry != NULL);
+	WMEntry * wmentry = (WMEntry *)entry;
+
+	if (wmentry->mi != NULL) {
+		g_signal_handlers_disconnect_by_func(wmentry->mi, G_CALLBACK(menu_prop_changed), &wmentry->ioentry);
+		wmentry->mi = NULL;
+	}
 
 	if (entry->label != NULL) {
 		g_object_unref(entry->label);
@@ -219,6 +251,27 @@ entry_free(IndicatorObjectEntry * entry)
 	g_free(entry);
 }
 
+static void
+free_entries(GObject *object, gboolean should_signal)
+{
+	g_return_if_fail(IS_WINDOW_MENUS(object));
+
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(object);
+
+	if (priv->entries != NULL) {
+		int i;
+		for (i = 0; i < priv->entries->len; i++) {
+			IndicatorObjectEntry * entry;
+			entry = g_array_index(priv->entries, IndicatorObjectEntry *, i);
+			g_array_remove_index(priv->entries, i);
+			if (should_signal) {			
+				g_signal_emit(object, signals[ENTRY_REMOVED], 0, entry, TRUE);
+			}
+			entry_free(entry);
+		}
+	}
+}
+
 /* Free memory */
 static void
 window_menus_finalize (GObject *object)
@@ -227,13 +280,9 @@ window_menus_finalize (GObject *object)
 
 	g_debug("Window Menus Object finalizing for: %d", priv->windowid);
 
+	free_entries(object, FALSE);
+
 	if (priv->entries != NULL) {
-		int i;
-		for (i = 0; i < priv->entries->len; i++) {
-			IndicatorObjectEntry * entry;
-			entry = g_array_index(priv->entries, IndicatorObjectEntry *, i);
-			entry_free(entry);
-		}
 		g_array_free(priv->entries, TRUE);
 		priv->entries = NULL;
 	}
@@ -507,9 +556,7 @@ root_changed (DbusmenuClient * client, DbusmenuMenuitem * new_root, gpointer use
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
 
 	/* Remove the old entries */
-	while (priv->entries->len != 0) {
-		menu_entry_removed(NULL, NULL, user_data);
-	}
+	free_entries(G_OBJECT(user_data), TRUE);
 
 	if (priv->root != NULL) {
 		g_signal_handlers_disconnect_by_func(G_OBJECT(priv->root), G_CALLBACK(menu_entry_added), user_data);
@@ -569,7 +616,7 @@ menu_entry_realized (DbusmenuMenuitem * newentry, gpointer user_data)
 		if (children != NULL) {
 			gpointer * data = g_new(gpointer, 2);
 			data[0] = user_data;
-			data[1] = newentry;
+			data[1] = g_object_ref(newentry);
 
 			g_signal_connect(G_OBJECT(children->data), DBUSMENU_MENUITEM_SIGNAL_REALIZED, G_CALLBACK(menu_child_realized), data);
 		} else {
@@ -586,37 +633,13 @@ menu_entry_realized (DbusmenuMenuitem * newentry, gpointer user_data)
 	return;
 }
 
-/* Respond to properties changing on the menu item so that we can
-   properly hide and show them. */
-static void
-menu_prop_changed (DbusmenuMenuitem * item, const gchar * property, GVariant * value, gpointer user_data)
-{
-	IndicatorObjectEntry * entry = (IndicatorObjectEntry *)user_data;
-	WMEntry * wmentry = (WMEntry *)user_data;
-
-	if (!g_strcmp0(property, DBUSMENU_MENUITEM_PROP_VISIBLE)) {
-		if (g_variant_get_boolean(value)) {
-			gtk_widget_show(GTK_WIDGET(entry->label));
-			wmentry->hidden = FALSE;
-		} else {
-			gtk_widget_hide(GTK_WIDGET(entry->label));
-			wmentry->hidden = TRUE;
-		}
-	} else if (!g_strcmp0(property, DBUSMENU_MENUITEM_PROP_ENABLED)) {
-		gtk_widget_set_sensitive(GTK_WIDGET(entry->label), g_variant_get_boolean(value));
-		wmentry->disabled = !g_variant_get_boolean(value);
-	} else if (!g_strcmp0(property, DBUSMENU_MENUITEM_PROP_LABEL)) {
-		gtk_label_set_text_with_mnemonic(entry->label, g_variant_get_string(value, NULL));
-	}
-
-	return;
-}
-
 /* We can't go until we have some kids.  Really, it's important. */
 static void
 menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 {
 	DbusmenuMenuitem * newentry = (DbusmenuMenuitem *)(((gpointer *)user_data)[1]);
+
+	g_object_unref(newentry);
 
 	/* Only care about the first */
 	g_signal_handlers_disconnect_by_func(G_OBJECT(child), menu_child_realized, user_data);
@@ -674,24 +697,26 @@ static void
 menu_entry_removed (DbusmenuMenuitem * root, DbusmenuMenuitem * oldentry, gpointer user_data)
 {
 	g_return_if_fail(IS_WINDOW_MENUS(user_data));
+	g_return_if_fail(DBUSMENU_IS_MENUITEM(oldentry));
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
 
 	if (priv->entries == NULL || priv->entries->len == 0) {
 		return;
 	}
-	
+
 	guint position;
 	IndicatorObjectEntry * entry = get_entry(WINDOW_MENUS(user_data), oldentry, &position);
-	if (entry == NULL) {
-		/* Not found */
-		return;
+
+	if (entry != NULL) {
+		g_array_remove_index(priv->entries, position);
+		g_signal_emit(G_OBJECT(user_data), signals[ENTRY_REMOVED], 0, entry, TRUE);
+		entry_free(entry);
+	} else {
+		/* We've been called before menu_child_realized fired,
+		 * so there isn't a WMEntry yet. Don't be going ahead
+		 * and creating one if this menu item continues to live! */
+		g_signal_handlers_disconnect_by_func(G_OBJECT(oldentry), G_CALLBACK(menu_entry_realized), user_data);
 	}
-
-	g_array_remove_index(priv->entries, position);
-
-	g_signal_emit(G_OBJECT(user_data), signals[ENTRY_REMOVED], 0, entry, TRUE);
-
-	entry_free(entry);
 
 	return;
 }
