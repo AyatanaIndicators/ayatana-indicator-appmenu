@@ -26,7 +26,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <libdbusmenu-gtk/menu.h>
 #include <glib.h>
 #include <gio/gio.h>
-#include <libbamf/bamf-matcher.h>
 
 #include "window-menus.h"
 #include "indicator-appmenu-marshal.h"
@@ -47,8 +46,6 @@ struct _WindowMenusPrivate {
 	gchar * retry_name;
 	GVariant * retry_data;
 	guint   retry_timestamp;
-	BamfApplication *app;
-	gulong window_removed_id;
 };
 
 typedef struct _WMEntry WMEntry;
@@ -81,7 +78,6 @@ static void window_menus_class_init (WindowMenusClass *klass);
 static void window_menus_init       (WindowMenus *self);
 static void window_menus_dispose    (GObject *object);
 static void window_menus_finalize   (GObject *object);
-static void window_removed          (GObject * gobject, BamfView * view, gpointer user_data);
 static void root_changed            (DbusmenuClient * client, DbusmenuMenuitem * new_root, gpointer user_data);
 static void menu_entry_added        (DbusmenuMenuitem * root, DbusmenuMenuitem * newentry, guint position, gpointer user_data);
 static void menu_entry_removed      (DbusmenuMenuitem * root, DbusmenuMenuitem * oldentry, gpointer user_data);
@@ -166,12 +162,6 @@ window_menus_dispose (GObject *object)
 	g_signal_emit(object, signals[DESTROY], 0, TRUE);
 
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(object);
-
-	if (priv->app != NULL) {
-		g_signal_handler_disconnect(priv->app, priv->window_removed_id);
-		g_object_unref(G_OBJECT(priv->app));
-		priv->app = NULL;
-	}
 
 	if (priv->root != NULL) {
 		g_object_unref(G_OBJECT(priv->root));
@@ -424,12 +414,6 @@ window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * d
 		root_changed(DBUSMENU_CLIENT(priv->client), root, newmenu);
 	}
 
-	priv->app = bamf_matcher_get_application_for_xid(bamf_matcher_get_default(), windowid);
-	if (priv->app) {
-		g_object_ref(priv->app);
-		priv->window_removed_id = g_signal_connect(G_OBJECT(priv->app), "window-removed", G_CALLBACK(window_removed), newmenu);
-	}
-
 	return newmenu;
 }
 
@@ -462,24 +446,6 @@ props_cb (GObject * object, GAsyncResult * res, gpointer user_data)
 	priv->props = proxy;
 
 	return;
-}
-
-static void
-window_removed (GObject * gobject, BamfView * view, gpointer user_data)
-{
-	WindowMenus * wm = WINDOW_MENUS(user_data);
-	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
-
-	if (!BAMF_IS_WINDOW(view)) {
-		return;
-	}
-
-	BamfWindow * window = BAMF_WINDOW(view);
-
-	if (bamf_window_get_xid(window) == priv->windowid) {
-		g_debug("Window removed for window: %d", priv->windowid);
-		g_object_unref(G_OBJECT(wm));
-	}
 }
 
 /* Get the location of this entry */
