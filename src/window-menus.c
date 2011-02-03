@@ -206,6 +206,7 @@ entry_free(IndicatorObjectEntry * entry)
 
 	if (wmentry->mi != NULL) {
 		g_signal_handlers_disconnect_by_func(wmentry->mi, G_CALLBACK(menu_prop_changed), &wmentry->ioentry);
+		g_object_unref(G_OBJECT(wmentry->mi));
 		wmentry->mi = NULL;
 	}
 
@@ -600,7 +601,8 @@ menu_entry_realized (DbusmenuMenuitem * newentry, gpointer user_data)
 	} else {
 		gpointer * data = g_new(gpointer, 2);
 		data[0] = user_data;
-		data[1] = newentry;
+		data[1] = g_object_ref(newentry);
+		/* child_realized does an unref */
 
 		menu_child_realized(NULL, data);
 	}
@@ -648,6 +650,7 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 	IndicatorObjectEntry * entry = &wmentry->ioentry;
 
 	wmentry->mi = newentry;
+	g_object_ref(G_OBJECT(wmentry->mi));
 
 	entry->label = GTK_LABEL(gtk_label_new_with_mnemonic(dbusmenu_menuitem_property_get(newentry, DBUSMENU_MENUITEM_PROP_LABEL)));
 
