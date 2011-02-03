@@ -82,6 +82,7 @@ static void root_changed            (DbusmenuClient * client, DbusmenuMenuitem *
 static void menu_entry_added        (DbusmenuMenuitem * root, DbusmenuMenuitem * newentry, guint position, gpointer user_data);
 static void menu_entry_removed      (DbusmenuMenuitem * root, DbusmenuMenuitem * oldentry, gpointer user_data);
 static void menu_entry_realized     (DbusmenuMenuitem * newentry, gpointer user_data);
+static void menu_prop_changed       (DbusmenuMenuitem * item, const gchar * property, GVariant * value, gpointer user_data);
 static void menu_child_realized     (DbusmenuMenuitem * child, gpointer user_data);
 static void props_cb (GObject * object, GAsyncResult * res, gpointer user_data);
 
@@ -194,32 +195,6 @@ window_menus_dispose (GObject *object)
 	}
 
 	G_OBJECT_CLASS (window_menus_parent_class)->dispose (object);
-	return;
-}
-
-/* Respond to properties changing on the menu item so that we can
-   properly hide and show them. */
-static void
-menu_prop_changed (DbusmenuMenuitem * item, const gchar * property, GVariant * value, gpointer user_data)
-{
-	IndicatorObjectEntry * entry = (IndicatorObjectEntry *)user_data;
-	WMEntry * wmentry = (WMEntry *)user_data;
-
-	if (!g_strcmp0(property, DBUSMENU_MENUITEM_PROP_VISIBLE)) {
-		if (g_variant_get_boolean(value)) {
-			gtk_widget_show(GTK_WIDGET(entry->label));
-			wmentry->hidden = FALSE;
-		} else {
-			gtk_widget_hide(GTK_WIDGET(entry->label));
-			wmentry->hidden = TRUE;
-		}
-	} else if (!g_strcmp0(property, DBUSMENU_MENUITEM_PROP_ENABLED)) {
-		gtk_widget_set_sensitive(GTK_WIDGET(entry->label), g_variant_get_boolean(value));
-		wmentry->disabled = !g_variant_get_boolean(value);
-	} else if (!g_strcmp0(property, DBUSMENU_MENUITEM_PROP_LABEL)) {
-		gtk_label_set_text_with_mnemonic(entry->label, g_variant_get_string(value, NULL));
-	}
-
 	return;
 }
 
@@ -630,6 +605,32 @@ menu_entry_realized (DbusmenuMenuitem * newentry, gpointer user_data)
 		menu_child_realized(NULL, data);
 	}
 	
+	return;
+}
+
+/* Respond to properties changing on the menu item so that we can
+   properly hide and show them. */
+static void
+menu_prop_changed (DbusmenuMenuitem * item, const gchar * property, GVariant * value, gpointer user_data)
+{
+	IndicatorObjectEntry * entry = (IndicatorObjectEntry *)user_data;
+	WMEntry * wmentry = (WMEntry *)user_data;
+
+	if (!g_strcmp0(property, DBUSMENU_MENUITEM_PROP_VISIBLE)) {
+		if (g_variant_get_boolean(value)) {
+			gtk_widget_show(GTK_WIDGET(entry->label));
+			wmentry->hidden = FALSE;
+		} else {
+			gtk_widget_hide(GTK_WIDGET(entry->label));
+			wmentry->hidden = TRUE;
+		}
+	} else if (!g_strcmp0(property, DBUSMENU_MENUITEM_PROP_ENABLED)) {
+		gtk_widget_set_sensitive(GTK_WIDGET(entry->label), g_variant_get_boolean(value));
+		wmentry->disabled = !g_variant_get_boolean(value);
+	} else if (!g_strcmp0(property, DBUSMENU_MENUITEM_PROP_LABEL)) {
+		gtk_label_set_text_with_mnemonic(entry->label, g_variant_get_string(value, NULL));
+	}
+
 	return;
 }
 
