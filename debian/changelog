@@ -1,3 +1,10 @@
+indicator-appmenu (0.1.93-0ubuntu1~ppa3~hash1) UNRELEASED; urgency=low
+
+  * Upstream Merge
+    * Removing the unused 'destroy' signal on window menus
+
+ -- Ted Gould <ted@ubuntu.com>  Mon, 07 Feb 2011 16:32:38 -0600
+
 indicator-appmenu (0.1.93-0ubuntu1~ppa2) natty; urgency=low
 
   * Upstream Merge
