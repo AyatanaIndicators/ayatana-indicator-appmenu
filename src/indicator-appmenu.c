@@ -203,6 +203,8 @@ static void dbg_bus_method_call                                      (GDBusConne
 static void dbg_bus_get_cb                                           (GObject * object,
                                                                       GAsyncResult * res,
                                                                       gpointer user_data);
+static void menus_destroyed                                          (GObject * menus,
+                                                                      gpointer user_data);
 
 /* Unique error codes for debug interface */
 enum {
@@ -780,12 +782,24 @@ old_window (BamfMatcher * matcher, BamfView * view, gpointer user_data)
 	BamfWindow * window = BAMF_WINDOW(view);
 	guint32 xid = bamf_window_get_xid(window);
 
+	/* See if it's in our list of desktop windows, if
+	   so remove it from that list. */
 	if (bamf_window_get_window_type(window) == BAMF_WINDOW_DESKTOP) {
 		g_hash_table_remove(iapp->desktop_windows, GUINT_TO_POINTER(xid));
 	}
-	else {
-		g_debug("Window removed for window: %d", xid);
-		g_hash_table_remove(iapp->apps, GUINT_TO_POINTER(xid));
+
+	/* Now let's see if we've got a WM object for it then
+	   we need to mark it as destroyed and unreference to
+	   actually destroy it. */
+	gpointer wm = g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(xid));
+	if (wm != NULL) {
+		GObject * wmo = G_OBJECT(wm);
+
+		/* Using destroyed so that if the menus are shown
+		   they'll be switch and the current window gets
+		   updated as well. */
+		menus_destroyed(wmo, iapp);
+		g_object_unref(wmo);
 	}
 
 	return;
