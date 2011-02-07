@@ -1,3 +1,12 @@
+indicator-appmenu (0.1.93-0ubuntu2) natty; urgency=low
+
+  * src/indicator-appmenu.c
+    - Using the destroy() function instead of just removing from the hashtable 
+      as it handles more details of switching windows. Then we have to unref 
+      as the destroy function does not. (LP: #714531)
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Mon, 07 Feb 2011 12:44:20 -0500
+
 indicator-appmenu (0.1.93-0ubuntu1) natty; urgency=low
 
   * New upstream release.
