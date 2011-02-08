@@ -253,7 +253,7 @@ indicator_appmenu_class_init (IndicatorAppmenuClass *klass)
 
 		node_info = g_dbus_node_info_new_for_xml(_application_menu_registrar, &error);
 		if (error != NULL) {
-			g_error("Unable to parse Application Menu Interface description: %s", error->message);
+			g_critical("Unable to parse Application Menu Interface description: %s", error->message);
 			g_error_free(error);
 		}
 	}
@@ -262,7 +262,7 @@ indicator_appmenu_class_init (IndicatorAppmenuClass *klass)
 		interface_info = g_dbus_node_info_lookup_interface(node_info, REG_IFACE);
 
 		if (interface_info == NULL) {
-			g_error("Unable to find interface '" REG_IFACE "'");
+			g_critical("Unable to find interface '" REG_IFACE "'");
 		}
 	}
 
@@ -359,7 +359,7 @@ on_bus_acquired (GDBusConnection * connection, const gchar * name,
 	                                                            &error);
 
 	if (error != NULL) {
-		g_error("Unable to register the object to DBus: %s", error->message);
+		g_critical("Unable to register the object to DBus: %s", error->message);
 		g_error_free(error);
 		g_bus_unown_name(iapp->owner_id);
 		iapp->owner_id = 0;
@@ -383,10 +383,10 @@ on_name_lost (GDBusConnection * connection, const gchar * name,
 	IndicatorAppmenu * iapp = INDICATOR_APPMENU(user_data);
 
 	if (connection == NULL) {
-		g_error("OMG! Unable to get a connection to DBus");
+		g_critical("OMG! Unable to get a connection to DBus");
 	}
 	else {
-		g_error("Unable to claim the name %s", DBUS_NAME);
+		g_critical("Unable to claim the name %s", DBUS_NAME);
 	}
 
 	/* We can rest assured no one will register with us, but let's
@@ -494,7 +494,7 @@ indicator_appmenu_debug_class_init (IndicatorAppmenuDebugClass *klass)
 
 		dbg_node_info = g_dbus_node_info_new_for_xml(_application_menu_renderer, &error);
 		if (error != NULL) {
-			g_error("Unable to parse Application Menu Renderer Interface description: %s", error->message);
+			g_critical("Unable to parse Application Menu Renderer Interface description: %s", error->message);
 			g_error_free(error);
 		}
 	}
@@ -503,7 +503,7 @@ indicator_appmenu_debug_class_init (IndicatorAppmenuDebugClass *klass)
 		dbg_interface_info = g_dbus_node_info_lookup_interface(dbg_node_info, DEBUG_IFACE);
 
 		if (dbg_interface_info == NULL) {
-			g_error("Unable to find interface '" DEBUG_IFACE "'");
+			g_critical("Unable to find interface '" DEBUG_IFACE "'");
 		}
 	}
 
@@ -536,7 +536,7 @@ dbg_bus_get_cb (GObject * object, GAsyncResult * res, gpointer user_data)
 	GDBusConnection * connection = g_bus_get_finish(res, &error);
 
 	if (error != NULL) {
-		g_error("OMG! Unable to get a connection to DBus: %s", error->message);
+		g_critical("OMG! Unable to get a connection to DBus: %s", error->message);
 		g_error_free(error);
 		return;
 	}
@@ -561,7 +561,7 @@ dbg_bus_get_cb (GObject * object, GAsyncResult * res, gpointer user_data)
 	                                                             &error);
 
 	if (error != NULL) {
-		g_error("Unable to register the object to DBus: %s", error->message);
+		g_critical("Unable to register the object to DBus: %s", error->message);
 		g_error_free(error);
 		return;
 	}
@@ -610,7 +610,7 @@ emit_signal (IndicatorAppmenu * iapp, const gchar * name, GVariant * variant)
 		                       &error);
 
 	if (error != NULL) {
-		g_error("Unable to send %s signal: %s", name, error->message);
+		g_critical("Unable to send %s signal: %s", name, error->message);
 		g_error_free(error);
 		return;
 	}
