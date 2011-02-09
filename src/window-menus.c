@@ -450,7 +450,7 @@ props_cb (GObject * object, GAsyncResult * res, gpointer user_data)
 	}
 
 	if (error != NULL) {
-		g_error("Could not grab DBus proxy for window %u: %s", priv->windowid, error->message);
+		g_critical("Could not grab DBus proxy for window %u: %s", priv->windowid, error->message);
 		g_error_free(error);
 		return;
 	}
