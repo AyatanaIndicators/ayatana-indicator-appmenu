@@ -64,7 +64,6 @@ struct _WMEntry {
 enum {
 	ENTRY_ADDED,
 	ENTRY_REMOVED,
-	DESTROY,
 	ERROR_STATE,
 	SHOW_MENU,
 	LAST_SIGNAL
@@ -114,13 +113,6 @@ window_menus_class_init (WindowMenusClass *klass)
 	                                      NULL, NULL,
 	                                      g_cclosure_marshal_VOID__POINTER,
 	                                      G_TYPE_NONE, 1, G_TYPE_POINTER);
-	signals[DESTROY] =       g_signal_new(WINDOW_MENUS_SIGNAL_DESTROY,
-	                                      G_TYPE_FROM_CLASS(klass),
-	                                      G_SIGNAL_RUN_LAST,
-	                                      G_STRUCT_OFFSET (WindowMenusClass, destroy),
-	                                      NULL, NULL,
-	                                      g_cclosure_marshal_VOID__VOID,
-	                                      G_TYPE_NONE, 0, G_TYPE_NONE);
 	signals[ERROR_STATE] =   g_signal_new(WINDOW_MENUS_SIGNAL_ERROR_STATE,
 	                                      G_TYPE_FROM_CLASS(klass),
 	                                      G_SIGNAL_RUN_LAST,
@@ -160,8 +152,6 @@ window_menus_init (WindowMenus *self)
 static void
 window_menus_dispose (GObject *object)
 {
-	g_signal_emit(object, signals[DESTROY], 0, TRUE);
-
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(object);
 
 	if (priv->root != NULL) {

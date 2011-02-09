@@ -1244,8 +1244,6 @@ register_window (IndicatorAppmenu * iapp, guint windowid, const gchar * objectpa
 		WindowMenus * wm = window_menus_new(windowid, sender, objectpath);
 		g_return_val_if_fail(wm != NULL, FALSE);
 
-		g_signal_connect(G_OBJECT(wm), WINDOW_MENUS_SIGNAL_DESTROY, G_CALLBACK(menus_destroyed), iapp);
-
 		g_hash_table_insert(iapp->apps, GUINT_TO_POINTER(windowid), wm);
 
 		emit_signal(iapp, "WindowRegistered",
