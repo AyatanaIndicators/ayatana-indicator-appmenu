@@ -1,3 +1,13 @@
+indicator-appmenu (0.1.94-0ubuntu1) natty; urgency=low
+
+  * New upstream release.
+    * Removing the unused 'destroy' signal on window menus
+    * Removing g_error's in the .so
+    * Use the menus_destroyed() function instead of removing from
+      the hashtable. (LP: #714531)
+
+ -- Ted Gould <ted@ubuntu.com>  Fri, 11 Feb 2011 10:05:47 -0600
+
 indicator-appmenu (0.1.93-0ubuntu2) natty; urgency=low
 
   * src/indicator-appmenu.c
