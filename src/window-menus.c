@@ -64,7 +64,6 @@ struct _WMEntry {
 enum {
 	ENTRY_ADDED,
 	ENTRY_REMOVED,
-	DESTROY,
 	ERROR_STATE,
 	SHOW_MENU,
 	LAST_SIGNAL
@@ -77,7 +76,6 @@ static guint signals[LAST_SIGNAL] = { 0 };
 static void window_menus_class_init (WindowMenusClass *klass);
 static void window_menus_init       (WindowMenus *self);
 static void window_menus_dispose    (GObject *object);
-static void window_menus_finalize   (GObject *object);
 static void root_changed            (DbusmenuClient * client, DbusmenuMenuitem * new_root, gpointer user_data);
 static void menu_entry_added        (DbusmenuMenuitem * root, DbusmenuMenuitem * newentry, guint position, gpointer user_data);
 static void menu_entry_removed      (DbusmenuMenuitem * root, DbusmenuMenuitem * oldentry, gpointer user_data);
@@ -97,7 +95,6 @@ window_menus_class_init (WindowMenusClass *klass)
 	g_type_class_add_private (klass, sizeof (WindowMenusPrivate));
 
 	object_class->dispose = window_menus_dispose;
-	object_class->finalize = window_menus_finalize;
 
 	/* Signals */
 	signals[ENTRY_ADDED] =  g_signal_new(WINDOW_MENUS_SIGNAL_ENTRY_ADDED,
@@ -114,13 +111,6 @@ window_menus_class_init (WindowMenusClass *klass)
 	                                      NULL, NULL,
 	                                      g_cclosure_marshal_VOID__POINTER,
 	                                      G_TYPE_NONE, 1, G_TYPE_POINTER);
-	signals[DESTROY] =       g_signal_new(WINDOW_MENUS_SIGNAL_DESTROY,
-	                                      G_TYPE_FROM_CLASS(klass),
-	                                      G_SIGNAL_RUN_LAST,
-	                                      G_STRUCT_OFFSET (WindowMenusClass, destroy),
-	                                      NULL, NULL,
-	                                      g_cclosure_marshal_VOID__VOID,
-	                                      G_TYPE_NONE, 0, G_TYPE_NONE);
 	signals[ERROR_STATE] =   g_signal_new(WINDOW_MENUS_SIGNAL_ERROR_STATE,
 	                                      G_TYPE_FROM_CLASS(klass),
 	                                      G_SIGNAL_RUN_LAST,
@@ -153,48 +143,6 @@ window_menus_init (WindowMenus *self)
 
 	priv->entries = g_array_new(FALSE, FALSE, sizeof(WMEntry *));
 
-	return;
-}
-
-/* Destroy objects */
-static void
-window_menus_dispose (GObject *object)
-{
-	g_signal_emit(object, signals[DESTROY], 0, TRUE);
-
-	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(object);
-
-	if (priv->root != NULL) {
-		g_object_unref(G_OBJECT(priv->root));
-		priv->root = NULL;
-	}
-
-	if (priv->client != NULL) {
-		g_object_unref(G_OBJECT(priv->client));
-		priv->client = NULL;
-	}
-	
-	if (priv->props != NULL) {
-		g_object_unref(G_OBJECT(priv->props));
-		priv->props = NULL;
-	}
-
-	if (priv->props_cancel != NULL) {
-		g_cancellable_cancel(priv->props_cancel);
-		g_object_unref(priv->props_cancel);
-		priv->props_cancel = NULL;
-	}
-
-	if (priv->retry_timer != 0) {
-		g_source_remove(priv->retry_timer);
-		priv->retry_timer = 0;
-		g_variant_unref(priv->retry_data);
-		priv->retry_data = NULL;
-		g_free(priv->retry_name);
-		priv->retry_name = NULL;
-	}
-
-	G_OBJECT_CLASS (window_menus_parent_class)->dispose (object);
 	return;
 }
 
@@ -248,13 +196,11 @@ free_entries(GObject *object, gboolean should_signal)
 	}
 }
 
-/* Free memory */
+/* Destroy objects */
 static void
-window_menus_finalize (GObject *object)
+window_menus_dispose (GObject *object)
 {
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(object);
-
-	g_debug("Window Menus Object finalizing for: %d", priv->windowid);
 
 	free_entries(object, FALSE);
 
@@ -263,7 +209,37 @@ window_menus_finalize (GObject *object)
 		priv->entries = NULL;
 	}
 
-	G_OBJECT_CLASS (window_menus_parent_class)->finalize (object);
+	if (priv->root != NULL) {
+		g_object_unref(G_OBJECT(priv->root));
+		priv->root = NULL;
+	}
+
+	if (priv->client != NULL) {
+		g_object_unref(G_OBJECT(priv->client));
+		priv->client = NULL;
+	}
+	
+	if (priv->props != NULL) {
+		g_object_unref(G_OBJECT(priv->props));
+		priv->props = NULL;
+	}
+
+	if (priv->props_cancel != NULL) {
+		g_cancellable_cancel(priv->props_cancel);
+		g_object_unref(priv->props_cancel);
+		priv->props_cancel = NULL;
+	}
+
+	if (priv->retry_timer != 0) {
+		g_source_remove(priv->retry_timer);
+		priv->retry_timer = 0;
+		g_variant_unref(priv->retry_data);
+		priv->retry_data = NULL;
+		g_free(priv->retry_name);
+		priv->retry_name = NULL;
+	}
+
+	G_OBJECT_CLASS (window_menus_parent_class)->dispose (object);
 	return;
 }
 
@@ -460,7 +436,7 @@ props_cb (GObject * object, GAsyncResult * res, gpointer user_data)
 	}
 
 	if (error != NULL) {
-		g_error("Could not grab DBus proxy for window %u: %s", priv->windowid, error->message);
+		g_critical("Could not grab DBus proxy for window %u: %s", priv->windowid, error->message);
 		g_error_free(error);
 		return;
 	}

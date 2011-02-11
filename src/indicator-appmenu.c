@@ -203,6 +203,8 @@ static void dbg_bus_method_call                                      (GDBusConne
 static void dbg_bus_get_cb                                           (GObject * object,
                                                                       GAsyncResult * res,
                                                                       gpointer user_data);
+static void menus_destroyed                                          (GObject * menus,
+                                                                      gpointer user_data);
 
 /* Unique error codes for debug interface */
 enum {
@@ -253,7 +255,7 @@ indicator_appmenu_class_init (IndicatorAppmenuClass *klass)
 
 		node_info = g_dbus_node_info_new_for_xml(_application_menu_registrar, &error);
 		if (error != NULL) {
-			g_error("Unable to parse Application Menu Interface description: %s", error->message);
+			g_critical("Unable to parse Application Menu Interface description: %s", error->message);
 			g_error_free(error);
 		}
 	}
@@ -262,7 +264,7 @@ indicator_appmenu_class_init (IndicatorAppmenuClass *klass)
 		interface_info = g_dbus_node_info_lookup_interface(node_info, REG_IFACE);
 
 		if (interface_info == NULL) {
-			g_error("Unable to find interface '" REG_IFACE "'");
+			g_critical("Unable to find interface '" REG_IFACE "'");
 		}
 	}
 
@@ -359,7 +361,7 @@ on_bus_acquired (GDBusConnection * connection, const gchar * name,
 	                                                            &error);
 
 	if (error != NULL) {
-		g_error("Unable to register the object to DBus: %s", error->message);
+		g_critical("Unable to register the object to DBus: %s", error->message);
 		g_error_free(error);
 		g_bus_unown_name(iapp->owner_id);
 		iapp->owner_id = 0;
@@ -383,10 +385,10 @@ on_name_lost (GDBusConnection * connection, const gchar * name,
 	IndicatorAppmenu * iapp = INDICATOR_APPMENU(user_data);
 
 	if (connection == NULL) {
-		g_error("OMG! Unable to get a connection to DBus");
+		g_critical("OMG! Unable to get a connection to DBus");
 	}
 	else {
-		g_error("Unable to claim the name %s", DBUS_NAME);
+		g_critical("Unable to claim the name %s", DBUS_NAME);
 	}
 
 	/* We can rest assured no one will register with us, but let's
@@ -494,7 +496,7 @@ indicator_appmenu_debug_class_init (IndicatorAppmenuDebugClass *klass)
 
 		dbg_node_info = g_dbus_node_info_new_for_xml(_application_menu_renderer, &error);
 		if (error != NULL) {
-			g_error("Unable to parse Application Menu Renderer Interface description: %s", error->message);
+			g_critical("Unable to parse Application Menu Renderer Interface description: %s", error->message);
 			g_error_free(error);
 		}
 	}
@@ -503,7 +505,7 @@ indicator_appmenu_debug_class_init (IndicatorAppmenuDebugClass *klass)
 		dbg_interface_info = g_dbus_node_info_lookup_interface(dbg_node_info, DEBUG_IFACE);
 
 		if (dbg_interface_info == NULL) {
-			g_error("Unable to find interface '" DEBUG_IFACE "'");
+			g_critical("Unable to find interface '" DEBUG_IFACE "'");
 		}
 	}
 
@@ -536,7 +538,7 @@ dbg_bus_get_cb (GObject * object, GAsyncResult * res, gpointer user_data)
 	GDBusConnection * connection = g_bus_get_finish(res, &error);
 
 	if (error != NULL) {
-		g_error("OMG! Unable to get a connection to DBus: %s", error->message);
+		g_critical("OMG! Unable to get a connection to DBus: %s", error->message);
 		g_error_free(error);
 		return;
 	}
@@ -561,7 +563,7 @@ dbg_bus_get_cb (GObject * object, GAsyncResult * res, gpointer user_data)
 	                                                             &error);
 
 	if (error != NULL) {
-		g_error("Unable to register the object to DBus: %s", error->message);
+		g_critical("Unable to register the object to DBus: %s", error->message);
 		g_error_free(error);
 		return;
 	}
@@ -610,7 +612,7 @@ emit_signal (IndicatorAppmenu * iapp, const gchar * name, GVariant * variant)
 		                       &error);
 
 	if (error != NULL) {
-		g_error("Unable to send %s signal: %s", name, error->message);
+		g_critical("Unable to send %s signal: %s", name, error->message);
 		g_error_free(error);
 		return;
 	}
@@ -780,12 +782,24 @@ old_window (BamfMatcher * matcher, BamfView * view, gpointer user_data)
 	BamfWindow * window = BAMF_WINDOW(view);
 	guint32 xid = bamf_window_get_xid(window);
 
+	/* See if it's in our list of desktop windows, if
+	   so remove it from that list. */
 	if (bamf_window_get_window_type(window) == BAMF_WINDOW_DESKTOP) {
 		g_hash_table_remove(iapp->desktop_windows, GUINT_TO_POINTER(xid));
 	}
-	else {
-		g_debug("Window removed for window: %d", xid);
-		g_hash_table_remove(iapp->apps, GUINT_TO_POINTER(xid));
+
+	/* Now let's see if we've got a WM object for it then
+	   we need to mark it as destroyed and unreference to
+	   actually destroy it. */
+	gpointer wm = g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(xid));
+	if (wm != NULL) {
+		GObject * wmo = G_OBJECT(wm);
+
+		/* Using destroyed so that if the menus are shown
+		   they'll be switch and the current window gets
+		   updated as well. */
+		menus_destroyed(wmo, iapp);
+		g_object_unref(wmo);
 	}
 
 	return;
@@ -1229,8 +1243,6 @@ register_window (IndicatorAppmenu * iapp, guint windowid, const gchar * objectpa
 	if (g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid)) == NULL && windowid != 0) {
 		WindowMenus * wm = window_menus_new(windowid, sender, objectpath);
 		g_return_val_if_fail(wm != NULL, FALSE);
-
-		g_signal_connect(G_OBJECT(wm), WINDOW_MENUS_SIGNAL_DESTROY, G_CALLBACK(menus_destroyed), iapp);
 
 		g_hash_table_insert(iapp->apps, GUINT_TO_POINTER(windowid), wm);
 
