@@ -1,3 +1,24 @@
+indicator-appmenu (0.1.93-0ubuntu2) natty; urgency=low
+
+  * src/indicator-appmenu.c
+    - Using the destroy() function instead of just removing from the hashtable 
+      as it handles more details of switching windows. Then we have to unref 
+      as the destroy function does not. (LP: #714531)
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Mon, 07 Feb 2011 12:44:20 -0500
+
+indicator-appmenu (0.1.93-0ubuntu1) natty; urgency=low
+
+  * New upstream release.
+    * Remove the signals on menu items we're no longer caring
+      about (LP: #706941)
+    * Close open menus when switching windows (LP: #709305)
+    * Find the correct entry to remove when removing entries
+    * Watch window closing at the indicator level instead of
+      the window level to make it less racy
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 03 Feb 2011 14:44:17 -0600
+
 indicator-appmenu (0.1.93-0ubuntu1~ppa3) natty; urgency=low
 
   * Upstream Merge
@@ -13,18 +34,6 @@ indicator-appmenu (0.1.93-0ubuntu1~ppa2) natty; urgency=low
       the hashtable. (LP: #714531)
 
  -- Ted Gould <ted@ubuntu.com>  Mon, 07 Feb 2011 11:39:22 -0600
-
-indicator-appmenu (0.1.93-0ubuntu1~ppa1) natty; urgency=low
-
-  * New upstream release.
-    * Remove the signals on menu items we're no longer caring
-      about (LP: #706941)
-    * Close open menus when switching windows (LP: #709305)
-    * Find the correct entry to remove when removing entries
-    * Watch window closing at the indicator level instead of
-      the window level to make it less racy
-
- -- Ted Gould <ted@ubuntu.com>  Thu, 03 Feb 2011 14:44:17 -0600
 
 indicator-appmenu (0.1.92-0ubuntu1) natty; urgency=low
 
