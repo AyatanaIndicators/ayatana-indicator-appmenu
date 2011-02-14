@@ -162,6 +162,9 @@ entry_free(IndicatorObjectEntry * entry)
 		g_object_unref(entry->label);
 		entry->label = NULL;
 	}
+	if (entry->accessible_desc != NULL) {
+		entry->accessible_desc = NULL;
+	}
 	if (entry->image != NULL) {
 		g_object_unref(entry->image);
 		entry->image = NULL;
@@ -633,6 +636,8 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 	if (entry->label != NULL) {
 		g_object_ref(entry->label);
 	}
+
+	entry->accessible_desc = dbusmenu_menuitem_property_get(newentry, DBUSMENU_MENUITEM_PROP_LABEL);
 
 	entry->menu = dbusmenu_gtkclient_menuitem_get_submenu(priv->client, newentry);
 
