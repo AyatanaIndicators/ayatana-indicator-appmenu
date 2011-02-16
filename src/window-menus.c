@@ -610,6 +610,8 @@ menu_prop_changed (DbusmenuMenuitem * item, const gchar * property, GVariant * v
 		wmentry->disabled = !g_variant_get_boolean(value);
 	} else if (!g_strcmp0(property, DBUSMENU_MENUITEM_PROP_LABEL)) {
 		gtk_label_set_text_with_mnemonic(entry->label, g_variant_get_string(value, NULL));
+		entry->accessible_desc = g_variant_get_string(value, NULL);
+		/* FIXME: Need to signal a change in the accessible description. */
 	}
 
 	return;
