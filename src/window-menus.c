@@ -54,6 +54,7 @@ struct _WMEntry {
 	gboolean disabled;
 	gboolean hidden;
 	DbusmenuMenuitem * mi;
+	WindowMenus * wm;
 };
 
 #define WINDOW_MENUS_GET_PRIVATE(o) \
@@ -636,6 +637,7 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE((((gpointer *)user_data)[0]));
 	WMEntry * wmentry = g_new0(WMEntry, 1);
+	wmentry->wm = WINDOW_MENUS((((gpointer *)user_data)[0]));
 	IndicatorObjectEntry * entry = &wmentry->ioentry;
 
 	wmentry->mi = newentry;
