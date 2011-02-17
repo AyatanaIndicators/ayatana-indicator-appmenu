@@ -66,6 +66,7 @@ enum {
 	ENTRY_REMOVED,
 	ERROR_STATE,
 	SHOW_MENU,
+	A11Y_UPDATE,
 	LAST_SIGNAL
 };
 
@@ -125,6 +126,13 @@ window_menus_class_init (WindowMenusClass *klass)
 	                                      NULL, NULL,
 	                                      _indicator_appmenu_marshal_VOID__POINTER_UINT,
 	                                      G_TYPE_NONE, 2, G_TYPE_POINTER, G_TYPE_UINT, G_TYPE_NONE);
+	signals[A11Y_UPDATE] =   g_signal_new(WINDOW_MENUS_SIGNAL_A11Y_UPDATE,
+	                                      G_TYPE_FROM_CLASS(klass),
+	                                      G_SIGNAL_RUN_LAST,
+	                                      G_STRUCT_OFFSET (WindowMenusClass, a11y_update),
+	                                      NULL, NULL,
+	                                      _indicator_appmenu_marshal_VOID__POINTER,
+	                                      G_TYPE_NONE, 1, G_TYPE_POINTER, G_TYPE_NONE);
 
 	return;
 }
