@@ -1,4 +1,4 @@
-indicator-appmenu (0.1.94-0ubuntu1~ppa1) natty; urgency=low
+indicator-appmenu (0.1.94-0ubuntu1) natty; urgency=low
 
   * New upstream release.
     * Removing the unused 'destroy' signal on window menus
