@@ -54,6 +54,7 @@ struct _WMEntry {
 	gboolean disabled;
 	gboolean hidden;
 	DbusmenuMenuitem * mi;
+	WindowMenus * wm;
 };
 
 #define WINDOW_MENUS_GET_PRIVATE(o) \
@@ -66,6 +67,7 @@ enum {
 	ENTRY_REMOVED,
 	ERROR_STATE,
 	SHOW_MENU,
+	A11Y_UPDATE,
 	LAST_SIGNAL
 };
 
@@ -125,6 +127,13 @@ window_menus_class_init (WindowMenusClass *klass)
 	                                      NULL, NULL,
 	                                      _indicator_appmenu_marshal_VOID__POINTER_UINT,
 	                                      G_TYPE_NONE, 2, G_TYPE_POINTER, G_TYPE_UINT, G_TYPE_NONE);
+	signals[A11Y_UPDATE] =   g_signal_new(WINDOW_MENUS_SIGNAL_A11Y_UPDATE,
+	                                      G_TYPE_FROM_CLASS(klass),
+	                                      G_SIGNAL_RUN_LAST,
+	                                      G_STRUCT_OFFSET (WindowMenusClass, a11y_update),
+	                                      NULL, NULL,
+	                                      _indicator_appmenu_marshal_VOID__POINTER,
+	                                      G_TYPE_NONE, 1, G_TYPE_POINTER, G_TYPE_NONE);
 
 	return;
 }
@@ -161,6 +170,9 @@ entry_free(IndicatorObjectEntry * entry)
 	if (entry->label != NULL) {
 		g_object_unref(entry->label);
 		entry->label = NULL;
+	}
+	if (entry->accessible_desc != NULL) {
+		entry->accessible_desc = NULL;
 	}
 	if (entry->image != NULL) {
 		g_object_unref(entry->image);
@@ -607,6 +619,11 @@ menu_prop_changed (DbusmenuMenuitem * item, const gchar * property, GVariant * v
 		wmentry->disabled = !g_variant_get_boolean(value);
 	} else if (!g_strcmp0(property, DBUSMENU_MENUITEM_PROP_LABEL)) {
 		gtk_label_set_text_with_mnemonic(entry->label, g_variant_get_string(value, NULL));
+		entry->accessible_desc = g_variant_get_string(value, NULL);
+
+		if (wmentry->wm != NULL) {
+			g_signal_emit(G_OBJECT(wmentry->wm), A11Y_UPDATE, 0, entry, TRUE);
+		}
 	}
 
 	return;
@@ -623,6 +640,7 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE((((gpointer *)user_data)[0]));
 	WMEntry * wmentry = g_new0(WMEntry, 1);
+	wmentry->wm = WINDOW_MENUS((((gpointer *)user_data)[0]));
 	IndicatorObjectEntry * entry = &wmentry->ioentry;
 
 	wmentry->mi = newentry;
@@ -633,6 +651,8 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 	if (entry->label != NULL) {
 		g_object_ref(entry->label);
 	}
+
+	entry->accessible_desc = dbusmenu_menuitem_property_get(newentry, DBUSMENU_MENUITEM_PROP_LABEL);
 
 	entry->menu = dbusmenu_gtkclient_menuitem_get_submenu(priv->client, newentry);
 
