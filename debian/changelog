@@ -2,8 +2,9 @@ indicator-appmenu (0.1.95-0ubuntu1~ppa1) UNRELEASED; urgency=low
 
   * New upstream release.
     * Accessible description support
+  * debian/control: Updating libindicator to 0.3.19
 
- -- Ted Gould <ted@ubuntu.com>  Thu, 17 Feb 2011 14:24:51 -0600
+ -- Ted Gould <ted@ubuntu.com>  Thu, 17 Feb 2011 14:25:23 -0600
 
 indicator-appmenu (0.1.94-0ubuntu1) natty; urgency=low
 
