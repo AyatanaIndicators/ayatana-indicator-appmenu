@@ -128,3 +128,5 @@ _indicator_appmenu_marshal_VOID__POINTER_UINT (GClosure     *closure,
             data2);
 }
 
+/* VOID:POINTER (./indicator-appmenu-marshal.list:4) */
+
