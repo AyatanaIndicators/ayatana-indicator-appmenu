@@ -91,6 +91,7 @@ struct _IndicatorAppmenu {
 	gulong sig_entry_added;
 	gulong sig_entry_removed;
 	gulong sig_show_menu;
+	gulong sig_a11y_update;
 
 	GtkMenuItem * close_item;
 
@@ -168,6 +169,9 @@ static void window_entry_removed                                     (WindowMenu
 static void window_show_menu                                         (WindowMenus * mw,
                                                                       IndicatorObjectEntry * entry,
                                                                       guint timestamp,
+                                                                      gpointer user_data);
+static void window_a11y_update                                       (WindowMenus * mw,
+                                                                      IndicatorObjectEntry * entry,
                                                                       gpointer user_data);
 static void active_window_changed                                    (BamfMatcher * matcher,
                                                                       BamfView * oldview,
@@ -1088,6 +1092,10 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * 
 		g_signal_handler_disconnect(G_OBJECT(iapp->default_app), iapp->sig_show_menu);
 		iapp->sig_show_menu = 0;
 	}
+	if (iapp->sig_a11y_update != 0) {
+		g_signal_handler_disconnect(G_OBJECT(iapp->default_app), iapp->sig_a11y_update);
+		iapp->sig_a11y_update = 0;
+	}
 
 	/* Default App is NULL, let's see if it needs replacement */
 	iapp->default_app = NULL;
@@ -1112,6 +1120,10 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * 
 		iapp->sig_show_menu     = g_signal_connect(G_OBJECT(iapp->default_app),
 		                                           WINDOW_MENUS_SIGNAL_SHOW_MENU,
 		                                           G_CALLBACK(window_show_menu),
+		                                           iapp);
+		iapp->sig_a11y_update   = g_signal_connect(G_OBJECT(iapp->default_app),
+		                                           WINDOW_MENUS_SIGNAL_A11Y_UPDATE,
+		                                           G_CALLBACK(window_a11y_update),
 		                                           iapp);
 	}
 
@@ -1387,6 +1399,14 @@ static void
 window_show_menu (WindowMenus * mw, IndicatorObjectEntry * entry, guint timestamp, gpointer user_data)
 {
 	g_signal_emit_by_name(G_OBJECT(user_data), INDICATOR_OBJECT_SIGNAL_MENU_SHOW, entry, timestamp);
+	return;
+}
+
+/* Pass up the accessible string update */
+static void
+window_a11y_update (WindowMenus * mw, IndicatorObjectEntry * entry, gpointer user_data)
+{
+	g_signal_emit_by_name(G_OBJECT(user_data), INDICATOR_OBJECT_SIGNAL_ACCESSIBLE_DESC_UPDATE, entry);
 	return;
 }
 
