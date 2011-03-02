@@ -42,10 +42,6 @@ struct _WindowMenusPrivate {
 	GArray * entries;
 	gboolean error_state;
 	guint   retry_timer;
-	gint    retry_id;
-	gchar * retry_name;
-	GVariant * retry_data;
-	guint   retry_timestamp;
 };
 
 typedef struct _WMEntry WMEntry;
@@ -245,10 +241,6 @@ window_menus_dispose (GObject *object)
 	if (priv->retry_timer != 0) {
 		g_source_remove(priv->retry_timer);
 		priv->retry_timer = 0;
-		g_variant_unref(priv->retry_data);
-		priv->retry_data = NULL;
-		g_free(priv->retry_name);
-		priv->retry_name = NULL;
 	}
 
 	G_OBJECT_CLASS (window_menus_parent_class)->dispose (object);
@@ -264,13 +256,12 @@ retry_event (gpointer user_data)
 	g_return_val_if_fail(IS_WINDOW_MENUS(user_data), FALSE);
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
 
-	dbusmenu_client_send_event(DBUSMENU_CLIENT(priv->client), priv->retry_id, priv->retry_name, priv->retry_data, priv->retry_timestamp);
+	dbusmenu_menuitem_handle_event(dbusmenu_client_get_root(DBUSMENU_CLIENT(priv->client)),
+	                               "x-appmenu-retry-ping",
+	                               NULL,
+	                               0);
 
 	priv->retry_timer = 0;
-	g_variant_unref(priv->retry_data);
-	priv->retry_data = NULL;
-	g_free(priv->retry_name);
-	priv->retry_name = NULL;
 
 	return FALSE;
 }
@@ -303,10 +294,6 @@ event_status (DbusmenuClient * client, DbusmenuMenuitem * mi, gchar * event, GVa
 		if (priv->retry_timer != 0) {
 			g_source_remove(priv->retry_timer);
 			priv->retry_timer = 0;
-			g_variant_unref(priv->retry_data);
-			priv->retry_data = NULL;
-			g_free(priv->retry_name);
-			priv->retry_name = NULL;
 		}
 
 		return;
@@ -331,11 +318,6 @@ event_status (DbusmenuClient * client, DbusmenuMenuitem * mi, gchar * event, GVa
 	if (priv->retry_timer == 0) {
 		g_debug("Setting up retry timer");
 		priv->retry_timer = g_timeout_add_seconds(1, retry_event, user_data);
-
-		priv->retry_id = dbusmenu_menuitem_get_id(mi);
-		priv->retry_name = g_strdup(event);
-		priv->retry_data = g_variant_ref(evdata);
-		priv->retry_timestamp = timestamp;
 	}
 
 	return;
