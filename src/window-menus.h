@@ -25,6 +25,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <glib.h>
 #include <glib-object.h>
 #include <libindicator/indicator-object.h>
+#include <libdbusmenu-glib/client.h>
 
 G_BEGIN_DECLS
 
@@ -38,6 +39,7 @@ G_BEGIN_DECLS
 #define WINDOW_MENUS_SIGNAL_ENTRY_ADDED    "entry-added"
 #define WINDOW_MENUS_SIGNAL_ENTRY_REMOVED  "entry-removed"
 #define WINDOW_MENUS_SIGNAL_ERROR_STATE    "error-state"
+#define WINDOW_MENUS_SIGNAL_STATUS_CHANGED "status-changed"
 #define WINDOW_MENUS_SIGNAL_SHOW_MENU      "show-menu"
 #define WINDOW_MENUS_SIGNAL_A11Y_UPDATE    "a11y-update"
 
@@ -52,6 +54,7 @@ struct _WindowMenusClass {
 	void (*entry_removed) (WindowMenus * wm, IndicatorObjectEntry * entry, gpointer user_data);
 
 	void (*error_state)   (WindowMenus * wm, gboolean state, gpointer user_data);
+	void (*status_changed) (WindowMenus * wm, DbusmenuStatus status, gpointer user_data);
 
 	void (*show_menu)     (WindowMenus * wm, IndicatorObjectEntry * entry, guint timestamp, gpointer user_data);
 	void (*a11y_update)   (WindowMenus * wm, IndicatorObjectEntry * entry, gpointer user_data);
@@ -71,6 +74,7 @@ gchar * window_menus_get_path (WindowMenus * wm);
 gchar * window_menus_get_address (WindowMenus * wm);
 
 gboolean window_menus_get_error_state (WindowMenus * wm);
+DbusmenuStatus window_menus_get_status (WindowMenus * wm);
 void window_menus_entry_restore (WindowMenus * wm, IndicatorObjectEntry * entry);
 
 void window_menus_entry_activate (WindowMenus * wm, IndicatorObjectEntry * entry, guint timestamp);
