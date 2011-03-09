@@ -1137,13 +1137,6 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * 
 		                                           WINDOW_MENUS_SIGNAL_A11Y_UPDATE,
 		                                           G_CALLBACK(window_a11y_update),
 		                                           iapp);
-
-		/* Set up initial state for new entries if needed */
-		if (window_menus_get_status (iapp->default_app) != DBUSMENU_STATUS_NORMAL) {
-			window_status_changed (iapp->default_app,
-			                       window_menus_get_status (iapp->default_app),
-			                       iapp);
-		}
 	}
 
 	/* Get our new list of entries.  Now we can go ahead and signal
@@ -1172,6 +1165,14 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * 
 	}
 
 	g_list_free(entry_head);
+
+	/* Set up initial state for new entries if needed */
+	if (iapp->default_app != NULL &&
+            window_menus_get_status (iapp->default_app) != DBUSMENU_STATUS_NORMAL) {
+		window_status_changed (iapp->default_app,
+		                       window_menus_get_status (iapp->default_app),
+		                       iapp);
+	}
 
 	return;
 }
