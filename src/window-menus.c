@@ -62,6 +62,7 @@ enum {
 	ENTRY_ADDED,
 	ENTRY_REMOVED,
 	ERROR_STATE,
+	STATUS_CHANGED,
 	SHOW_MENU,
 	A11Y_UPDATE,
 	LAST_SIGNAL
@@ -116,6 +117,13 @@ window_menus_class_init (WindowMenusClass *klass)
 	                                      NULL, NULL,
 	                                      g_cclosure_marshal_VOID__BOOLEAN,
 	                                      G_TYPE_NONE, 1, G_TYPE_BOOLEAN, G_TYPE_NONE);
+	signals[STATUS_CHANGED] = g_signal_new(WINDOW_MENUS_SIGNAL_STATUS_CHANGED,
+	                                      G_TYPE_FROM_CLASS(klass),
+	                                      G_SIGNAL_RUN_LAST,
+	                                      G_STRUCT_OFFSET (WindowMenusClass, status_changed),
+	                                      NULL, NULL,
+	                                      g_cclosure_marshal_VOID__INT,
+	                                      G_TYPE_NONE, 1, G_TYPE_INT, G_TYPE_NONE);
 	signals[SHOW_MENU] =     g_signal_new(WINDOW_MENUS_SIGNAL_SHOW_MENU,
 	                                      G_TYPE_FROM_CLASS(klass),
 	                                      G_SIGNAL_RUN_LAST,
@@ -366,6 +374,23 @@ item_activate (DbusmenuClient * client, DbusmenuMenuitem * item, guint timestamp
 	return;
 }
 
+/* Called when the client changes its status.  Used to show panel if requested.
+   (Say, by an Alt press.) */
+static void
+status_changed (DbusmenuClient * client, GParamSpec * pspec, gpointer user_data)
+{
+	g_signal_emit(G_OBJECT(user_data), signals[STATUS_CHANGED], 0, dbusmenu_client_get_status (client));
+}
+
+DbusmenuStatus
+window_menus_get_status (WindowMenus * wm)
+{
+	g_return_val_if_fail(IS_WINDOW_MENUS(wm), DBUSMENU_STATUS_NORMAL);
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
+
+	return dbusmenu_client_get_status (DBUSMENU_CLIENT (priv->client));
+}
+
 /* Build a new window menus object and attach to the signals to build
    up the representative menu. */
 WindowMenus *
@@ -402,6 +427,7 @@ window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * d
 	g_signal_connect(G_OBJECT(priv->client), DBUSMENU_GTKCLIENT_SIGNAL_ROOT_CHANGED, G_CALLBACK(root_changed),   newmenu);
 	g_signal_connect(G_OBJECT(priv->client), DBUSMENU_CLIENT_SIGNAL_EVENT_RESULT, G_CALLBACK(event_status), newmenu);
 	g_signal_connect(G_OBJECT(priv->client), DBUSMENU_CLIENT_SIGNAL_ITEM_ACTIVATE, G_CALLBACK(item_activate), newmenu);
+	g_signal_connect(G_OBJECT(priv->client), "notify::" DBUSMENU_CLIENT_PROP_STATUS, G_CALLBACK(status_changed), newmenu);
 
 	DbusmenuMenuitem * root = dbusmenu_client_get_root(DBUSMENU_CLIENT(priv->client));
 	if (root != NULL) {
