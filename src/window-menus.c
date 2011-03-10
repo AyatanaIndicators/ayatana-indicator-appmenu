@@ -42,10 +42,6 @@ struct _WindowMenusPrivate {
 	GArray * entries;
 	gboolean error_state;
 	guint   retry_timer;
-	gint    retry_id;
-	gchar * retry_name;
-	GVariant * retry_data;
-	guint   retry_timestamp;
 };
 
 typedef struct _WMEntry WMEntry;
@@ -66,6 +62,7 @@ enum {
 	ENTRY_ADDED,
 	ENTRY_REMOVED,
 	ERROR_STATE,
+	STATUS_CHANGED,
 	SHOW_MENU,
 	A11Y_UPDATE,
 	LAST_SIGNAL
@@ -120,6 +117,13 @@ window_menus_class_init (WindowMenusClass *klass)
 	                                      NULL, NULL,
 	                                      g_cclosure_marshal_VOID__BOOLEAN,
 	                                      G_TYPE_NONE, 1, G_TYPE_BOOLEAN, G_TYPE_NONE);
+	signals[STATUS_CHANGED] = g_signal_new(WINDOW_MENUS_SIGNAL_STATUS_CHANGED,
+	                                      G_TYPE_FROM_CLASS(klass),
+	                                      G_SIGNAL_RUN_LAST,
+	                                      G_STRUCT_OFFSET (WindowMenusClass, status_changed),
+	                                      NULL, NULL,
+	                                      g_cclosure_marshal_VOID__INT,
+	                                      G_TYPE_NONE, 1, G_TYPE_INT, G_TYPE_NONE);
 	signals[SHOW_MENU] =     g_signal_new(WINDOW_MENUS_SIGNAL_SHOW_MENU,
 	                                      G_TYPE_FROM_CLASS(klass),
 	                                      G_SIGNAL_RUN_LAST,
@@ -245,10 +249,6 @@ window_menus_dispose (GObject *object)
 	if (priv->retry_timer != 0) {
 		g_source_remove(priv->retry_timer);
 		priv->retry_timer = 0;
-		g_variant_unref(priv->retry_data);
-		priv->retry_data = NULL;
-		g_free(priv->retry_name);
-		priv->retry_name = NULL;
 	}
 
 	G_OBJECT_CLASS (window_menus_parent_class)->dispose (object);
@@ -264,13 +264,12 @@ retry_event (gpointer user_data)
 	g_return_val_if_fail(IS_WINDOW_MENUS(user_data), FALSE);
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
 
-	dbusmenu_client_send_event(DBUSMENU_CLIENT(priv->client), priv->retry_id, priv->retry_name, priv->retry_data, priv->retry_timestamp);
+	dbusmenu_menuitem_handle_event(dbusmenu_client_get_root(DBUSMENU_CLIENT(priv->client)),
+	                               "x-appmenu-retry-ping",
+	                               NULL,
+	                               0);
 
 	priv->retry_timer = 0;
-	g_variant_unref(priv->retry_data);
-	priv->retry_data = NULL;
-	g_free(priv->retry_name);
-	priv->retry_name = NULL;
 
 	return FALSE;
 }
@@ -303,10 +302,6 @@ event_status (DbusmenuClient * client, DbusmenuMenuitem * mi, gchar * event, GVa
 		if (priv->retry_timer != 0) {
 			g_source_remove(priv->retry_timer);
 			priv->retry_timer = 0;
-			g_variant_unref(priv->retry_data);
-			priv->retry_data = NULL;
-			g_free(priv->retry_name);
-			priv->retry_name = NULL;
 		}
 
 		return;
@@ -331,11 +326,6 @@ event_status (DbusmenuClient * client, DbusmenuMenuitem * mi, gchar * event, GVa
 	if (priv->retry_timer == 0) {
 		g_debug("Setting up retry timer");
 		priv->retry_timer = g_timeout_add_seconds(1, retry_event, user_data);
-
-		priv->retry_id = dbusmenu_menuitem_get_id(mi);
-		priv->retry_name = g_strdup(event);
-		priv->retry_data = g_variant_ref(evdata);
-		priv->retry_timestamp = timestamp;
 	}
 
 	return;
@@ -384,6 +374,23 @@ item_activate (DbusmenuClient * client, DbusmenuMenuitem * item, guint timestamp
 	return;
 }
 
+/* Called when the client changes its status.  Used to show panel if requested.
+   (Say, by an Alt press.) */
+static void
+status_changed (DbusmenuClient * client, GParamSpec * pspec, gpointer user_data)
+{
+	g_signal_emit(G_OBJECT(user_data), signals[STATUS_CHANGED], 0, dbusmenu_client_get_status (client));
+}
+
+DbusmenuStatus
+window_menus_get_status (WindowMenus * wm)
+{
+	g_return_val_if_fail(IS_WINDOW_MENUS(wm), DBUSMENU_STATUS_NORMAL);
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
+
+	return dbusmenu_client_get_status (DBUSMENU_CLIENT (priv->client));
+}
+
 /* Build a new window menus object and attach to the signals to build
    up the representative menu. */
 WindowMenus *
@@ -420,6 +427,7 @@ window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * d
 	g_signal_connect(G_OBJECT(priv->client), DBUSMENU_GTKCLIENT_SIGNAL_ROOT_CHANGED, G_CALLBACK(root_changed),   newmenu);
 	g_signal_connect(G_OBJECT(priv->client), DBUSMENU_CLIENT_SIGNAL_EVENT_RESULT, G_CALLBACK(event_status), newmenu);
 	g_signal_connect(G_OBJECT(priv->client), DBUSMENU_CLIENT_SIGNAL_ITEM_ACTIVATE, G_CALLBACK(item_activate), newmenu);
+	g_signal_connect(G_OBJECT(priv->client), "notify::" DBUSMENU_CLIENT_PROP_STATUS, G_CALLBACK(status_changed), newmenu);
 
 	DbusmenuMenuitem * root = dbusmenu_client_get_root(DBUSMENU_CLIENT(priv->client));
 	if (root != NULL) {
