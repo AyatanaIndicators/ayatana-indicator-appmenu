@@ -90,6 +90,7 @@ struct _IndicatorAppmenu {
 
 	gulong sig_entry_added;
 	gulong sig_entry_removed;
+	gulong sig_status_changed;
 	gulong sig_show_menu;
 	gulong sig_a11y_update;
 
@@ -166,6 +167,9 @@ static void window_entry_added                                       (WindowMenu
 static void window_entry_removed                                     (WindowMenus * mw,
                                                                       IndicatorObjectEntry * entry,
                                                                       gpointer user_data);
+static void window_status_changed                                    (WindowMenus * mw,
+                                                                      DbusmenuStatus status,
+                                                                      IndicatorAppmenu * iapp);
 static void window_show_menu                                         (WindowMenus * mw,
                                                                       IndicatorObjectEntry * entry,
                                                                       guint timestamp,
@@ -1088,6 +1092,10 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * 
 		g_signal_handler_disconnect(G_OBJECT(iapp->default_app), iapp->sig_entry_removed);
 		iapp->sig_entry_removed = 0;
 	}
+	if (iapp->sig_status_changed != 0) {
+		g_signal_handler_disconnect(G_OBJECT(iapp->default_app), iapp->sig_status_changed);
+		iapp->sig_status_changed = 0;
+	}
 	if (iapp->sig_show_menu != 0) {
 		g_signal_handler_disconnect(G_OBJECT(iapp->default_app), iapp->sig_show_menu);
 		iapp->sig_show_menu = 0;
@@ -1116,6 +1124,10 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * 
 		iapp->sig_entry_removed = g_signal_connect(G_OBJECT(iapp->default_app),
 		                                           WINDOW_MENUS_SIGNAL_ENTRY_REMOVED,
 		                                           G_CALLBACK(window_entry_removed),
+		                                           iapp);
+		iapp->sig_status_changed = g_signal_connect(G_OBJECT(iapp->default_app),
+		                                           WINDOW_MENUS_SIGNAL_STATUS_CHANGED,
+		                                           G_CALLBACK(window_status_changed),
 		                                           iapp);
 		iapp->sig_show_menu     = g_signal_connect(G_OBJECT(iapp->default_app),
 		                                           WINDOW_MENUS_SIGNAL_SHOW_MENU,
@@ -1153,6 +1165,14 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * 
 	}
 
 	g_list_free(entry_head);
+
+	/* Set up initial state for new entries if needed */
+	if (iapp->default_app != NULL &&
+            window_menus_get_status (iapp->default_app) != DBUSMENU_STATUS_NORMAL) {
+		window_status_changed (iapp->default_app,
+		                       window_menus_get_status (iapp->default_app),
+		                       iapp);
+	}
 
 	return;
 }
@@ -1391,6 +1411,23 @@ static void
 window_entry_removed (WindowMenus * mw, IndicatorObjectEntry * entry, gpointer user_data)
 {
 	g_signal_emit_by_name(G_OBJECT(user_data), INDICATOR_OBJECT_SIGNAL_ENTRY_REMOVED, entry);
+	return;
+}
+
+/* Pass up the status changed event */
+static void
+window_status_changed (WindowMenus * mw, DbusmenuStatus status, IndicatorAppmenu * iapp)
+{
+	gboolean show_now = (status == DBUSMENU_STATUS_NOTICE);
+	GList * entry_head, * entries;
+
+	entry_head = indicator_object_get_entries(INDICATOR_OBJECT(iapp));
+
+	for (entries = entry_head; entries != NULL; entries = g_list_next(entries)) {
+		IndicatorObjectEntry * entry = (IndicatorObjectEntry *)entries->data;
+		g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_SHOW_NOW_CHANGED_ID, 0, entry, show_now);
+	}
+
 	return;
 }
 
