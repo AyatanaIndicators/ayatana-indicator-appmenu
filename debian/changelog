@@ -1,10 +1,10 @@
-indicator-appmenu (0.1.96-0ubuntu1~ppa1) UNRELEASED; urgency=low
+indicator-appmenu (0.1.96-0ubuntu1~ppa1) natty; urgency=low
 
   * New upstream release.
     ∘ Fix to match DBusmenu API changes
     ∘ Pass signal through libindicator to show menu items on Alt
 
- -- Ted Gould <ted@ubuntu.com>  Thu, 10 Mar 2011 14:12:34 -0600
+ -- Ted Gould <ted@ubuntu.com>  Thu, 10 Mar 2011 14:30:06 -0600
 
 indicator-appmenu (0.1.95-0ubuntu1) natty; urgency=low
 
