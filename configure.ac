@@ -1,11 +1,11 @@
 
-AC_INIT(indicator-appmenu, 0.1.96, ted@canonical.com)
+AC_INIT(indicator-appmenu, 0.1.97, ted@canonical.com)
 AC_COPYRIGHT([Copyright 2010 Canonical])
 
 AC_PREREQ(2.53)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(indicator-appmenu, 0.1.96)
+AM_INIT_AUTOMAKE(indicator-appmenu, 0.1.97)
 
 AM_MAINTAINER_MODE
 
