@@ -1,4 +1,4 @@
-indicator-appmenu (0.1.96-0ubuntu1~ppa1) natty; urgency=low
+indicator-appmenu (0.1.96-0ubuntu1) natty; urgency=low
 
   * New upstream release.
     ∘ Fix to match DBusmenu API changes
