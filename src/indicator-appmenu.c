@@ -1305,9 +1305,40 @@ register_window (IndicatorAppmenu * iapp, guint windowid, const gchar * objectpa
 static GVariant *
 unregister_window (IndicatorAppmenu * iapp, guint windowid)
 {
-	/* TODO: Do it */
+	g_debug("Unregistering: %d", windowid);
+	g_return_val_if_fail(IS_INDICATOR_APPMENU(iapp), NULL);
+	g_return_val_if_fail(iapp->matcher != NULL, NULL);
 
-	return g_variant_new("()");
+	/* Get the application that uses that XID */
+	BamfApplication * app = bamf_matcher_get_application_for_xid(iapp->matcher, windowid);
+	if (app == NULL) {
+		return NULL;
+	}
+	g_object_ref_sink(G_OBJECT(app));
+
+	/* Figure out which window is associated with it */
+	GList * windows = bamf_application_get_windows(app);
+	GList * lwindow;
+	BamfWindow * window = NULL;
+	for (lwindow = windows; lwindow != NULL; lwindow = g_list_next(lwindow)) {
+		BamfWindow * thiswindow = BAMF_WINDOW(lwindow->data);
+		if (bamf_window_get_xid(thiswindow) == windowid) {
+			window = thiswindow;
+			break;
+		}
+	}
+	g_list_free(windows);
+
+	if (window == NULL) {
+		g_object_unref(app);
+		return NULL;
+	}
+
+	/* Call the old_window handler for that window */
+	old_window(iapp->matcher, BAMF_VIEW(window), iapp);
+
+	g_object_unref(app);
+	return NULL;
 }
 
 /* Grab the menu information for a specific window */
