@@ -1,3 +1,10 @@
+indicator-appmenu (0.1.97-0ubuntu1) natty; urgency=low
+
+  * New upstream release.
+    ∘ Support Unregistering menus from DBus (LP: #734880)
+
+ -- Ted Gould <ted@ubuntu.com>  Wed, 16 Mar 2011 14:37:43 -0500
+
 indicator-appmenu (0.1.96-0ubuntu1) natty; urgency=low
 
   * New upstream release.
