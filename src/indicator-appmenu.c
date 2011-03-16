@@ -1305,6 +1305,7 @@ register_window (IndicatorAppmenu * iapp, guint windowid, const gchar * objectpa
 static GVariant *
 unregister_window (IndicatorAppmenu * iapp, guint windowid)
 {
+	g_debug("Unregistering: %d", windowid);
 	g_return_val_if_fail(IS_INDICATOR_APPMENU(iapp), NULL);
 	g_return_val_if_fail(iapp->matcher != NULL, NULL);
 
