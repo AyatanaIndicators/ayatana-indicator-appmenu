@@ -226,8 +226,8 @@ window_menus_dispose (GObject *object)
 	}
 
 	if (priv->root != NULL) {
-		g_object_unref(G_OBJECT(priv->root));
-		priv->root = NULL;
+		root_changed(priv->client, NULL, object);
+		g_warn_if_fail(priv->root == NULL);
 	}
 
 	if (priv->client != NULL) {
