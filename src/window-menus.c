@@ -590,6 +590,17 @@ menu_entry_added (DbusmenuMenuitem * root, DbusmenuMenuitem * newentry, guint po
 	return;
 }
 
+/* A small clean up function to ensure that the data
+   gets free'd and the ref lost in all cases. */
+static void
+child_realized_data_cleanup (gpointer user_data, GClosure * closure)
+{
+	gpointer * data = (gpointer *)user_data;
+	g_object_unref(data[1]);
+	g_free(user_data);
+	return;
+}
+
 /* React to the menuitem when we know that it's got all the data
    that we really need. */
 static void
@@ -606,7 +617,7 @@ menu_entry_realized (DbusmenuMenuitem * newentry, gpointer user_data)
 			data[0] = user_data;
 			data[1] = g_object_ref(newentry);
 
-			g_signal_connect(G_OBJECT(children->data), DBUSMENU_MENUITEM_SIGNAL_REALIZED, G_CALLBACK(menu_child_realized), data);
+			g_signal_connect_data(G_OBJECT(children->data), DBUSMENU_MENUITEM_SIGNAL_REALIZED, G_CALLBACK(menu_child_realized), data, child_realized_data_cleanup, 0);
 		} else {
 			g_warning("Entry has no children!");
 		}
@@ -657,14 +668,25 @@ menu_prop_changed (DbusmenuMenuitem * item, const gchar * property, GVariant * v
 static void
 menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 {
-	DbusmenuMenuitem * newentry = (DbusmenuMenuitem *)(((gpointer *)user_data)[1]);
+	/* Grab our values out to stack variables */
+	DbusmenuMenuitem * newentry = DBUSMENU_MENUITEM(((gpointer *)user_data)[1]);
+	WindowMenus * wm = WINDOW_MENUS(((gpointer *)user_data)[0]);
+
+	g_return_if_fail(newentry != NULL);
+	g_return_if_fail(wm != NULL);
+
+	/* Disconnection below will drop the ref for this signal
+	   handler, let's make sure that's not a problem */
+	g_object_ref(G_OBJECT(newentry));
 
 	/* Only care about the first */
+	/* This will cause the cleanup function attached to the signal
+	   handler to be run. */
 	g_signal_handlers_disconnect_by_func(G_OBJECT(child), menu_child_realized, user_data);
 
-	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE((((gpointer *)user_data)[0]));
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
 	WMEntry * wmentry = g_new0(WMEntry, 1);
-	wmentry->wm = WINDOW_MENUS((((gpointer *)user_data)[0]));
+	wmentry->wm = wm;
 	IndicatorObjectEntry * entry = &wmentry->ioentry;
 
 	wmentry->mi = newentry;
@@ -707,10 +729,9 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 
 	g_array_append_val(priv->entries, wmentry);
 
-	g_signal_emit(G_OBJECT((((gpointer *)user_data)[0])), signals[ENTRY_ADDED], 0, entry, TRUE);
+	g_signal_emit(G_OBJECT(wm), signals[ENTRY_ADDED], 0, entry, TRUE);
 
 	g_object_unref(newentry);
-	g_free(user_data);
 
 	return;
 }
