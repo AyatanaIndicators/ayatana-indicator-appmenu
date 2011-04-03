@@ -525,7 +525,9 @@ new_root_helper (DbusmenuMenuitem * item, gpointer user_data)
 static void
 remove_menuitem_signals (DbusmenuMenuitem * mi, gpointer user_data)
 {
-
+	g_signal_handlers_disconnect_by_func(G_OBJECT(mi), G_CALLBACK(menu_entry_realized), user_data);
+	g_signal_handlers_disconnect_matched (mi, G_SIGNAL_MATCH_FUNC, 0, 0, 0, menu_child_realized, NULL);
+	g_signal_handlers_disconnect_matched (mi, G_SIGNAL_MATCH_FUNC, 0, 0, 0, menu_prop_changed, NULL);
 
 	return;
 }
