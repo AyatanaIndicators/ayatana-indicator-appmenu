@@ -226,7 +226,7 @@ window_menus_dispose (GObject *object)
 	}
 
 	if (priv->root != NULL) {
-		root_changed(priv->client, NULL, object);
+		root_changed(DBUSMENU_CLIENT(priv->client), NULL, object);
 		g_warn_if_fail(priv->root == NULL);
 	}
 
@@ -520,6 +520,16 @@ new_root_helper (DbusmenuMenuitem * item, gpointer user_data)
 	return;
 }
 
+/* Remove the various signals that we attach to menuitems to
+   ensure they don't pop up later. */
+static void
+remove_menuitem_signals (DbusmenuMenuitem * mi, gpointer user_data)
+{
+
+
+	return;
+}
+
 /* Respond to the root menu item on our client changing */
 static void
 root_changed (DbusmenuClient * client, DbusmenuMenuitem * new_root, gpointer user_data)
@@ -531,6 +541,8 @@ root_changed (DbusmenuClient * client, DbusmenuMenuitem * new_root, gpointer use
 	free_entries(G_OBJECT(user_data), TRUE);
 
 	if (priv->root != NULL) {
+		dbusmenu_menuitem_foreach(priv->root, remove_menuitem_signals, client);
+
 		g_signal_handlers_disconnect_by_func(G_OBJECT(priv->root), G_CALLBACK(menu_entry_added), user_data);
 		g_signal_handlers_disconnect_by_func(G_OBJECT(priv->root), G_CALLBACK(menu_entry_removed), user_data);
 		g_object_unref(priv->root);
