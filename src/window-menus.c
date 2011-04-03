@@ -564,6 +564,7 @@ root_changed (DbusmenuClient * client, DbusmenuMenuitem * new_root, gpointer use
 static void
 menu_entry_added (DbusmenuMenuitem * root, DbusmenuMenuitem * newentry, guint position, gpointer user_data)
 {
+	g_return_if_fail(IS_WINDOW_MENUS(user_data));
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
 
 	g_signal_connect(G_OBJECT(newentry), DBUSMENU_MENUITEM_SIGNAL_REALIZED, G_CALLBACK(menu_entry_realized), user_data);
@@ -580,6 +581,7 @@ menu_entry_added (DbusmenuMenuitem * root, DbusmenuMenuitem * newentry, guint po
 static void
 menu_entry_realized (DbusmenuMenuitem * newentry, gpointer user_data)
 {
+	g_return_if_fail(IS_WINDOW_MENUS(user_data));
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
 	GtkMenu * menu = dbusmenu_gtkclient_menuitem_get_submenu(priv->client, newentry);
 
