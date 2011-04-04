@@ -619,14 +619,11 @@ menu_entry_realized (DbusmenuMenuitem * newentry, gpointer user_data)
 	if (menu == NULL) {
 		GList * children = dbusmenu_menuitem_get_children(newentry);
 		if (children != NULL) {
-			GList * child;
-			for (child = children; child != NULL; child = g_list_next(child)) {
-				gpointer * data = g_new(gpointer, 2);
-				data[0] = user_data;
-				data[1] = g_object_ref(newentry);
+			gpointer * data = g_new(gpointer, 2);
+			data[0] = user_data;
+			data[1] = g_object_ref(newentry);
 
-				g_signal_connect_data(G_OBJECT(child->data), DBUSMENU_MENUITEM_SIGNAL_REALIZED, G_CALLBACK(menu_child_realized), data, child_realized_data_cleanup, 0);
-			}
+			g_signal_connect_data(G_OBJECT(children->data), DBUSMENU_MENUITEM_SIGNAL_REALIZED, G_CALLBACK(menu_child_realized), data, child_realized_data_cleanup, 0);
 		} else {
 			g_signal_connect(G_OBJECT(newentry), DBUSMENU_MENUITEM_SIGNAL_CHILD_ADDED, G_CALLBACK(menu_entry_realized), user_data);
 			dbusmenu_menuitem_send_about_to_show(newentry, NULL, NULL);
@@ -692,12 +689,7 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 	/* Only care about the first */
 	/* This will cause the cleanup function attached to the signal
 	   handler to be run. */
-	GList * childs = dbusmenu_menuitem_get_children(newentry);
-	while (childs != NULL) {
-		g_signal_handlers_block_by_func(G_OBJECT(childs->data), menu_child_realized, user_data);
-		g_signal_handlers_disconnect_by_func(G_OBJECT(childs->data), menu_child_realized, user_data);
-		childs = g_list_next(childs);
-	}
+	g_signal_handlers_disconnect_by_func(G_OBJECT(child), menu_child_realized, user_data);
 
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
 	WMEntry * wmentry = g_new0(WMEntry, 1);
