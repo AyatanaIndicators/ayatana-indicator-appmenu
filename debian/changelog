@@ -2,8 +2,9 @@ indicator-appmenu (0.1.97-0ubuntu2~ppa1) UNRELEASED; urgency=low
 
   * Upstream merge
     * Disconnecting client signal handlers on displose (LP: #738561)
+    * Remove menuitem signals on root changes (LP: #743404)
 
- -- Ted Gould <ted@ubuntu.com>  Mon, 04 Apr 2011 14:52:36 -0500
+ -- Ted Gould <ted@ubuntu.com>  Mon, 04 Apr 2011 14:53:34 -0500
 
 indicator-appmenu (0.1.97-0ubuntu1) natty; urgency=low
 
