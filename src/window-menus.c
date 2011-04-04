@@ -702,7 +702,7 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 	   handler to be run. */
 	GList * childs = dbusmenu_menuitem_get_children(newentry);
 	while (childs != NULL) {
-		g_signal_stop_emission_by_name(G_OBJECT(childs->data), DBUSMENU_MENUITEM_SIGNAL_REALIZED);
+		g_signal_handlers_block_by_func(G_OBJECT(childs->data), menu_child_realized, user_data);
 		g_signal_handlers_disconnect_by_func(G_OBJECT(childs->data), menu_child_realized, user_data);
 		childs = g_list_next(childs);
 	}
