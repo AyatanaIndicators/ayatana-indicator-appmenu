@@ -76,6 +76,9 @@ static void window_menus_class_init (WindowMenusClass *klass);
 static void window_menus_init       (WindowMenus *self);
 static void window_menus_dispose    (GObject *object);
 static void root_changed            (DbusmenuClient * client, DbusmenuMenuitem * new_root, gpointer user_data);
+static void event_status            (DbusmenuClient * client, DbusmenuMenuitem * mi, gchar * event, GVariant * evdata, guint timestamp, GError * error, gpointer user_data);
+static void item_activate           (DbusmenuClient * client, DbusmenuMenuitem * item, guint timestamp, gpointer user_data);
+static void status_changed          (DbusmenuClient * client, GParamSpec * pspec, gpointer user_data);
 static void menu_entry_added        (DbusmenuMenuitem * root, DbusmenuMenuitem * newentry, guint position, gpointer user_data);
 static void menu_entry_removed      (DbusmenuMenuitem * root, DbusmenuMenuitem * oldentry, gpointer user_data);
 static void menu_entry_realized     (DbusmenuMenuitem * newentry, gpointer user_data);
@@ -231,6 +234,11 @@ window_menus_dispose (GObject *object)
 	}
 
 	if (priv->client != NULL) {
+		g_signal_handlers_disconnect_by_func(G_OBJECT(priv->client), G_CALLBACK(root_changed),    object);
+		g_signal_handlers_disconnect_by_func(G_OBJECT(priv->client), G_CALLBACK(event_status),    object);
+		g_signal_handlers_disconnect_by_func(G_OBJECT(priv->client), G_CALLBACK(item_activate),   object);
+		g_signal_handlers_disconnect_by_func(G_OBJECT(priv->client), G_CALLBACK(status_changed),  object);
+
 		g_object_unref(G_OBJECT(priv->client));
 		priv->client = NULL;
 	}
