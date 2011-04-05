@@ -1,10 +1,10 @@
-indicator-appmenu (0.1.97-0ubuntu2~ppa2) UNRELEASED; urgency=low
+indicator-appmenu (0.1.97-0ubuntu2~ppa2) natty; urgency=low
 
   * Upstream Merge
     * Fill in menus that are blank by default using the about-to-show
       signal (LP: #619811)
 
- -- Ted Gould <ted@ubuntu.com>  Mon, 04 Apr 2011 16:24:39 -0500
+ -- Ted Gould <ted@ubuntu.com>  Tue, 05 Apr 2011 14:49:50 -0500
 
 indicator-appmenu (0.1.97-0ubuntu2~ppa1) natty; urgency=low
 
