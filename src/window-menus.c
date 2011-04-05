@@ -409,15 +409,16 @@ window_menus_new (const guint windowid, const gchar * dbus_addr, const gchar * d
 
 	/* Build the service proxy */
 	priv->props_cancel = g_cancellable_new();
+	g_object_ref(newmenu); /* Take a ref for the async callback */
 	g_dbus_proxy_new_for_bus(G_BUS_TYPE_SESSION,
-			         G_DBUS_PROXY_FLAGS_NONE,
-			         NULL,
+	                         G_DBUS_PROXY_FLAGS_NONE,
+	                         NULL,
 	                         dbus_addr,
 	                         dbus_object,
 	                         "org.freedesktop.DBus.Properties",
-			         priv->props_cancel,
-			         props_cb,
-		                 newmenu);
+	                         priv->props_cancel,
+	                         props_cb,
+	                         newmenu);
 
 	priv->client = dbusmenu_gtkclient_new((gchar *)dbus_addr, (gchar *)dbus_object);
 	GtkAccelGroup * agroup = gtk_accel_group_new();
@@ -456,14 +457,17 @@ props_cb (GObject * object, GAsyncResult * res, gpointer user_data)
 	}
 
 	if (error != NULL) {
-		g_critical("Could not grab DBus proxy for window %u: %s", priv->windowid, error->message);
+		g_warning("Could not grab DBus proxy for window %u: %s", priv->windowid, error->message);
 		g_error_free(error);
-		return;
+		goto out;
 	}
 
 	/* Okay, we're good to grab the proxy at this point, we're
 	sure that it's ours. */
 	priv->props = proxy;
+
+out:
+	g_object_unref(G_OBJECT(self));
 
 	return;
 }
