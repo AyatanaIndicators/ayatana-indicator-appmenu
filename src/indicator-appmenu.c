@@ -106,6 +106,8 @@ struct _IndicatorAppmenu {
 	GDBusConnection * bus;
 	guint owner_id;
 	guint dbus_registration;
+
+	GHashTable * destruction_timers;
 };
 
 
@@ -213,6 +215,9 @@ static void dbg_bus_get_cb                                           (GObject * 
                                                                       gpointer user_data);
 static void menus_destroyed                                          (GObject * menus,
                                                                       gpointer user_data);
+static void source_unregister                                        (gpointer user_data);
+static GVariant * unregister_window                                  (IndicatorAppmenu * iapp,
+                                                                      guint windowid);
 
 /* Unique error codes for debug interface */
 enum {
@@ -301,6 +306,9 @@ indicator_appmenu_init (IndicatorAppmenu *self)
 	/* Setup the cache of windows with possible desktop entries */
 	self->desktop_windows = g_hash_table_new(g_direct_hash, g_direct_equal);
 	self->desktop_menu = NULL; /* Starts NULL until found */
+
+	/* Set up the hashtable of destruction timers */
+	self->destruction_timers = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, source_unregister);
 
 	build_window_menus(self);
 
@@ -422,6 +430,14 @@ indicator_appmenu_dispose (GObject *object)
 		g_dbus_connection_unregister_object(iapp->bus, iapp->dbus_registration);
 		/* Don't care if it fails, there's nothing we can do */
 		iapp->dbus_registration = 0;
+	}
+
+	if (iapp->destruction_timers != NULL) {
+		/* These are in dispose and not finalize becuase the dereference
+		   function removes timers that could need the object to be in
+		   a valid state, so it's better to have them in dispose */
+		g_hash_table_destroy(iapp->destruction_timers);
+		iapp->destruction_timers = NULL;
 	}
 
 	if (iapp->bus != NULL) {
@@ -755,12 +771,16 @@ new_window (BamfMatcher * matcher, BamfView * view, gpointer user_data)
 	}
 
 	BamfWindow * window = BAMF_WINDOW(view);
+	IndicatorAppmenu * iapp = INDICATOR_APPMENU(user_data);
+	guint xid = bamf_window_get_xid(window);
+
+	/* Make sure we don't destroy it later */
+	g_hash_table_remove(iapp->destruction_timers, GUINT_TO_POINTER(xid));
+
 	if (bamf_window_get_window_type(window) != BAMF_WINDOW_DESKTOP) {
 		return;
 	}
 
-	IndicatorAppmenu * iapp = INDICATOR_APPMENU(user_data);
-	guint xid = bamf_window_get_xid(window);
 	g_hash_table_insert(iapp->desktop_windows, GUINT_TO_POINTER(xid), GINT_TO_POINTER(TRUE));
 
 	g_debug("New Desktop Window: %X", xid);
@@ -778,6 +798,32 @@ new_window (BamfMatcher * matcher, BamfView * view, gpointer user_data)
 	return;
 }
 
+typedef struct _destroy_data_t destroy_data_t;
+struct _destroy_data_t {
+	IndicatorAppmenu * iapp;
+	guint32 xid;
+};
+
+/* Timeout to finally cleanup the window.  Causes is to ignore glitches that
+   come from BAMF/WNCK. */
+static gboolean
+destroy_window_timeout (gpointer user_data)
+{
+	destroy_data_t * destroy_data = (destroy_data_t *)user_data;
+	g_hash_table_steal(destroy_data->iapp->destruction_timers, GUINT_TO_POINTER(destroy_data->xid));
+	unregister_window(destroy_data->iapp, destroy_data->xid);
+	return FALSE; /* free's data through source deregistration */
+}
+
+/* Unregisters the source in the hash table when it gets removed.  This ensure
+   we don't leave any timeouts around */
+static void
+source_unregister (gpointer user_data)
+{
+	g_source_remove(GPOINTER_TO_UINT(user_data));
+	return;
+}
+
 /* When windows leave us, this function gets called */
 static void
 old_window (BamfMatcher * matcher, BamfView * view, gpointer user_data)
@@ -790,25 +836,12 @@ old_window (BamfMatcher * matcher, BamfView * view, gpointer user_data)
 	BamfWindow * window = BAMF_WINDOW(view);
 	guint32 xid = bamf_window_get_xid(window);
 
-	/* See if it's in our list of desktop windows, if
-	   so remove it from that list. */
-	if (bamf_window_get_window_type(window) == BAMF_WINDOW_DESKTOP) {
-		g_hash_table_remove(iapp->desktop_windows, GUINT_TO_POINTER(xid));
-	}
+	destroy_data_t * destroy_data = g_new0(destroy_data_t, 1);
+	destroy_data->iapp = iapp;
+	destroy_data->xid = xid;
 
-	/* Now let's see if we've got a WM object for it then
-	   we need to mark it as destroyed and unreference to
-	   actually destroy it. */
-	gpointer wm = g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(xid));
-	if (wm != NULL) {
-		GObject * wmo = G_OBJECT(wm);
-
-		/* Using destroyed so that if the menus are shown
-		   they'll be switch and the current window gets
-		   updated as well. */
-		menus_destroyed(wmo, iapp);
-		g_object_unref(wmo);
-	}
+	guint source_id = g_timeout_add_seconds_full(G_PRIORITY_LOW, 5, destroy_window_timeout, destroy_data, g_free);
+	g_hash_table_replace(iapp->destruction_timers, GUINT_TO_POINTER(xid), GUINT_TO_POINTER(source_id));
 
 	return;
 }
@@ -1272,6 +1305,9 @@ register_window (IndicatorAppmenu * iapp, guint windowid, const gchar * objectpa
 {
 	g_debug("Registering window ID %d with path %s from %s", windowid, objectpath, sender);
 
+	/* Shouldn't do anything, but let's be sure */
+	g_hash_table_remove(iapp->destruction_timers, GUINT_TO_POINTER(windowid));
+
 	if (g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid)) == NULL && windowid != 0) {
 		WindowMenus * wm = window_menus_new(windowid, sender, objectpath);
 		g_return_val_if_fail(wm != NULL, FALSE);
@@ -1294,7 +1330,19 @@ register_window (IndicatorAppmenu * iapp, guint windowid, const gchar * objectpa
 		if (windowid == 0) {
 			g_warning("Can't build windows for a NULL window ID %d with path %s from %s", windowid, objectpath, sender);
 		} else {
-			g_warning("Already have a menu for window ID %d with path %s from %s", windowid, objectpath, sender);
+			g_warning("Already have a menu for window ID %d with path %s from %s, unregistering that one", windowid, objectpath, sender);
+			unregister_window(iapp, windowid);
+
+			/* NOTE: So we're doing a lookup here.  That seems pretty useless
+			   now doesn't it.  It's for a good reason.  We're going recursive
+			   with a pretty complex set of functions we want to ensure that
+			   we're not going to end up infinitely recursive otherwise things
+			   could go really bad. */
+			if (g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid)) == NULL) {
+				return register_window(iapp, windowid, objectpath, sender);
+			}
+
+			g_warning("Unable to unregister window!");
 		}
 	}
 
@@ -1308,6 +1356,9 @@ unregister_window (IndicatorAppmenu * iapp, guint windowid)
 	g_debug("Unregistering: %d", windowid);
 	g_return_val_if_fail(IS_INDICATOR_APPMENU(iapp), NULL);
 	g_return_val_if_fail(iapp->matcher != NULL, NULL);
+
+	/* Make sure we don't destroy it later */
+	g_hash_table_remove(iapp->destruction_timers, GUINT_TO_POINTER(windowid));
 
 	/* Get the application that uses that XID */
 	BamfApplication * app = bamf_matcher_get_application_for_xid(iapp->matcher, windowid);
@@ -1334,8 +1385,25 @@ unregister_window (IndicatorAppmenu * iapp, guint windowid)
 		return NULL;
 	}
 
-	/* Call the old_window handler for that window */
-	old_window(iapp->matcher, BAMF_VIEW(window), iapp);
+	/* See if it's in our list of desktop windows, if
+	   so remove it from that list. */
+	if (bamf_window_get_window_type(window) == BAMF_WINDOW_DESKTOP) {
+		g_hash_table_remove(iapp->desktop_windows, GUINT_TO_POINTER(windowid));
+	}
+
+	/* Now let's see if we've got a WM object for it then
+	   we need to mark it as destroyed and unreference to
+	   actually destroy it. */
+	gpointer wm = g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid));
+	if (wm != NULL) {
+		GObject * wmo = G_OBJECT(wm);
+
+		/* Using destroyed so that if the menus are shown
+		   they'll be switch and the current window gets
+		   updated as well. */
+		menus_destroyed(wmo, iapp);
+		g_object_unref(wmo);
+	}
 
 	g_object_unref(app);
 	return NULL;
