@@ -813,25 +813,7 @@ old_window (BamfMatcher * matcher, BamfView * view, gpointer user_data)
 
 	guint source_id = g_timeout_add_seconds_full(G_PRIORITY_LOW, 5, destroy_window_timeout, destroy_data, g_free);
 
-	/* See if it's in our list of desktop windows, if
-	   so remove it from that list. */
-	if (bamf_window_get_window_type(window) == BAMF_WINDOW_DESKTOP) {
-		g_hash_table_remove(iapp->desktop_windows, GUINT_TO_POINTER(xid));
-	}
-
-	/* Now let's see if we've got a WM object for it then
-	   we need to mark it as destroyed and unreference to
-	   actually destroy it. */
-	gpointer wm = g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(xid));
-	if (wm != NULL) {
-		GObject * wmo = G_OBJECT(wm);
-
-		/* Using destroyed so that if the menus are shown
-		   they'll be switch and the current window gets
-		   updated as well. */
-		menus_destroyed(wmo, iapp);
-		g_object_unref(wmo);
-	}
+	if (source_id) {g_debug("Blah");}
 
 	return;
 }
@@ -1357,8 +1339,25 @@ unregister_window (IndicatorAppmenu * iapp, guint windowid)
 		return NULL;
 	}
 
-	/* Call the old_window handler for that window */
-	old_window(iapp->matcher, BAMF_VIEW(window), iapp);
+	/* See if it's in our list of desktop windows, if
+	   so remove it from that list. */
+	if (bamf_window_get_window_type(window) == BAMF_WINDOW_DESKTOP) {
+		g_hash_table_remove(iapp->desktop_windows, GUINT_TO_POINTER(windowid));
+	}
+
+	/* Now let's see if we've got a WM object for it then
+	   we need to mark it as destroyed and unreference to
+	   actually destroy it. */
+	gpointer wm = g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid));
+	if (wm != NULL) {
+		GObject * wmo = G_OBJECT(wm);
+
+		/* Using destroyed so that if the menus are shown
+		   they'll be switch and the current window gets
+		   updated as well. */
+		menus_destroyed(wmo, iapp);
+		g_object_unref(wmo);
+	}
 
 	g_object_unref(app);
 	return NULL;
