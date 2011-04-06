@@ -771,12 +771,16 @@ new_window (BamfMatcher * matcher, BamfView * view, gpointer user_data)
 	}
 
 	BamfWindow * window = BAMF_WINDOW(view);
+	IndicatorAppmenu * iapp = INDICATOR_APPMENU(user_data);
+	guint xid = bamf_window_get_xid(window);
+
+	/* Make sure we don't destroy it later */
+	g_hash_table_remove(iapp->destruction_timers, GUINT_TO_POINTER(xid));
+
 	if (bamf_window_get_window_type(window) != BAMF_WINDOW_DESKTOP) {
 		return;
 	}
 
-	IndicatorAppmenu * iapp = INDICATOR_APPMENU(user_data);
-	guint xid = bamf_window_get_xid(window);
 	g_hash_table_insert(iapp->desktop_windows, GUINT_TO_POINTER(xid), GINT_TO_POINTER(TRUE));
 
 	g_debug("New Desktop Window: %X", xid);
@@ -806,6 +810,7 @@ static gboolean
 destroy_window_timeout (gpointer user_data)
 {
 	destroy_data_t * destroy_data = (destroy_data_t *)user_data;
+	g_hash_table_steal(destroy_data->iapp->destruction_timers, GUINT_TO_POINTER(destroy_data->xid));
 	unregister_window(destroy_data->iapp, destroy_data->xid);
 	return FALSE; /* free's data through source deregistration */
 }
