@@ -1,10 +1,10 @@
-indicator-appmenu (0.1.97-0ubuntu2~ppa3) UNRELEASED; urgency=low
+indicator-appmenu (0.1.97-0ubuntu2~ppa3) natty; urgency=low
 
   * Upstream Merge
     * Work around bugs in signaling by delaying the destruction of
       menu caches for five seconds (LP: #718926)
 
- -- Ted Gould <ted@ubuntu.com>  Wed, 06 Apr 2011 14:19:24 -0500
+ -- Ted Gould <ted@ubuntu.com>  Wed, 06 Apr 2011 14:54:13 -0500
 
 indicator-appmenu (0.1.97-0ubuntu2~ppa2) natty; urgency=low
 
