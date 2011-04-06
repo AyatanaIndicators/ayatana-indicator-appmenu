@@ -778,6 +778,23 @@ new_window (BamfMatcher * matcher, BamfView * view, gpointer user_data)
 	return;
 }
 
+typedef struct _destroy_data_t destroy_data_t;
+struct _destroy_data_t {
+	IndicatorAppmenu * iapp;
+	guint32 xid;
+};
+
+/* Timeout to finally cleanup the window.  Causes is to ignore glitches that
+   come from BAMF/WNCK. */
+static gboolean
+destroy_window_timeout (gpointer user_data)
+{
+
+
+
+	return FALSE;
+}
+
 /* When windows leave us, this function gets called */
 static void
 old_window (BamfMatcher * matcher, BamfView * view, gpointer user_data)
@@ -789,6 +806,12 @@ old_window (BamfMatcher * matcher, BamfView * view, gpointer user_data)
 	IndicatorAppmenu * iapp = INDICATOR_APPMENU(user_data);
 	BamfWindow * window = BAMF_WINDOW(view);
 	guint32 xid = bamf_window_get_xid(window);
+
+	destroy_data_t * destroy_data = g_new0(destroy_data_t, 1);
+	destroy_data->iapp = iapp;
+	destroy_data->xid = xid;
+
+	guint source_id = g_timeout_add_seconds_full(G_PRIORITY_LOW, 5, destroy_window_timeout, destroy_data, g_free);
 
 	/* See if it's in our list of desktop windows, if
 	   so remove it from that list. */
