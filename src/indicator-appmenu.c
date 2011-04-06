@@ -836,8 +836,7 @@ old_window (BamfMatcher * matcher, BamfView * view, gpointer user_data)
 	destroy_data->xid = xid;
 
 	guint source_id = g_timeout_add_seconds_full(G_PRIORITY_LOW, 5, destroy_window_timeout, destroy_data, g_free);
-
-	if (source_id) {g_debug("Blah");}
+	g_hash_table_replace(iapp->destruction_timers, GUINT_TO_POINTER(xid), GUINT_TO_POINTER(source_id));
 
 	return;
 }
