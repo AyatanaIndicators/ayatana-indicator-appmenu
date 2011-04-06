@@ -1330,7 +1330,19 @@ register_window (IndicatorAppmenu * iapp, guint windowid, const gchar * objectpa
 		if (windowid == 0) {
 			g_warning("Can't build windows for a NULL window ID %d with path %s from %s", windowid, objectpath, sender);
 		} else {
-			g_warning("Already have a menu for window ID %d with path %s from %s", windowid, objectpath, sender);
+			g_warning("Already have a menu for window ID %d with path %s from %s, unregistering that one", windowid, objectpath, sender);
+			unregister_window(iapp, windowid);
+
+			/* NOTE: So we're doing a lookup here.  That seems pretty useless
+			   now doesn't it.  It's for a good reason.  We're going recursive
+			   with a pretty complex set of functions we want to ensure that
+			   we're not going to end up infinitely recursive otherwise things
+			   could go really bad. */
+			if (g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid)) == NULL) {
+				return register_window(iapp, windowid, objectpath, sender);
+			}
+
+			g_warning("Unable to unregister window!");
 		}
 	}
 
