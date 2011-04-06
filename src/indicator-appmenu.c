@@ -106,6 +106,8 @@ struct _IndicatorAppmenu {
 	GDBusConnection * bus;
 	guint owner_id;
 	guint dbus_registration;
+
+	GHashTable * destruction_timers;
 };
 
 
@@ -213,6 +215,7 @@ static void dbg_bus_get_cb                                           (GObject * 
                                                                       gpointer user_data);
 static void menus_destroyed                                          (GObject * menus,
                                                                       gpointer user_data);
+static void source_unregister                                        (gpointer user_data);
 
 /* Unique error codes for debug interface */
 enum {
@@ -301,6 +304,9 @@ indicator_appmenu_init (IndicatorAppmenu *self)
 	/* Setup the cache of windows with possible desktop entries */
 	self->desktop_windows = g_hash_table_new(g_direct_hash, g_direct_equal);
 	self->desktop_menu = NULL; /* Starts NULL until found */
+
+	/* Set up the hashtable of destruction timers */
+	self->destruction_timers = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, source_unregister);
 
 	build_window_menus(self);
 
@@ -422,6 +428,14 @@ indicator_appmenu_dispose (GObject *object)
 		g_dbus_connection_unregister_object(iapp->bus, iapp->dbus_registration);
 		/* Don't care if it fails, there's nothing we can do */
 		iapp->dbus_registration = 0;
+	}
+
+	if (iapp->destruction_timers != NULL) {
+		/* These are in dispose and not finalize becuase the dereference
+		   function removes timers that could need the object to be in
+		   a valid state, so it's better to have them in dispose */
+		g_hash_table_destroy(iapp->destruction_timers);
+		iapp->destruction_timers = NULL;
 	}
 
 	if (iapp->bus != NULL) {
@@ -793,6 +807,15 @@ destroy_window_timeout (gpointer user_data)
 
 
 	return FALSE;
+}
+
+/* Unregisters the source in the hash table when it gets removed.  This ensure
+   we don't leave any timeouts around */
+static void
+source_unregister (gpointer user_data)
+{
+
+	return;
 }
 
 /* When windows leave us, this function gets called */
