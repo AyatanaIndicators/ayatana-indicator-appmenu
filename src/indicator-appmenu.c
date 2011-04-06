@@ -216,6 +216,8 @@ static void dbg_bus_get_cb                                           (GObject * 
 static void menus_destroyed                                          (GObject * menus,
                                                                       gpointer user_data);
 static void source_unregister                                        (gpointer user_data);
+static GVariant * unregister_window                                  (IndicatorAppmenu * iapp,
+                                                                      guint windowid);
 
 /* Unique error codes for debug interface */
 enum {
@@ -803,10 +805,9 @@ struct _destroy_data_t {
 static gboolean
 destroy_window_timeout (gpointer user_data)
 {
-
-
-
-	return FALSE;
+	destroy_data_t * destroy_data = (destroy_data_t *)user_data;
+	unregister_window(destroy_data->iapp, destroy_data->xid);
+	return FALSE; /* free's data through source deregistration */
 }
 
 /* Unregisters the source in the hash table when it gets removed.  This ensure
@@ -814,7 +815,7 @@ destroy_window_timeout (gpointer user_data)
 static void
 source_unregister (gpointer user_data)
 {
-
+	g_source_remove(GPOINTER_TO_UINT(user_data));
 	return;
 }
 
