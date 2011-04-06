@@ -1305,6 +1305,9 @@ register_window (IndicatorAppmenu * iapp, guint windowid, const gchar * objectpa
 {
 	g_debug("Registering window ID %d with path %s from %s", windowid, objectpath, sender);
 
+	/* Shouldn't do anything, but let's be sure */
+	g_hash_table_remove(iapp->destruction_timers, GUINT_TO_POINTER(windowid));
+
 	if (g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid)) == NULL && windowid != 0) {
 		WindowMenus * wm = window_menus_new(windowid, sender, objectpath);
 		g_return_val_if_fail(wm != NULL, FALSE);
@@ -1341,6 +1344,9 @@ unregister_window (IndicatorAppmenu * iapp, guint windowid)
 	g_debug("Unregistering: %d", windowid);
 	g_return_val_if_fail(IS_INDICATOR_APPMENU(iapp), NULL);
 	g_return_val_if_fail(iapp->matcher != NULL, NULL);
+
+	/* Make sure we don't destroy it later */
+	g_hash_table_remove(iapp->destruction_timers, GUINT_TO_POINTER(windowid));
 
 	/* Get the application that uses that XID */
 	BamfApplication * app = bamf_matcher_get_application_for_xid(iapp->matcher, windowid);
