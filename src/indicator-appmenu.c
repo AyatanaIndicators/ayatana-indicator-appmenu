@@ -1360,36 +1360,8 @@ unregister_window (IndicatorAppmenu * iapp, guint windowid)
 	/* Make sure we don't destroy it later */
 	g_hash_table_remove(iapp->destruction_timers, GUINT_TO_POINTER(windowid));
 
-	/* Get the application that uses that XID */
-	BamfApplication * app = bamf_matcher_get_application_for_xid(iapp->matcher, windowid);
-	if (app == NULL) {
-		return NULL;
-	}
-	g_object_ref_sink(G_OBJECT(app));
-
-	/* Figure out which window is associated with it */
-	GList * windows = bamf_application_get_windows(app);
-	GList * lwindow;
-	BamfWindow * window = NULL;
-	for (lwindow = windows; lwindow != NULL; lwindow = g_list_next(lwindow)) {
-		BamfWindow * thiswindow = BAMF_WINDOW(lwindow->data);
-		if (bamf_window_get_xid(thiswindow) == windowid) {
-			window = thiswindow;
-			break;
-		}
-	}
-	g_list_free(windows);
-
-	if (window == NULL) {
-		g_object_unref(app);
-		return NULL;
-	}
-
-	/* See if it's in our list of desktop windows, if
-	   so remove it from that list. */
-	if (bamf_window_get_window_type(window) == BAMF_WINDOW_DESKTOP) {
-		g_hash_table_remove(iapp->desktop_windows, GUINT_TO_POINTER(windowid));
-	}
+	/* If it's a desktop window remove it from that table as well */
+	g_hash_table_remove(iapp->desktop_windows, GUINT_TO_POINTER(windowid));
 
 	/* Now let's see if we've got a WM object for it then
 	   we need to mark it as destroyed and unreference to
@@ -1405,7 +1377,6 @@ unregister_window (IndicatorAppmenu * iapp, guint windowid)
 		g_object_unref(wmo);
 	}
 
-	g_object_unref(app);
 	return NULL;
 }
 
