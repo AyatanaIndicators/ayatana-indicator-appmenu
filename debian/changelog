@@ -1,3 +1,10 @@
+indicator-appmenu (0.1.97-0ubuntu2~ppa4) UNRELEASED; urgency=low
+
+  * Upstream Merge
+    * Check child-display property as well.
+
+ -- Ted Gould <ted@ubuntu.com>  Wed, 06 Apr 2011 22:03:24 -0500
+
 indicator-appmenu (0.1.97-0ubuntu2~ppa3) natty; urgency=low
 
   * Upstream Merge
