@@ -619,7 +619,7 @@ menu_entry_realized (DbusmenuMenuitem * newentry, gpointer user_data)
 	/* Check to see if we have any children, if we don't let's see if
 	   we can scare some up for fun. */
 	GList * children = dbusmenu_menuitem_get_children(newentry);
-	if (children == NULL) {
+	if (children == NULL && g_strcmp0(DBUSMENU_MENUITEM_CHILD_DISPLAY_SUBMENU, dbusmenu_menuitem_property_get(newentry, DBUSMENU_MENUITEM_PROP_CHILD_DISPLAY)) == 0) {
 		dbusmenu_menuitem_send_about_to_show(newentry, NULL, NULL);
 	}
 
