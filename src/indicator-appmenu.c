@@ -934,6 +934,10 @@ get_entries (IndicatorObject * io)
 		return NULL;
 	}
 
+	if (indicator_object_check_environment(INDICATOR_OBJECT(iapp), "unity")) {
+		return NULL;
+	}
+
 	GList * output = NULL;
 	int i;
 
