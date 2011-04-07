@@ -655,7 +655,7 @@ close_current (GtkMenuItem * mi, gpointer user_data)
 		return;
 	}
 
-	guint xid = bamf_window_get_xid(iapp->active_window);
+	guint32 xid = bamf_window_get_xid(iapp->active_window);
 	guint timestamp = gdk_event_get_time(NULL);
 
 	XEvent xev;
@@ -772,7 +772,7 @@ new_window (BamfMatcher * matcher, BamfView * view, gpointer user_data)
 
 	BamfWindow * window = BAMF_WINDOW(view);
 	IndicatorAppmenu * iapp = INDICATOR_APPMENU(user_data);
-	guint xid = bamf_window_get_xid(window);
+	guint32 xid = bamf_window_get_xid(window);
 
 	/* Make sure we don't destroy it later */
 	g_hash_table_remove(iapp->destruction_timers, GUINT_TO_POINTER(xid));
@@ -934,6 +934,10 @@ get_entries (IndicatorObject * io)
 		return NULL;
 	}
 
+	if (indicator_object_check_environment(INDICATOR_OBJECT(iapp), "unity")) {
+		return NULL;
+	}
+
 	GList * output = NULL;
 	int i;
 
@@ -1056,7 +1060,7 @@ switch_active_window (IndicatorAppmenu * iapp, BamfWindow * active_window)
 		return;
 	}
 
-	guint xid = bamf_window_get_xid(iapp->active_window);
+	guint32 xid = bamf_window_get_xid(iapp->active_window);
 	if (xid == 0 || bamf_view_is_closed (BAMF_VIEW (iapp->active_window))) {
 		return;
 	}
@@ -1270,7 +1274,7 @@ menus_destroyed (GObject * menus, gpointer user_data)
 	WindowMenus * wm = WINDOW_MENUS(menus);
 	IndicatorAppmenu * iapp = INDICATOR_APPMENU(user_data);
 
-	guint xid = window_menus_get_xid(wm);
+	guint32 xid = window_menus_get_xid(wm);
 	g_return_if_fail(xid != 0);
 
 	g_hash_table_steal(iapp->apps, GUINT_TO_POINTER(xid));

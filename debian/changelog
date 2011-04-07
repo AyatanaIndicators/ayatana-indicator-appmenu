@@ -1,33 +1,16 @@
-indicator-appmenu (0.1.97-0ubuntu2~ppa4) natty; urgency=low
+indicator-appmenu (0.2.0-0ubuntu1~ppa1) UNRELEASED; urgency=low
 
-  * Upstream Merge
-    * Check child-display property as well.
+  * New upstream release.
+    ∘ Adding a check of the indicator environment to hide the menu stubs
+      under Unity (LP: #703555)
+    ∘ Send about-to-show on menus that don't have any children currently
+      (LP: #619811)
+    ∘ Work around bugs in signaling by delaying the destruction of menu
+      caches for five seconds (LP: #718926)
+    ∘ Disconnecting client signal handlers on displose (LP: #738561)
+    ∘ Remove menuitem signals on root changes (LP: #743404)
 
- -- Ted Gould <ted@ubuntu.com>  Wed, 06 Apr 2011 22:05:39 -0500
-
-indicator-appmenu (0.1.97-0ubuntu2~ppa3) natty; urgency=low
-
-  * Upstream Merge
-    * Work around bugs in signaling by delaying the destruction of
-      menu caches for five seconds (LP: #718926)
-
- -- Ted Gould <ted@ubuntu.com>  Wed, 06 Apr 2011 14:54:13 -0500
-
-indicator-appmenu (0.1.97-0ubuntu2~ppa2) natty; urgency=low
-
-  * Upstream Merge
-    * Fill in menus that are blank by default using the about-to-show
-      signal (LP: #619811)
-
- -- Ted Gould <ted@ubuntu.com>  Tue, 05 Apr 2011 14:49:50 -0500
-
-indicator-appmenu (0.1.97-0ubuntu2~ppa1) natty; urgency=low
-
-  * Upstream merge
-    * Disconnecting client signal handlers on displose (LP: #738561)
-    * Remove menuitem signals on root changes (LP: #743404)
-
- -- Ted Gould <ted@ubuntu.com>  Mon, 04 Apr 2011 14:54:58 -0500
+ -- Ted Gould <ted@ubuntu.com>  Thu, 07 Apr 2011 10:58:50 -0500
 
 indicator-appmenu (0.1.97-0ubuntu1) natty; urgency=low
 
