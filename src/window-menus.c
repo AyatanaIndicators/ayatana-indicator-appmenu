@@ -76,6 +76,9 @@ static void window_menus_class_init (WindowMenusClass *klass);
 static void window_menus_init       (WindowMenus *self);
 static void window_menus_dispose    (GObject *object);
 static void root_changed            (DbusmenuClient * client, DbusmenuMenuitem * new_root, gpointer user_data);
+static void event_status            (DbusmenuClient * client, DbusmenuMenuitem * mi, gchar * event, GVariant * evdata, guint timestamp, GError * error, gpointer user_data);
+static void item_activate           (DbusmenuClient * client, DbusmenuMenuitem * item, guint timestamp, gpointer user_data);
+static void status_changed          (DbusmenuClient * client, GParamSpec * pspec, gpointer user_data);
 static void menu_entry_added        (DbusmenuMenuitem * root, DbusmenuMenuitem * newentry, guint position, gpointer user_data);
 static void menu_entry_removed      (DbusmenuMenuitem * root, DbusmenuMenuitem * oldentry, gpointer user_data);
 static void menu_entry_realized     (DbusmenuMenuitem * newentry, gpointer user_data);
@@ -226,11 +229,16 @@ window_menus_dispose (GObject *object)
 	}
 
 	if (priv->root != NULL) {
-		g_object_unref(G_OBJECT(priv->root));
-		priv->root = NULL;
+		root_changed(DBUSMENU_CLIENT(priv->client), NULL, object);
+		g_warn_if_fail(priv->root == NULL);
 	}
 
 	if (priv->client != NULL) {
+		g_signal_handlers_disconnect_by_func(G_OBJECT(priv->client), G_CALLBACK(root_changed),    object);
+		g_signal_handlers_disconnect_by_func(G_OBJECT(priv->client), G_CALLBACK(event_status),    object);
+		g_signal_handlers_disconnect_by_func(G_OBJECT(priv->client), G_CALLBACK(item_activate),   object);
+		g_signal_handlers_disconnect_by_func(G_OBJECT(priv->client), G_CALLBACK(status_changed),  object);
+
 		g_object_unref(G_OBJECT(priv->client));
 		priv->client = NULL;
 	}
@@ -520,6 +528,18 @@ new_root_helper (DbusmenuMenuitem * item, gpointer user_data)
 	return;
 }
 
+/* Remove the various signals that we attach to menuitems to
+   ensure they don't pop up later. */
+static void
+remove_menuitem_signals (DbusmenuMenuitem * mi, gpointer user_data)
+{
+	g_signal_handlers_disconnect_by_func(G_OBJECT(mi), G_CALLBACK(menu_entry_realized), user_data);
+	g_signal_handlers_disconnect_matched (mi, G_SIGNAL_MATCH_FUNC, 0, 0, 0, menu_child_realized, NULL);
+	g_signal_handlers_disconnect_matched (mi, G_SIGNAL_MATCH_FUNC, 0, 0, 0, menu_prop_changed, NULL);
+
+	return;
+}
+
 /* Respond to the root menu item on our client changing */
 static void
 root_changed (DbusmenuClient * client, DbusmenuMenuitem * new_root, gpointer user_data)
@@ -531,6 +551,8 @@ root_changed (DbusmenuClient * client, DbusmenuMenuitem * new_root, gpointer use
 	free_entries(G_OBJECT(user_data), TRUE);
 
 	if (priv->root != NULL) {
+		dbusmenu_menuitem_foreach(priv->root, remove_menuitem_signals, client);
+
 		g_signal_handlers_disconnect_by_func(G_OBJECT(priv->root), G_CALLBACK(menu_entry_added), user_data);
 		g_signal_handlers_disconnect_by_func(G_OBJECT(priv->root), G_CALLBACK(menu_entry_removed), user_data);
 		g_object_unref(priv->root);
@@ -564,6 +586,7 @@ root_changed (DbusmenuClient * client, DbusmenuMenuitem * new_root, gpointer use
 static void
 menu_entry_added (DbusmenuMenuitem * root, DbusmenuMenuitem * newentry, guint position, gpointer user_data)
 {
+	g_return_if_fail(IS_WINDOW_MENUS(user_data));
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
 
 	g_signal_connect(G_OBJECT(newentry), DBUSMENU_MENUITEM_SIGNAL_REALIZED, G_CALLBACK(menu_entry_realized), user_data);
@@ -575,24 +598,48 @@ menu_entry_added (DbusmenuMenuitem * root, DbusmenuMenuitem * newentry, guint po
 	return;
 }
 
+/* A small clean up function to ensure that the data
+   gets free'd and the ref lost in all cases. */
+static void
+child_realized_data_cleanup (gpointer user_data, GClosure * closure)
+{
+	gpointer * data = (gpointer *)user_data;
+	g_object_unref(data[1]);
+	g_free(user_data);
+	return;
+}
+
 /* React to the menuitem when we know that it's got all the data
    that we really need. */
 static void
 menu_entry_realized (DbusmenuMenuitem * newentry, gpointer user_data)
 {
+	g_return_if_fail(IS_WINDOW_MENUS(user_data));
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
+
+	/* Remove handler once we're called, this shouldn't be an issue for
+	   the realized signal, but we're using it for child added as well
+	   and in that case it could happen more than once. */
+	g_signal_handlers_disconnect_by_func(G_OBJECT(newentry), G_CALLBACK(menu_entry_realized), user_data);
+
 	GtkMenu * menu = dbusmenu_gtkclient_menuitem_get_submenu(priv->client, newentry);
 
+	/* Check to see if we have any children, if we don't let's see if
+	   we can scare some up for fun. */
+	GList * children = dbusmenu_menuitem_get_children(newentry);
+	if (children == NULL && g_strcmp0(DBUSMENU_MENUITEM_CHILD_DISPLAY_SUBMENU, dbusmenu_menuitem_property_get(newentry, DBUSMENU_MENUITEM_PROP_CHILD_DISPLAY)) == 0) {
+		dbusmenu_menuitem_send_about_to_show(newentry, NULL, NULL);
+	}
+
 	if (menu == NULL) {
-		GList * children = dbusmenu_menuitem_get_children(newentry);
 		if (children != NULL) {
 			gpointer * data = g_new(gpointer, 2);
 			data[0] = user_data;
 			data[1] = g_object_ref(newentry);
 
-			g_signal_connect(G_OBJECT(children->data), DBUSMENU_MENUITEM_SIGNAL_REALIZED, G_CALLBACK(menu_child_realized), data);
+			g_signal_connect_data(G_OBJECT(children->data), DBUSMENU_MENUITEM_SIGNAL_REALIZED, G_CALLBACK(menu_child_realized), data, child_realized_data_cleanup, 0);
 		} else {
-			g_warning("Entry has no children!");
+			g_signal_connect(G_OBJECT(newentry), DBUSMENU_MENUITEM_SIGNAL_CHILD_ADDED, G_CALLBACK(menu_entry_realized), user_data);
 		}
 	} else {
 		gpointer * data = g_new(gpointer, 2);
@@ -641,14 +688,25 @@ menu_prop_changed (DbusmenuMenuitem * item, const gchar * property, GVariant * v
 static void
 menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 {
-	DbusmenuMenuitem * newentry = (DbusmenuMenuitem *)(((gpointer *)user_data)[1]);
+	/* Grab our values out to stack variables */
+	DbusmenuMenuitem * newentry = DBUSMENU_MENUITEM(((gpointer *)user_data)[1]);
+	WindowMenus * wm = WINDOW_MENUS(((gpointer *)user_data)[0]);
+
+	g_return_if_fail(newentry != NULL);
+	g_return_if_fail(wm != NULL);
+
+	/* Disconnection below will drop the ref for this signal
+	   handler, let's make sure that's not a problem */
+	g_object_ref(G_OBJECT(newentry));
 
 	/* Only care about the first */
+	/* This will cause the cleanup function attached to the signal
+	   handler to be run. */
 	g_signal_handlers_disconnect_by_func(G_OBJECT(child), menu_child_realized, user_data);
 
-	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE((((gpointer *)user_data)[0]));
+	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
 	WMEntry * wmentry = g_new0(WMEntry, 1);
-	wmentry->wm = WINDOW_MENUS((((gpointer *)user_data)[0]));
+	wmentry->wm = wm;
 	IndicatorObjectEntry * entry = &wmentry->ioentry;
 
 	wmentry->mi = newentry;
@@ -691,10 +749,9 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 
 	g_array_append_val(priv->entries, wmentry);
 
-	g_signal_emit(G_OBJECT((((gpointer *)user_data)[0])), signals[ENTRY_ADDED], 0, entry, TRUE);
+	g_signal_emit(G_OBJECT(wm), signals[ENTRY_ADDED], 0, entry, TRUE);
 
 	g_object_unref(newentry);
-	g_free(user_data);
 
 	return;
 }

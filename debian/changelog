@@ -1,3 +1,17 @@
+indicator-appmenu (0.2.0-0ubuntu1) natty; urgency=low
+
+  * New upstream release.
+    ∘ Adding a check of the indicator environment to hide the menu stubs
+      under Unity (LP: #703555)
+    ∘ Send about-to-show on menus that don't have any children currently
+      (LP: #619811)
+    ∘ Work around bugs in signaling by delaying the destruction of menu
+      caches for five seconds (LP: #718926)
+    ∘ Disconnecting client signal handlers on displose (LP: #738561)
+    ∘ Remove menuitem signals on root changes (LP: #743404)
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 07 Apr 2011 11:01:06 -0500
+
 indicator-appmenu (0.1.97-0ubuntu1) natty; urgency=low
 
   * New upstream release.
