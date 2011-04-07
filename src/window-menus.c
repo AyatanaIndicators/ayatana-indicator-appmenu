@@ -616,10 +616,22 @@ menu_entry_realized (DbusmenuMenuitem * newentry, gpointer user_data)
 {
 	g_return_if_fail(IS_WINDOW_MENUS(user_data));
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
+
+	/* Remove handler once we're called, this shouldn't be an issue for
+	   the realized signal, but we're using it for child added as well
+	   and in that case it could happen more than once. */
+	g_signal_handlers_disconnect_by_func(G_OBJECT(newentry), G_CALLBACK(menu_entry_realized), user_data);
+
 	GtkMenu * menu = dbusmenu_gtkclient_menuitem_get_submenu(priv->client, newentry);
 
+	/* Check to see if we have any children, if we don't let's see if
+	   we can scare some up for fun. */
+	GList * children = dbusmenu_menuitem_get_children(newentry);
+	if (children == NULL && g_strcmp0(DBUSMENU_MENUITEM_CHILD_DISPLAY_SUBMENU, dbusmenu_menuitem_property_get(newentry, DBUSMENU_MENUITEM_PROP_CHILD_DISPLAY)) == 0) {
+		dbusmenu_menuitem_send_about_to_show(newentry, NULL, NULL);
+	}
+
 	if (menu == NULL) {
-		GList * children = dbusmenu_menuitem_get_children(newentry);
 		if (children != NULL) {
 			gpointer * data = g_new(gpointer, 2);
 			data[0] = user_data;
@@ -627,7 +639,7 @@ menu_entry_realized (DbusmenuMenuitem * newentry, gpointer user_data)
 
 			g_signal_connect_data(G_OBJECT(children->data), DBUSMENU_MENUITEM_SIGNAL_REALIZED, G_CALLBACK(menu_child_realized), data, child_realized_data_cleanup, 0);
 		} else {
-			g_warning("Entry has no children!");
+			g_signal_connect(G_OBJECT(newentry), DBUSMENU_MENUITEM_SIGNAL_CHILD_ADDED, G_CALLBACK(menu_entry_realized), user_data);
 		}
 	} else {
 		gpointer * data = g_new(gpointer, 2);
