@@ -444,12 +444,17 @@ static void
 props_cb (GObject * object, GAsyncResult * res, gpointer user_data)
 {
 	GError * error = NULL;
+	GDBusProxy * proxy = g_dbus_proxy_new_for_bus_finish(res, &error);
+
+	if (g_error_matches (error, G_IO_ERROR, G_IO_ERROR_CANCELLED)) {
+		g_error_free (error);
+		return; // Must exit before accessing freed memory
+	}
 
 	WindowMenus * self = WINDOW_MENUS(user_data);
 	g_return_if_fail(self != NULL);
 
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(self);
-	GDBusProxy * proxy = g_dbus_proxy_new_for_bus_finish(res, &error);
 
 	if (priv->props_cancel != NULL) {
 		g_object_unref(priv->props_cancel);
