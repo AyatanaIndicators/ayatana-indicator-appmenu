@@ -1,4 +1,4 @@
-indicator-appmenu (0.2.0-0ubuntu1~ppa1) natty; urgency=low
+indicator-appmenu (0.2.0-0ubuntu1) natty; urgency=low
 
   * New upstream release.
     ∘ Adding a check of the indicator environment to hide the menu stubs
