@@ -1,10 +1,10 @@
-indicator-appmenu (0.2.1-0ubuntu1~ppa1) UNRELEASED; urgency=low
+indicator-appmenu (0.2.1-0ubuntu1~ppa1) natty; urgency=low
 
   * New upstream release.
     ∘ Protect props_cb() with a reference and check for
       cancellation (LP: #741488)
 
- -- Ted Gould <ted@ubuntu.com>  Thu, 14 Apr 2011 16:16:40 -0500
+ -- Ted Gould <ted@ubuntu.com>  Thu, 14 Apr 2011 16:19:16 -0500
 
 indicator-appmenu (0.2.0-0ubuntu1) natty; urgency=low
 
