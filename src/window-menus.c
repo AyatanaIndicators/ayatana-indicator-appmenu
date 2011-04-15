@@ -774,6 +774,19 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 
 	g_object_unref(newentry);
 
+	guint pos = dbusmenu_menuitem_get_position (newentry,
+	                                            dbusmenu_menuitem_get_parent (newentry));
+	if (pos < priv->entries->len - 1) {
+		/* Our entry added signals that we pass up don't have position
+		   information, so we can only add to the end of the list of
+		   entries.  So when we get an inserted-in-the-middle entry,
+		   we fake a root change to remove all entries and add them
+		   back up again */
+		g_object_ref(priv->root);
+		root_changed(DBUSMENU_CLIENT(priv->client), priv->root, wm);
+		g_object_unref(priv->root);
+	}
+
 	return;
 }
 
