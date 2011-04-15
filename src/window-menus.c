@@ -82,6 +82,7 @@ static void status_changed          (DbusmenuClient * client, GParamSpec * pspec
 static void menu_entry_added        (DbusmenuMenuitem * root, DbusmenuMenuitem * newentry, guint position, gpointer user_data);
 static void menu_entry_removed      (DbusmenuMenuitem * root, DbusmenuMenuitem * oldentry, gpointer user_data);
 static void menu_entry_realized     (DbusmenuMenuitem * newentry, gpointer user_data);
+static void menu_entry_realized_child_added (DbusmenuMenuitem * parent, DbusmenuMenuitem * child, guint position, gpointer user_data);
 static void menu_prop_changed       (DbusmenuMenuitem * item, const gchar * property, GVariant * value, gpointer user_data);
 static void menu_child_realized     (DbusmenuMenuitem * child, gpointer user_data);
 static void props_cb (GObject * object, GAsyncResult * res, gpointer user_data);
@@ -202,11 +203,10 @@ free_entries(GObject *object, gboolean should_signal)
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(object);
 
 	if (priv->entries != NULL) {
-		int i;
-		for (i = 0; i < priv->entries->len; i++) {
+		while (priv->entries->len > 0) {
 			IndicatorObjectEntry * entry;
-			entry = g_array_index(priv->entries, IndicatorObjectEntry *, i);
-			g_array_remove_index(priv->entries, i);
+			entry = g_array_index(priv->entries, IndicatorObjectEntry *, 0);
+			g_array_remove_index(priv->entries, 0);
 			if (should_signal) {			
 				g_signal_emit(object, signals[ENTRY_REMOVED], 0, entry, TRUE);
 			}
@@ -543,6 +543,7 @@ static void
 remove_menuitem_signals (DbusmenuMenuitem * mi, gpointer user_data)
 {
 	g_signal_handlers_disconnect_by_func(G_OBJECT(mi), G_CALLBACK(menu_entry_realized), user_data);
+	g_signal_handlers_disconnect_by_func(G_OBJECT(mi), G_CALLBACK(menu_entry_realized_child_added), user_data);
 	g_signal_handlers_disconnect_matched (mi, G_SIGNAL_MATCH_FUNC, 0, 0, 0, menu_child_realized, NULL);
 	g_signal_handlers_disconnect_matched (mi, G_SIGNAL_MATCH_FUNC, 0, 0, 0, menu_prop_changed, NULL);
 
@@ -560,7 +561,7 @@ root_changed (DbusmenuClient * client, DbusmenuMenuitem * new_root, gpointer use
 	free_entries(G_OBJECT(user_data), TRUE);
 
 	if (priv->root != NULL) {
-		dbusmenu_menuitem_foreach(priv->root, remove_menuitem_signals, client);
+		dbusmenu_menuitem_foreach(priv->root, remove_menuitem_signals, user_data);
 
 		g_signal_handlers_disconnect_by_func(G_OBJECT(priv->root), G_CALLBACK(menu_entry_added), user_data);
 		g_signal_handlers_disconnect_by_func(G_OBJECT(priv->root), G_CALLBACK(menu_entry_removed), user_data);
@@ -618,6 +619,20 @@ child_realized_data_cleanup (gpointer user_data, GClosure * closure)
 	return;
 }
 
+/* This is the callback for when we're done waiting for a new entry to have
+   children */
+static void
+menu_entry_realized_child_added (DbusmenuMenuitem * parent,
+                                 DbusmenuMenuitem * child,
+                                 guint position, gpointer user_data)
+{
+	/* Child added may be called more than once, so make sure we only
+	   handle it once by disconnecting. */
+	g_signal_handlers_disconnect_by_func(G_OBJECT(parent), G_CALLBACK(menu_entry_realized_child_added), user_data);
+
+	menu_entry_realized (parent, user_data);
+}
+
 /* React to the menuitem when we know that it's got all the data
    that we really need. */
 static void
@@ -625,11 +640,6 @@ menu_entry_realized (DbusmenuMenuitem * newentry, gpointer user_data)
 {
 	g_return_if_fail(IS_WINDOW_MENUS(user_data));
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(user_data);
-
-	/* Remove handler once we're called, this shouldn't be an issue for
-	   the realized signal, but we're using it for child added as well
-	   and in that case it could happen more than once. */
-	g_signal_handlers_disconnect_by_func(G_OBJECT(newentry), G_CALLBACK(menu_entry_realized), user_data);
 
 	GtkMenu * menu = dbusmenu_gtkclient_menuitem_get_submenu(priv->client, newentry);
 
@@ -648,7 +658,7 @@ menu_entry_realized (DbusmenuMenuitem * newentry, gpointer user_data)
 
 			g_signal_connect_data(G_OBJECT(children->data), DBUSMENU_MENUITEM_SIGNAL_REALIZED, G_CALLBACK(menu_child_realized), data, child_realized_data_cleanup, 0);
 		} else {
-			g_signal_connect(G_OBJECT(newentry), DBUSMENU_MENUITEM_SIGNAL_CHILD_ADDED, G_CALLBACK(menu_entry_realized), user_data);
+			g_signal_connect(G_OBJECT(newentry), DBUSMENU_MENUITEM_SIGNAL_CHILD_ADDED, G_CALLBACK(menu_entry_realized_child_added), user_data);
 		}
 	} else {
 		gpointer * data = g_new(gpointer, 2);
@@ -711,7 +721,9 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 	/* Only care about the first */
 	/* This will cause the cleanup function attached to the signal
 	   handler to be run. */
-	g_signal_handlers_disconnect_by_func(G_OBJECT(child), menu_child_realized, user_data);
+	if (child != NULL) {
+		g_signal_handlers_disconnect_by_func(G_OBJECT(child), menu_child_realized, user_data);
+	}
 
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
 	WMEntry * wmentry = g_new0(WMEntry, 1);
@@ -762,6 +774,19 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 
 	g_object_unref(newentry);
 
+	guint pos = dbusmenu_menuitem_get_position (newentry,
+	                                            dbusmenu_menuitem_get_parent (newentry));
+	if (pos < priv->entries->len - 1) {
+		/* Our entry added signals that we pass up don't have position
+		   information, so we can only add to the end of the list of
+		   entries.  So when we get an inserted-in-the-middle entry,
+		   we fake a root change to remove all entries and add them
+		   back up again */
+		g_object_ref(priv->root);
+		root_changed(DBUSMENU_CLIENT(priv->client), priv->root, wm);
+		g_object_unref(priv->root);
+	}
+
 	return;
 }
 
@@ -789,6 +814,7 @@ menu_entry_removed (DbusmenuMenuitem * root, DbusmenuMenuitem * oldentry, gpoint
 		 * so there isn't a WMEntry yet. Don't be going ahead
 		 * and creating one if this menu item continues to live! */
 		g_signal_handlers_disconnect_by_func(G_OBJECT(oldentry), G_CALLBACK(menu_entry_realized), user_data);
+		g_signal_handlers_disconnect_by_func(G_OBJECT(oldentry), G_CALLBACK(menu_entry_realized_child_added), user_data);
 	}
 
 	return;
