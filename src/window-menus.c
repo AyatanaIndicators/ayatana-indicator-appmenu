@@ -202,11 +202,10 @@ free_entries(GObject *object, gboolean should_signal)
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(object);
 
 	if (priv->entries != NULL) {
-		int i;
-		for (i = 0; i < priv->entries->len; i++) {
+		while (priv->entries->len > 0) {
 			IndicatorObjectEntry * entry;
-			entry = g_array_index(priv->entries, IndicatorObjectEntry *, i);
-			g_array_remove_index(priv->entries, i);
+			entry = g_array_index(priv->entries, IndicatorObjectEntry *, 0);
+			g_array_remove_index(priv->entries, 0);
 			if (should_signal) {			
 				g_signal_emit(object, signals[ENTRY_REMOVED], 0, entry, TRUE);
 			}
