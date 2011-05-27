@@ -1,4 +1,4 @@
-indicator-appmenu (0.2.1-0ubuntu3) UNRELEASED; urgency=low
+indicator-appmenu (0.2.1-0ubuntu3) oneiric; urgency=low
 
   * debian/control:
     - get indicator-appmenu recommends appmenu-qt as it's toolkit agnostic
