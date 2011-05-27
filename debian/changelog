@@ -1,3 +1,10 @@
+indicator-appmenu (0.2.1-0ubuntu3) UNRELEASED; urgency=low
+
+  * debian/control:
+    - get indicator-appmenu recommends appmenu-qt as it's toolkit agnostic
+
+ -- Didier Roche <didrocks@ubuntu.com>  Fri, 27 May 2011 11:26:19 +0200
+
 indicator-appmenu (0.2.1-0ubuntu2) natty; urgency=low
 
   * Backport bug fixes from trunk:
