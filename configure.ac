@@ -47,16 +47,34 @@ AC_CONFIG_MACRO_DIR(m4)
 ###########################
 
 GTK_REQUIRED_VERSION=2.12
+GTK3_REQUIRED_VERSION=3.0
 GIO_REQUIRED_VERSION=2.26
 INDICATOR_REQUIRED_VERSION=0.3.19
 DBUSMENUGTK_REQUIRED_VERSION=0.3.3
 BAMF_REQUIRED_VERSION=0.2.53
 
-PKG_CHECK_MODULES(INDICATOR, gtk+-2.0 >= $GTK_REQUIRED_VERSION
-                             gio-2.0 >= $GIO_REQUIRED_VERSION
-                             indicator >= $INDICATOR_REQUIRED_VERSION
-                             dbusmenu-gtk-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION
-                             libbamf >= $BAMF_REQUIRED_VERSION)
+AC_ARG_WITH([gtk],
+  [AS_HELP_STRING([--with-gtk],
+    [Which version of gtk to use @<:@default=3@:>@])],
+  [],
+  [with_gtk=3])
+
+AS_IF([test "x$with_gtk" = x3],
+        [PKG_CHECK_MODULES(INDICATOR,  gtk+-3.0 >= $GTK3_REQUIRED_VERSION
+                                       gio-2.0 >= $GIO_REQUIRED_VERSION
+                                       indicator3 >= $INDICATOR_REQUIRED_VERSION
+                                       dbusmenu-gtk3-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION
+                                       libbamf3 >= $BAMF_REQUIRED_VERSION)
+        ],
+      [test "x$with_gtk" = x2],
+        [PKG_CHECK_MODULES(INDICATOR,  gtk+-2.0 >= $GTK_REQUIRED_VERSION
+                                       gio-2.0 >= $GIO_REQUIRED_VERSION
+                                       indicator >= $INDICATOR_REQUIRED_VERSION
+                                       dbusmenu-gtk-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION
+                                       libbamf >= $BAMF_REQUIRED_VERSION)
+        ],
+      [AC_MSG_FAILURE([Value for --with-gtk was neither 2 nor 3])]
+)
 
 AC_SUBST(INDICATOR_CFLAGS)
 AC_SUBST(INDICATOR_LIBS)
@@ -94,9 +112,12 @@ AC_ARG_ENABLE(localinstall, AS_HELP_STRING([--enable-localinstall], [install all
 if test "x$with_localinstall" = "xyes"; then
 	INDICATORDIR="${libdir}/indicators/3/"
 	INDICATORICONSDIR="${datadir}/libindicate/icons/"
-else
+elif test "x$with_gtk" = x2; then
 	INDICATORDIR=`$PKG_CONFIG --variable=indicatordir indicator`
 	INDICATORICONSDIR=`$PKG_CONFIG --variable=iconsdir indicator`
+else
+	INDICATORDIR=`$PKG_CONFIG --variable=indicatordir indicator3`
+	INDICATORICONSDIR=`$PKG_CONFIG --variable=iconsdir indicator3`
 fi
 AC_SUBST(INDICATORDIR)
 AC_SUBST(INDICATORICONSDIR)
