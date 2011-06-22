@@ -1,4 +1,4 @@
-indicator-appmenu (0.2.90-0ubuntu1~ppa1) UNRELEASED; urgency=low
+indicator-appmenu (0.2.90-0ubuntu1~ppa1) oneiric; urgency=low
 
   * New upstream release.
     - When freeing existing entries, don't skip every other one
@@ -9,7 +9,7 @@ indicator-appmenu (0.2.90-0ubuntu1~ppa1) UNRELEASED; urgency=low
     - GTK 3 Port
   * debian/indicator-appmenu.install: Installing the GTK3 indicator
 
- -- Ted Gould <ted@ubuntu.com>  Wed, 22 Jun 2011 10:34:21 -0500
+ -- Ted Gould <ted@ubuntu.com>  Wed, 22 Jun 2011 10:35:22 -0500
 
 indicator-appmenu (0.2.1-0ubuntu3) oneiric; urgency=low
 
