@@ -1,5 +1,6 @@
-indicator-appmenu (0.2.90-0ubuntu1~ppa1) oneiric; urgency=low
+indicator-appmenu (0.2.90-0ubuntu1) oneiric; urgency=low
 
+  [ Ted Gould ]
   * New upstream release.
     - When freeing existing entries, don't skip every other one
     - When an entry gets inserted mid-menu (instead of at the end),
@@ -9,7 +10,19 @@ indicator-appmenu (0.2.90-0ubuntu1~ppa1) oneiric; urgency=low
     - GTK 3 Port
   * debian/indicator-appmenu.install: Installing the GTK3 indicator
 
- -- Ted Gould <ted@ubuntu.com>  Wed, 22 Jun 2011 10:35:22 -0500
+  [ Ken VanDine ]
+  * debian/control
+    - Bumped standards version to 3.9.2
+    - Add new binary for indicator-appmenu-gtk2
+    - Make indicator-appmenu recommend indicator-appmenu-gtk2 (until unity
+      can load gtk3 indicators)
+    - indicator-appmenu-gtk2 replaces indicator-appmenu << 0.2.90
+    - Added build depends for libdbusmenu-gtk3-dev, libindicator3-dev 
+      and libbamf3-dev
+  * debian/rules
+    - build for both gtk2 and gtk3
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Wed, 22 Jun 2011 12:59:36 -0400
 
 indicator-appmenu (0.2.1-0ubuntu3) oneiric; urgency=low
 
