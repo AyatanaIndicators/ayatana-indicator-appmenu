@@ -23,7 +23,11 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <gio/gio.h>
 #include <libdbusmenu-glib/menuitem.h>
 #include <libdbusmenu-glib/server.h>
+#if GTK_CHECK_VERSION(3, 0, 0)
+#include <libdbusmenu-gtk3/menuitem.h>
+#else
 #include <libdbusmenu-gtk/menuitem.h>
+#endif
 #include "../src/dbus-shared.h"
 
 int

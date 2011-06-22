@@ -1,3 +1,15 @@
+indicator-appmenu (0.2.90-0ubuntu1~ppa1) UNRELEASED; urgency=low
+
+  * New upstream release.
+    - When freeing existing entries, don't skip every other one
+    - When an entry gets inserted mid-menu (instead of at the end),
+      place it in the correct place instead of assuming the end
+    - When a new entry gets added with an empty submenu, actually watch
+      the submenu for new items instead of dropping it on the floor
+    - GTK 3 Port
+
+ -- Ted Gould <ted@ubuntu.com>  Wed, 22 Jun 2011 10:29:32 -0500
+
 indicator-appmenu (0.2.1-0ubuntu3) oneiric; urgency=low
 
   * debian/control:
