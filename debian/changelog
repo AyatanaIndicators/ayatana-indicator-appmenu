@@ -7,8 +7,9 @@ indicator-appmenu (0.2.90-0ubuntu1~ppa1) UNRELEASED; urgency=low
     - When a new entry gets added with an empty submenu, actually watch
       the submenu for new items instead of dropping it on the floor
     - GTK 3 Port
+  * debian/indicator-appmenu.install: Installing the GTK3 indicator
 
- -- Ted Gould <ted@ubuntu.com>  Wed, 22 Jun 2011 10:29:32 -0500
+ -- Ted Gould <ted@ubuntu.com>  Wed, 22 Jun 2011 10:34:21 -0500
 
 indicator-appmenu (0.2.1-0ubuntu3) oneiric; urgency=low
 
