@@ -1,4 +1,22 @@
-indicator-appmenu (0.2.1-0ubuntu1~ppa1) natty; urgency=low
+indicator-appmenu (0.2.1-0ubuntu3) oneiric; urgency=low
+
+  * debian/control:
+    - get indicator-appmenu recommends appmenu-qt as it's toolkit agnostic
+
+ -- Didier Roche <didrocks@ubuntu.com>  Fri, 27 May 2011 11:26:19 +0200
+
+indicator-appmenu (0.2.1-0ubuntu2) natty; urgency=low
+
+  * Backport bug fixes from trunk:
+    - When freeing existing entries, don't skip every other one
+    - When an entry gets inserted mid-menu (instead of at the end),
+      place it in the correct place instead of assuming the end
+    - When a new entry gets added with an empty submenu, actually watch
+      the submenu for new items instead of dropping it on the floor
+
+ -- Michael Terry <mterry@ubuntu.com>  Fri, 15 Apr 2011 16:21:17 -0400
+
+indicator-appmenu (0.2.1-0ubuntu1) natty; urgency=low
 
   * New upstream release.
     ∘ Protect props_cb() with a reference and check for
