@@ -1,3 +1,10 @@
+indicator-appmenu (0.2.90-0ubuntu2) oneiric; urgency=low
+
+  * debian/control
+    - Make indicator-appmenu recommend appmenu-gtk3 (LP: #791735)
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Wed, 22 Jun 2011 23:31:46 -0400
+
 indicator-appmenu (0.2.90-0ubuntu1) oneiric; urgency=low
 
   [ Ted Gould ]
