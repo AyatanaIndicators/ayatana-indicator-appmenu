@@ -27,8 +27,7 @@ Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Recommends: indicator-applet | indicator-renderer,
             appmenu-gtk3,
-            appmenu-qt,
-            indicator-appmenu-gtk2
+            appmenu-qt
 Breaks: indicator-applet (<< 0.3.0)
 Conflicts: libdbusmenu-glib1 (<< 0.3.7),
            libdbusmenu-gtk1 (<< 0.3.7)
