@@ -62,14 +62,14 @@ AC_ARG_WITH([gtk],
 AS_IF([test "x$with_gtk" = x3],
         [PKG_CHECK_MODULES(INDICATOR,  gtk+-3.0 >= $GTK3_REQUIRED_VERSION
                                        gio-2.0 >= $GIO_REQUIRED_VERSION
-                                       indicator3 >= $INDICATOR_REQUIRED_VERSION
+                                       indicator3-0.4 >= $INDICATOR_REQUIRED_VERSION
                                        dbusmenu-gtk3-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION
                                        libbamf3 >= $BAMF_REQUIRED_VERSION)
         ],
       [test "x$with_gtk" = x2],
         [PKG_CHECK_MODULES(INDICATOR,  gtk+-2.0 >= $GTK_REQUIRED_VERSION
                                        gio-2.0 >= $GIO_REQUIRED_VERSION
-                                       indicator >= $INDICATOR_REQUIRED_VERSION
+                                       indicator-0.4 >= $INDICATOR_REQUIRED_VERSION
                                        dbusmenu-gtk-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION
                                        libbamf >= $BAMF_REQUIRED_VERSION)
         ],
@@ -113,11 +113,11 @@ if test "x$with_localinstall" = "xyes"; then
 	INDICATORDIR="${libdir}/indicators/3/"
 	INDICATORICONSDIR="${datadir}/libindicate/icons/"
 elif test "x$with_gtk" = x2; then
-	INDICATORDIR=`$PKG_CONFIG --variable=indicatordir indicator`
-	INDICATORICONSDIR=`$PKG_CONFIG --variable=iconsdir indicator`
+	INDICATORDIR=`$PKG_CONFIG --variable=indicatordir indicator-0.4`
+	INDICATORICONSDIR=`$PKG_CONFIG --variable=iconsdir indicator-0.4`
 else
-	INDICATORDIR=`$PKG_CONFIG --variable=indicatordir indicator3`
-	INDICATORICONSDIR=`$PKG_CONFIG --variable=iconsdir indicator3`
+	INDICATORDIR=`$PKG_CONFIG --variable=indicatordir indicator3-0.4`
+	INDICATORICONSDIR=`$PKG_CONFIG --variable=iconsdir indicator3-0.4`
 fi
 AC_SUBST(INDICATORDIR)
 AC_SUBST(INDICATORICONSDIR)
