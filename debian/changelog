@@ -1,9 +1,13 @@
-indicator-appmenu (0.2.91-0ubuntu1~ppa1) oneiric; urgency=low
+indicator-appmenu (0.2.91-0ubuntu1) oneiric; urgency=low
 
+  [ Ted Gould ]
   * New upstream release.
     * libindicator 0.4 migration 
 
- -- Ted Gould <ted@ubuntu.com>  Fri, 08 Jul 2011 10:21:40 -0500
+  [ Ken VanDine ]
+  * bumped build depends for libindicator to >= 0.3.90
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Fri, 08 Jul 2011 11:30:22 -0400
 
 indicator-appmenu (0.2.90-0ubuntu3) oneiric; urgency=low
 
