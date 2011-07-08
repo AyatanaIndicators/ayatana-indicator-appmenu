@@ -1,3 +1,3 @@
-debian/tmp/usr/lib/indicator-appmenu/current-menu*
-debian/tmp/usr/lib/indicator-appmenu/menu-pusher
-debian/tmp/usr/lib/indicator-appmenu/mock-json-app
+debian/tmp/gtk3/usr/lib/indicator-appmenu/current-menu* /usr/lib/indicator-appmenu/
+debian/tmp/gtk3/usr/lib/indicator-appmenu/menu-pusher /usr/lib/indicator-appmenu/
+debian/tmp/gtk3/usr/lib/indicator-appmenu/mock-json-app /usr/lib/indicator-appmenu/
