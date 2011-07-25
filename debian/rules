@@ -13,9 +13,6 @@ DEB_CONFIGURE_FLAGS_gtk2 = --with-gtk=2
 DEB_CONFIGURE_FLAGS_gtk3 = --with-gtk=3
 DEB_CONFIGURE_EXTRA_FLAGS = --disable-static
 
-DEB_DH_SHLIBDEPS_ARGS_indicator-appmenu-gtk2 = -- -xlibgtk2.0-0
-DEB_DH_SHLIBDEPS_ARGS_indicator-appmenu = -- -xlibgtk-3-0
-
 LDFLAGS += -Wl,-z,defs -Wl,--as-needed
 
 debian/stamp-autotools/gtk2: cdbs_configure_flags += $(DEB_CONFIGURE_FLAGS_gtk2)

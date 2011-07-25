@@ -1,3 +1,10 @@
+indicator-appmenu (0.2.91-0ubuntu3) UNRELEASED; urgency=low
+
+  * debian/rules:
+    - stripping gtk from list of build-dep isn't needed on those components
+
+ -- Didier Roche <didrocks@ubuntu.com>  Mon, 25 Jul 2011 19:23:43 +0200
+
 indicator-appmenu (0.2.91-0ubuntu2) oneiric; urgency=low
 
   * debian/rules:
