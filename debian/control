@@ -26,6 +26,7 @@ Package: indicator-appmenu
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
 Recommends: indicator-applet | indicator-renderer,
+            appmenu-gtk,
             appmenu-gtk3,
             appmenu-qt
 Breaks: indicator-applet (<< 0.3.0)
