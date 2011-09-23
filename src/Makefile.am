@@ -45,14 +45,14 @@ DBUS_SPECS = \
 
 gen-%.xml.c: %.xml
 	@echo "Building $@ from $<"
-	@echo "const char * _$(subst -,_,$(subst .,_,$(basename $<))) = " > $@
+	@echo "const char * _$(subst -,_,$(subst .,_,$(basename $(notdir $<)))) = " > $@
 	@$(XSLT_PROC) $(srcdir)/clean-namespaces.xslt $< | \
 		sed -e "s:\":\\\\\":g" -e s:^:\": -e s:\$$:\\\\n\": >> $@
 	@echo ";" >> $@
 
 gen-%.xml.h: %.xml
 	@echo "Building $@ from $<"
-	@echo "extern const char * _$(subst -,_,$(subst .,_,$(basename $<)));" > $@
+	@echo "extern const char * _$(subst -,_,$(subst .,_,$(basename $(notdir $<))));" > $@
 
 BUILT_SOURCES += \
 	gen-application-menu-renderer.xml.c \
