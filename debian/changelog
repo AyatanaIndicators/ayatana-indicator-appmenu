@@ -1,3 +1,10 @@
+indicator-appmenu (0.3.0-0ubuntu1~ppa1) oneiric; urgency=low
+
+  * New upstream release.
+    * Version Bump
+
+ -- Ted Gould <ted@ubuntu.com>  Wed, 28 Sep 2011 13:54:23 -0500
+
 indicator-appmenu (0.2.91-0ubuntu4) oneiric; urgency=low
 
   [ Didier Roche ]
