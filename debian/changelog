@@ -1,9 +1,35 @@
-indicator-appmenu (0.2.91-0ubuntu1~ppa1) oneiric; urgency=low
+indicator-appmenu (0.2.91-0ubuntu4) oneiric; urgency=low
 
+  [ Didier Roche ]
+  * debian/rules:
+    - stripping gtk from list of build-dep isn't needed on those components
+
+  [ Sebastien Bacher ]
+  * debian/conrol.in:
+    - recommends appmenu-gtk as well it's still needed
+
+ -- Sebastien Bacher <seb128@ubuntu.com>  Tue, 02 Aug 2011 21:39:58 +0200
+
+indicator-appmenu (0.2.91-0ubuntu2) oneiric; urgency=low
+
+  * debian/rules:
+    - avoid making indicator-appmenu* depends on gtk2/3 by dpkg-shlibdeps.
+      The library doesn't hurt if gtk isn't installed and that enable
+      pre-installlation of the indicator stack without requiring the full gtk
+      stack being there without any gtk app installed.
+
+ -- Didier Roche <didrocks@ubuntu.com>  Mon, 25 Jul 2011 18:19:47 +0200
+
+indicator-appmenu (0.2.91-0ubuntu1) oneiric; urgency=low
+
+  [ Ted Gould ]
   * New upstream release.
     * libindicator 0.4 migration 
 
- -- Ted Gould <ted@ubuntu.com>  Fri, 08 Jul 2011 10:21:40 -0500
+  [ Ken VanDine ]
+  * bumped build depends for libindicator to >= 0.3.90
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Fri, 08 Jul 2011 11:30:22 -0400
 
 indicator-appmenu (0.2.90-0ubuntu3) oneiric; urgency=low
 
