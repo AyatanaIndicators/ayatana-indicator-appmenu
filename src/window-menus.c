@@ -669,10 +669,10 @@ menu_entry_realized (DbusmenuMenuitem * newentry, gpointer user_data)
 	} else {
 		gpointer * data = g_new(gpointer, 2);
 		data[0] = user_data;
-		data[1] = g_object_ref(newentry);
-		/* child_realized does an unref */
+		data[1] = newentry;
 
 		menu_child_realized(NULL, data);
+		g_free (data);
 	}
 	
 	return;
