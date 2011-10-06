@@ -1,0 +1,17 @@
+Description: Don't add a second ref to a label, just sink the one we own
+Origin: https://code.launchpad.net/~mterry/indicator-appmenu/double-ref-of-entry-label/+merge/78300
+Author: Michael Terry <michael.terry@canonical.com>
+
+Index: indicator-appmenu/src/window-menus.c
+===================================================================
+--- indicator-appmenu.orig/src/window-menus.c	2011-10-06 10:17:10.670272189 -0400
++++ indicator-appmenu/src/window-menus.c	2011-10-06 10:17:48.794272592 -0400
+@@ -742,7 +742,7 @@
+ 	entry->label = GTK_LABEL(gtk_label_new_with_mnemonic(dbusmenu_menuitem_property_get(newentry, DBUSMENU_MENUITEM_PROP_LABEL)));
+ 
+ 	if (entry->label != NULL) {
+-		g_object_ref(entry->label);
++		g_object_ref_sink(entry->label);
+ 	}
+ 
+ 	entry->accessible_desc = dbusmenu_menuitem_property_get(newentry, DBUSMENU_MENUITEM_PROP_LABEL);
