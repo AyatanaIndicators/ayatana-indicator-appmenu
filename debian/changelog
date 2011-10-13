@@ -1,10 +1,10 @@
-indicator-appmenu (0.3.2-0ubuntu1~ppa1) UNRELEASED; urgency=low
+indicator-appmenu (0.3.2-0ubuntu1~ppa1) oneiric; urgency=low
 
   * New upstream release.
     * Ensure that the label is ref'd using a ref_sink()
   * Drop debian/patches/double-ref-of-entry-label.patch: Upstream
 
- -- Ted Gould <ted@ubuntu.com>  Thu, 13 Oct 2011 13:32:24 -0500
+ -- Ted Gould <ted@ubuntu.com>  Thu, 13 Oct 2011 13:38:29 -0500
 
 indicator-appmenu (0.3.1-0ubuntu2) oneiric; urgency=low
 
