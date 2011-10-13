@@ -742,7 +742,7 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 	entry->label = GTK_LABEL(gtk_label_new_with_mnemonic(dbusmenu_menuitem_property_get(newentry, DBUSMENU_MENUITEM_PROP_LABEL)));
 
 	if (entry->label != NULL) {
-		g_object_ref(entry->label);
+		g_object_ref_sink(entry->label);
 	}
 
 	entry->accessible_desc = dbusmenu_menuitem_property_get(newentry, DBUSMENU_MENUITEM_PROP_LABEL);
