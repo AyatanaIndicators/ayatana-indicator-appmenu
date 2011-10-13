@@ -5,7 +5,15 @@ indicator-appmenu (0.3.2-0ubuntu1~ppa1) UNRELEASED; urgency=low
 
  -- Ted Gould <ted@ubuntu.com>  Thu, 13 Oct 2011 13:31:09 -0500
 
-indicator-appmenu (0.3.1-0ubuntu1~ppa1) oneiric; urgency=low
+indicator-appmenu (0.3.1-0ubuntu2) oneiric; urgency=low
+
+  * debian/patches/double-ref-of-entry-label.patch:
+    - Don't leak GtkLabels by adding a second ref on top of the floating
+      ref.  Instead, sink the floating ref.  Part of bug 835646.
+
+ -- Michael Terry <mterry@ubuntu.com>  Thu, 06 Oct 2011 10:19:08 -0400
+
+indicator-appmenu (0.3.1-0ubuntu1) oneiric; urgency=low
 
   * New upstream release.
     * Fix reference leak
