@@ -1,6 +1,6 @@
 
 libexec_PROGRAMS = \
-	hud_cli
+	hud-cli
 
 
 ####################
