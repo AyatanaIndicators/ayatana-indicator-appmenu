@@ -13,6 +13,7 @@ static void append_query (gchar ** query, const gchar * append);
 
 static GMainLoop * mainloop = NULL;
 static gchar * query = NULL;
+static GDBusProxy * proxy = NULL;
 
 int
 main (int argv, char * argc[])
@@ -33,6 +34,18 @@ main (int argv, char * argc[])
 	                          /* callback */  input_cb,
 	                          /* userdata */  buffer);
 
+	GDBusConnection * session = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, NULL);
+	g_return_val_if_fail(session != NULL, 1);
+
+	proxy = g_dbus_proxy_new_sync(session,
+	                              G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES,
+	                              NULL,
+	                              DBUS_NAME,
+	                              DBUS_PATH,
+	                              DBUS_IFACE,
+	                              NULL, NULL);
+	g_return_val_if_fail(proxy != NULL, 1);
+
 	print_suggestions(query);
 	g_print("Query: ");
 
@@ -40,6 +53,8 @@ main (int argv, char * argc[])
 	g_main_loop_run(mainloop);
 
 	g_main_loop_unref(mainloop);
+	g_object_unref(proxy);
+	g_object_unref(session);
 	g_object_unref(stdinput);
 
 	return 0;
