@@ -5,12 +5,15 @@
 #include <libbamf/bamf-matcher.h>
 
 #include "hud-search.h"
+#include "dbusmenu-collector.h"
 
 struct _HudSearchPrivate {
 	BamfMatcher * matcher;
 	gulong window_changed_sig;
 
 	guint32 active_xid;
+
+	DbusmenuCollector * collector;
 };
 
 #define HUD_SEARCH_GET_PRIVATE(o) \
@@ -49,6 +52,7 @@ hud_search_init (HudSearch *self)
 	self->priv->matcher = NULL;
 	self->priv->window_changed_sig = 0;
 	self->priv->active_xid = 0;
+	self->priv->collector = NULL;
 
 	/* Build Objects */
 	self->priv->matcher = bamf_matcher_get_default();
@@ -58,6 +62,8 @@ hud_search_init (HudSearch *self)
 	if (active_window != NULL) {
 		self->priv->active_xid = bamf_window_get_xid(active_window);
 	}
+
+	self->priv->collector = dbusmenu_collector_new();
 
 	return;
 }
