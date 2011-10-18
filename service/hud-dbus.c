@@ -23,12 +23,20 @@ static void hud_dbus_dispose    (GObject *object);
 static void hud_dbus_finalize   (GObject *object);
 
 static void bus_got_cb          (GObject *object, GAsyncResult * res, gpointer user_data);
+static void bus_method          (GDBusConnection *connection,
+                                 const gchar *sender,
+                                 const gchar *object_path,
+                                 const gchar *interface_name,
+                                 const gchar *method_name,
+                                 GVariant *parameters,
+                                 GDBusMethodInvocation *invocation,
+                                 gpointer user_data);
 
 G_DEFINE_TYPE (HudDbus, hud_dbus, G_TYPE_OBJECT);
 static GDBusNodeInfo * node_info = NULL;
 static GDBusInterfaceInfo * iface_info = NULL;
 static GDBusInterfaceVTable bus_vtable = {
-	method_call: NULL,
+	method_call: bus_method,
 	get_property: NULL,
 	set_property: NULL,
 };
@@ -142,6 +150,14 @@ bus_got_cb (GObject *object, GAsyncResult * res, gpointer user_data)
 	                                                /* userdata */   self,
 	                                                /* destroy */    NULL,
 	                                                /* error */      &error);
+
+	return;
+}
+
+static void
+bus_method (GDBusConnection *connection, const gchar *sender, const gchar *object_path, const gchar *interface_name, const gchar *method_name, GVariant *parameters, GDBusMethodInvocation *invocation, gpointer user_data)
+{
+
 
 	return;
 }
