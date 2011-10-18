@@ -8,6 +8,7 @@ libexec_PROGRAMS = \
 ####################
 
 hud_cli_SOURCES = \
+	shared-values.h \
 	hud-cli.c
 
 hud_cli_CFLAGS = \

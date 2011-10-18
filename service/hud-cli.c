@@ -4,6 +4,8 @@
 #include <unistd.h>
 #include <stdio.h>
 
+#include "shared-values.h"
+
 static void input_cb (GObject * object, GAsyncResult * res, gpointer user_data);
 static void print_suggestions(const gchar * query);
 static void execute_query(const gchar * query);
