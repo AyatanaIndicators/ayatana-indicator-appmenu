@@ -5,6 +5,7 @@
 #include <stdio.h>
 
 #include "shared-values.h"
+#include "hud.xml.h"
 
 static void input_cb (GObject * object, GAsyncResult * res, gpointer user_data);
 static void print_suggestions(const gchar * query);
@@ -37,9 +38,15 @@ main (int argv, char * argc[])
 	GDBusConnection * session = g_bus_get_sync(G_BUS_TYPE_SESSION, NULL, NULL);
 	g_return_val_if_fail(session != NULL, 1);
 
+	GDBusNodeInfo * nodeinfo = g_dbus_node_info_new_for_xml(hud_xml, NULL);
+	g_return_val_if_fail(nodeinfo != NULL, 1);
+
+	GDBusInterfaceInfo * ifaceinfo = g_dbus_node_info_lookup_interface(nodeinfo, DBUS_IFACE);
+	g_return_val_if_fail(ifaceinfo != NULL, 1);
+
 	proxy = g_dbus_proxy_new_sync(session,
 	                              G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES,
-	                              NULL,
+	                              ifaceinfo,
 	                              DBUS_NAME,
 	                              DBUS_PATH,
 	                              DBUS_IFACE,
@@ -54,6 +61,7 @@ main (int argv, char * argc[])
 
 	g_main_loop_unref(mainloop);
 	g_object_unref(proxy);
+	g_dbus_node_info_unref(nodeinfo);
 	g_object_unref(session);
 	g_object_unref(stdinput);
 
