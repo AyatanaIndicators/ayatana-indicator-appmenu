@@ -2,6 +2,7 @@
 #include <glib.h>
 #include <gio/gunixinputstream.h>
 #include <unistd.h>
+#include <stdio.h>
 
 void input_cb (GObject * object, GAsyncResult * res, gpointer user_data);
 
@@ -24,10 +25,12 @@ main (int argv, char * argc[])
 	                          /* callback */  input_cb,
 	                          /* userdata */  buffer);
 
+	g_print("Query: ");
+
 	mainloop = g_main_loop_new(NULL, FALSE);
 	g_main_loop_run(mainloop);
 
-	g_object_unref(mainloop);
+	g_main_loop_unref(mainloop);
 	g_object_unref(stdinput);
 
 	return 0;
@@ -50,6 +53,12 @@ input_cb (GObject * object, GAsyncResult * res, gpointer user_data)
 		return;
 	}
 
+	if (size == 0 || size == 1) {
+		g_print("Final command, executing\n");
+		g_main_loop_quit(mainloop);
+		return;
+	}
+
 	gchar * buffer = (gchar *)user_data;
 	g_input_stream_read_async(stdinput,
 	                          /* buffer */    buffer,
@@ -59,12 +68,8 @@ input_cb (GObject * object, GAsyncResult * res, gpointer user_data)
 	                          /* callback */  input_cb,
 	                          /* userdata */  buffer);
 
-	if (size == 0) {
-		return;
-	}
-
-	buffer[size] = '\0';
-	g_debug("New query: %s", buffer);
+	buffer[size - 1] = '\0';
+	g_print("Query: %s", buffer);
 
 	return;
 }
