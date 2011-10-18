@@ -2,10 +2,12 @@
 #include "config.h"
 #endif
 
+#include <libbamf/bamf-matcher.h>
+
 #include "hud-search.h"
 
 struct _HudSearchPrivate {
-	int dummy;
+	BamfMatcher * matcher;
 };
 
 #define HUD_SEARCH_GET_PRIVATE(o) \
@@ -34,7 +36,14 @@ hud_search_class_init (HudSearchClass *klass)
 static void
 hud_search_init (HudSearch *self)
 {
+	/* Get Private */
 	self->priv = HUD_SEARCH_GET_PRIVATE(self);
+
+	/* Initialize Private */
+	self->priv->matcher = NULL;
+
+	/* Build Objects */
+	self->priv->matcher = bamf_matcher_get_default();
 
 	return;
 }
@@ -42,6 +51,12 @@ hud_search_init (HudSearch *self)
 static void
 hud_search_dispose (GObject *object)
 {
+	HudSearch * self = HUD_SEARCH(object);
+
+	if (self->priv->matcher != NULL) {
+		g_object_unref(self->priv->matcher);
+		self->priv->matcher = NULL;
+	}
 
 	G_OBJECT_CLASS (hud_search_parent_class)->dispose (object);
 	return;
