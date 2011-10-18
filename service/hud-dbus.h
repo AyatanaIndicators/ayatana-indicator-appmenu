@@ -13,8 +13,9 @@ G_BEGIN_DECLS
 #define IS_HUD_DBUS_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), HUD_DBUS_TYPE))
 #define HUD_DBUS_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), HUD_DBUS_TYPE, HudDbusClass))
 
-typedef struct _HudDbus      HudDbus;
-typedef struct _HudDbusClass HudDbusClass;
+typedef struct _HudDbus        HudDbus;
+typedef struct _HudDbusClass   HudDbusClass;
+typedef struct _HudDbusPrivate HudDbusPrivate;
 
 struct _HudDbusClass {
 	GObjectClass parent_class;
@@ -22,6 +23,7 @@ struct _HudDbusClass {
 
 struct _HudDbus {
 	GObject parent;
+	HudDbusPrivate * priv;
 };
 
 GType hud_dbus_get_type (void);

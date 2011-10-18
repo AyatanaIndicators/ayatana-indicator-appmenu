@@ -4,7 +4,6 @@
 
 #include "hud-dbus.h"
 
-typedef struct _HudDbusPrivate HudDbusPrivate;
 struct _HudDbusPrivate {
 	int dummy;
 };
@@ -35,6 +34,9 @@ hud_dbus_class_init (HudDbusClass *klass)
 static void
 hud_dbus_init (HudDbus *self)
 {
+	self->priv = HUD_DBUS_GET_PRIVATE(self);
+
+	self->priv->dummy = 0;
 
 	return;
 }
