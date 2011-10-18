@@ -74,9 +74,9 @@ hud_search_init (HudSearch *self)
 	self->priv->appmenu = g_dbus_proxy_new_for_bus_sync(G_BUS_TYPE_SESSION,
 	                                                    G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES,
 	                                                    /* info */ NULL,
-	                                                    "org.canonical.AppMenu.Registrar",
-	                                                    "/org/canonical/AppMenu/Registrar",
-	                                                    "org.canonical.AppMenu.Registrar",
+	                                                    "com.canonical.AppMenu.Registrar",
+	                                                    "/com/canonical/AppMenu/Registrar",
+	                                                    "com.canonical.AppMenu.Registrar",
 	                                                    NULL, NULL);
 
 	return;
