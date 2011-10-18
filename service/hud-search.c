@@ -8,6 +8,7 @@
 
 struct _HudSearchPrivate {
 	BamfMatcher * matcher;
+	gulong window_changed_sig;
 };
 
 #define HUD_SEARCH_GET_PRIVATE(o) \
@@ -17,6 +18,9 @@ static void hud_search_class_init (HudSearchClass *klass);
 static void hud_search_init       (HudSearch *self);
 static void hud_search_dispose    (GObject *object);
 static void hud_search_finalize   (GObject *object);
+
+static void active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * newview, gpointer user_data);
+
 
 G_DEFINE_TYPE (HudSearch, hud_search, G_TYPE_OBJECT);
 
@@ -41,9 +45,11 @@ hud_search_init (HudSearch *self)
 
 	/* Initialize Private */
 	self->priv->matcher = NULL;
+	self->priv->window_changed_sig = 0;
 
 	/* Build Objects */
 	self->priv->matcher = bamf_matcher_get_default();
+	self->priv->window_changed_sig = g_signal_connect(G_OBJECT(self->priv->matcher), "active-window-changed", G_CALLBACK(active_window_changed), self);
 
 	return;
 }
@@ -52,6 +58,11 @@ static void
 hud_search_dispose (GObject *object)
 {
 	HudSearch * self = HUD_SEARCH(object);
+
+	if (self->priv->window_changed_sig != 0) {
+		g_signal_handler_disconnect(self->priv->matcher, self->priv->window_changed_sig);
+		self->priv->window_changed_sig = 0;
+	}
 
 	if (self->priv->matcher != NULL) {
 		g_object_unref(self->priv->matcher);
@@ -91,3 +102,10 @@ hud_search_execute (HudSearch * search, const GStrv tokens)
 	return;
 }
 
+static void
+active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * newview, gpointer user_data)
+{
+
+
+	return;
+}
