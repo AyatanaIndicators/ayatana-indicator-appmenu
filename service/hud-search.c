@@ -61,3 +61,18 @@ hud_search_new (void)
 	HudSearch * ret = HUD_SEARCH(g_object_new(HUD_SEARCH_TYPE, NULL));
 	return ret;
 }
+
+GStrv
+hud_search_suggestions (HudSearch * search, const GStrv tokens)
+{
+
+	return NULL;
+}
+
+void
+hud_search_execute (HudSearch * search, const GStrv tokens)
+{
+
+	return;
+}
+
