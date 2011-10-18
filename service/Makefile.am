@@ -13,6 +13,8 @@ libexec_PROGRAMS = \
 ####################
 
 hud_service_SOURCES = \
+	dbusmenu-collector.h \
+	dbusmenu-collector.c \
 	shared-values.h \
 	hud-service.c \
 	hud-dbus.h \
