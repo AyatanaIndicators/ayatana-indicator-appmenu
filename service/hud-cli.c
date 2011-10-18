@@ -4,14 +4,20 @@
 #include <unistd.h>
 #include <stdio.h>
 
-void input_cb (GObject * object, GAsyncResult * res, gpointer user_data);
+static void input_cb (GObject * object, GAsyncResult * res, gpointer user_data);
+static void print_suggestions(const gchar * query);
+static void execute_query(const gchar * query);
+static void append_query (gchar ** query, const gchar * append);
 
-GMainLoop * mainloop = NULL;
+static GMainLoop * mainloop = NULL;
+static gchar * query = NULL;
 
 int
 main (int argv, char * argc[])
 {
 	g_type_init();
+
+	query = g_strdup("");
 
 	GInputStream * stdinput = g_unix_input_stream_new(STDIN_FILENO, FALSE);
 	g_return_val_if_fail(stdinput != NULL, 1);
@@ -25,6 +31,7 @@ main (int argv, char * argc[])
 	                          /* callback */  input_cb,
 	                          /* userdata */  buffer);
 
+	print_suggestions(query);
 	g_print("Query: ");
 
 	mainloop = g_main_loop_new(NULL, FALSE);
@@ -37,7 +44,7 @@ main (int argv, char * argc[])
 }
 
 /* Input coming from STDIN */
-void
+static void
 input_cb (GObject * object, GAsyncResult * res, gpointer user_data)
 {
 	GInputStream * stdinput = G_INPUT_STREAM(object);
@@ -55,6 +62,7 @@ input_cb (GObject * object, GAsyncResult * res, gpointer user_data)
 
 	if (size == 0 || size == 1) {
 		g_print("Final command, executing\n");
+		execute_query(query);
 		g_main_loop_quit(mainloop);
 		return;
 	}
@@ -69,7 +77,40 @@ input_cb (GObject * object, GAsyncResult * res, gpointer user_data)
 	                          /* userdata */  buffer);
 
 	buffer[size - 1] = '\0';
-	g_print("Query: %s", buffer);
 
+	append_query(&query, buffer);
+
+	print_suggestions(query);
+	g_print("Query: %s", query);
+
+	return;
+}
+
+static void
+print_suggestions (const gchar * query)
+{
+	g_print(" Suggestion 1\n");
+	g_print(" Suggestion 2\n");
+	g_print(" Suggestion 3\n");
+	g_print(" Suggestion 4\n");
+	g_print(" Suggestion 5\n");
+
+	return;
+}
+
+static void
+execute_query (const gchar * query)
+{
+
+
+	return;
+}
+
+static void
+append_query (gchar ** query, const gchar * append)
+{
+	gchar * temp = g_strdup_printf("%s%s", *query, append);
+	g_free(*query);
+	*query = temp;
 	return;
 }
