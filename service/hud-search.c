@@ -124,8 +124,43 @@ hud_search_new (void)
 GStrv
 hud_search_suggestions (HudSearch * search, const GStrv tokens)
 {
+	g_return_val_if_fail(IS_HUD_SEARCH(search), NULL);
 
-	return NULL;
+	if (search->priv->active_xid == 0) {
+		g_warning("Active application is unknown");
+		return NULL;
+	}
+
+	if (search->priv->appmenu == NULL) {
+		g_warning("Unable to proxy appmenu");
+		return NULL;
+	}
+
+	GError * error = NULL;
+	GVariant * dbusinfo = g_dbus_proxy_call_sync(search->priv->appmenu,
+	                                             "GetMenuForWindow",
+	                                             g_variant_new("(u)", search->priv->active_xid),
+	                                             G_DBUS_CALL_FLAGS_NONE,
+	                                             -1,
+	                                             NULL,
+	                                             &error);
+
+	if (error != NULL) {
+		g_warning("Unable to get menus from appmenu: %s", error->message);
+		g_error_free(error);
+		return NULL;
+	}
+
+	gchar * address = NULL;
+	gchar * path = NULL;
+	g_variant_get(dbusinfo, "(so)", &address, &path);
+
+	GStrv retval = dbusmenu_collector_search(search->priv->collector, address, path, tokens);
+
+	g_free(address);
+	g_free(path);
+
+	return retval;
 }
 
 void
