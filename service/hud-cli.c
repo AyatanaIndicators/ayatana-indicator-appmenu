@@ -114,11 +114,35 @@ input_cb (GObject * object, GAsyncResult * res, gpointer user_data)
 static void
 print_suggestions (const gchar * query)
 {
-	g_print(" Suggestion 1\n");
-	g_print(" Suggestion 2\n");
-	g_print(" Suggestion 3\n");
-	g_print(" Suggestion 4\n");
-	g_print(" Suggestion 5\n");
+	GError * error = NULL;
+	GVariant * suggests = g_dbus_proxy_call_sync(proxy,
+	                                             "GetSuggestions",
+	                                             g_variant_new("(s)", query),
+	                                             G_DBUS_CALL_FLAGS_NONE,
+	                                             -1,
+	                                             NULL,
+	                                             &error);
+
+	if (error != NULL) {
+		g_warning("Unable to get suggestions: %s", error->message);
+		g_error_free(error);
+		return;
+	}
+
+	GVariant * target = g_variant_get_child_value(suggests, 0);
+	g_print("Target: %s\n", g_variant_get_string(target, NULL));
+	g_variant_unref(target);
+
+	GVariant * suggestions = g_variant_get_child_value(suggests, 1);
+	GVariantIter iter;
+	g_variant_iter_init(&iter, suggestions);
+	gchar * suggestion = NULL;
+
+	while (g_variant_iter_loop(&iter, "s", &suggestion)) {
+		g_print(" %s\n", suggestion);
+	}
+
+	g_variant_unref(suggestions);
 
 	return;
 }
@@ -126,7 +150,20 @@ print_suggestions (const gchar * query)
 static void
 execute_query (const gchar * query)
 {
+	GError * error = NULL;
+	g_dbus_proxy_call_sync(proxy,
+	                       "ExecuteQuery",
+	                       g_variant_new("(s)", query),
+	                       G_DBUS_CALL_FLAGS_NONE,
+	                       -1,
+	                       NULL,
+	                       &error);
 
+	if (error != NULL) {
+		g_warning("Unable to get suggestions: %s", error->message);
+		g_error_free(error);
+		return;
+	}
 
 	return;
 }
