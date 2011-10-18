@@ -15,6 +15,8 @@ libexec_PROGRAMS = \
 hud_service_SOURCES = \
 	shared-values.h \
 	hud-service.c \
+	hud-dbus.h \
+	hud-dbus.c \
 	hud.interface.h \
 	hud.interface.c
 
