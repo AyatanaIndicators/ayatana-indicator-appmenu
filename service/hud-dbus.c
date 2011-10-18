@@ -206,7 +206,12 @@ get_suggestions (HudDbus * self, const gchar * query)
 
 	GStrv tokens = g_strsplit(query, " ", 0);
 	GStrv suggestions = hud_search_suggestions(self->priv->search, tokens);
-	g_variant_builder_add_value(&ret, g_variant_new_strv((const gchar * const *)suggestions, -1));
+
+	if (suggestions != NULL && suggestions[0] != NULL) {
+		g_variant_builder_add_value(&ret, g_variant_new_strv((const gchar * const *)suggestions, -1));
+	} else {
+		g_variant_builder_add_value(&ret, g_variant_new_array(G_VARIANT_TYPE_STRING, NULL, 0));
+	}
 
 	g_strfreev(suggestions);
 	g_strfreev(tokens);
