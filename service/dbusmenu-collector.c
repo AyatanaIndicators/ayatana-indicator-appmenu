@@ -176,12 +176,6 @@ menu_key_destroy (gpointer key)
 	return;
 }
 
-typedef struct _hash_table_t hash_table_t;
-struct _hash_table_t {
-	gchar ** tokens;
-	GArray * results;
-};
-
 static gboolean
 label_contains_token (const gchar * label, const gchar * token)
 {
@@ -217,9 +211,9 @@ remove_underline (const gchar * input)
 }
 
 static void
-tokens_to_children (DbusmenuMenuitem * rootitem, hash_table_t * hashdata, DbusmenuClient * client)
+tokens_to_children (DbusmenuMenuitem * rootitem, GStrv tokens, GArray * results, DbusmenuClient * client)
 {
-	if (hashdata->tokens[0] == NULL) {
+	if (tokens[0] == NULL) {
 		return;
 	}
 
@@ -236,17 +230,17 @@ tokens_to_children (DbusmenuMenuitem * rootitem, hash_table_t * hashdata, Dbusme
 		const gchar * label = dbusmenu_menuitem_property_get(item, DBUSMENU_MENUITEM_PROP_LABEL);
 		gchar * underline_label = remove_underline(label);
 
-		if (hashdata->tokens[1] == NULL) {
+		if (tokens[1] == NULL) {
 			/* This is the last token, if it matches, let's show that one */
-			if (label_contains_token(label, hashdata->tokens[0])) {
-				place_in_results(item, hashdata->results);
+			if (label_contains_token(label, tokens[0])) {
+				place_in_results(item, results);
 			} else {
-				tokens_to_children(item, hashdata, client);
+				tokens_to_children(item, tokens, results, client);
 			}
 		} else {
 			gchar * token = NULL;
 
-			for (token = hashdata->tokens[0]; token != NULL; token++) {
+			for (token = tokens[0]; token != NULL; token++) {
 				if (label_contains_token(label, token)) {
 					break;
 				}
@@ -256,21 +250,16 @@ tokens_to_children (DbusmenuMenuitem * rootitem, hash_table_t * hashdata, Dbusme
 				GArray * newitems = g_array_new(TRUE, TRUE, sizeof(gchar *));
 				gchar * itoken = NULL;
 
-				for (itoken = hashdata->tokens[0]; itoken != NULL; itoken++) {
+				for (itoken = tokens[0]; itoken != NULL; itoken++) {
 					if (!label_contains_token(label, itoken)) {
 						g_array_append_val(newitems, itoken);
 					}
 				}
 
 				if (newitems->len == 0) {
-					place_in_results(item, hashdata->results);
+					place_in_results(item, results);
 				} else {
-					hash_table_t newdata = {
-						tokens: (gchar **)newitems->data,
-						results: hashdata->results
-					};
-
-					tokens_to_children(item, &newdata, client);
+					tokens_to_children(item, (GStrv)newitems->data, results, client);
 				}
 
 				g_array_free(newitems, TRUE);
@@ -284,13 +273,10 @@ tokens_to_children (DbusmenuMenuitem * rootitem, hash_table_t * hashdata, Dbusme
 }
 
 static void
-hash_table_foreach (gpointer inkey, gpointer inval, gpointer user_data)
+process_client (DbusmenuCollector * collector, DbusmenuClient * client, GStrv tokens, GArray * results)
 {
-	DbusmenuClient * client = DBUSMENU_CLIENT(inval);
-	hash_table_t * hashdata = (hash_table_t *)user_data;
-
 	/* Handle the case where there are no search terms */
-	if (hashdata->tokens[0] == NULL) {
+	if (tokens == NULL || tokens[0] == NULL) {
 		GList * children = dbusmenu_menuitem_get_children(dbusmenu_client_get_root(client));
 		GList * child;
 
@@ -301,13 +287,13 @@ hash_table_foreach (gpointer inkey, gpointer inval, gpointer user_data)
 				continue;
 			}
 
-			place_in_results(item, hashdata->results);
+			place_in_results(item, results);
 		}
 
 		return;
 	}
 
-	tokens_to_children(dbusmenu_client_get_root(client), hashdata, client);
+	tokens_to_children(dbusmenu_client_get_root(client), tokens, results, client);
 	return;
 }
 
@@ -339,19 +325,24 @@ dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_add
 	g_return_val_if_fail(IS_DBUSMENU_COLLECTOR(collector), NULL);
 	g_return_val_if_fail(tokens != NULL, NULL);
 
-	GArray * results = g_array_new(sizeof(gchar *), TRUE, TRUE);
-	gchar ** newtokens = normalize_tokens(tokens);
+	GStrv retval = NULL;
 
-	hash_table_t hashdata = {
-		tokens: newtokens,
-		results: results
+	menu_key_t search_key = {
+		sender: (gchar *)dbus_addr,
+		path:   (gchar *)dbus_path
 	};
 
-	g_hash_table_foreach(collector->priv->hash, hash_table_foreach, &hashdata);
-	g_strfreev(newtokens);
+	gpointer found = g_hash_table_lookup(collector->priv->hash, &search_key);
+	if (found != NULL) {
+		GArray * results = g_array_new(sizeof(gchar *), TRUE, TRUE);
+		gchar ** newtokens = normalize_tokens(tokens);
 
-	GStrv retval = (GStrv)results->data;
-	g_array_free(results, FALSE);
+		process_client(collector, DBUSMENU_CLIENT(found), newtokens, results);
+		g_strfreev(newtokens);
+
+		retval = (GStrv)results->data;
+		g_array_free(results, FALSE);
+	}
 
 	return retval;
 }
