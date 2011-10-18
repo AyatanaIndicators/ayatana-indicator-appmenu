@@ -7,11 +7,13 @@
 #include "shared-values.h"
 #include "hud.interface.h"
 #include "hud-dbus.h"
+#include "hud-search.h"
 
 struct _HudDbusPrivate {
 	GDBusConnection * bus;
 	GCancellable * bus_lookup;
 	guint bus_registration;
+	HudSearch * search;
 };
 
 #define HUD_DBUS_GET_PRIVATE(o) \
@@ -82,9 +84,12 @@ hud_dbus_init (HudDbus *self)
 	self->priv->bus = NULL;
 	self->priv->bus_lookup = NULL;
 	self->priv->bus_registration = 0;
+	self->priv->search = NULL;
 
 	self->priv->bus_lookup = g_cancellable_new();
 	g_bus_get(G_BUS_TYPE_SESSION, self->priv->bus_lookup, bus_got_cb, self);
+
+	self->priv->search = hud_search_new();
 
 	return;
 }
@@ -109,6 +114,11 @@ hud_dbus_dispose (GObject *object)
 	if (self->priv->bus != NULL) {
 		g_object_unref(self->priv->bus);
 		self->priv->bus = NULL;
+	}
+
+	if (self->priv->search != NULL) {
+		g_object_unref(self->priv->search);
+		self->priv->search = NULL;
 	}
 
 	G_OBJECT_CLASS (hud_dbus_parent_class)->dispose (object);
