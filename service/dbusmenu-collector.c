@@ -334,7 +334,7 @@ dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_add
 
 	gpointer found = g_hash_table_lookup(collector->priv->hash, &search_key);
 	if (found != NULL) {
-		GArray * results = g_array_new(sizeof(gchar *), TRUE, TRUE);
+		GArray * results = g_array_new(TRUE, TRUE, sizeof(gchar *));
 		gchar ** newtokens = normalize_tokens(tokens);
 
 		process_client(collector, DBUSMENU_CLIENT(found), newtokens, results);
