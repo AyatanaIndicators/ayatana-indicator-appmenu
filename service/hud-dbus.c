@@ -4,6 +4,8 @@
 
 #include <gio/gio.h>
 
+#include "shared-values.h"
+#include "hud.interface.h"
 #include "hud-dbus.h"
 
 struct _HudDbusPrivate {
@@ -23,6 +25,13 @@ static void hud_dbus_finalize   (GObject *object);
 static void bus_got_cb          (GObject *object, GAsyncResult * res, gpointer user_data);
 
 G_DEFINE_TYPE (HudDbus, hud_dbus, G_TYPE_OBJECT);
+static GDBusNodeInfo * node_info = NULL;
+static GDBusInterfaceInfo * iface_info = NULL;
+static GDBusInterfaceVTable bus_vtable = {
+	method_call: NULL,
+	get_property: NULL,
+	set_property: NULL,
+};
 
 static void
 hud_dbus_class_init (HudDbusClass *klass)
@@ -33,6 +42,23 @@ hud_dbus_class_init (HudDbusClass *klass)
 
 	object_class->dispose = hud_dbus_dispose;
 	object_class->finalize = hud_dbus_finalize;
+
+	if (node_info == NULL) {
+		GError * error = NULL;
+
+		node_info = g_dbus_node_info_new_for_xml(hud_interface, &error);
+		if (error != NULL) {
+			g_error("Unable to parse HUD interface: %s", error->message);
+			g_error_free(error);
+		}
+	}
+
+	if (node_info != NULL && iface_info == NULL) {
+		iface_info = g_dbus_node_info_lookup_interface(node_info, DBUS_IFACE);
+		if (iface_info != NULL) {
+			g_error("Unable to find interface '" DBUS_IFACE "'");
+		}
+	}
 
 	return;
 }
@@ -62,6 +88,11 @@ hud_dbus_dispose (GObject *object)
 		g_cancellable_cancel(self->priv->bus_lookup);
 		g_object_unref(self->priv->bus_lookup);
 		self->priv->bus_lookup = NULL;
+	}
+
+	if (self->priv->bus_registration != 0) {
+		g_dbus_connection_unregister_object(self->priv->bus, self->priv->bus_registration);
+		self->priv->bus_registration = 0;
 	}
 
 	if (self->priv->bus != NULL) {
@@ -104,6 +135,13 @@ bus_got_cb (GObject *object, GAsyncResult * res, gpointer user_data)
 	self->priv->bus = bus;
 
 	/* Register object */
+	self->priv->bus_registration = g_dbus_connection_register_object(bus,
+	                                                /* path */       DBUS_PATH,
+	                                                /* interface */  iface_info,
+	                                                /* vtable */     &bus_vtable,
+	                                                /* userdata */   self,
+	                                                /* destroy */    NULL,
+	                                                /* error */      &error);
 
 	return;
 }
