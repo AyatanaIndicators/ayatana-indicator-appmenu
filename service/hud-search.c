@@ -9,6 +9,8 @@
 struct _HudSearchPrivate {
 	BamfMatcher * matcher;
 	gulong window_changed_sig;
+
+	guint32 active_xid;
 };
 
 #define HUD_SEARCH_GET_PRIVATE(o) \
@@ -46,10 +48,16 @@ hud_search_init (HudSearch *self)
 	/* Initialize Private */
 	self->priv->matcher = NULL;
 	self->priv->window_changed_sig = 0;
+	self->priv->active_xid = 0;
 
 	/* Build Objects */
 	self->priv->matcher = bamf_matcher_get_default();
 	self->priv->window_changed_sig = g_signal_connect(G_OBJECT(self->priv->matcher), "active-window-changed", G_CALLBACK(active_window_changed), self);
+
+	BamfWindow * active_window = bamf_matcher_get_active_window(self->priv->matcher);
+	if (active_window != NULL) {
+		self->priv->active_xid = bamf_window_get_xid(active_window);
+	}
 
 	return;
 }
@@ -105,7 +113,21 @@ hud_search_execute (HudSearch * search, const GStrv tokens)
 static void
 active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * newview, gpointer user_data)
 {
+	HudSearch * self = HUD_SEARCH(user_data);
+	BamfWindow * window = BAMF_WINDOW(newview);
+	if (window == NULL) return;
 
+	BamfApplication * app = bamf_matcher_get_application_for_window(self->priv->matcher, window);
+	const gchar * desktop = bamf_application_get_desktop_file(app);
+
+	/* NOTE: Both of these are debugging tools for now, so we want
+	   to be able to use them effectively to work on the HUD, so we're
+	   going to pretend we didn't switch windows if we switch to one 
+	   of them */
+	if (g_strstr_len(desktop, -1, "termina") == NULL &&
+	        g_strstr_len(desktop, -1, "dfeet") == NULL) {
+		self->priv->active_xid = bamf_window_get_xid(window);
+	}
 
 	return;
 }
