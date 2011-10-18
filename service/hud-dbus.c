@@ -55,7 +55,7 @@ hud_dbus_class_init (HudDbusClass *klass)
 
 	if (node_info != NULL && iface_info == NULL) {
 		iface_info = g_dbus_node_info_lookup_interface(node_info, DBUS_IFACE);
-		if (iface_info != NULL) {
+		if (iface_info == NULL) {
 			g_error("Unable to find interface '" DBUS_IFACE "'");
 		}
 	}
