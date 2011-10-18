@@ -17,6 +17,8 @@ hud_service_SOURCES = \
 	hud-service.c \
 	hud-dbus.h \
 	hud-dbus.c \
+	hud-search.h \
+	hud-search.c \
 	hud.interface.h \
 	hud.interface.c
 
