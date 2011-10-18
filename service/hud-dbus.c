@@ -7,11 +7,13 @@
 #include "shared-values.h"
 #include "hud.interface.h"
 #include "hud-dbus.h"
+#include "hud-search.h"
 
 struct _HudDbusPrivate {
 	GDBusConnection * bus;
 	GCancellable * bus_lookup;
 	guint bus_registration;
+	HudSearch * search;
 };
 
 #define HUD_DBUS_GET_PRIVATE(o) \
@@ -31,8 +33,8 @@ static void bus_method          (GDBusConnection *connection,
                                  GVariant *parameters,
                                  GDBusMethodInvocation *invocation,
                                  gpointer user_data);
-static GVariant * get_suggestions (const gchar * query);
-static void execute_query (const gchar * query);
+static GVariant * get_suggestions (HudDbus * self, const gchar * query);
+static void execute_query (HudDbus * self, const gchar * query);
 
 
 G_DEFINE_TYPE (HudDbus, hud_dbus, G_TYPE_OBJECT);
@@ -82,9 +84,12 @@ hud_dbus_init (HudDbus *self)
 	self->priv->bus = NULL;
 	self->priv->bus_lookup = NULL;
 	self->priv->bus_registration = 0;
+	self->priv->search = NULL;
 
 	self->priv->bus_lookup = g_cancellable_new();
 	g_bus_get(G_BUS_TYPE_SESSION, self->priv->bus_lookup, bus_got_cb, self);
+
+	self->priv->search = hud_search_new();
 
 	return;
 }
@@ -109,6 +114,11 @@ hud_dbus_dispose (GObject *object)
 	if (self->priv->bus != NULL) {
 		g_object_unref(self->priv->bus);
 		self->priv->bus = NULL;
+	}
+
+	if (self->priv->search != NULL) {
+		g_object_unref(self->priv->search);
+		self->priv->search = NULL;
 	}
 
 	G_OBJECT_CLASS (hud_dbus_parent_class)->dispose (object);
@@ -160,13 +170,15 @@ bus_got_cb (GObject *object, GAsyncResult * res, gpointer user_data)
 static void
 bus_method (GDBusConnection *connection, const gchar *sender, const gchar *object_path, const gchar *interface_name, const gchar *method_name, GVariant *parameters, GDBusMethodInvocation *invocation, gpointer user_data)
 {
+	HudDbus * self = HUD_DBUS(user_data);
+
 	if (g_strcmp0(method_name, "GetSuggestions") == 0) {
 		GVariant * ret = NULL;
 		gchar * query = NULL;
 
 		g_variant_get(parameters, "(s)", &query);
 
-		ret = get_suggestions(query);
+		ret = get_suggestions(self, query);
 
 		g_dbus_method_invocation_return_value(invocation, ret);
 		g_free(query);
@@ -175,7 +187,7 @@ bus_method (GDBusConnection *connection, const gchar *sender, const gchar *objec
 
 		g_variant_get(parameters, "(s)", &query);
 
-		execute_query(query);
+		execute_query(self, query);
 		
 		g_dbus_method_invocation_return_value(invocation, NULL);
 		g_free(query);
@@ -185,31 +197,32 @@ bus_method (GDBusConnection *connection, const gchar *sender, const gchar *objec
 }
 
 static GVariant *
-get_suggestions (const gchar * query)
+get_suggestions (HudDbus * self, const gchar * query)
 {
 	GVariantBuilder ret;
-	GVariantBuilder suggests;
 
 	g_variant_builder_init(&ret, G_VARIANT_TYPE_TUPLE);
-
 	g_variant_builder_add_value(&ret, g_variant_new_string("New Document"));
 
-	g_variant_builder_init(&suggests, G_VARIANT_TYPE_ARRAY);
+	GStrv tokens = g_strsplit(query, " ", 0);
+	GStrv suggestions = hud_search_suggestions(self->priv->search, tokens);
+	g_variant_builder_add_value(&ret, g_variant_new_strv((const gchar * const *)suggestions, -1));
 
-	g_variant_builder_add_value(&suggests, g_variant_new_string("Suggestion 1"));
-	g_variant_builder_add_value(&suggests, g_variant_new_string("Suggestion 2"));
-	g_variant_builder_add_value(&suggests, g_variant_new_string("Suggestion 3"));
-	g_variant_builder_add_value(&suggests, g_variant_new_string("Suggestion 4"));
-	g_variant_builder_add_value(&suggests, g_variant_new_string("Suggestion 5"));
+	g_strfreev(suggestions);
+	g_strfreev(tokens);
 
-	g_variant_builder_add_value(&ret, g_variant_builder_end(&suggests));
 	return g_variant_builder_end(&ret);
 }
 
 static void
-execute_query (const gchar * query)
+execute_query (HudDbus * self, const gchar * query)
 {
 	g_debug("Execute: %s", query);
+
+	GStrv tokens = g_strsplit(query, " ", 0);
+	hud_search_execute(self->priv->search, tokens);
+
+	g_strfreev(tokens);
 
 	return;
 }
