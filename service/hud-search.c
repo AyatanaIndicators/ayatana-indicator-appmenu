@@ -3,6 +3,7 @@
 #endif
 
 #include <libbamf/bamf-matcher.h>
+#include <gio/gio.h>
 
 #include "hud-search.h"
 #include "dbusmenu-collector.h"
@@ -14,6 +15,8 @@ struct _HudSearchPrivate {
 	guint32 active_xid;
 
 	DbusmenuCollector * collector;
+
+	GDBusProxy * appmenu;
 };
 
 #define HUD_SEARCH_GET_PRIVATE(o) \
@@ -53,8 +56,9 @@ hud_search_init (HudSearch *self)
 	self->priv->window_changed_sig = 0;
 	self->priv->active_xid = 0;
 	self->priv->collector = NULL;
+	self->priv->appmenu = NULL;
 
-	/* Build Objects */
+	/* BAMF */
 	self->priv->matcher = bamf_matcher_get_default();
 	self->priv->window_changed_sig = g_signal_connect(G_OBJECT(self->priv->matcher), "active-window-changed", G_CALLBACK(active_window_changed), self);
 
@@ -63,7 +67,17 @@ hud_search_init (HudSearch *self)
 		self->priv->active_xid = bamf_window_get_xid(active_window);
 	}
 
+	/* DBusMenu */
 	self->priv->collector = dbusmenu_collector_new();
+
+	/* Appmenu */
+	self->priv->appmenu = g_dbus_proxy_new_for_bus_sync(G_BUS_TYPE_SESSION,
+	                                                    G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES,
+	                                                    /* info */ NULL,
+	                                                    "org.canonical.AppMenu.Registrar",
+	                                                    "/org/canonical/AppMenu/Registrar",
+	                                                    "org.canonical.AppMenu.Registrar",
+	                                                    NULL, NULL);
 
 	return;
 }
@@ -81,6 +95,11 @@ hud_search_dispose (GObject *object)
 	if (self->priv->matcher != NULL) {
 		g_object_unref(self->priv->matcher);
 		self->priv->matcher = NULL;
+	}
+
+	if (self->priv->appmenu != NULL) {
+		g_object_unref(self->priv->appmenu);
+		self->priv->appmenu = NULL;
 	}
 
 	G_OBJECT_CLASS (hud_search_parent_class)->dispose (object);
