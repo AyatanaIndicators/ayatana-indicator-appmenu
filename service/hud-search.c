@@ -174,20 +174,35 @@ static void
 active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * newview, gpointer user_data)
 {
 	HudSearch * self = HUD_SEARCH(user_data);
+
+	if (!BAMF_IS_WINDOW(newview)) { return; }
 	BamfWindow * window = BAMF_WINDOW(newview);
-	if (window == NULL) return;
 
 	BamfApplication * app = bamf_matcher_get_application_for_window(self->priv->matcher, window);
 	const gchar * desktop = bamf_application_get_desktop_file(app);
+
+	/* If BAMF can't match it to an application we probably don't
+	   want to be involved with it anyway. */
+	if (desktop == NULL) {
+		return;
+	}
 
 	/* NOTE: Both of these are debugging tools for now, so we want
 	   to be able to use them effectively to work on the HUD, so we're
 	   going to pretend we didn't switch windows if we switch to one 
 	   of them */
-	if (g_strstr_len(desktop, -1, "termina") == NULL &&
-	        g_strstr_len(desktop, -1, "dfeet") == NULL) {
-		self->priv->active_xid = bamf_window_get_xid(window);
+	if (g_strstr_len(desktop, -1, "termina") != NULL ||
+	        g_strstr_len(desktop, -1, "dfeet") != NULL) {
+		return;
 	}
+
+	/* This should ignore most of the windows involved in Unity */
+	const gchar * name = bamf_view_get_name(newview);
+	if (g_strcmp0(name, "DNDCollectionWindow") == 0) {
+		return;
+	}
+
+	self->priv->active_xid = bamf_window_get_xid(window);
 
 	return;
 }
