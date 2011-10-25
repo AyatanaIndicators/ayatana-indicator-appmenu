@@ -121,19 +121,17 @@ hud_search_new (void)
 	return ret;
 }
 
-GStrv
-hud_search_suggestions (HudSearch * search, const GStrv tokens)
+static void
+get_current_window_address(HudSearch * search, gchar ** address, gchar ** path)
 {
-	g_return_val_if_fail(IS_HUD_SEARCH(search), NULL);
-
 	if (search->priv->active_xid == 0) {
 		g_warning("Active application is unknown");
-		return NULL;
+		return;
 	}
 
 	if (search->priv->appmenu == NULL) {
 		g_warning("Unable to proxy appmenu");
-		return NULL;
+		return;
 	}
 
 	GError * error = NULL;
@@ -148,14 +146,27 @@ hud_search_suggestions (HudSearch * search, const GStrv tokens)
 	if (error != NULL) {
 		g_warning("Unable to get menus from appmenu: %s", error->message);
 		g_error_free(error);
-		return NULL;
+		return;
 	}
+
+	g_variant_get(dbusinfo, "(so)", address, path);
+	return;
+}
+
+GStrv
+hud_search_suggestions (HudSearch * search, const GStrv tokens)
+{
+	g_return_val_if_fail(IS_HUD_SEARCH(search), NULL);
 
 	gchar * address = NULL;
 	gchar * path = NULL;
-	g_variant_get(dbusinfo, "(so)", &address, &path);
+	GStrv retval = NULL;
 
-	GStrv retval = dbusmenu_collector_search(search->priv->collector, address, path, tokens);
+	get_current_window_address(search, &address, &path);
+
+	if (address != NULL && path != NULL) {
+		retval = dbusmenu_collector_search(search->priv->collector, address, path, tokens);
+	}
 
 	g_free(address);
 	g_free(path);
@@ -166,6 +177,19 @@ hud_search_suggestions (HudSearch * search, const GStrv tokens)
 void
 hud_search_execute (HudSearch * search, const GStrv tokens)
 {
+	g_return_if_fail(IS_HUD_SEARCH(search));
+
+	gchar * address = NULL;
+	gchar * path = NULL;
+
+	get_current_window_address(search, &address, &path);
+
+	if (address != NULL && path != NULL) {
+		dbusmenu_collector_exec(search->priv->collector, address, path, tokens);
+	}
+
+	g_free(address);
+	g_free(path);
 
 	return;
 }
