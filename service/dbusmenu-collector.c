@@ -385,7 +385,7 @@ dbusmenu_collector_exec (DbusmenuCollector * collector, const gchar * dbus_addr,
 static gboolean
 exec_in_results (DbusmenuMenuitem * menuitem, GArray * results)
 {
-
+	dbusmenu_menuitem_handle_event(menuitem, DBUSMENU_MENUITEM_EVENT_ACTIVATED, NULL, 0);
 	return FALSE;
 }
 
