@@ -217,6 +217,8 @@ tokens_to_children (DbusmenuMenuitem * rootitem, GStrv tokens, GArray * results,
 		return;
 	}
 
+	// g_debug("Looking at '%s' with tokens: '%s'", dbusmenu_menuitem_property_get(rootitem, DBUSMENU_MENUITEM_PROP_LABEL), g_strjoinv("', '", tokens));
+
 	GList * children = dbusmenu_menuitem_get_children(rootitem);
 	GList * child;
 
@@ -224,6 +226,7 @@ tokens_to_children (DbusmenuMenuitem * rootitem, GStrv tokens, GArray * results,
 		DbusmenuMenuitem * item = DBUSMENU_MENUITEM(child->data);
 
 		if (!dbusmenu_menuitem_property_exist(item, DBUSMENU_MENUITEM_PROP_LABEL)) {
+			tokens_to_children(item, tokens, results, client);
 			continue;
 		}
 
@@ -250,11 +253,11 @@ tokens_to_children (DbusmenuMenuitem * rootitem, GStrv tokens, GArray * results,
 
 			if (token != NULL) {
 				GArray * newitems = g_array_new(TRUE, TRUE, sizeof(gchar *));
-				gchar * itoken = NULL;
+				gint i = 0;
 
-				for (itoken = tokens[0]; itoken != NULL; itoken++) {
-					if (!label_contains_token(label, itoken)) {
-						g_array_append_val(newitems, itoken);
+				for (i = 0; tokens[i] != NULL; i++) {
+					if (!label_contains_token(label, tokens[i])) {
+						g_array_append_val(newitems, tokens[i]);
 					}
 				}
 
@@ -265,6 +268,8 @@ tokens_to_children (DbusmenuMenuitem * rootitem, GStrv tokens, GArray * results,
 				}
 
 				g_array_free(newitems, TRUE);
+			} else {
+				tokens_to_children(item, tokens, results, client);
 			}
 		}
 
