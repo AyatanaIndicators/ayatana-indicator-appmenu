@@ -25,6 +25,8 @@ struct _menu_key_t {
 	gchar * path;
 };
 
+typedef gboolean (*action_function_t) (DbusmenuMenuitem * menuitem, GArray * results);
+
 static void dbusmenu_collector_class_init (DbusmenuCollectorClass *klass);
 static void dbusmenu_collector_init       (DbusmenuCollector *self);
 static void dbusmenu_collector_dispose    (GObject *object);
@@ -33,7 +35,8 @@ static void update_layout_cb (GDBusConnection * connection, const gchar * sender
 static guint menu_hash_func (gconstpointer key);
 static gboolean menu_equal_func (gconstpointer a, gconstpointer b);
 static void menu_key_destroy (gpointer key);
-static void place_in_results (DbusmenuMenuitem * menuitem, GArray * results);
+static gboolean place_in_results (DbusmenuMenuitem * menuitem, GArray * results);
+static gboolean exec_in_results (DbusmenuMenuitem * menuitem, GArray * results);
 
 G_DEFINE_TYPE (DbusmenuCollector, dbusmenu_collector, G_TYPE_OBJECT);
 
@@ -211,7 +214,7 @@ remove_underline (const gchar * input)
 }
 
 static void
-tokens_to_children (DbusmenuMenuitem * rootitem, GStrv tokens, GArray * results, DbusmenuClient * client)
+tokens_to_children (DbusmenuMenuitem * rootitem, GStrv tokens, GArray * results, DbusmenuClient * client, action_function_t action_func)
 {
 	if (tokens[0] == NULL) {
 		return;
@@ -226,7 +229,7 @@ tokens_to_children (DbusmenuMenuitem * rootitem, GStrv tokens, GArray * results,
 		DbusmenuMenuitem * item = DBUSMENU_MENUITEM(child->data);
 
 		if (!dbusmenu_menuitem_property_exist(item, DBUSMENU_MENUITEM_PROP_LABEL)) {
-			tokens_to_children(item, tokens, results, client);
+			tokens_to_children(item, tokens, results, client, action_func);
 			continue;
 		}
 
@@ -238,7 +241,7 @@ tokens_to_children (DbusmenuMenuitem * rootitem, GStrv tokens, GArray * results,
 			if (label_contains_token(label, tokens[0])) {
 				place_in_results(item, results);
 			} else {
-				tokens_to_children(item, tokens, results, client);
+				tokens_to_children(item, tokens, results, client, action_func);
 			}
 		} else {
 			gint i = 0;
@@ -264,12 +267,12 @@ tokens_to_children (DbusmenuMenuitem * rootitem, GStrv tokens, GArray * results,
 				if (newitems->len == 0) {
 					place_in_results(item, results);
 				} else {
-					tokens_to_children(item, (GStrv)newitems->data, results, client);
+					tokens_to_children(item, (GStrv)newitems->data, results, client, action_func);
 				}
 
 				g_array_free(newitems, TRUE);
 			} else {
-				tokens_to_children(item, tokens, results, client);
+				tokens_to_children(item, tokens, results, client, action_func);
 			}
 		}
 
@@ -280,7 +283,7 @@ tokens_to_children (DbusmenuMenuitem * rootitem, GStrv tokens, GArray * results,
 }
 
 static void
-process_client (DbusmenuCollector * collector, DbusmenuClient * client, GStrv tokens, GArray * results)
+process_client (DbusmenuCollector * collector, DbusmenuClient * client, GStrv tokens, GArray * results, action_function_t action_func)
 {
 	/* Handle the case where there are no search terms */
 	if (tokens == NULL || tokens[0] == NULL) {
@@ -294,13 +297,15 @@ process_client (DbusmenuCollector * collector, DbusmenuClient * client, GStrv to
 				continue;
 			}
 
-			place_in_results(item, results);
+			if (action_func(item, results)) {
+				break;
+			}
 		}
 
 		return;
 	}
 
-	tokens_to_children(dbusmenu_client_get_root(client), tokens, results, client);
+	tokens_to_children(dbusmenu_client_get_root(client), tokens, results, client, action_func);
 	return;
 }
 
@@ -344,7 +349,7 @@ dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_add
 		GArray * results = g_array_new(TRUE, TRUE, sizeof(gchar *));
 		gchar ** newtokens = normalize_tokens(tokens);
 
-		process_client(collector, DBUSMENU_CLIENT(found), newtokens, results);
+		process_client(collector, DBUSMENU_CLIENT(found), newtokens, results, place_in_results);
 		g_strfreev(newtokens);
 
 		retval = (GStrv)results->data;
@@ -354,7 +359,14 @@ dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_add
 	return retval;
 }
 
-static void
+static gboolean
+exec_in_results (DbusmenuMenuitem * menuitem, GArray * results)
+{
+
+	return FALSE;
+}
+
+static gboolean
 place_in_results (DbusmenuMenuitem * item, GArray * results)
 {
 	const gchar * label = dbusmenu_menuitem_property_get(item, DBUSMENU_MENUITEM_PROP_LABEL);
@@ -362,6 +374,6 @@ place_in_results (DbusmenuMenuitem * item, GArray * results)
 
 	g_array_append_val(results, underline_label);
 
-	return;
+	return FALSE;
 }
 
