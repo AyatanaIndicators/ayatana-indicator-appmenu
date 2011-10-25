@@ -239,7 +239,10 @@ tokens_to_children (DbusmenuMenuitem * rootitem, GStrv tokens, GArray * results,
 		if (tokens[1] == NULL) {
 			/* This is the last token, if it matches, let's show that one */
 			if (label_contains_token(label, tokens[0])) {
-				place_in_results(item, results);
+				if (action_func(item, results)) {
+					g_free(underline_label);
+					break;
+				}
 			} else {
 				tokens_to_children(item, tokens, results, client, action_func);
 			}
@@ -265,7 +268,10 @@ tokens_to_children (DbusmenuMenuitem * rootitem, GStrv tokens, GArray * results,
 				}
 
 				if (newitems->len == 0) {
-					place_in_results(item, results);
+					if (action_func(item, results)) {
+						g_free(underline_label);
+						break;
+					}
 				} else {
 					tokens_to_children(item, (GStrv)newitems->data, results, client, action_func);
 				}
@@ -331,13 +337,11 @@ normalize_tokens (gchar ** tokens)
 	return out;
 }
 
-GStrv
-dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, GStrv tokens)
+static void
+just_do_it (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, GStrv tokens, GArray * results, action_function_t action_func)
 {
-	g_return_val_if_fail(IS_DBUSMENU_COLLECTOR(collector), NULL);
-	g_return_val_if_fail(tokens != NULL, NULL);
-
-	GStrv retval = NULL;
+	g_return_if_fail(IS_DBUSMENU_COLLECTOR(collector));
+	g_return_if_fail(tokens != NULL);
 
 	menu_key_t search_key = {
 		sender: (gchar *)dbus_addr,
@@ -346,17 +350,36 @@ dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_add
 
 	gpointer found = g_hash_table_lookup(collector->priv->hash, &search_key);
 	if (found != NULL) {
-		GArray * results = g_array_new(TRUE, TRUE, sizeof(gchar *));
 		gchar ** newtokens = normalize_tokens(tokens);
 
-		process_client(collector, DBUSMENU_CLIENT(found), newtokens, results, place_in_results);
+		process_client(collector, DBUSMENU_CLIENT(found), newtokens, results, action_func);
 		g_strfreev(newtokens);
 
-		retval = (GStrv)results->data;
-		g_array_free(results, FALSE);
 	}
 
+	return;
+}
+
+GStrv
+dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, GStrv tokens)
+{
+	GStrv retval = NULL;
+
+	GArray * results = g_array_new(TRUE, TRUE, sizeof(gchar *));
+
+	just_do_it(collector, dbus_addr, dbus_path, tokens, results, place_in_results);
+
+	retval = (GStrv)results->data;
+	g_array_free(results, FALSE);
+
 	return retval;
+}
+
+gboolean
+dbusmenu_collector_exec (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, GStrv tokens)
+{
+	just_do_it(collector, dbus_addr, dbus_path, tokens, NULL, exec_in_results);
+	return TRUE;
 }
 
 static gboolean
