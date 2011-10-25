@@ -238,10 +238,12 @@ tokens_to_children (DbusmenuMenuitem * rootitem, GStrv tokens, GArray * results,
 				tokens_to_children(item, tokens, results, client);
 			}
 		} else {
+			gint i = 0;
 			gchar * token = NULL;
 
-			for (token = tokens[0]; token != NULL; token++) {
-				if (label_contains_token(label, token)) {
+			for (i = 0; tokens[i] != NULL; i++) {
+				if (label_contains_token(label, tokens[i])) {
+					token = tokens[i];
 					break;
 				}
 			}
