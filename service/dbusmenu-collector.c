@@ -288,6 +288,84 @@ tokens_to_children (DbusmenuMenuitem * rootitem, GStrv tokens, GArray * results,
 	return;
 }
 
+#define ADD_PENALTY 10
+#define DROP_PENALTY 10
+#define TRANSPOSE_PENALTY 10
+#define DELETE_PENALTY 10
+#define SWAP_PENALTY 10
+
+static guint
+swap_cost (gchar a, gchar b)
+{
+	if (a == b)
+		return 0;
+	return SWAP_PENALTY;
+}
+
+#define MATRIX_VAL(needle_loc, haystack_loc) (penalty_matrix[(needle_loc + 1) + (haystack_loc + 1) * len_needle])
+
+static guint
+calculate_distance (const gchar * needle, gchar * haystack)
+{
+	guint len_needle = 0;
+	guint len_haystack = 0;
+
+	if (needle != NULL) {
+		len_needle = g_utf8_strlen(needle, -1);
+	}
+
+	if (haystack != NULL) {
+		len_haystack = g_utf8_strlen(haystack, -1);
+	}
+
+	/* Handle the cases of very short or NULL strings quickly */
+	if (len_needle == 0) {
+		return DROP_PENALTY * len_haystack;
+	}
+
+	if (len_haystack == 0) {
+		return ADD_PENALTY * len_needle;
+	}
+
+	/* Allocate the matrix of penalties */
+	guint * penalty_matrix = g_malloc(sizeof(guint) * (len_needle + 1) * (len_haystack + 1));
+	int i;
+
+	/* Take the first row and first column and make them additional letter penalties */
+	for (i = 0; i < len_needle; i++) {
+		MATRIX_VAL(i, -1) = ADD_PENALTY;
+	}
+
+	for (i = 0; i < len_haystack; i++) {
+		MATRIX_VAL(-1, i) = DROP_PENALTY;
+	}
+
+	/* Now go through the matrix building up the penalties */
+	int ineedle, ihaystack;
+	for (ineedle = 0; ineedle < len_needle; ineedle++) {
+		for (ihaystack = 0; ihaystack < len_haystack; ihaystack++) {
+			char needle_let = needle[ineedle];
+			char haystack_let = haystack[ihaystack];
+
+			guint subst_pen = swap_cost(needle_let, haystack_let);
+			guint drop_pen = MATRIX_VAL(ineedle - 1, ihaystack) + DROP_PENALTY;
+			guint add_pen = MATRIX_VAL(ineedle, ihaystack - 1) + ADD_PENALTY;
+			guint transpose_pen = drop_pen + 1; /* ensures won't be chosen */
+
+			if (ineedle > 0 && ihaystack > 0 && needle_let == haystack[ihaystack - 1] && haystack_let == needle[ineedle - 1]) {
+				transpose_pen = MATRIX_VAL(ineedle - 2, ihaystack - 2) + TRANSPOSE_PENALTY;
+			}
+
+			MATRIX_VAL(ineedle, ihaystack) = MIN(MIN(subst_pen, drop_pen), MIN(add_pen, transpose_pen));
+		}
+	}
+
+	guint retval = penalty_matrix[(len_needle + 1) * (len_haystack + 1) - 1];
+	g_free(penalty_matrix);
+
+	return retval;
+}
+
 static void
 process_client (DbusmenuCollector * collector, DbusmenuClient * client, GStrv tokens, GArray * results, action_function_t action_func)
 {
