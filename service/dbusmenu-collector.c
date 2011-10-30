@@ -290,7 +290,7 @@ calculate_distance (const gchar * needle, const gchar * haystack)
 	}
 
 	/* Allocate the matrix of penalties */
-	guint * penalty_matrix = g_malloc(sizeof(guint) * (len_needle + 1) * (len_haystack + 1));
+	guint * penalty_matrix = g_malloc0(sizeof(guint) * (len_needle + 1) * (len_haystack + 1));
 	int i;
 
 	/* Take the first row and first column and make them additional letter penalties */
