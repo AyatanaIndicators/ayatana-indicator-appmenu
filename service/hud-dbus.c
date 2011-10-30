@@ -204,8 +204,7 @@ get_suggestions (HudDbus * self, const gchar * query)
 	g_variant_builder_init(&ret, G_VARIANT_TYPE_TUPLE);
 	g_variant_builder_add_value(&ret, g_variant_new_string("New Document"));
 
-	GStrv tokens = g_strsplit(query, " ", 0);
-	GStrv suggestions = hud_search_suggestions(self->priv->search, tokens);
+	GStrv suggestions = hud_search_suggestions(self->priv->search, query);
 
 	if (suggestions != NULL && suggestions[0] != NULL) {
 		g_variant_builder_add_value(&ret, g_variant_new_strv((const gchar * const *)suggestions, -1));
@@ -214,7 +213,6 @@ get_suggestions (HudDbus * self, const gchar * query)
 	}
 
 	g_strfreev(suggestions);
-	g_strfreev(tokens);
 
 	return g_variant_builder_end(&ret);
 }
