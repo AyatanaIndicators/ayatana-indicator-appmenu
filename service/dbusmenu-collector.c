@@ -294,11 +294,29 @@ tokens_to_children (DbusmenuMenuitem * rootitem, GStrv tokens, GArray * results,
 #define DELETE_PENALTY 10
 #define SWAP_PENALTY 10
 
+gchar ignore[] = " _-";
+
+static gboolean
+ignore_character (gchar inchar)
+{
+	int i;
+	for (i = 0; i < 3; i++) {
+		if (ignore[i] == inchar) {
+			return TRUE;
+		}
+	}
+	return FALSE;
+}
+
 static guint
 swap_cost (gchar a, gchar b)
 {
 	if (a == b)
 		return 0;
+	if (ignore_character(a) || ignore_character(b))
+		return -1 * ADD_PENALTY;
+	if (g_unichar_toupper(a) == g_unichar_toupper(b))
+		return SWAP_PENALTY / 10; /* Some penalty, but close */
 	return SWAP_PENALTY;
 }
 
