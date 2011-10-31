@@ -4,6 +4,7 @@
 
 #include <gio/gio.h>
 #include <glib.h>
+#include <glib/gprintf.h>
 
 #include <libdbusmenu-glib/client.h>
 
@@ -266,6 +267,42 @@ swap_cost (gchar a, gchar b)
 
 #define MATRIX_VAL(needle_loc, haystack_loc) (penalty_matrix[(needle_loc + 1) + (haystack_loc + 1) * len_needle])
 
+static void
+dumpmatrix (const gchar * needle, guint len_needle, const gchar * haystack, guint len_haystack, guint * penalty_matrix)
+{
+	gint i, j;
+	// g_debug("Built matrix with needle '%s' that is %d characters", needle, len_needle);
+	// g_debug("Built matrix with haystack '%s' that is %d characters", haystack, len_haystack);
+
+	g_printf("\n");
+	/* Character Column */
+	g_printf("  ");
+	/* Base val column */
+	g_printf("  ");
+	for (i = 0; i < len_needle; i++) {
+		g_printf("%c ", needle[i]);
+	}
+	g_printf("\n");
+
+	/* Character Column */
+	g_printf("  ");
+	for (i = -1; i < (gint)len_needle; i++) {
+		g_printf("%u ", MATRIX_VAL(i, -1));
+	}
+	g_printf("\n");
+
+	for (j = 0; j < len_haystack; j++) {
+		g_printf("%c ", haystack[j]);
+		for (i = -1; i < (gint)len_needle; i++) {
+			g_printf("%u ", MATRIX_VAL(i, j));
+		}
+		g_printf("\n");
+	}
+	g_printf("\n");
+
+	return;
+}
+
 static guint
 calculate_distance (const gchar * needle, const gchar * haystack)
 {
@@ -321,6 +358,8 @@ calculate_distance (const gchar * needle, const gchar * haystack)
 			MATRIX_VAL(ineedle, ihaystack) = MIN(MIN(subst_pen, drop_pen), MIN(add_pen, transpose_pen));
 		}
 	}
+
+	dumpmatrix(needle, len_needle, haystack, len_haystack, penalty_matrix);
 
 	guint retval = penalty_matrix[(len_needle + 1) * (len_haystack + 1) - 1];
 	g_free(penalty_matrix);
