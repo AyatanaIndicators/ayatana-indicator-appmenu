@@ -259,7 +259,7 @@ swap_cost (gchar a, gchar b)
 	if (a == b)
 		return 0;
 	if (ignore_character(a) || ignore_character(b))
-		return -1 * ADD_PENALTY;
+		return 0;
 	if (g_unichar_toupper(a) == g_unichar_toupper(b))
 		return SWAP_PENALTY / 10; /* Some penalty, but close */
 	return SWAP_PENALTY;
