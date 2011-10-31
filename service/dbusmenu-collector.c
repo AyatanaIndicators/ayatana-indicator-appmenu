@@ -26,7 +26,13 @@ struct _menu_key_t {
 	gchar * path;
 };
 
-typedef gboolean (*action_function_t) (DbusmenuMenuitem * menuitem, GArray * results);
+typedef struct _search_item_t search_item_t;
+struct _search_item_t {
+	gchar * string;
+	guint distance;
+};
+
+typedef gboolean (*action_function_t) (DbusmenuMenuitem * menuitem, const gchar * full_label, guint distance, GArray * results);
 
 static void dbusmenu_collector_class_init (DbusmenuCollectorClass *klass);
 static void dbusmenu_collector_init       (DbusmenuCollector *self);
@@ -36,7 +42,7 @@ static void update_layout_cb (GDBusConnection * connection, const gchar * sender
 static guint menu_hash_func (gconstpointer key);
 static gboolean menu_equal_func (gconstpointer a, gconstpointer b);
 static void menu_key_destroy (gpointer key);
-static gboolean place_in_results (DbusmenuMenuitem * menuitem, GArray * results);
+static gboolean place_in_results (DbusmenuMenuitem * menuitem, const gchar * full_label, guint distance, GArray * results);
 //static gboolean exec_in_results (DbusmenuMenuitem * menuitem, GArray * results);
 static guint calculate_distance (const gchar * needle, const gchar * haystack);
 
@@ -216,7 +222,7 @@ tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GArray * 
 
 	if (!dbusmenu_menuitem_get_root(rootitem) && dbusmenu_menuitem_property_exist(rootitem, DBUSMENU_MENUITEM_PROP_LABEL)) {
 		guint distance = calculate_distance(search, newstr);
-		action_func(rootitem, results);
+		action_func(rootitem, newstr, distance, results);
 		g_debug("String '%s' distance %d", newstr, distance);
 	}
 
@@ -381,7 +387,9 @@ process_client (DbusmenuCollector * collector, DbusmenuClient * client, const gc
 				continue;
 			}
 
-			if (action_func(item, results)) {
+			const gchar * label = dbusmenu_menuitem_property_get(item, DBUSMENU_MENUITEM_PROP_LABEL);
+
+			if (action_func(item, label, calculate_distance(label, NULL), results)) {
 				break;
 			}
 		}
@@ -418,9 +426,29 @@ dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_add
 {
 	GStrv retval = NULL;
 
-	GArray * results = g_array_new(TRUE, TRUE, sizeof(gchar *));
+	GArray * searchitems = g_array_new(TRUE, TRUE, sizeof(search_item_t));
 
-	just_do_it(collector, dbus_addr, dbus_path, search, results, place_in_results);
+	just_do_it(collector, dbus_addr, dbus_path, search, searchitems, place_in_results);
+
+	GArray * results = g_array_new(TRUE, TRUE, sizeof(gchar *));
+	guint count = 0;
+
+	g_debug("Migrating over strings");
+	for (count = 0; count < 5 && count < searchitems->len; count++) {
+		gchar * value = ((search_item_t *)&g_array_index(searchitems, search_item_t, count))->string;
+		g_array_append_val(results, value);
+	}
+
+	g_debug("Freeing the other entries");
+	for (count = 0; count < searchitems->len; count++) {
+		search_item_t * search_item = &g_array_index(searchitems, search_item_t, count);
+
+		if (count >= 5) {
+			g_free(search_item->string);
+		}
+	}
+
+	g_array_free(searchitems, TRUE);
 
 	retval = (GStrv)results->data;
 	g_array_free(results, FALSE);
@@ -444,12 +472,13 @@ exec_in_results (DbusmenuMenuitem * menuitem, GArray * results)
 */
 
 static gboolean
-place_in_results (DbusmenuMenuitem * item, GArray * results)
+place_in_results (DbusmenuMenuitem * item, const gchar * full_label, guint distance, GArray * results)
 {
-	const gchar * label = dbusmenu_menuitem_property_get(item, DBUSMENU_MENUITEM_PROP_LABEL);
-	gchar * underline_label = remove_underline(label);
-
-	g_array_append_val(results, underline_label);
+	search_item_t search_item = {
+		string: g_strdup(full_label),
+		distance: distance
+	};
+	g_array_append_val(results, search_item);
 
 	return FALSE;
 }
