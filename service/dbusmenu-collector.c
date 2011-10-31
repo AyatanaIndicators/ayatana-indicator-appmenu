@@ -331,11 +331,11 @@ calculate_distance (const gchar * needle, const gchar * haystack)
 
 	/* Take the first row and first column and make them additional letter penalties */
 	for (i = 0; i < len_needle + 1; i++) {
-		MATRIX_VAL(i - 1, -1) = ADD_PENALTY;
+		MATRIX_VAL(i - 1, -1) = i * ADD_PENALTY;
 	}
 
 	for (i = 0; i < len_haystack + 1; i++) {
-		MATRIX_VAL(-1, i - 1) = DROP_PENALTY;
+		MATRIX_VAL(-1, i - 1) = i * DROP_PENALTY;
 	}
 
 	/* Now go through the matrix building up the penalties */
