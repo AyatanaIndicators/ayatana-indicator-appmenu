@@ -265,14 +265,13 @@ swap_cost (gchar a, gchar b)
 	return SWAP_PENALTY;
 }
 
-#define MATRIX_VAL(needle_loc, haystack_loc) (penalty_matrix[(needle_loc + 1) + (haystack_loc + 1) * len_needle])
+#define MATRIX_VAL(needle_loc, haystack_loc) (penalty_matrix[(needle_loc + 1) + (haystack_loc + 1) * (len_needle + 1)])
 
 static void
 dumpmatrix (const gchar * needle, guint len_needle, const gchar * haystack, guint len_haystack, guint * penalty_matrix)
 {
+	//return;
 	gint i, j;
-	// g_debug("Built matrix with needle '%s' that is %d characters", needle, len_needle);
-	// g_debug("Built matrix with haystack '%s' that is %d characters", haystack, len_haystack);
 
 	g_printf("\n");
 	/* Character Column */
@@ -331,12 +330,12 @@ calculate_distance (const gchar * needle, const gchar * haystack)
 	int i;
 
 	/* Take the first row and first column and make them additional letter penalties */
-	for (i = 0; i < len_needle; i++) {
-		MATRIX_VAL(i, -1) = ADD_PENALTY;
+	for (i = 0; i < len_needle + 1; i++) {
+		MATRIX_VAL(i - 1, -1) = ADD_PENALTY;
 	}
 
-	for (i = 0; i < len_haystack; i++) {
-		MATRIX_VAL(-1, i) = DROP_PENALTY;
+	for (i = 0; i < len_haystack + 1; i++) {
+		MATRIX_VAL(-1, i - 1) = DROP_PENALTY;
 	}
 
 	/* Now go through the matrix building up the penalties */
