@@ -45,6 +45,7 @@ static void menu_key_destroy (gpointer key);
 static gboolean place_in_results (DbusmenuMenuitem * menuitem, const gchar * full_label, guint distance, GArray * results);
 //static gboolean exec_in_results (DbusmenuMenuitem * menuitem, GArray * results);
 static guint calculate_distance (const gchar * needle, const gchar * haystack);
+static gint search_item_sort (gconstpointer a, gconstpointer b);
 
 G_DEFINE_TYPE (DbusmenuCollector, dbusmenu_collector, G_TYPE_OBJECT);
 
@@ -433,6 +434,8 @@ dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_add
 	GArray * results = g_array_new(TRUE, TRUE, sizeof(gchar *));
 	guint count = 0;
 
+	g_array_sort(searchitems, search_item_sort);
+
 	g_debug("Migrating over strings");
 	for (count = 0; count < 5 && count < searchitems->len; count++) {
 		gchar * value = ((search_item_t *)&g_array_index(searchitems, search_item_t, count))->string;
@@ -470,6 +473,18 @@ exec_in_results (DbusmenuMenuitem * menuitem, GArray * results)
 	return FALSE;
 }
 */
+
+static gint
+search_item_sort (gconstpointer a, gconstpointer b)
+{
+	search_item_t * sa;
+	search_item_t * sb;
+
+	sa = (search_item_t *)a;
+	sb = (search_item_t *)b;
+
+	return sa->distance - sb->distance;
+}
 
 static gboolean
 place_in_results (DbusmenuMenuitem * item, const gchar * full_label, guint distance, GArray * results)
