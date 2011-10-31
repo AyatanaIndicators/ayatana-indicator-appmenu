@@ -221,7 +221,9 @@ tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GArray * 
 
 	gchar * newstr = NULL;
 	if (dbusmenu_menuitem_property_exist(rootitem, DBUSMENU_MENUITEM_PROP_LABEL)) {
-		newstr = g_strdup_printf("%s %s", label_prefix, dbusmenu_menuitem_property_get(rootitem, DBUSMENU_MENUITEM_PROP_LABEL));
+		gchar * nounderline = remove_underline(dbusmenu_menuitem_property_get(rootitem, DBUSMENU_MENUITEM_PROP_LABEL));
+		newstr = g_strdup_printf("%s %s", label_prefix, nounderline);
+		g_free(nounderline);
 	} else {
 		newstr = g_strdup(label_prefix);
 	}
