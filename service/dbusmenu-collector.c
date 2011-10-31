@@ -219,7 +219,12 @@ tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GArray * 
 		return;
 	}
 
-	gchar * newstr = g_strdup_printf("%s %s", label_prefix, dbusmenu_menuitem_property_get(rootitem, DBUSMENU_MENUITEM_PROP_LABEL));
+	gchar * newstr = NULL;
+	if (dbusmenu_menuitem_property_exist(rootitem, DBUSMENU_MENUITEM_PROP_LABEL)) {
+		newstr = g_strdup_printf("%s %s", label_prefix, dbusmenu_menuitem_property_get(rootitem, DBUSMENU_MENUITEM_PROP_LABEL));
+	} else {
+		newstr = g_strdup(label_prefix);
+	}
 
 	if (!dbusmenu_menuitem_get_root(rootitem) && dbusmenu_menuitem_property_exist(rootitem, DBUSMENU_MENUITEM_PROP_LABEL)) {
 		guint distance = calculate_distance(search, newstr);
