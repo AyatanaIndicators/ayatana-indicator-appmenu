@@ -345,7 +345,7 @@ calculate_distance (const gchar * needle, const gchar * haystack)
 			char needle_let = needle[ineedle];
 			char haystack_let = haystack[ihaystack];
 
-			guint subst_pen = swap_cost(needle_let, haystack_let);
+			guint subst_pen = MATRIX_VAL(ineedle - 1, ihaystack - 1) + swap_cost(needle_let, haystack_let);
 			guint drop_pen = MATRIX_VAL(ineedle - 1, ihaystack) + DROP_PENALTY;
 			guint add_pen = MATRIX_VAL(ineedle, ihaystack - 1) + ADD_PENALTY;
 			guint transpose_pen = drop_pen + 1; /* ensures won't be chosen */
