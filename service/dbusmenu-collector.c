@@ -222,8 +222,12 @@ tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GArray * 
 	gchar * newstr = NULL;
 	if (dbusmenu_menuitem_property_exist(rootitem, DBUSMENU_MENUITEM_PROP_LABEL)) {
 		gchar * nounderline = remove_underline(dbusmenu_menuitem_property_get(rootitem, DBUSMENU_MENUITEM_PROP_LABEL));
-		newstr = g_strdup_printf("%s %s", label_prefix, nounderline);
-		g_free(nounderline);
+		if (label_prefix != NULL && label_prefix[0] != '\0') {
+			newstr = g_strdup_printf("%s > %s", label_prefix, nounderline);
+			g_free(nounderline);
+		} else {
+			newstr = nounderline;
+		}
 	} else {
 		newstr = g_strdup(label_prefix);
 	}
@@ -253,7 +257,7 @@ tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GArray * 
 #define DELETE_PENALTY 10
 #define SWAP_PENALTY 10
 
-gchar ignore[] = " _-";
+gchar ignore[] = " _->";
 
 static gboolean
 ignore_character (gchar inchar)
