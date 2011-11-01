@@ -253,6 +253,7 @@ tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GArray * 
 
 #define ADD_PENALTY 10
 #define DROP_PENALTY 10
+#define END_DROP_PENALTY 10
 #define TRANSPOSE_PENALTY 10
 #define DELETE_PENALTY 10
 #define SWAP_PENALTY 10
@@ -364,7 +365,12 @@ calculate_distance (const gchar * needle, const gchar * haystack)
 			char haystack_let = haystack[ihaystack];
 
 			guint subst_pen = MATRIX_VAL(ineedle - 1, ihaystack - 1) + swap_cost(needle_let, haystack_let);
-			guint drop_pen = MATRIX_VAL(ineedle - 1, ihaystack) + DROP_PENALTY;
+			guint drop_pen = MATRIX_VAL(ineedle - 1, ihaystack);
+			if (ineedle < ihaystack) {
+				drop_pen += DROP_PENALTY;
+			} else {
+				drop_pen += END_DROP_PENALTY;
+			}
 			guint add_pen = MATRIX_VAL(ineedle, ihaystack - 1) + ADD_PENALTY;
 			guint transpose_pen = drop_pen + 1; /* ensures won't be chosen */
 
