@@ -263,7 +263,7 @@ static gboolean
 ignore_character (gchar inchar)
 {
 	int i;
-	for (i = 0; i < 3; i++) {
+	for (i = 0; i < 4; i++) {
 		if (ignore[i] == inchar) {
 			return TRUE;
 		}
