@@ -3,7 +3,10 @@ ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 SUBDIRS = \
 	data \
 	service \
-	po
+	po \
+	tests
+
+tests: service
 
 DISTCHECK_CONFIGURE_FLAGS = --enable-localinstall
 
