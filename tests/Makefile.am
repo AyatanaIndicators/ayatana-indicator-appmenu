@@ -1,0 +1,35 @@
+DISTCLEANFILES =
+
+TESTS = \
+	test-distance-test
+
+check_PROGRAMS = \
+	test-distance
+
+DISTCLEANFILES += $(TESTS)
+
+######################
+# Test Distance
+######################
+
+DISTANCE_XML_REPORT = test-distance.xml
+
+test-distance-test: test-distance Makefile.am
+	@echo "#!/bin/bash" > $@
+	@echo $(XVFB_RUN) >> $@
+	@echo gtester --verbose -k -o $(DISTANCE_XML_REPORT) $(builddir)/test-distance >> $@
+	@chmod +x $@
+
+test_distance_SOURCES = \
+	test-distance.c
+
+test_distance_CFLAGS = \
+	$(HUD_CFLAGS) \
+	-Wall -Werror
+
+test_distance_LDADD = \
+	$(HUD_LIBS)
+
+DISTCLEANFILES += $(DISTANCE_XML_REPORT)
+
+

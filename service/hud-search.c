@@ -154,7 +154,7 @@ get_current_window_address(HudSearch * search, gchar ** address, gchar ** path)
 }
 
 GStrv
-hud_search_suggestions (HudSearch * search, const GStrv tokens)
+hud_search_suggestions (HudSearch * search, const gchar * searchstr)
 {
 	g_return_val_if_fail(IS_HUD_SEARCH(search), NULL);
 
@@ -165,7 +165,7 @@ hud_search_suggestions (HudSearch * search, const GStrv tokens)
 	get_current_window_address(search, &address, &path);
 
 	if (address != NULL && path != NULL) {
-		retval = dbusmenu_collector_search(search->priv->collector, address, path, tokens);
+		retval = dbusmenu_collector_search(search->priv->collector, address, path, searchstr);
 	}
 
 	g_free(address);

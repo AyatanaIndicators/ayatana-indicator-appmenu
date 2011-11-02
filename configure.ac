@@ -98,6 +98,7 @@ Makefile
 po/Makefile.in
 service/Makefile
 data/Makefile
+tests/Makefile
 ])
 AC_OUTPUT
 
