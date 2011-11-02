@@ -1,7 +1,7 @@
 DISTCLEANFILES =
 
 TESTS = \
-	test-distance-tests
+	test-distance-test
 
 check_PROGRAMS = \
 	test-distance
@@ -15,7 +15,7 @@ DISTANCE_XML_REPORT = test-distance.xml
 test-distance-test: test-distance Makefile.am
 	@echo "#!/bin/bash" > $@
 	@echo $(XVFB_RUN) >> $@
-	@echo gtester --verbose -k -o $(GTK_PARSER_XML_REPORT) ./test-distance >> $@
+	@echo gtester --verbose -k -o $(DISTANCE_XML_REPORT) $(builddir)/test-distance >> $@
 	@chmod +x $@
 
 test_distance_SOURCES = \
