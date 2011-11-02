@@ -4,6 +4,7 @@
 #include "distance.h"
 
 #define ADD_PENALTY 10
+#define PRE_ADD_PENALTY 1
 #define DROP_PENALTY 10
 #define END_DROP_PENALTY 10
 #define TRANSPOSE_PENALTY 10
@@ -108,7 +109,11 @@ calculate_distance (const gchar * needle, const gchar * haystack)
 	}
 
 	for (i = 0; i < len_haystack + 1; i++) {
-		MATRIX_VAL(-1, i - 1) = i * DROP_PENALTY;
+		if (i < len_needle) {
+			MATRIX_VAL(-1, i - 1) = i * PRE_ADD_PENALTY;
+		} else {
+			MATRIX_VAL(-1, i - 1) = len_needle * PRE_ADD_PENALTY + (i - len_needle) * DROP_PENALTY;
+		}
 	}
 
 	/* Now go through the matrix building up the penalties */
@@ -125,7 +130,13 @@ calculate_distance (const gchar * needle, const gchar * haystack)
 			} else {
 				drop_pen += END_DROP_PENALTY;
 			}
-			guint add_pen = MATRIX_VAL(ineedle, ihaystack - 1) + ADD_PENALTY;
+
+			guint add_pen = MATRIX_VAL(ineedle, ihaystack - 1);
+			if (len_haystack - len_needle - ineedle > 0) {
+				add_pen += PRE_ADD_PENALTY;
+			} else {
+				add_pen += ADD_PENALTY;
+			}
 			guint transpose_pen = drop_pen + 1; /* ensures won't be chosen */
 
 			if (ineedle > 0 && ihaystack > 0 && needle_let == haystack[ihaystack - 1] && haystack_let == needle[ineedle - 1]) {
