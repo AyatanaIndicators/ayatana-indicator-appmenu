@@ -50,12 +50,31 @@ test_distance_subfunction (void)
 	return;
 }
 
+/* Ensure that we can handle some misspelling */
+static void
+test_distance_missspelll (void)
+{
+	const gchar * teststrings[] = {
+		"File > Open",
+		"File > New",
+		"File > Print",
+		"File > Print Preview",
+	};
+
+	test_set(teststrings, 4, "Prnt Pr", 3);
+	test_set(teststrings, 4, "Print Preiw", 3);
+	test_set(teststrings, 4, "Prnt Pr", 3);
+
+	return;
+}
+
 /* Build the test suite */
 static void
 test_distance_suite (void)
 {
 	g_test_add_func ("/hud/distance/base",          test_distance_base);
 	g_test_add_func ("/hud/distance/subfunction",   test_distance_subfunction);
+	g_test_add_func ("/hud/distance/missspelll",    test_distance_missspelll);
 	return;
 }
 
