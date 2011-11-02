@@ -8,6 +8,11 @@
 static void
 test_distance_base (void) {
 
+	g_assert(calculate_distance("foo", "foo") == 0);
+	g_assert(calculate_distance("foo", "bar") != 0);
+	g_assert(calculate_distance("foo", NULL) != 0);
+	g_assert(calculate_distance(NULL, "foo") != 0);
+
 	return;
 }
 
