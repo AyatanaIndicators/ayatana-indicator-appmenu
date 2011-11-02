@@ -6,6 +6,8 @@ TESTS = \
 check_PROGRAMS = \
 	test-distance
 
+DISTCLEANFILES += $(TESTS)
+
 ######################
 # Test Distance
 ######################
@@ -29,3 +31,5 @@ test_distance_LDADD = \
 	$(HUD_LIBS)
 
 DISTCLEANFILES += $(DISTANCE_XML_REPORT)
+
+
