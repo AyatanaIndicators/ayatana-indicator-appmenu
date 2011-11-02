@@ -17,20 +17,11 @@ test_distance_base (void)
 	return;
 }
 
-/* Ensure the base calculation works */
+/* Test a set of strings */
 static void
-test_distance_subfunction (void)
+test_set (const gchar ** teststrings, int num_tests, const gchar * search, int right)
 {
-	const gchar * teststrings[] = {
-		"File > Open",
-		"File > New",
-		"File > Print",
-		"File > Print Preview",
-	};
-	const gchar * search = "Print Pre";
 	int i;
-	int right = 3;
-	int num_tests = 4;
 
 	for (i = 0; i < num_tests; i++) {
 		if (i == right)
@@ -41,6 +32,21 @@ test_distance_subfunction (void)
 		}
 	}
 
+	return;
+}
+
+/* Ensure the base calculation works */
+static void
+test_distance_subfunction (void)
+{
+	const gchar * teststrings[] = {
+		"File > Open",
+		"File > New",
+		"File > Print",
+		"File > Print Preview",
+	};
+
+	test_set(teststrings, 4, "Print Pre", 3);
 	return;
 }
 
