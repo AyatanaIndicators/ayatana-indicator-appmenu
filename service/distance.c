@@ -41,7 +41,9 @@ swap_cost (gchar a, gchar b)
 static void
 dumpmatrix (const gchar * needle, guint len_needle, const gchar * haystack, guint len_haystack, guint * penalty_matrix)
 {
+#ifndef DUMP_MATRIX
 	return;
+#endif
 	gint i, j;
 
 	g_printf("\n");

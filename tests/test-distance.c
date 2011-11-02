@@ -1,6 +1,7 @@
 #include <glib.h>
 #include <glib-object.h>
 
+#define DUMP_MATRIX 1
 #include "../service/distance.h"
 #include "../service/distance.c"
 
