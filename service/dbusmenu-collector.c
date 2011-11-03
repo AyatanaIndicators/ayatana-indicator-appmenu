@@ -265,8 +265,13 @@ process_client (DbusmenuCollector * collector, DbusmenuClient * client, const gc
 			}
 
 			const gchar * label = dbusmenu_menuitem_property_get(item, DBUSMENU_MENUITEM_PROP_LABEL);
+			gchar * nounderline = remove_underline(label);
+			gboolean action_stop = FALSE;
 
-			if (action_func(item, label, calculate_distance(label, NULL), results)) {
+			action_stop = action_func(item, nounderline, calculate_distance(nounderline, NULL), results);
+			g_free(nounderline);
+
+			if (action_stop) {
 				break;
 			}
 		}
