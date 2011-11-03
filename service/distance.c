@@ -109,10 +109,10 @@ calculate_distance (const gchar * needle, const gchar * haystack)
 	}
 
 	for (i = 0; i < len_haystack + 1; i++) {
-		if (i < len_needle) {
+		if (i < len_haystack - len_needle) {
 			MATRIX_VAL(-1, i - 1) = i * PRE_ADD_PENALTY;
 		} else {
-			MATRIX_VAL(-1, i - 1) = len_needle * PRE_ADD_PENALTY + (i - len_needle) * DROP_PENALTY;
+			MATRIX_VAL(-1, i - 1) = (len_haystack - len_needle) * PRE_ADD_PENALTY + (i - (len_haystack - len_needle)) * DROP_PENALTY;
 		}
 	}
 
