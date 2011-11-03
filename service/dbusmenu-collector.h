@@ -30,7 +30,7 @@ struct _DbusmenuCollector {
 GType dbusmenu_collector_get_type (void);
 DbusmenuCollector * dbusmenu_collector_new (void);
 GStrv dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, const gchar * search);
-gboolean dbusmenu_collector_exec (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, GStrv tokens);
+gboolean dbusmenu_collector_exec (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, const gchar * search);
 
 G_END_DECLS
 

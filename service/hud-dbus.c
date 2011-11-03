@@ -222,10 +222,7 @@ execute_query (HudDbus * self, const gchar * query)
 {
 	g_debug("Execute: %s", query);
 
-	GStrv tokens = g_strsplit(query, " ", 0);
-	hud_search_execute(self->priv->search, tokens);
-
-	g_strfreev(tokens);
+	hud_search_execute(self->priv->search, query);
 
 	return;
 }

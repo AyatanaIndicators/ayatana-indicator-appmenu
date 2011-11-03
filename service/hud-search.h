@@ -29,7 +29,7 @@ struct _HudSearch {
 GType hud_search_get_type (void);
 HudSearch * hud_search_new (void);
 GStrv hud_search_suggestions (HudSearch * search, const gchar * searchstr);
-void hud_search_execute (HudSearch * search, const GStrv tokens);
+void hud_search_execute (HudSearch * search, const gchar * searchstr);
 
 G_END_DECLS
 

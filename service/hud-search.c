@@ -175,7 +175,7 @@ hud_search_suggestions (HudSearch * search, const gchar * searchstr)
 }
 
 void
-hud_search_execute (HudSearch * search, const GStrv tokens)
+hud_search_execute (HudSearch * search, const gchar * searchstr)
 {
 	g_return_if_fail(IS_HUD_SEARCH(search));
 
@@ -185,7 +185,7 @@ hud_search_execute (HudSearch * search, const GStrv tokens)
 	get_current_window_address(search, &address, &path);
 
 	if (address != NULL && path != NULL) {
-		dbusmenu_collector_exec(search->priv->collector, address, path, tokens);
+		dbusmenu_collector_exec(search->priv->collector, address, path, searchstr);
 	}
 
 	g_free(address);
