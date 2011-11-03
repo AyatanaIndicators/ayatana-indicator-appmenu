@@ -130,7 +130,7 @@ print_suggestions (const gchar * query)
 	}
 
 	GVariant * target = g_variant_get_child_value(suggests, 0);
-	g_print("Target: %s\n", g_variant_get_string(target, NULL));
+	// g_print("Target: %s\n", g_variant_get_string(target, NULL));
 	g_variant_unref(target);
 
 	GVariant * suggestions = g_variant_get_child_value(suggests, 1);
