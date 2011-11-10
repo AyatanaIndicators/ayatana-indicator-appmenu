@@ -1,5 +1,6 @@
 #include <glib.h>
 #include <glib/gprintf.h>
+#include <glib-object.h>
 
 #include "distance.h"
 
@@ -76,9 +77,11 @@ dumpmatrix (const gchar * needle, guint len_needle, const gchar * haystack, guin
 	return;
 }
 
-guint
-calculate_distance (const gchar * needle, const gchar * haystack)
+static guint
+calculate_token_distance (const gchar * needle, const gchar * haystack)
 {
+	// g_debug("Comparing token '%s' to token '%s'", needle, haystack);
+
 	guint len_needle = 0;
 	guint len_haystack = 0;
 
@@ -153,4 +156,56 @@ calculate_distance (const gchar * needle, const gchar * haystack)
 	g_free(penalty_matrix);
 
 	return retval;
+}
+
+#define SEPARATORS " .->"
+
+guint
+calculate_distance (const gchar * needle, const gchar * haystack)
+{
+	g_return_val_if_fail(needle != NULL || haystack != NULL, G_MAXUINT);
+
+	if (needle == NULL) {
+		return DROP_PENALTY * g_utf8_strlen(haystack, 1024);
+	}
+	if (haystack == NULL) {
+		return ADD_PENALTY * g_utf8_strlen(needle, 1024);
+	}
+
+	GStrv needle_tokens = g_strsplit_set(needle, SEPARATORS, 0);
+	g_return_val_if_fail(needle_tokens != NULL, G_MAXUINT);
+
+	GStrv haystack_tokens = g_strsplit_set(haystack, SEPARATORS, 0);
+	g_return_val_if_fail(haystack_tokens != NULL, G_MAXUINT);
+
+	// g_debug("Needle tokens: '%s'", g_strjoinv("', '", needle_tokens));
+	// g_debug("Haystack tokens: '%s'", g_strjoinv("', '", haystack_tokens));
+
+	guint final_distance = 0;
+	guint needle_token = 0;
+
+	for (needle_token = 0; needle_tokens[needle_token] != NULL; needle_token++) {
+		gchar * ineedle = needle_tokens[needle_token];
+
+		guint best_fit = G_MAXUINT;
+		guint haystack_token = 0;
+
+		for (haystack_token = 0; haystack_tokens[haystack_token] != NULL; haystack_token++) {
+			gchar * ihaystack = haystack_tokens[haystack_token];
+			guint distance = calculate_token_distance(ineedle, ihaystack);
+
+			if (distance < best_fit) {
+				best_fit = distance;
+			}
+		}
+
+		final_distance += best_fit;
+	}
+
+	g_strfreev(needle_tokens);
+	g_strfreev(haystack_tokens);
+
+	g_return_val_if_fail(needle_token > 0, G_MAXUINT);
+
+	return final_distance / needle_token;
 }
