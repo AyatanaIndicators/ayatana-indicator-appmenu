@@ -128,7 +128,7 @@ usage_tracker_mark_usage (UsageTracker * self, const gchar * application, const 
 {
 	g_return_if_fail(IS_USAGE_TRACKER(self));
 
-	gchar * statement = g_strdup_printf("insert into usage (application, entry, timestamp) values ('%s', '%s', date(now));", application, entry);
+	gchar * statement = g_strdup_printf("insert into usage (application, entry, timestamp) values ('%s', '%s', date('now'));", application, entry);
 	g_debug("Executing: %s", statement);
 
 	int exec_status = SQLITE_OK;
