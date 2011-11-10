@@ -143,3 +143,39 @@ usage_tracker_mark_usage (UsageTracker * self, const gchar * application, const 
 	g_free(statement);
 	return;
 }
+
+static int
+count_cb (void * user_data, int columns, char ** column_names, char ** values)
+{
+	g_return_val_if_fail(columns != 1, -1);
+	guint * count = (guint *)user_data;
+
+	*count = g_ascii_strtoull(values[0], NULL, 10);
+
+	return SQLITE_OK;
+}
+
+guint
+usage_tracker_get_usage (UsageTracker * self, const gchar * application, const gchar * entry)
+{
+	g_return_val_if_fail(IS_USAGE_TRACKER(self), 0);
+
+	// TODO: Check if application has entries, if not, import defaults
+
+	gchar * statement = g_strdup_printf("select count(*) from usage where application = '%s' and entry = '%s';", application, entry); // TODO: Add timestamp
+	g_debug("Executing: %s", statement);
+
+	int exec_status = SQLITE_OK;
+	gchar * failstring = NULL;
+	guint count;
+	exec_status = sqlite3_exec(self->priv->db,
+	                           statement,
+	                           count_cb, &count, &failstring);
+	if (exec_status != SQLITE_OK) {
+		g_warning("Unable to insert into table: %s", failstring);
+	}
+
+	g_free(statement);
+	return count;
+}
+

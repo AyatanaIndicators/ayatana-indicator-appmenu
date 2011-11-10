@@ -30,6 +30,7 @@ struct _UsageTracker {
 GType usage_tracker_get_type (void);
 UsageTracker * usage_tracker_new (void);
 void usage_tracker_mark_usage (UsageTracker * self, const gchar * application, const gchar * entry);
+guint usage_tracker_get_usage (UsageTracker * self, const gchar * application, const gchar * entry);
 
 G_END_DECLS
 
