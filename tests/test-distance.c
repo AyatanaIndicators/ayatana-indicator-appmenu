@@ -68,6 +68,26 @@ test_distance_missspelll (void)
 	return;
 }
 
+/* Ensure that we can find print with short strings */
+static void
+test_distance_print_issues (void)
+{
+	const gchar * teststrings[] = {
+		"File > New",
+		"File > Open",
+		"Edit > Undo",
+		"Help > About",
+		"Help > Empty",
+		"File > Print...",
+	};
+
+	test_set(teststrings, 6, "Pr", 5);
+	test_set(teststrings, 6, "Print", 5);
+	test_set(teststrings, 6, "Print...", 5);
+
+	return;
+}
+
 /* Build the test suite */
 static void
 test_distance_suite (void)
@@ -75,6 +95,7 @@ test_distance_suite (void)
 	g_test_add_func ("/hud/distance/base",          test_distance_base);
 	g_test_add_func ("/hud/distance/subfunction",   test_distance_subfunction);
 	g_test_add_func ("/hud/distance/missspelll",    test_distance_missspelll);
+	g_test_add_func ("/hud/distance/print_issues",  test_distance_print_issues);
 	return;
 }
 
