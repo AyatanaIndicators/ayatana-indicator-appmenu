@@ -53,14 +53,17 @@ usage_tracker_init (UsageTracker *self)
 	g_free(cachedir);
 
 	self->priv->cachefile = g_build_filename(basecachedir, "hud", "usage-log.sqlite", NULL);
+	gboolean db_exists = g_file_test(self->priv->cachefile, G_FILE_TEST_EXISTS);
 	int open_status = sqlite3_open(self->priv->cachefile, &self->priv->db); 
 
-	if (open_status == SQLITE_EMPTY) {
-		build_db(self);
-	} else if (open_status != SQLITE_OK) {
+	if (open_status != SQLITE_OK) {
 		g_warning("Error building LRU DB");
 		sqlite3_close(self->priv->db);
 		self->priv->db = NULL;
+	}
+
+	if (self->priv->db != NULL && !db_exists) {
+		build_db(self);
 	}
 	
 	return;
@@ -103,6 +106,8 @@ usage_tracker_new (void)
 static void
 build_db (UsageTracker * self)
 {
+	g_debug("New database, initializing");
+
 	/* Create the table */
 	int exec_status = SQLITE_OK;
 	gchar * failstring = NULL;
