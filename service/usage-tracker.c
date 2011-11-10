@@ -3,10 +3,12 @@
 #endif
 
 #include <glib.h>
+#include <sqlite3.h>
 #include "usage-tracker.h"
 
 struct _UsageTrackerPrivate {
 	gchar * cachefile;
+	sqlite3 * db;
 };
 
 #define USAGE_TRACKER_GET_PRIVATE(o) \
@@ -16,6 +18,7 @@ static void usage_tracker_class_init (UsageTrackerClass *klass);
 static void usage_tracker_init       (UsageTracker *self);
 static void usage_tracker_dispose    (GObject *object);
 static void usage_tracker_finalize   (GObject *object);
+static void build_db                 (UsageTracker * self);
 
 G_DEFINE_TYPE (UsageTracker, usage_tracker, G_TYPE_OBJECT);
 
@@ -43,6 +46,15 @@ usage_tracker_init (UsageTracker *self)
 	}
 
 	self->priv->cachefile = g_build_filename(basecachedir, "hud", "usage-log.sqlite", NULL);
+	if (g_file_test(self->priv->cachefile, G_FILE_TEST_EXISTS)) {
+		if (sqlite3_open(self->priv->cachefile, &self->priv->db) != SQLITE_OK) {
+			self->priv->db = NULL;
+		}
+	}
+	
+	if (self->priv->db == NULL) {
+		build_db(self);
+	}
 
 	return;
 }
@@ -50,6 +62,12 @@ usage_tracker_init (UsageTracker *self)
 static void
 usage_tracker_dispose (GObject *object)
 {
+	UsageTracker * self = USAGE_TRACKER(object);
+
+	if (self->priv->db != NULL) {
+		sqlite3_close(self->priv->db);
+		self->priv->db = NULL;
+	}
 
 	G_OBJECT_CLASS (usage_tracker_parent_class)->dispose (object);
 	return;
@@ -73,4 +91,11 @@ UsageTracker *
 usage_tracker_new (void)
 {
 	return g_object_new(USAGE_TRACKER_TYPE, NULL);
+}
+
+static void
+build_db (UsageTracker * self)
+{
+
+	return;
 }
