@@ -122,3 +122,24 @@ build_db (UsageTracker * self)
 
 	return;
 }
+
+void
+usage_tracker_mark_usage (UsageTracker * self, const gchar * application, const gchar * entry)
+{
+	g_return_if_fail(IS_USAGE_TRACKER(self));
+
+	gchar * statement = g_strdup_printf("insert into usage (application, entry, timestamp) values ('%s', '%s', date(now));", application, entry);
+	g_debug("Executing: %s", statement);
+
+	int exec_status = SQLITE_OK;
+	gchar * failstring = NULL;
+	exec_status = sqlite3_exec(self->priv->db,
+	                           statement,
+	                           NULL, NULL, &failstring);
+	if (exec_status != SQLITE_OK) {
+		g_warning("Unable to insert into table: %s", failstring);
+	}
+
+	g_free(statement);
+	return;
+}
