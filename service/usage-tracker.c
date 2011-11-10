@@ -97,6 +97,14 @@ static void
 build_db (UsageTracker * self)
 {
 	/* Create the table */
+	int exec_status = SQLITE_OK;
+	gchar * failstring = NULL;
+	exec_status = sqlite3_exec(self->priv->db,
+	                           "create table usage (application text, entry text, timestamp datetime);",
+	                           NULL, NULL, &failstring);
+	if (exec_status != SQLITE_OK) {
+		g_warning("Unable to create table: %s", failstring);
+	}
 
 	/* Import data from the system */
 
