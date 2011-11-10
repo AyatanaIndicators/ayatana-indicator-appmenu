@@ -7,6 +7,7 @@
 
 #include "hud-search.h"
 #include "dbusmenu-collector.h"
+#include "usage-tracker.h"
 
 struct _HudSearchPrivate {
 	BamfMatcher * matcher;
@@ -15,6 +16,7 @@ struct _HudSearchPrivate {
 	guint32 active_xid;
 
 	DbusmenuCollector * collector;
+	UsageTracker * usage;
 
 	GDBusProxy * appmenu;
 };
@@ -56,6 +58,7 @@ hud_search_init (HudSearch *self)
 	self->priv->window_changed_sig = 0;
 	self->priv->active_xid = 0;
 	self->priv->collector = NULL;
+	self->priv->usage = NULL;
 	self->priv->appmenu = NULL;
 
 	/* BAMF */
@@ -69,6 +72,9 @@ hud_search_init (HudSearch *self)
 
 	/* DBusMenu */
 	self->priv->collector = dbusmenu_collector_new();
+
+	/* Usage Tracker */
+	self->priv->usage = usage_tracker_new();
 
 	/* Appmenu */
 	self->priv->appmenu = g_dbus_proxy_new_for_bus_sync(G_BUS_TYPE_SESSION,
@@ -95,6 +101,16 @@ hud_search_dispose (GObject *object)
 	if (self->priv->matcher != NULL) {
 		g_object_unref(self->priv->matcher);
 		self->priv->matcher = NULL;
+	}
+
+	if (self->priv->collector != NULL) {
+		g_object_unref(self->priv->collector);
+		self->priv->collector = NULL;
+	}
+
+	if (self->priv->usage != NULL) {
+		g_object_unref(self->priv->usage);
+		self->priv->usage = NULL;
 	}
 
 	if (self->priv->appmenu != NULL) {
