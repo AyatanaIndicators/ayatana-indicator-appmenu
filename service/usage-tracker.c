@@ -198,7 +198,20 @@ usage_tracker_get_usage (UsageTracker * self, const gchar * application, const g
 static gboolean
 drop_entries (gpointer user_data)
 {
+	g_return_val_if_fail(IS_USAGE_TRACKER(user_data), FALSE);
+	UsageTracker * self = USAGE_TRACKER(user_data);
 
+	const gchar * statement = "delete from usage where timestamp < date('now', 'utc', '-30 days');";
+	g_debug("Executing: %s", statement);
+
+	int exec_status = SQLITE_OK;
+	gchar * failstring = NULL;
+	exec_status = sqlite3_exec(self->priv->db,
+	                           statement,
+	                           NULL, NULL, &failstring);
+	if (exec_status != SQLITE_OK) {
+		g_warning("Unable to drop entries from table: %s", failstring);
+	}
 
 	return TRUE;
 }
