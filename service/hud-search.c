@@ -288,7 +288,18 @@ hud_search_execute (HudSearch * search, const gchar * searchstr)
 	g_free(path);
 
 	if (found_list != NULL) {
-		dbusmenu_collector_found_exec((DbusmenuCollectorFound *)found_list->data);
+		DbusmenuCollectorFound * found = (DbusmenuCollectorFound *)found_list->data;
+		dbusmenu_collector_found_exec(found);
+
+		const gchar * desktopfile = NULL;
+		if (search->priv->active_app != NULL) {
+			desktopfile = bamf_application_get_desktop_file(search->priv->active_app);
+		}
+
+		if (desktopfile != NULL) {
+			usage_tracker_mark_usage(search->priv->usage, desktopfile, dbusmenu_collector_found_get_display(found));
+		}
+
 		dbusmenu_collector_found_list_free(found_list);
 	} else {
 		g_warning("Unable to execute as we couldn't find anything");
