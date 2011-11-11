@@ -169,6 +169,12 @@ get_current_window_address(HudSearch * search, gchar ** address, gchar ** path)
 	return;
 }
 
+typedef struct _usage_wrapper_t usage_wrapper_t;
+struct _usage_wrapper_t {
+	DbusmenuCollectorFound * found;
+	guint count;
+};
+
 GStrv
 hud_search_suggestions (HudSearch * search, const gchar * searchstr)
 {
@@ -177,6 +183,8 @@ hud_search_suggestions (HudSearch * search, const gchar * searchstr)
 	gchar * address = NULL;
 	gchar * path = NULL;
 	GList * found_list = NULL;
+	guint count = 0;
+	GList * found = NULL;
 
 	get_current_window_address(search, &address, &path);
 
@@ -187,9 +195,29 @@ hud_search_suggestions (HudSearch * search, const gchar * searchstr)
 	g_free(address);
 	g_free(path);
 
+	count = 0;
+	found = found_list;
+	GArray * usagedata = g_array_sized_new(FALSE, TRUE, sizeof(usage_wrapper_t), 15);
+	guint overall_usage = 0;
+	guint overall_distance = 0;
+	while (found != NULL) {
+		usage_wrapper_t usage;
+		usage.found = (DbusmenuCollectorFound *)found->data;
+		usage.count = usage_tracker_get_usage(search->priv->usage, "myapp.desktop", dbusmenu_collector_found_get_display(usage.found));
+
+		overall_usage += usage.count;
+		overall_distance += dbusmenu_collector_found_get_distance(usage.found);
+
+		g_array_append_val(usagedata, usage);
+		found = g_list_next(found);
+		count++;
+		if (count >= 15) {
+			break;
+		}
+	}
+
 	gchar ** retval = g_new0(gchar *, 6);
-	GList * found = found_list;
-	guint count = 0;
+	found = found_list;
 
 	while (found  != NULL) {
 		retval[count] = g_strdup(dbusmenu_collector_found_get_display((DbusmenuCollectorFound *)found->data));
