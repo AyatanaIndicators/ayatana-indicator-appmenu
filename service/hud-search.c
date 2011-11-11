@@ -14,6 +14,7 @@ struct _HudSearchPrivate {
 	gulong window_changed_sig;
 
 	guint32 active_xid;
+	BamfApplication * active_app;
 
 	DbusmenuCollector * collector;
 	UsageTracker * usage;
@@ -68,6 +69,7 @@ hud_search_init (HudSearch *self)
 	BamfWindow * active_window = bamf_matcher_get_active_window(self->priv->matcher);
 	if (active_window != NULL) {
 		self->priv->active_xid = bamf_window_get_xid(active_window);
+		self->priv->active_app = bamf_matcher_get_application_for_window(self->priv->matcher, active_window);
 	}
 
 	/* DBusMenu */
@@ -218,7 +220,16 @@ hud_search_suggestions (HudSearch * search, const gchar * searchstr)
 	while (found != NULL) {
 		usage_wrapper_t usage;
 		usage.found = (DbusmenuCollectorFound *)found->data;
-		usage.count = usage_tracker_get_usage(search->priv->usage, "myapp.desktop", dbusmenu_collector_found_get_display(usage.found));
+		usage.count = 0;
+
+		const gchar * desktopfile = NULL;
+		if (search->priv->active_app != NULL) {
+			desktopfile = bamf_application_get_desktop_file(search->priv->active_app);
+		}
+
+		if (desktopfile != NULL) {
+			usage.count = usage_tracker_get_usage(search->priv->usage, desktopfile, dbusmenu_collector_found_get_display(usage.found));
+		}
 
 		overall_usage += usage.count;
 		overall_distance += dbusmenu_collector_found_get_distance(usage.found);
@@ -319,6 +330,7 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 	}
 
 	self->priv->active_xid = bamf_window_get_xid(window);
+	self->priv->active_app = app;
 
 	return;
 }
