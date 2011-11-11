@@ -20,6 +20,7 @@ static void usage_tracker_init       (UsageTracker *self);
 static void usage_tracker_dispose    (GObject *object);
 static void usage_tracker_finalize   (GObject *object);
 static void build_db                 (UsageTracker * self);
+static gboolean drop_entries         (gpointer user_data);
 
 G_DEFINE_TYPE (UsageTracker, usage_tracker, G_TYPE_OBJECT);
 
@@ -48,7 +49,7 @@ usage_tracker_init (UsageTracker *self)
 
 	gchar * cachedir = g_build_filename(basecachedir, "hud", NULL);
 	if (!g_file_test(cachedir, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR)) {
-		g_mkdir(cachedir, 1 << 6 | 1 << 7 | 1 << 8); // 600
+		g_mkdir(cachedir, 1 << 6 | 1 << 7 | 1 << 8); // 700
 	}
 	g_free(cachedir);
 
@@ -65,6 +66,8 @@ usage_tracker_init (UsageTracker *self)
 	if (self->priv->db != NULL && !db_exists) {
 		build_db(self);
 	}
+
+	drop_entries(self);
 	
 	return;
 }
@@ -180,3 +183,10 @@ usage_tracker_get_usage (UsageTracker * self, const gchar * application, const g
 	return count;
 }
 
+static gboolean
+drop_entries (gpointer user_data)
+{
+
+
+	return FALSE;
+}
