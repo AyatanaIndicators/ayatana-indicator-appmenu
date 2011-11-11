@@ -44,12 +44,13 @@ DOLLAR_SIGN=
 
 test-usage-db-simple-test: test-usage-db-simple test-usage-db-simple.sql Makefile.am
 	@echo "#!/bin/bash -e" > $@
-	@echo TEMP_DIR=\`mktemp -u $(builddir)/test-usage-db-simple.XXXXXX\` >> $@
-	@echo mkdir -p $${TEMP_DIR}/hud >> $@
-	@echo cat $(srcdir)/test-usage-db-simple.sql \| sqlite3 $${TEMP_DIR}/hud/usage-log.sqlite >> $@
-	@echo export HUD_CACHE_DIR=$${TEMP_DIR} >> $@
-	@echo gtester --verbose -k -o $(USAGE_DB_SIMPLE_XML_REPORT) $(builddir)/test-usage-db-simple >> $@
-	@echo rm -rf $${TEMP_DIR} >> $@
+	@echo cd \`mktemp -d $(abs_builddir)/test-usage-db-simple.dir.XXXXXX\` >> $@
+	@echo mkdir -p hud >> $@
+	@echo cat $(abs_srcdir)/test-usage-db-simple.sql \| sqlite3 hud/usage-log.sqlite >> $@
+	@echo export HUD_CACHE_DIR=\`pwd\` >> $@
+	@echo gtester --verbose -k -o $(USAGE_DB_SIMPLE_XML_REPORT) $(abs_builddir)/test-usage-db-simple >> $@
+	@echo cd .. >> $@
+	@echo rm -rf test-usage-db-simple.dir.\* >> $@
 	@chmod +x $@
 
 test_usage_db_simple_SOURCES = \
