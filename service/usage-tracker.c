@@ -163,7 +163,7 @@ usage_tracker_get_usage (UsageTracker * self, const gchar * application, const g
 
 	// TODO: Check if application has entries, if not, import defaults
 
-	gchar * statement = g_strdup_printf("select count(*) from usage where application = '%s' and entry = '%s';", application, entry); // TODO: Add timestamp
+	gchar * statement = g_strdup_printf("select count(*) from usage where application = '%s' and entry = '%s' and timestamp > date('now', 'utc', '-30 days');", application, entry); // TODO: Add timestamp
 	g_debug("Executing: %s", statement);
 
 	int exec_status = SQLITE_OK;
