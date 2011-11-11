@@ -49,7 +49,6 @@ static guint menu_hash_func (gconstpointer key);
 static gboolean menu_equal_func (gconstpointer a, gconstpointer b);
 static void menu_key_destroy (gpointer key);
 static gboolean place_in_results (DbusmenuMenuitem * menuitem, const gchar * full_label, guint distance, GArray * results);
-//static gboolean exec_in_results (DbusmenuMenuitem * menuitem, GArray * results);
 static gint search_item_sort (gconstpointer a, gconstpointer b);
 
 G_DEFINE_TYPE (DbusmenuCollector, dbusmenu_collector, G_TYPE_OBJECT);
@@ -312,8 +311,6 @@ just_do_it (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar 
 GList *
 dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, const gchar * search)
 {
-	GStrv retval = NULL;
-
 	GArray * searchitems = g_array_new(TRUE, TRUE, sizeof(search_item_t));
 
 	just_do_it(collector, dbus_addr, dbus_path, search, searchitems, place_in_results);
@@ -338,53 +335,9 @@ dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_add
 
 	g_array_free(searchitems, TRUE);
 
-	retval = (GStrv)results->data;
 	g_array_free(results, FALSE);
 
-	return retval;
-}
-
-static guint exec_distance_min = 0;
-
-static gboolean
-add_to_exec (DbusmenuMenuitem * item, const gchar * full_label, guint distance, GArray * results)
-{
-	if (distance >= exec_distance_min) {
-		return FALSE;
-	}
-
-	while (results->len > 0) {
-		results = g_array_remove_index(results, 0);
-	}
-
-	g_array_append_val(results, item);
-	exec_distance_min = distance;
-	return FALSE;
-}
-
-gboolean
-dbusmenu_collector_exec (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, const gchar * search)
-{
-	gboolean success = TRUE;
-	GArray * entries = g_array_new(FALSE, FALSE, sizeof(DbusmenuMenuitem *));
-
-	exec_distance_min = G_MAXUINT;
-	just_do_it(collector, dbus_addr, dbus_path, search, entries, add_to_exec);
-
-	if (entries->len == 0) {
-		g_warning("Unable to find entry to execute");
-		success = FALSE;
-	}
-
-	if (entries->len > 0) {
-		DbusmenuMenuitem * item = g_array_index(entries, DbusmenuMenuitem *, 0);
-
-		g_debug("Executing menuitem %d: %s", dbusmenu_menuitem_get_id(item), dbusmenu_menuitem_property_get(item, DBUSMENU_MENUITEM_PROP_LABEL));
-		dbusmenu_menuitem_handle_event(item, DBUSMENU_MENUITEM_EVENT_ACTIVATED, NULL, 0);
-	}
-
-	g_array_free(entries, TRUE);
-	return success;
+	return NULL;
 }
 
 static gint
