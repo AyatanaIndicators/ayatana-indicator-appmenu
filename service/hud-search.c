@@ -246,18 +246,13 @@ hud_search_suggestions (HudSearch * search, const gchar * searchstr)
 	g_array_sort(usagedata, usage_sort);
 
 	gchar ** retval = g_new0(gchar *, 6);
-	found = found_list;
-
-	while (found  != NULL) {
-		retval[count] = g_strdup(dbusmenu_collector_found_get_display((DbusmenuCollectorFound *)found->data));
-		found = g_list_next(found);
-		count++;
-		if (count >= 5) {
-			break;
-		}
+	for (count = 0; count < 5 && count < usagedata->len; count++) {
+		usage_wrapper_t * usage = &g_array_index(usagedata, usage_wrapper_t, count);
+		retval[count] = g_strdup(dbusmenu_collector_found_get_display(usage->found));
 	}
 	retval[count] = NULL;
 
+	g_array_free(usagedata, TRUE);
 	dbusmenu_collector_found_list_free(found_list);
 
 	return retval;
