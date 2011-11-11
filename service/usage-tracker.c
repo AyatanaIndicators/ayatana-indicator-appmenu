@@ -145,9 +145,10 @@ usage_tracker_mark_usage (UsageTracker * self, const gchar * application, const 
 }
 
 static int
-count_cb (void * user_data, int columns, char ** column_names, char ** values)
+count_cb (void * user_data, int columns, char ** values, char ** names)
 {
-	g_return_val_if_fail(columns != 1, -1);
+	g_return_val_if_fail(columns == 1, -1);
+
 	guint * count = (guint *)user_data;
 
 	*count = g_ascii_strtoull(values[0], NULL, 10);
