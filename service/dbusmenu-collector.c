@@ -220,8 +220,17 @@ tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GList * r
 		return results;
 	}
 
+	if (!dbusmenu_menuitem_property_get_bool(rootitem, DBUSMENU_MENUITEM_PROP_ENABLED)) {
+		return results;
+	}
+
+	if (!dbusmenu_menuitem_property_get_bool(rootitem, DBUSMENU_MENUITEM_PROP_VISIBLE)) {
+		return results;
+	}
+
 	gchar * newstr = NULL;
-	if (dbusmenu_menuitem_property_exist(rootitem, DBUSMENU_MENUITEM_PROP_LABEL)) {
+	if (dbusmenu_menuitem_property_exist(rootitem, DBUSMENU_MENUITEM_PROP_LABEL) &&
+			!dbusmenu_menuitem_property_exist(rootitem, DBUSMENU_MENUITEM_PROP_TYPE)) {
 		gchar * nounderline = remove_underline(dbusmenu_menuitem_property_get(rootitem, DBUSMENU_MENUITEM_PROP_LABEL));
 		if (label_prefix != NULL && label_prefix[0] != '\0') {
 			newstr = g_strdup_printf("%s > %s", label_prefix, nounderline);
@@ -229,13 +238,15 @@ tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GList * r
 		} else {
 			newstr = nounderline;
 		}
-	} else {
-		newstr = g_strdup(label_prefix);
 	}
 
-	if (!dbusmenu_menuitem_get_root(rootitem) && dbusmenu_menuitem_property_exist(rootitem, DBUSMENU_MENUITEM_PROP_LABEL)) {
+	if (!dbusmenu_menuitem_get_root(rootitem) && newstr != NULL) {
 		guint distance = calculate_distance(search, newstr);
 		results = g_list_prepend(results, dbusmenu_collector_found_new(rootitem, newstr, distance, indicator_name));
+	}
+
+	if (newstr == NULL) {
+		newstr = g_strdup(label_prefix);
 	}
 
 	GList * children = dbusmenu_menuitem_get_children(rootitem);
