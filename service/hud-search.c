@@ -192,11 +192,9 @@ usage_sort (gconstpointer a, gconstpointer b)
 	return (gint)difference;
 }
 
-GStrv
-hud_search_suggestions (HudSearch * search, const gchar * searchstr)
+static void
+search_and_sort (HudSearch * search, const gchar * searchstr, GArray * usagedata, GList ** foundlist)
 {
-	g_return_val_if_fail(IS_HUD_SEARCH(search), NULL);
-
 	gchar * address = NULL;
 	gchar * path = NULL;
 	GList * found_list = NULL;
@@ -214,7 +212,6 @@ hud_search_suggestions (HudSearch * search, const gchar * searchstr)
 
 	count = 0;
 	found = found_list;
-	GArray * usagedata = g_array_sized_new(FALSE, TRUE, sizeof(usage_wrapper_t), 15);
 	guint overall_usage = 0;
 	guint overall_distance = 0;
 	while (found != NULL) {
@@ -255,7 +252,21 @@ hud_search_suggestions (HudSearch * search, const gchar * searchstr)
 	}
 
 	g_array_sort(usagedata, usage_sort);
+	*foundlist = found_list;
+	return;
+}
 
+GStrv
+hud_search_suggestions (HudSearch * search, const gchar * searchstr)
+{
+	g_return_val_if_fail(IS_HUD_SEARCH(search), NULL);
+
+	GArray * usagedata = g_array_sized_new(FALSE, TRUE, sizeof(usage_wrapper_t), 15);
+	GList * found_list = NULL;
+
+	search_and_sort(search, searchstr, usagedata, &found_list);
+
+	int count;
 	gchar ** retval = g_new0(gchar *, 6);
 	for (count = 0; count < 5 && count < usagedata->len; count++) {
 		usage_wrapper_t * usage = &g_array_index(usagedata, usage_wrapper_t, count);
