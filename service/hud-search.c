@@ -180,8 +180,14 @@ struct _usage_wrapper_t {
 static gint
 usage_sort (gconstpointer a, gconstpointer b)
 {
+	usage_wrapper_t * wa = (usage_wrapper_t *)a;
+	usage_wrapper_t * wb = (usage_wrapper_t *)b;
 
-	return 0;
+	gfloat totala = (1.0 - wa->percent_usage) + wa->percent_distance;
+	gfloat totalb = (1.0 - wb->percent_usage) + wb->percent_distance;
+
+	gfloat difference = (totala - totalb) * 100.0;
+	return (gint)difference;
 }
 
 GStrv
