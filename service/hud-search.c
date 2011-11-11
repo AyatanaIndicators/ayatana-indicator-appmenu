@@ -173,7 +173,16 @@ typedef struct _usage_wrapper_t usage_wrapper_t;
 struct _usage_wrapper_t {
 	DbusmenuCollectorFound * found;
 	guint count;
+	gfloat percent_usage;
+	gfloat percent_distance;
 };
+
+static gint
+usage_sort (gconstpointer a, gconstpointer b)
+{
+
+	return 0;
+}
 
 GStrv
 hud_search_suggestions (HudSearch * search, const gchar * searchstr)
@@ -215,6 +224,15 @@ hud_search_suggestions (HudSearch * search, const gchar * searchstr)
 			break;
 		}
 	}
+
+	for (count = 0; count < usagedata->len; count++) {
+		usage_wrapper_t * usage = &g_array_index(usagedata, usage_wrapper_t, count);
+
+		usage->percent_usage = (gfloat)usage->count/(gfloat)overall_usage;
+		usage->percent_distance = (gfloat)dbusmenu_collector_found_get_distance(usage->found)/(gfloat)overall_distance;
+	}
+
+	g_array_sort(usagedata, usage_sort);
 
 	gchar ** retval = g_new0(gchar *, 6);
 	found = found_list;
