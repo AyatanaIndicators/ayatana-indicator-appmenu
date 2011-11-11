@@ -238,13 +238,15 @@ tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GList * r
 		} else {
 			newstr = nounderline;
 		}
-	} else {
-		newstr = g_strdup(label_prefix);
 	}
 
-	if (!dbusmenu_menuitem_get_root(rootitem) && dbusmenu_menuitem_property_exist(rootitem, DBUSMENU_MENUITEM_PROP_LABEL)) {
+	if (!dbusmenu_menuitem_get_root(rootitem) && newstr != NULL) {
 		guint distance = calculate_distance(search, newstr);
 		results = g_list_prepend(results, dbusmenu_collector_found_new(rootitem, newstr, distance, indicator_name));
+	}
+
+	if (newstr == NULL) {
+		newstr = g_strdup(label_prefix);
 	}
 
 	GList * children = dbusmenu_menuitem_get_children(rootitem);
