@@ -3,10 +3,12 @@ EXTRA_DIST =
 
 TESTS = \
 	test-distance-test \
+	test-usage-db-old-test \
 	test-usage-db-simple-test
 
 check_PROGRAMS = \
 	test-distance \
+	test-usage-db-old \
 	test-usage-db-simple
 
 DISTCLEANFILES += $(TESTS)
@@ -36,11 +38,10 @@ test_distance_LDADD = \
 DISTCLEANFILES += $(DISTANCE_XML_REPORT)
 
 ######################
-# Test Usage DB
+# Test Usage DB Simple
 ######################
 
 USAGE_DB_SIMPLE_XML_REPORT = test-usage-db-simple.xml
-DOLLAR_SIGN=
 
 test-usage-db-simple-test: test-usage-db-simple test-usage-db-simple.sql Makefile.am
 	@echo "#!/bin/bash -e" > $@
@@ -66,4 +67,32 @@ test_usage_db_simple_LDADD = \
 DISTCLEANFILES += $(USAGE_DB_SIMPLE_XML_REPORT)
 EXTRA_DIST += test-usage-db-simple.sql
 
+######################
+# Test Usage DB Old
+######################
 
+USAGE_DB_OLD_XML_REPORT = test-usage-db-old.xml
+
+test-usage-db-old-test: test-usage-db-old test-usage-db-old.sql Makefile.am
+	@echo "#!/bin/bash -e" > $@
+	@echo cd \`mktemp -d $(abs_builddir)/test-usage-db-old.dir.XXXXXX\` >> $@
+	@echo mkdir -p hud >> $@
+	@echo cat $(abs_srcdir)/test-usage-db-old.sql \| sqlite3 hud/usage-log.sqlite >> $@
+	@echo export HUD_CACHE_DIR=\`pwd\` >> $@
+	@echo gtester --verbose -k -o $(USAGE_DB_SIMPLE_XML_REPORT) $(abs_builddir)/test-usage-db-old >> $@
+	@echo cd .. >> $@
+	@echo rm -rf test-usage-db-old.dir.\* >> $@
+	@chmod +x $@
+
+test_usage_db_old_SOURCES = \
+	test-usage-db-old.c
+
+test_usage_db_old_CFLAGS = \
+	$(HUD_CFLAGS) \
+	-Wall -Werror
+
+test_usage_db_old_LDADD = \
+	$(HUD_LIBS)
+
+DISTCLEANFILES += $(USAGE_DB_OLD_XML_REPORT)
+EXTRA_DIST += test-usage-db-old.sql
