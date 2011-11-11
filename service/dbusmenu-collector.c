@@ -20,6 +20,12 @@ struct _DbusmenuCollectorPrivate {
 	GHashTable * hash;
 };
 
+struct _DbusmenuCollectorFound {
+	gchar * display_string;
+	guint distance;
+	DbusmenuMenuitem * item;
+};
+
 typedef struct _menu_key_t menu_key_t;
 struct _menu_key_t {
 	gchar * sender;
@@ -303,7 +309,7 @@ just_do_it (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar 
 	return;
 }
 
-GStrv
+GList *
 dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, const gchar * search)
 {
 	GStrv retval = NULL;
@@ -405,3 +411,44 @@ place_in_results (DbusmenuMenuitem * item, const gchar * full_label, guint dista
 	return FALSE;
 }
 
+guint
+dbusmenu_collector_found_get_distance (DbusmenuCollectorFound * found)
+{
+	g_return_val_if_fail(found != NULL, G_MAXUINT);
+	return found->distance;
+}
+
+const gchar *
+dbusmenu_collector_found_get_display (DbusmenuCollectorFound * found)
+{
+	g_return_val_if_fail(found != NULL, NULL);
+	return found->display_string;
+}
+
+void
+dbusmenu_collector_found_exec (DbusmenuCollectorFound * found)
+{
+	g_return_if_fail(found != NULL);
+	g_return_if_fail(found->item != NULL);
+
+	g_debug("Executing menuitem %d: %s", dbusmenu_menuitem_get_id(found->item), dbusmenu_menuitem_property_get(found->item, DBUSMENU_MENUITEM_PROP_LABEL));
+	dbusmenu_menuitem_handle_event(found->item, DBUSMENU_MENUITEM_EVENT_ACTIVATED, NULL, 0);
+	return;
+}
+
+void
+dbusmenu_collector_found_list_free (GList * found_list)
+{
+	g_list_free_full(found_list, (GDestroyNotify)dbusmenu_collector_found_free);
+	return;
+}
+
+void
+dbusmenu_collector_found_free (DbusmenuCollectorFound * found)
+{
+	g_return_if_fail(found != NULL);
+	g_free(found->display_string);
+	g_object_unref(found->item);
+	g_free(found);
+	return;
+}

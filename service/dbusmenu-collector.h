@@ -16,6 +16,7 @@ G_BEGIN_DECLS
 typedef struct _DbusmenuCollector          DbusmenuCollector;
 typedef struct _DbusmenuCollectorClass     DbusmenuCollectorClass;
 typedef struct _DbusmenuCollectorPrivate   DbusmenuCollectorPrivate;
+typedef struct _DbusmenuCollectorFound     DbusmenuCollectorFound;
 
 struct _DbusmenuCollectorClass {
 	GObjectClass parent_class;
@@ -29,8 +30,13 @@ struct _DbusmenuCollector {
 
 GType dbusmenu_collector_get_type (void);
 DbusmenuCollector * dbusmenu_collector_new (void);
-GStrv dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, const gchar * search);
-gboolean dbusmenu_collector_exec (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, const gchar * search);
+GList * dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, const gchar * search);
+
+guint dbusmenu_collector_found_get_distance (DbusmenuCollectorFound * found);
+const gchar * dbusmenu_collector_found_get_display (DbusmenuCollectorFound * found);
+void dbusmenu_collector_found_exec (DbusmenuCollectorFound * found);
+void dbusmenu_collector_found_free (DbusmenuCollectorFound * found);
+void dbusmenu_collector_found_list_free (GList * found_list);
 
 G_END_DECLS
 
