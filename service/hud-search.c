@@ -285,22 +285,15 @@ hud_search_execute (HudSearch * search, const gchar * searchstr)
 {
 	g_return_if_fail(IS_HUD_SEARCH(search));
 
-	gchar * address = NULL;
-	gchar * path = NULL;
+	GArray * usagedata = g_array_sized_new(FALSE, TRUE, sizeof(usage_wrapper_t), 15);
 	GList * found_list = NULL;
 
-	get_current_window_address(search, &address, &path);
+	search_and_sort(search, searchstr, usagedata, &found_list);
 
-	if (address != NULL && path != NULL) {
-		found_list = dbusmenu_collector_search(search->priv->collector, address, path, searchstr);
-	}
+	if (usagedata->len != 0) {
+		usage_wrapper_t * usage = &g_array_index(usagedata, usage_wrapper_t, 0);
 
-	g_free(address);
-	g_free(path);
-
-	if (found_list != NULL) {
-		DbusmenuCollectorFound * found = (DbusmenuCollectorFound *)found_list->data;
-		dbusmenu_collector_found_exec(found);
+		dbusmenu_collector_found_exec(usage->found);
 
 		const gchar * desktopfile = NULL;
 		if (search->priv->active_app != NULL) {
@@ -308,13 +301,14 @@ hud_search_execute (HudSearch * search, const gchar * searchstr)
 		}
 
 		if (desktopfile != NULL) {
-			usage_tracker_mark_usage(search->priv->usage, desktopfile, dbusmenu_collector_found_get_display(found));
+			usage_tracker_mark_usage(search->priv->usage, desktopfile, dbusmenu_collector_found_get_display(usage->found));
 		}
-
-		dbusmenu_collector_found_list_free(found_list);
 	} else {
 		g_warning("Unable to execute as we couldn't find anything");
 	}
+
+	g_array_free(usagedata, TRUE);
+	dbusmenu_collector_found_list_free(found_list);
 
 	return;
 }
