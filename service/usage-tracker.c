@@ -10,6 +10,7 @@
 struct _UsageTrackerPrivate {
 	gchar * cachefile;
 	sqlite3 * db;
+	guint drop_timer;
 };
 
 #define USAGE_TRACKER_GET_PRIVATE(o) \
@@ -42,6 +43,10 @@ usage_tracker_init (UsageTracker *self)
 {
 	self->priv = USAGE_TRACKER_GET_PRIVATE(self);
 
+	self->priv->cachefile = NULL;
+	self->priv->db = NULL;
+	self->priv->drop_timer = 0;
+
 	const gchar * basecachedir = g_getenv("HUD_CACHE_DIR");
 	if (basecachedir == NULL) {
 		basecachedir = g_get_user_cache_dir();
@@ -68,6 +73,8 @@ usage_tracker_init (UsageTracker *self)
 	}
 
 	drop_entries(self);
+	/* Drop entries daily if we run for a really long time */
+	self->priv->drop_timer = g_timeout_add_seconds(24 * 60 * 60, drop_entries, self);
 	
 	return;
 }
@@ -80,6 +87,11 @@ usage_tracker_dispose (GObject *object)
 	if (self->priv->db != NULL) {
 		sqlite3_close(self->priv->db);
 		self->priv->db = NULL;
+	}
+
+	if (self->priv->drop_timer != 0) {
+		g_source_remove(self->priv->drop_timer);
+		self->priv->drop_timer = 0;
 	}
 
 	G_OBJECT_CLASS (usage_tracker_parent_class)->dispose (object);
@@ -188,5 +200,5 @@ drop_entries (gpointer user_data)
 {
 
 
-	return FALSE;
+	return TRUE;
 }
