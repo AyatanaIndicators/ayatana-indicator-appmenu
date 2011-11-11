@@ -281,7 +281,7 @@ hud_search_execute (HudSearch * search, const gchar * searchstr)
 	get_current_window_address(search, &address, &path);
 
 	if (address != NULL && path != NULL) {
-		dbusmenu_collector_search(search->priv->collector, address, path, searchstr);
+		found_list = dbusmenu_collector_search(search->priv->collector, address, path, searchstr);
 	}
 
 	g_free(address);
