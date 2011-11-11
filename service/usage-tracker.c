@@ -144,7 +144,7 @@ usage_tracker_mark_usage (UsageTracker * self, const gchar * application, const 
 	g_return_if_fail(IS_USAGE_TRACKER(self));
 
 	gchar * statement = g_strdup_printf("insert into usage (application, entry, timestamp) values ('%s', '%s', date('now'));", application, entry);
-	g_debug("Executing: %s", statement);
+	// g_debug("Executing: %s", statement);
 
 	int exec_status = SQLITE_OK;
 	gchar * failstring = NULL;
@@ -179,7 +179,7 @@ usage_tracker_get_usage (UsageTracker * self, const gchar * application, const g
 	// TODO: Check if application has entries, if not, import defaults
 
 	gchar * statement = g_strdup_printf("select count(*) from usage where application = '%s' and entry = '%s' and timestamp > date('now', 'utc', '-30 days');", application, entry); // TODO: Add timestamp
-	g_debug("Executing: %s", statement);
+	// g_debug("Executing: %s", statement);
 
 	int exec_status = SQLITE_OK;
 	gchar * failstring = NULL;
@@ -202,7 +202,7 @@ drop_entries (gpointer user_data)
 	UsageTracker * self = USAGE_TRACKER(user_data);
 
 	const gchar * statement = "delete from usage where timestamp < date('now', 'utc', '-30 days');";
-	g_debug("Executing: %s", statement);
+	// g_debug("Executing: %s", statement);
 
 	int exec_status = SQLITE_OK;
 	gchar * failstring = NULL;
