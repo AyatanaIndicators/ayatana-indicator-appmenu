@@ -24,7 +24,9 @@ hud_service_SOURCES = \
 	hud-search.h \
 	hud-search.c \
 	hud.interface.h \
-	hud.interface.c
+	hud.interface.c \
+	usage-tracker.h \
+	usage-tracker.c
 
 hud_service_CFLAGS = \
 	$(HUD_CFLAGS) \

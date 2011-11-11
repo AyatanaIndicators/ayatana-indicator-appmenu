@@ -20,6 +20,12 @@ struct _DbusmenuCollectorPrivate {
 	GHashTable * hash;
 };
 
+struct _DbusmenuCollectorFound {
+	gchar * display_string;
+	guint distance;
+	DbusmenuMenuitem * item;
+};
+
 typedef struct _menu_key_t menu_key_t;
 struct _menu_key_t {
 	gchar * sender;
@@ -32,8 +38,6 @@ struct _search_item_t {
 	guint distance;
 };
 
-typedef gboolean (*action_function_t) (DbusmenuMenuitem * menuitem, const gchar * full_label, guint distance, GArray * results);
-
 static void dbusmenu_collector_class_init (DbusmenuCollectorClass *klass);
 static void dbusmenu_collector_init       (DbusmenuCollector *self);
 static void dbusmenu_collector_dispose    (GObject *object);
@@ -42,9 +46,7 @@ static void update_layout_cb (GDBusConnection * connection, const gchar * sender
 static guint menu_hash_func (gconstpointer key);
 static gboolean menu_equal_func (gconstpointer a, gconstpointer b);
 static void menu_key_destroy (gpointer key);
-static gboolean place_in_results (DbusmenuMenuitem * menuitem, const gchar * full_label, guint distance, GArray * results);
-//static gboolean exec_in_results (DbusmenuMenuitem * menuitem, GArray * results);
-static gint search_item_sort (gconstpointer a, gconstpointer b);
+static DbusmenuCollectorFound * dbusmenu_collector_found_new(DbusmenuMenuitem * item, const gchar * string, guint distance, const gchar * indicator_name);
 
 G_DEFINE_TYPE (DbusmenuCollector, dbusmenu_collector, G_TYPE_OBJECT);
 
@@ -207,15 +209,15 @@ remove_underline (const gchar * input)
 	return output;
 }
 
-static void
-tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GArray * results, const gchar * label_prefix, DbusmenuClient * client, action_function_t action_func)
+static GList *
+tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GList * results, const gchar * label_prefix, DbusmenuClient * client, const gchar * indicator_name)
 {
 	if (search == NULL) {
-		return;
+		return results;
 	}
 
 	if (rootitem == NULL) {
-		return;
+		return results;
 	}
 
 	gchar * newstr = NULL;
@@ -233,7 +235,7 @@ tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GArray * 
 
 	if (!dbusmenu_menuitem_get_root(rootitem) && dbusmenu_menuitem_property_exist(rootitem, DBUSMENU_MENUITEM_PROP_LABEL)) {
 		guint distance = calculate_distance(search, newstr);
-		action_func(rootitem, newstr, distance, results);
+		results = g_list_prepend(results, dbusmenu_collector_found_new(rootitem, newstr, distance, indicator_name));
 	}
 
 	GList * children = dbusmenu_menuitem_get_children(rootitem);
@@ -242,15 +244,15 @@ tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GArray * 
 	for (child = children; child != NULL; child = g_list_next(child)) {
 		DbusmenuMenuitem * item = DBUSMENU_MENUITEM(child->data);
 
-		tokens_to_children(item, search, results, newstr, client, action_func);
+		results = tokens_to_children(item, search, results, newstr, client, indicator_name);
 	}
 
 	g_free(newstr);
-	return;
+	return results;
 }
 
-static void
-process_client (DbusmenuCollector * collector, DbusmenuClient * client, const gchar * search, GArray * results, action_function_t action_func)
+static GList *
+process_client (DbusmenuCollector * collector, DbusmenuClient * client, const gchar * search, GList * results, const gchar * indicator_name)
 {
 	/* Handle the case where there are no search terms */
 	if (search == NULL || search[0] == '\0') {
@@ -266,28 +268,22 @@ process_client (DbusmenuCollector * collector, DbusmenuClient * client, const gc
 
 			const gchar * label = dbusmenu_menuitem_property_get(item, DBUSMENU_MENUITEM_PROP_LABEL);
 			gchar * nounderline = remove_underline(label);
-			gboolean action_stop = FALSE;
 
-			action_stop = action_func(item, nounderline, calculate_distance(nounderline, NULL), results);
+			results = g_list_prepend(results, dbusmenu_collector_found_new(item, nounderline, calculate_distance(nounderline, NULL), indicator_name));
 			g_free(nounderline);
-
-			if (action_stop) {
-				break;
-			}
 		}
 
-		return;
+		return results;
 	}
 
-	tokens_to_children(dbusmenu_client_get_root(client), search, results, "", client, action_func);
-	return;
+	results = tokens_to_children(dbusmenu_client_get_root(client), search, results, "", client, indicator_name);
+	return results;
 }
 
-static void
-just_do_it (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, const gchar * search, GArray * results, action_function_t action_func)
+static GList *
+just_do_it (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, const gchar * search, GList * results)
 {
-	g_return_if_fail(IS_DBUSMENU_COLLECTOR(collector));
-	g_return_if_fail(search != NULL);
+	g_return_val_if_fail(IS_DBUSMENU_COLLECTOR(collector), results);
 
 	menu_key_t search_key = {
 		sender: (gchar *)dbus_addr,
@@ -296,112 +292,88 @@ just_do_it (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar 
 
 	gpointer found = g_hash_table_lookup(collector->priv->hash, &search_key);
 	if (found != NULL) {
-		process_client(collector, DBUSMENU_CLIENT(found), search, results, action_func);
-		// g_array_sort(results, mycomparefunc);
+		results = process_client(collector, DBUSMENU_CLIENT(found), search, results, NULL);
 	}
 
-	return;
-}
-
-GStrv
-dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, const gchar * search)
-{
-	GStrv retval = NULL;
-
-	GArray * searchitems = g_array_new(TRUE, TRUE, sizeof(search_item_t));
-
-	just_do_it(collector, dbus_addr, dbus_path, search, searchitems, place_in_results);
-
-	GArray * results = g_array_new(TRUE, TRUE, sizeof(gchar *));
-	guint count = 0;
-
-	g_array_sort(searchitems, search_item_sort);
-
-	for (count = 0; count < 5 && count < searchitems->len; count++) {
-		gchar * value = ((search_item_t *)&g_array_index(searchitems, search_item_t, count))->string;
-		g_array_append_val(results, value);
-	}
-
-	for (count = 0; count < searchitems->len; count++) {
-		search_item_t * search_item = &g_array_index(searchitems, search_item_t, count);
-
-		if (count >= 5) {
-			g_free(search_item->string);
-		}
-	}
-
-	g_array_free(searchitems, TRUE);
-
-	retval = (GStrv)results->data;
-	g_array_free(results, FALSE);
-
-	return retval;
-}
-
-static guint exec_distance_min = 0;
-
-static gboolean
-add_to_exec (DbusmenuMenuitem * item, const gchar * full_label, guint distance, GArray * results)
-{
-	if (distance >= exec_distance_min) {
-		return FALSE;
-	}
-
-	while (results->len > 0) {
-		results = g_array_remove_index(results, 0);
-	}
-
-	g_array_append_val(results, item);
-	exec_distance_min = distance;
-	return FALSE;
-}
-
-gboolean
-dbusmenu_collector_exec (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, const gchar * search)
-{
-	gboolean success = TRUE;
-	GArray * entries = g_array_new(FALSE, FALSE, sizeof(DbusmenuMenuitem *));
-
-	exec_distance_min = G_MAXUINT;
-	just_do_it(collector, dbus_addr, dbus_path, search, entries, add_to_exec);
-
-	if (entries->len == 0) {
-		g_warning("Unable to find entry to execute");
-		success = FALSE;
-	}
-
-	if (entries->len > 0) {
-		DbusmenuMenuitem * item = g_array_index(entries, DbusmenuMenuitem *, 0);
-
-		g_debug("Executing menuitem %d: %s", dbusmenu_menuitem_get_id(item), dbusmenu_menuitem_property_get(item, DBUSMENU_MENUITEM_PROP_LABEL));
-		dbusmenu_menuitem_handle_event(item, DBUSMENU_MENUITEM_EVENT_ACTIVATED, NULL, 0);
-	}
-
-	g_array_free(entries, TRUE);
-	return success;
+	return results;
 }
 
 static gint
-search_item_sort (gconstpointer a, gconstpointer b)
+dbusmenu_collector_found_sort (gconstpointer a, gconstpointer b)
 {
-	search_item_t * sa;
-	search_item_t * sb;
+	DbusmenuCollectorFound * founda;
+	DbusmenuCollectorFound * foundb;
 
-	sa = (search_item_t *)a;
-	sb = (search_item_t *)b;
+	founda = (DbusmenuCollectorFound *)a;
+	foundb = (DbusmenuCollectorFound *)b;
 
-	return sa->distance - sb->distance;
+	return dbusmenu_collector_found_get_distance(founda) - dbusmenu_collector_found_get_distance(foundb);
 }
 
-static gboolean
-place_in_results (DbusmenuMenuitem * item, const gchar * full_label, guint distance, GArray * results)
+GList *
+dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, const gchar * search)
 {
-	search_item_t search_item = {
-		string: g_strdup(full_label),
-		distance: distance
-	};
-	g_array_append_val(results, search_item);
+	GList * items = just_do_it(collector, dbus_addr, dbus_path, search, NULL);
 
-	return FALSE;
+	/* This is where we'll do the indicators */
+
+	items = g_list_sort(items, dbusmenu_collector_found_sort);
+
+	return items;
 }
 
+guint
+dbusmenu_collector_found_get_distance (DbusmenuCollectorFound * found)
+{
+	g_return_val_if_fail(found != NULL, G_MAXUINT);
+	return found->distance;
+}
+
+const gchar *
+dbusmenu_collector_found_get_display (DbusmenuCollectorFound * found)
+{
+	g_return_val_if_fail(found != NULL, NULL);
+	return found->display_string;
+}
+
+void
+dbusmenu_collector_found_exec (DbusmenuCollectorFound * found)
+{
+	g_return_if_fail(found != NULL);
+	g_return_if_fail(found->item != NULL);
+
+	g_debug("Executing menuitem %d: %s", dbusmenu_menuitem_get_id(found->item), dbusmenu_menuitem_property_get(found->item, DBUSMENU_MENUITEM_PROP_LABEL));
+	dbusmenu_menuitem_handle_event(found->item, DBUSMENU_MENUITEM_EVENT_ACTIVATED, NULL, 0);
+	return;
+}
+
+void
+dbusmenu_collector_found_list_free (GList * found_list)
+{
+	g_list_free_full(found_list, (GDestroyNotify)dbusmenu_collector_found_free);
+	return;
+}
+
+static DbusmenuCollectorFound *
+dbusmenu_collector_found_new(DbusmenuMenuitem * item, const gchar * string, guint distance, const gchar * indicator_name)
+{
+	DbusmenuCollectorFound * found = g_new0(DbusmenuCollectorFound, 1);
+
+	found->display_string = g_strdup(string);
+	found->distance = distance;
+	found->item = item;
+
+	g_object_ref(G_OBJECT(item));
+
+	return found;
+}
+
+void
+dbusmenu_collector_found_free (DbusmenuCollectorFound * found)
+{
+	g_return_if_fail(found != NULL);
+	g_free(found->display_string);
+	g_object_unref(found->item);
+	g_free(found);
+	return;
+}

@@ -7,14 +7,17 @@
 
 #include "hud-search.h"
 #include "dbusmenu-collector.h"
+#include "usage-tracker.h"
 
 struct _HudSearchPrivate {
 	BamfMatcher * matcher;
 	gulong window_changed_sig;
 
 	guint32 active_xid;
+	BamfApplication * active_app;
 
 	DbusmenuCollector * collector;
+	UsageTracker * usage;
 
 	GDBusProxy * appmenu;
 };
@@ -56,6 +59,7 @@ hud_search_init (HudSearch *self)
 	self->priv->window_changed_sig = 0;
 	self->priv->active_xid = 0;
 	self->priv->collector = NULL;
+	self->priv->usage = NULL;
 	self->priv->appmenu = NULL;
 
 	/* BAMF */
@@ -65,10 +69,14 @@ hud_search_init (HudSearch *self)
 	BamfWindow * active_window = bamf_matcher_get_active_window(self->priv->matcher);
 	if (active_window != NULL) {
 		self->priv->active_xid = bamf_window_get_xid(active_window);
+		self->priv->active_app = bamf_matcher_get_application_for_window(self->priv->matcher, active_window);
 	}
 
 	/* DBusMenu */
 	self->priv->collector = dbusmenu_collector_new();
+
+	/* Usage Tracker */
+	self->priv->usage = usage_tracker_new();
 
 	/* Appmenu */
 	self->priv->appmenu = g_dbus_proxy_new_for_bus_sync(G_BUS_TYPE_SESSION,
@@ -95,6 +103,16 @@ hud_search_dispose (GObject *object)
 	if (self->priv->matcher != NULL) {
 		g_object_unref(self->priv->matcher);
 		self->priv->matcher = NULL;
+	}
+
+	if (self->priv->collector != NULL) {
+		g_object_unref(self->priv->collector);
+		self->priv->collector = NULL;
+	}
+
+	if (self->priv->usage != NULL) {
+		g_object_unref(self->priv->usage);
+		self->priv->usage = NULL;
 	}
 
 	if (self->priv->appmenu != NULL) {
@@ -153,23 +171,111 @@ get_current_window_address(HudSearch * search, gchar ** address, gchar ** path)
 	return;
 }
 
+typedef struct _usage_wrapper_t usage_wrapper_t;
+struct _usage_wrapper_t {
+	DbusmenuCollectorFound * found;
+	guint count;
+	gfloat percent_usage;
+	gfloat percent_distance;
+};
+
+static gint
+usage_sort (gconstpointer a, gconstpointer b)
+{
+	usage_wrapper_t * wa = (usage_wrapper_t *)a;
+	usage_wrapper_t * wb = (usage_wrapper_t *)b;
+
+	gfloat totala = (1.0 - wa->percent_usage) + wa->percent_distance;
+	gfloat totalb = (1.0 - wb->percent_usage) + wb->percent_distance;
+
+	gfloat difference = (totala - totalb) * 100.0;
+	return (gint)difference;
+}
+
+static void
+search_and_sort (HudSearch * search, const gchar * searchstr, GArray * usagedata, GList ** foundlist)
+{
+	gchar * address = NULL;
+	gchar * path = NULL;
+	GList * found_list = NULL;
+	guint count = 0;
+	GList * found = NULL;
+
+	get_current_window_address(search, &address, &path);
+
+	if (address != NULL && path != NULL) {
+		found_list = dbusmenu_collector_search(search->priv->collector, address, path, searchstr);
+	}
+
+	g_free(address);
+	g_free(path);
+
+	count = 0;
+	found = found_list;
+	guint overall_usage = 0;
+	guint overall_distance = 0;
+	while (found != NULL) {
+		usage_wrapper_t usage;
+		usage.found = (DbusmenuCollectorFound *)found->data;
+		usage.count = 0;
+
+		const gchar * desktopfile = NULL;
+		if (search->priv->active_app != NULL) {
+			desktopfile = bamf_application_get_desktop_file(search->priv->active_app);
+		}
+
+		if (desktopfile != NULL) {
+			usage.count = usage_tracker_get_usage(search->priv->usage, desktopfile, dbusmenu_collector_found_get_display(usage.found));
+		}
+
+		overall_usage += usage.count;
+		overall_distance += dbusmenu_collector_found_get_distance(usage.found);
+
+		g_array_append_val(usagedata, usage);
+		found = g_list_next(found);
+		count++;
+		if (count >= 15) {
+			break;
+		}
+	}
+
+	for (count = 0; count < usagedata->len; count++) {
+		usage_wrapper_t * usage = &g_array_index(usagedata, usage_wrapper_t, count);
+
+		if (overall_usage != 0) {
+			usage->percent_usage = (gfloat)usage->count/(gfloat)overall_usage;
+		} else {
+			usage->percent_usage = 1.0;
+		}
+
+		usage->percent_distance = (gfloat)dbusmenu_collector_found_get_distance(usage->found)/(gfloat)overall_distance;
+	}
+
+	g_array_sort(usagedata, usage_sort);
+	*foundlist = found_list;
+	return;
+}
+
 GStrv
 hud_search_suggestions (HudSearch * search, const gchar * searchstr)
 {
 	g_return_val_if_fail(IS_HUD_SEARCH(search), NULL);
 
-	gchar * address = NULL;
-	gchar * path = NULL;
-	GStrv retval = NULL;
+	GArray * usagedata = g_array_sized_new(FALSE, TRUE, sizeof(usage_wrapper_t), 15);
+	GList * found_list = NULL;
 
-	get_current_window_address(search, &address, &path);
+	search_and_sort(search, searchstr, usagedata, &found_list);
 
-	if (address != NULL && path != NULL) {
-		retval = dbusmenu_collector_search(search->priv->collector, address, path, searchstr);
+	int count;
+	gchar ** retval = g_new0(gchar *, 6);
+	for (count = 0; count < 5 && count < usagedata->len; count++) {
+		usage_wrapper_t * usage = &g_array_index(usagedata, usage_wrapper_t, count);
+		retval[count] = g_strdup(dbusmenu_collector_found_get_display(usage->found));
 	}
+	retval[count] = NULL;
 
-	g_free(address);
-	g_free(path);
+	g_array_free(usagedata, TRUE);
+	dbusmenu_collector_found_list_free(found_list);
 
 	return retval;
 }
@@ -179,17 +285,30 @@ hud_search_execute (HudSearch * search, const gchar * searchstr)
 {
 	g_return_if_fail(IS_HUD_SEARCH(search));
 
-	gchar * address = NULL;
-	gchar * path = NULL;
+	GArray * usagedata = g_array_sized_new(FALSE, TRUE, sizeof(usage_wrapper_t), 15);
+	GList * found_list = NULL;
 
-	get_current_window_address(search, &address, &path);
+	search_and_sort(search, searchstr, usagedata, &found_list);
 
-	if (address != NULL && path != NULL) {
-		dbusmenu_collector_exec(search->priv->collector, address, path, searchstr);
+	if (usagedata->len != 0) {
+		usage_wrapper_t * usage = &g_array_index(usagedata, usage_wrapper_t, 0);
+
+		dbusmenu_collector_found_exec(usage->found);
+
+		const gchar * desktopfile = NULL;
+		if (search->priv->active_app != NULL) {
+			desktopfile = bamf_application_get_desktop_file(search->priv->active_app);
+		}
+
+		if (desktopfile != NULL) {
+			usage_tracker_mark_usage(search->priv->usage, desktopfile, dbusmenu_collector_found_get_display(usage->found));
+		}
+	} else {
+		g_warning("Unable to execute as we couldn't find anything");
 	}
 
-	g_free(address);
-	g_free(path);
+	g_array_free(usagedata, TRUE);
+	dbusmenu_collector_found_list_free(found_list);
 
 	return;
 }
@@ -227,6 +346,7 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 	}
 
 	self->priv->active_xid = bamf_window_get_xid(window);
+	self->priv->active_app = app;
 
 	return;
 }
