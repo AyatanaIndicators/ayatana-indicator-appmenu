@@ -176,16 +176,32 @@ hud_search_suggestions (HudSearch * search, const gchar * searchstr)
 
 	gchar * address = NULL;
 	gchar * path = NULL;
-	GStrv retval = NULL;
+	GList * found_list = NULL;
 
 	get_current_window_address(search, &address, &path);
 
 	if (address != NULL && path != NULL) {
-		retval = dbusmenu_collector_search(search->priv->collector, address, path, searchstr);
+		found_list = dbusmenu_collector_search(search->priv->collector, address, path, searchstr);
 	}
 
 	g_free(address);
 	g_free(path);
+
+	gchar ** retval = g_new0(gchar *, 6);
+	GList * found = found_list;
+	guint count = 0;
+
+	while (found  != NULL) {
+		retval[count] = g_strdup(dbusmenu_collector_found_get_display((DbusmenuCollectorFound *)found->data));
+		found = g_list_next(found);
+		count++;
+		if (count >= 5) {
+			break;
+		}
+	}
+	retval[count] = NULL;
+
+	dbusmenu_collector_found_list_free(found_list);
 
 	return retval;
 }
@@ -197,15 +213,23 @@ hud_search_execute (HudSearch * search, const gchar * searchstr)
 
 	gchar * address = NULL;
 	gchar * path = NULL;
+	GList * found_list = NULL;
 
 	get_current_window_address(search, &address, &path);
 
 	if (address != NULL && path != NULL) {
-		dbusmenu_collector_exec(search->priv->collector, address, path, searchstr);
+		dbusmenu_collector_search(search->priv->collector, address, path, searchstr);
 	}
 
 	g_free(address);
 	g_free(path);
+
+	if (found_list != NULL) {
+		dbusmenu_collector_found_exec((DbusmenuCollectorFound *)found_list->data);
+		dbusmenu_collector_found_list_free(found_list);
+	} else {
+		g_warning("Unable to execute as we couldn't find anything");
+	}
 
 	return;
 }
