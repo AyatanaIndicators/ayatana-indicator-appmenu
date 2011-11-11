@@ -234,7 +234,12 @@ hud_search_suggestions (HudSearch * search, const gchar * searchstr)
 	for (count = 0; count < usagedata->len; count++) {
 		usage_wrapper_t * usage = &g_array_index(usagedata, usage_wrapper_t, count);
 
-		usage->percent_usage = (gfloat)usage->count/(gfloat)overall_usage;
+		if (overall_usage != 0) {
+			usage->percent_usage = (gfloat)usage->count/(gfloat)overall_usage;
+		} else {
+			usage->percent_usage = 1.0;
+		}
+
 		usage->percent_distance = (gfloat)dbusmenu_collector_found_get_distance(usage->found)/(gfloat)overall_distance;
 	}
 
