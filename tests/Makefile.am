@@ -3,11 +3,13 @@ EXTRA_DIST =
 
 TESTS = \
 	test-distance-test \
+	test-usage-db-ancient-test \
 	test-usage-db-old-test \
 	test-usage-db-simple-test
 
 check_PROGRAMS = \
 	test-distance \
+	test-usage-db-ancient \
 	test-usage-db-old \
 	test-usage-db-simple
 
@@ -96,3 +98,36 @@ test_usage_db_old_LDADD = \
 
 DISTCLEANFILES += $(USAGE_DB_OLD_XML_REPORT)
 EXTRA_DIST += test-usage-db-old.sql
+
+#######################
+# Test Usage DB Ancient
+#######################
+
+test-usage-db-ancient-test: test-usage-db-ancient test-usage-db-ancient.sql test-usage-db-ancient-test.sql Makefile.am
+	@echo "#!/bin/bash -e" > $@
+	@echo cd \`mktemp -d $(abs_builddir)/test-usage-db-ancient.dir.XXXXXX\` >> $@
+	@echo mkdir -p hud >> $@
+	@echo cat $(abs_srcdir)/test-usage-db-ancient.sql \| sqlite3 hud/usage-log.sqlite >> $@
+	@echo export HUD_CACHE_DIR=\`pwd\` >> $@
+	@echo $(abs_builddir)/test-usage-db-ancient >> $@
+	@echo if test \`cat $(abs_srcdir)/test-usage-db-ancient-test.sql \| sqlite3 hud/usage-log.sqlite \| wc -l\` -gt 0\; then >> $@
+	@echo echo Database has entries >> $@
+	@echo exit 1 >> $@
+	@echo fi >> $@
+	@echo cd .. >> $@
+	@echo rm -rf test-usage-db-ancient.dir.\* >> $@
+	@chmod +x $@
+
+test_usage_db_ancient_SOURCES = \
+	test-usage-db-ancient.c
+
+test_usage_db_ancient_CFLAGS = \
+	$(HUD_CFLAGS) \
+	-Wall -Werror
+
+test_usage_db_ancient_LDADD = \
+	$(HUD_LIBS)
+
+EXTRA_DIST += \
+	test-usage-db-ancient.sql \
+	test-usage-db-ancient-test.sql
