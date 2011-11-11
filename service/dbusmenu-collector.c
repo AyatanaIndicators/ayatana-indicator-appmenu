@@ -298,12 +298,26 @@ just_do_it (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar 
 	return results;
 }
 
+static gint
+dbusmenu_collector_found_sort (gconstpointer a, gconstpointer b)
+{
+	DbusmenuCollectorFound * founda;
+	DbusmenuCollectorFound * foundb;
+
+	founda = (DbusmenuCollectorFound *)a;
+	foundb = (DbusmenuCollectorFound *)b;
+
+	return dbusmenu_collector_found_get_distance(founda) - dbusmenu_collector_found_get_distance(foundb);
+}
+
 GList *
 dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, const gchar * search)
 {
 	GList * items = just_do_it(collector, dbus_addr, dbus_path, search, NULL);
 
 	/* This is where we'll do the indicators */
+
+	items = g_list_sort(items, dbusmenu_collector_found_sort);
 
 	return items;
 }
