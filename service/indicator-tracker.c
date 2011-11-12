@@ -4,8 +4,22 @@
 
 #include "indicator-tracker.h"
 
+#include <glib/gi18n.h>
+
 struct _IndicatorTrackerPrivate {
 	GArray * indicators;
+};
+
+typedef struct _SystemIndicator SystemIndicator;
+struct _SystemIndicator {
+	gchar * dbus_name;
+	gchar * dbus_menu_path;
+	gchar * indicator_name;
+	gchar * user_visible_name;
+};
+
+SystemIndicator system_indicators[] = {
+	{dbus_name: "com.canonical.indicator.messages", dbus_menu_path: "/com/canonical/indicator/messages/menu", indicator_name: "indicator-messages", user_visible_name: N_("Messages") }
 };
 
 #define INDICATOR_TRACKER_GET_PRIVATE(o) \
