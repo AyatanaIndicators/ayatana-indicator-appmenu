@@ -272,7 +272,7 @@ tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GList * r
 }
 
 static GList *
-process_client (DbusmenuCollector * collector, DbusmenuClient * client, const gchar * search, GList * results, const gchar * indicator_name)
+process_client (DbusmenuCollector * collector, DbusmenuClient * client, const gchar * search, GList * results, const gchar * indicator_name, const gchar * prefix)
 {
 	/* Handle the case where there are no search terms */
 	if (search == NULL || search[0] == '\0') {
@@ -296,12 +296,12 @@ process_client (DbusmenuCollector * collector, DbusmenuClient * client, const gc
 		return results;
 	}
 
-	results = tokens_to_children(dbusmenu_client_get_root(client), search, results, "", client, indicator_name);
+	results = tokens_to_children(dbusmenu_client_get_root(client), search, results, prefix, client, indicator_name);
 	return results;
 }
 
 static GList *
-just_do_it (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, const gchar * search, GList * results)
+just_do_it (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, const gchar * search, GList * results, const gchar * indicator_name, const gchar * prefix)
 {
 	g_return_val_if_fail(IS_DBUSMENU_COLLECTOR(collector), results);
 
@@ -312,7 +312,7 @@ just_do_it (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar 
 
 	gpointer found = g_hash_table_lookup(collector->priv->hash, &search_key);
 	if (found != NULL) {
-		results = process_client(collector, DBUSMENU_CLIENT(found), search, results, NULL);
+		results = process_client(collector, DBUSMENU_CLIENT(found), search, results, indicator_name, prefix);
 	}
 
 	return results;
@@ -333,14 +333,14 @@ dbusmenu_collector_found_sort (gconstpointer a, gconstpointer b)
 GList *
 dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, const gchar * search)
 {
-	GList * items = just_do_it(collector, dbus_addr, dbus_path, search, NULL);
+	GList * items = just_do_it(collector, dbus_addr, dbus_path, search, NULL, NULL, "");
 
 	/* This is where we'll do the indicators */
 	GArray * indicators = indicator_tracker_get_indicators(collector->priv->tracker);
 	gint indicator_cnt;
 	for (indicator_cnt = 0; indicator_cnt < indicators->len; indicator_cnt++) {
 		IndicatorTrackerIndicator * indicator = &g_array_index(indicators, IndicatorTrackerIndicator, indicator_cnt);
-		items = just_do_it(collector, indicator->dbus_name, indicator->dbus_object, search, items);
+		items = just_do_it(collector, indicator->dbus_name, indicator->dbus_object, search, items, indicator->name, indicator->prefix);
 	}
 
 	items = g_list_sort(items, dbusmenu_collector_found_sort);

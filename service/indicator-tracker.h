@@ -31,6 +31,7 @@ struct _IndicatorTrackerIndicator {
 	gchar * name;
 	gchar * dbus_name;
 	gchar * dbus_object;
+	gchar * prefix;
 };
 
 GType indicator_tracker_get_type (void);
