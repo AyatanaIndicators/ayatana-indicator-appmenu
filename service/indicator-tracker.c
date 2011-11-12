@@ -5,10 +5,7 @@
 #include "indicator-tracker.h"
 
 #include <glib/gi18n.h>
-
-struct _IndicatorTrackerPrivate {
-	GArray * indicators;
-};
+#include <gio/gio.h>
 
 typedef struct _SystemIndicator SystemIndicator;
 struct _SystemIndicator {
@@ -20,6 +17,11 @@ struct _SystemIndicator {
 
 SystemIndicator system_indicators[] = {
 	{dbus_name: "com.canonical.indicator.messages", dbus_menu_path: "/com/canonical/indicator/messages/menu", indicator_name: "indicator-messages", user_visible_name: N_("Messages") }
+};
+
+struct _IndicatorTrackerPrivate {
+	GArray * indicators;
+	guint watches[G_N_ELEMENTS(system_indicators)];
 };
 
 #define INDICATOR_TRACKER_GET_PRIVATE(o) \
@@ -53,6 +55,16 @@ indicator_tracker_init (IndicatorTracker *self)
 
 	self->priv->indicators = g_array_new(FALSE, TRUE, sizeof(IndicatorTrackerIndicator));
 
+	int indicator_cnt;
+	for (indicator_cnt = 0; indicator_cnt < G_N_ELEMENTS(system_indicators); indicator_cnt++) {
+		self->priv->watches[indicator_cnt] = g_bus_watch_name(G_BUS_TYPE_SESSION,
+		                                                      system_indicators[indicator_cnt].dbus_name,
+		                                                      G_BUS_NAME_WATCHER_FLAGS_NONE,
+		                                                      NULL, /* acquired */
+		                                                      NULL, /* vanished */
+		                                                      &system_indicators[indicator_cnt],
+		                                                      NULL); /* free func */
+	}
 
 	return;
 }
@@ -60,6 +72,16 @@ indicator_tracker_init (IndicatorTracker *self)
 static void
 indicator_tracker_dispose (GObject *object)
 {
+	IndicatorTracker * self = INDICATOR_TRACKER(object);
+
+	int indicator_cnt;
+	for (indicator_cnt = 0; indicator_cnt < G_N_ELEMENTS(system_indicators); indicator_cnt++) {
+		if (self->priv->watches[indicator_cnt] != 0) {
+			g_bus_unwatch_name(self->priv->watches[indicator_cnt]);
+			self->priv->watches[indicator_cnt] = 0;
+		}
+	}
+	
 
 	G_OBJECT_CLASS (indicator_tracker_parent_class)->dispose (object);
 	return;
