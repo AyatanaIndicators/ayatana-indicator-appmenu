@@ -220,7 +220,10 @@ search_and_sort (HudSearch * search, const gchar * searchstr, GArray * usagedata
 		usage.count = 0;
 
 		const gchar * desktopfile = NULL;
-		if (search->priv->active_app != NULL) {
+
+		desktopfile = dbusmenu_collector_found_get_indicator(usage.found);
+
+		if (desktopfile == NULL && search->priv->active_app != NULL) {
 			desktopfile = bamf_application_get_desktop_file(search->priv->active_app);
 		}
 

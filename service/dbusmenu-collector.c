@@ -26,6 +26,7 @@ struct _DbusmenuCollectorFound {
 	gchar * display_string;
 	guint distance;
 	DbusmenuMenuitem * item;
+	gchar * indicator;
 };
 
 typedef struct _menu_key_t menu_key_t;
@@ -388,6 +389,11 @@ dbusmenu_collector_found_new(DbusmenuMenuitem * item, const gchar * string, guin
 	found->display_string = g_strdup(string);
 	found->distance = distance;
 	found->item = item;
+	found->indicator = NULL;
+
+	if (indicator_name != NULL) {
+		found->indicator = g_strdup(indicator_name);
+	}
 
 	g_object_ref(G_OBJECT(item));
 
@@ -399,7 +405,15 @@ dbusmenu_collector_found_free (DbusmenuCollectorFound * found)
 {
 	g_return_if_fail(found != NULL);
 	g_free(found->display_string);
+	g_free(found->indicator);
 	g_object_unref(found->item);
 	g_free(found);
 	return;
+}
+
+const gchar *
+dbusmenu_collector_found_get_indicator (DbusmenuCollectorFound * found)
+{
+	g_return_val_if_fail(found != NULL, NULL);
+	return found->indicator;
 }
