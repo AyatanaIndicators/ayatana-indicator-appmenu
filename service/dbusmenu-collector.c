@@ -9,6 +9,7 @@
 
 #include "dbusmenu-collector.h"
 #include "distance.h"
+#include "indicator-tracker.h"
 
 #define GENERIC_ICON   "dbusmenu-lens-panel"
 
@@ -18,6 +19,7 @@ struct _DbusmenuCollectorPrivate {
 	GDBusConnection * bus;
 	guint signal;
 	GHashTable * hash;
+	IndicatorTracker * tracker;
 };
 
 struct _DbusmenuCollectorFound {
@@ -71,6 +73,7 @@ dbusmenu_collector_init (DbusmenuCollector *self)
 	self->priv->bus = NULL;
 	self->priv->signal = 0;
 	self->priv->hash = NULL;
+	self->priv->tracker = NULL;
 
 	self->priv->hash = g_hash_table_new_full(menu_hash_func, menu_equal_func,
 	                                         menu_key_destroy, g_object_unref /* DbusmenuClient */);
@@ -87,6 +90,7 @@ dbusmenu_collector_init (DbusmenuCollector *self)
 	                                                        self, /* data */
 	                                                        NULL); /* free func */
 
+	self->priv->tracker = indicator_tracker_new();
 
 	return;
 }
@@ -104,6 +108,11 @@ dbusmenu_collector_dispose (GObject *object)
 	if (collector->priv->hash != NULL) {
 		g_hash_table_destroy(collector->priv->hash);
 		collector->priv->hash = NULL;
+	}
+
+	if (collector->priv->tracker != NULL) {
+		g_object_unref(collector->priv->tracker);
+		collector->priv->tracker = NULL;
 	}
 
 	G_OBJECT_CLASS (dbusmenu_collector_parent_class)->dispose (object);
