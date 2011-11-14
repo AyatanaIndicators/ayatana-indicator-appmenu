@@ -302,7 +302,7 @@ hud_search_execute (HudSearch * search, const gchar * searchstr)
 
 		desktopfile = dbusmenu_collector_found_get_indicator(usage->found);
 
-		if (search->priv->active_app != NULL) {
+		if (desktopfile == NULL && search->priv->active_app != NULL) {
 			desktopfile = bamf_application_get_desktop_file(search->priv->active_app);
 		}
 
