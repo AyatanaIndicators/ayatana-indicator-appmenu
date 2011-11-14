@@ -1,0 +1,67 @@
+#include <glib.h>
+#include <glib-object.h>
+
+#include "../service/indicator-tracker.h"
+#include "../service/indicator-tracker.c"
+
+gboolean
+end_of_line (gpointer user_data)
+{
+	g_main_loop_quit((GMainLoop *)user_data);
+	return FALSE;
+}
+
+gint
+main (gint argc, gchar * argv[])
+{
+	g_type_init();
+
+	IndicatorTracker * tracker = indicator_tracker_new();
+
+	GMainLoop * mainloop = g_main_loop_new(NULL, FALSE);
+
+	g_timeout_add_seconds(1, end_of_line, mainloop);
+
+	g_main_loop_run(mainloop);
+	g_main_loop_unref(mainloop);
+
+	int i;
+	gboolean found_messaging = FALSE;
+	gboolean found_sound = FALSE;
+	gboolean failed = FALSE;
+
+	GArray * indicators = indicator_tracker_get_indicators(tracker);
+
+	for (i = 0; i < indicators->len; i++) {
+		IndicatorTrackerIndicator * indicator = &g_array_index(indicators, IndicatorTrackerIndicator, i);
+
+		if (g_strcmp0(indicator->dbus_name_wellknown, "com.canonical.indicator.messages") == 0) {
+			found_messaging = TRUE;
+			continue;
+		}
+
+		if (g_strcmp0(indicator->dbus_name_wellknown, "com.canonical.indicators.sound") == 0) {
+			found_sound = TRUE;
+			continue;
+		}
+
+		g_warning("Found indicator we didn't expect: %s", indicator->dbus_name_wellknown);
+		failed = TRUE;
+		break;
+	}
+
+	g_object_unref(tracker);
+
+	if (!found_messaging || !found_sound) {
+		g_warning("Missing Indicators");
+		failed = TRUE;
+	}
+
+	if (!failed) {
+		g_debug("Found everything");
+		return 0;
+	} else {
+		g_warning("Failed");
+		return 1;
+	}
+}

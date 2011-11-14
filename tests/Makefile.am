@@ -5,15 +5,20 @@ TESTS = \
 	test-distance-test \
 	test-usage-db-ancient-test \
 	test-usage-db-old-test \
-	test-usage-db-simple-test
+	test-usage-db-simple-test \
+	test-indicator-tracker-test
 
 check_PROGRAMS = \
 	test-distance \
 	test-usage-db-ancient \
 	test-usage-db-old \
-	test-usage-db-simple
+	test-usage-db-simple \
+	test-indicator-tracker \
+	test-indicator-tracker-owner
 
 DISTCLEANFILES += $(TESTS)
+
+DBUS_RUNNER=dbus-test-runner
 
 ######################
 # Test Distance
@@ -131,3 +136,34 @@ test_usage_db_ancient_LDADD = \
 EXTRA_DIST += \
 	test-usage-db-ancient.sql \
 	test-usage-db-ancient-test.sql
+
+#########################
+# Test Indicator Tracker
+#########################
+
+test-indicator-tracker-test: test-indicator-tracker test-indicator-tracker-owner Makefile.am
+	@echo "#!/bin/bash -e" > $@
+	@echo $(XVFB_RUN) >> $@
+	@echo $(DBUS_RUNNER) --task $(builddir)/test-indicator-tracker --task-name Tracker --task $(builddir)/test-indicator-tracker-owner --parameter com.canonical.indicator.messages --task-name Messages --ignore-return --task $(builddir)/test-indicator-tracker-owner --parameter com.canonical.indicators.sound --task-name Sound --ignore-return >> $@
+	@chmod +x $@
+
+test_indicator_tracker_SOURCES = \
+	test-indicator-tracker.c
+
+test_indicator_tracker_CFLAGS = \
+	$(HUD_CFLAGS) \
+	-Wall -Werror
+
+test_indicator_tracker_LDADD = \
+	$(HUD_LIBS)
+
+test_indicator_tracker_owner_SOURCES = \
+	test-indicator-tracker-owner.c
+
+test_indicator_tracker_owner_CFLAGS = \
+	$(HUD_CFLAGS) \
+	-Wall -Werror
+
+test_indicator_tracker_owner_LDADD = \
+	$(HUD_LIBS)
+

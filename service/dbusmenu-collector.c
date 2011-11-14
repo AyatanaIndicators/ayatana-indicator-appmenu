@@ -9,6 +9,7 @@
 
 #include "dbusmenu-collector.h"
 #include "distance.h"
+#include "indicator-tracker.h"
 
 #define GENERIC_ICON   "dbusmenu-lens-panel"
 
@@ -18,12 +19,14 @@ struct _DbusmenuCollectorPrivate {
 	GDBusConnection * bus;
 	guint signal;
 	GHashTable * hash;
+	IndicatorTracker * tracker;
 };
 
 struct _DbusmenuCollectorFound {
 	gchar * display_string;
 	guint distance;
 	DbusmenuMenuitem * item;
+	gchar * indicator;
 };
 
 typedef struct _menu_key_t menu_key_t;
@@ -71,6 +74,7 @@ dbusmenu_collector_init (DbusmenuCollector *self)
 	self->priv->bus = NULL;
 	self->priv->signal = 0;
 	self->priv->hash = NULL;
+	self->priv->tracker = NULL;
 
 	self->priv->hash = g_hash_table_new_full(menu_hash_func, menu_equal_func,
 	                                         menu_key_destroy, g_object_unref /* DbusmenuClient */);
@@ -87,6 +91,7 @@ dbusmenu_collector_init (DbusmenuCollector *self)
 	                                                        self, /* data */
 	                                                        NULL); /* free func */
 
+	self->priv->tracker = indicator_tracker_new();
 
 	return;
 }
@@ -104,6 +109,11 @@ dbusmenu_collector_dispose (GObject *object)
 	if (collector->priv->hash != NULL) {
 		g_hash_table_destroy(collector->priv->hash);
 		collector->priv->hash = NULL;
+	}
+
+	if (collector->priv->tracker != NULL) {
+		g_object_unref(collector->priv->tracker);
+		collector->priv->tracker = NULL;
 	}
 
 	G_OBJECT_CLASS (dbusmenu_collector_parent_class)->dispose (object);
@@ -263,7 +273,7 @@ tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GList * r
 }
 
 static GList *
-process_client (DbusmenuCollector * collector, DbusmenuClient * client, const gchar * search, GList * results, const gchar * indicator_name)
+process_client (DbusmenuCollector * collector, DbusmenuClient * client, const gchar * search, GList * results, const gchar * indicator_name, const gchar * prefix)
 {
 	/* Handle the case where there are no search terms */
 	if (search == NULL || search[0] == '\0') {
@@ -287,12 +297,12 @@ process_client (DbusmenuCollector * collector, DbusmenuClient * client, const gc
 		return results;
 	}
 
-	results = tokens_to_children(dbusmenu_client_get_root(client), search, results, "", client, indicator_name);
+	results = tokens_to_children(dbusmenu_client_get_root(client), search, results, prefix, client, indicator_name);
 	return results;
 }
 
 static GList *
-just_do_it (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, const gchar * search, GList * results)
+just_do_it (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, const gchar * search, GList * results, const gchar * indicator_name, const gchar * prefix)
 {
 	g_return_val_if_fail(IS_DBUSMENU_COLLECTOR(collector), results);
 
@@ -303,7 +313,7 @@ just_do_it (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar 
 
 	gpointer found = g_hash_table_lookup(collector->priv->hash, &search_key);
 	if (found != NULL) {
-		results = process_client(collector, DBUSMENU_CLIENT(found), search, results, NULL);
+		results = process_client(collector, DBUSMENU_CLIENT(found), search, results, indicator_name, prefix);
 	}
 
 	return results;
@@ -324,9 +334,19 @@ dbusmenu_collector_found_sort (gconstpointer a, gconstpointer b)
 GList *
 dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, const gchar * search)
 {
-	GList * items = just_do_it(collector, dbus_addr, dbus_path, search, NULL);
+	GList * items = just_do_it(collector, dbus_addr, dbus_path, search, NULL, NULL, "");
 
-	/* This is where we'll do the indicators */
+	/* This is where we'll do the indicators if we're not
+	   looking at the null search.  In that case we'll let
+	   the client take over. */
+	if (search != NULL && search[0] != '\0') {
+		GArray * indicators = indicator_tracker_get_indicators(collector->priv->tracker);
+		gint indicator_cnt;
+		for (indicator_cnt = 0; indicator_cnt < indicators->len; indicator_cnt++) {
+			IndicatorTrackerIndicator * indicator = &g_array_index(indicators, IndicatorTrackerIndicator, indicator_cnt);
+			items = just_do_it(collector, indicator->dbus_name, indicator->dbus_object, search, items, indicator->name, indicator->prefix);
+		}
+	}
 
 	items = g_list_sort(items, dbusmenu_collector_found_sort);
 
@@ -368,11 +388,17 @@ dbusmenu_collector_found_list_free (GList * found_list)
 static DbusmenuCollectorFound *
 dbusmenu_collector_found_new(DbusmenuMenuitem * item, const gchar * string, guint distance, const gchar * indicator_name)
 {
+	// g_debug("New Found: '%s', %d, '%s'", string, distance, indicator_name);
 	DbusmenuCollectorFound * found = g_new0(DbusmenuCollectorFound, 1);
 
 	found->display_string = g_strdup(string);
 	found->distance = distance;
 	found->item = item;
+	found->indicator = NULL;
+
+	if (indicator_name != NULL) {
+		found->indicator = g_strdup(indicator_name);
+	}
 
 	g_object_ref(G_OBJECT(item));
 
@@ -384,7 +410,16 @@ dbusmenu_collector_found_free (DbusmenuCollectorFound * found)
 {
 	g_return_if_fail(found != NULL);
 	g_free(found->display_string);
+	g_free(found->indicator);
 	g_object_unref(found->item);
 	g_free(found);
 	return;
+}
+
+const gchar *
+dbusmenu_collector_found_get_indicator (DbusmenuCollectorFound * found)
+{
+	// g_debug("Getting indicator for found '%s', indicator: '%s'", found->display_string, found->indicator);
+	g_return_val_if_fail(found != NULL, NULL);
+	return found->indicator;
 }

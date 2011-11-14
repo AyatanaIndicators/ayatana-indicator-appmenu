@@ -6,3 +6,6 @@ test-usage-db-old-test
 test-usage-db-old.xml
 test-usage-db-ancient
 test-usage-db-ancient-test
+test-indicator-tracker
+test-indicator-tracker-owner
+test-indicator-tracker-test

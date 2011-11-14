@@ -25,6 +25,8 @@ hud_service_SOURCES = \
 	hud-search.c \
 	hud.interface.h \
 	hud.interface.c \
+	indicator-tracker.h \
+	indicator-tracker.c \
 	usage-tracker.h \
 	usage-tracker.c
 
