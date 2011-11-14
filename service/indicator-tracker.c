@@ -31,6 +31,8 @@ static void indicator_tracker_class_init (IndicatorTrackerClass *klass);
 static void indicator_tracker_init       (IndicatorTracker *self);
 static void indicator_tracker_dispose    (GObject *object);
 static void indicator_tracker_finalize   (GObject *object);
+static void system_watch_appeared        (GDBusConnection * connection, const gchar * name, const gchar * name_owner, gpointer user_data);
+static void system_watch_vanished        (GDBusConnection * connection, const gchar * name, gpointer user_data);
 
 G_DEFINE_TYPE (IndicatorTracker, indicator_tracker, G_TYPE_OBJECT);
 
@@ -60,9 +62,9 @@ indicator_tracker_init (IndicatorTracker *self)
 		self->priv->watches[indicator_cnt] = g_bus_watch_name(G_BUS_TYPE_SESSION,
 		                                                      system_indicators[indicator_cnt].dbus_name,
 		                                                      G_BUS_NAME_WATCHER_FLAGS_NONE,
-		                                                      NULL, /* acquired */
-		                                                      NULL, /* vanished */
-		                                                      &system_indicators[indicator_cnt],
+		                                                      system_watch_appeared, /* acquired */
+		                                                      system_watch_vanished, /* vanished */
+		                                                      self,
 		                                                      NULL); /* free func */
 	}
 
@@ -106,4 +108,21 @@ indicator_tracker_get_indicators (IndicatorTracker * tracker)
 {
 	g_return_val_if_fail(IS_INDICATOR_TRACKER(tracker), NULL);
 	return tracker->priv->indicators;
+}
+
+static void
+system_watch_appeared (GDBusConnection * connection, const gchar * name, const gchar * name_owner, gpointer user_data)
+{
+	g_return_if_fail(IS_INDICATOR_TRACKER(user_data));
+
+	return;
+}
+
+static void
+system_watch_vanished (GDBusConnection * connection, const gchar * name, gpointer user_data)
+{
+	g_return_if_fail(IS_INDICATOR_TRACKER(user_data));
+
+
+	return;
 }
