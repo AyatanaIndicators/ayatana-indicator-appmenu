@@ -384,6 +384,7 @@ dbusmenu_collector_found_list_free (GList * found_list)
 static DbusmenuCollectorFound *
 dbusmenu_collector_found_new(DbusmenuMenuitem * item, const gchar * string, guint distance, const gchar * indicator_name)
 {
+	// g_debug("New Found: '%s', %d, '%s'", string, distance, indicator_name);
 	DbusmenuCollectorFound * found = g_new0(DbusmenuCollectorFound, 1);
 
 	found->display_string = g_strdup(string);
@@ -414,6 +415,7 @@ dbusmenu_collector_found_free (DbusmenuCollectorFound * found)
 const gchar *
 dbusmenu_collector_found_get_indicator (DbusmenuCollectorFound * found)
 {
+	// g_debug("Getting indicator for found '%s', indicator: '%s'", found->display_string, found->indicator);
 	g_return_val_if_fail(found != NULL, NULL);
 	return found->indicator;
 }
