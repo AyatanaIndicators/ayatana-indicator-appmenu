@@ -91,6 +91,19 @@ dbusmenu_collector_init (DbusmenuCollector *self)
 	                                                        self, /* data */
 	                                                        NULL); /* free func */
 
+	GError * error = NULL;
+	g_dbus_connection_emit_signal(self->priv->bus,
+	                              NULL, /* destination */
+	                              "/", /* object */
+	                              "com.canonical.dbusmenu",
+	                              "FindServers",
+	                              NULL, /* params */
+	                              &error);
+	if (error != NULL) {
+		g_warning("Unable to emit 'FindServers': %s", error->message);
+		g_error_free(error);
+	}
+
 	self->priv->tracker = indicator_tracker_new();
 
 	return;
