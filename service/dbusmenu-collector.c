@@ -336,12 +336,16 @@ dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_add
 {
 	GList * items = just_do_it(collector, dbus_addr, dbus_path, search, NULL, NULL, "");
 
-	/* This is where we'll do the indicators */
-	GArray * indicators = indicator_tracker_get_indicators(collector->priv->tracker);
-	gint indicator_cnt;
-	for (indicator_cnt = 0; indicator_cnt < indicators->len; indicator_cnt++) {
-		IndicatorTrackerIndicator * indicator = &g_array_index(indicators, IndicatorTrackerIndicator, indicator_cnt);
-		items = just_do_it(collector, indicator->dbus_name, indicator->dbus_object, search, items, indicator->name, indicator->prefix);
+	/* This is where we'll do the indicators if we're not
+	   looking at the null search.  In that case we'll let
+	   the client take over. */
+	if (search != NULL && search[0] != '\0') {
+		GArray * indicators = indicator_tracker_get_indicators(collector->priv->tracker);
+		gint indicator_cnt;
+		for (indicator_cnt = 0; indicator_cnt < indicators->len; indicator_cnt++) {
+			IndicatorTrackerIndicator * indicator = &g_array_index(indicators, IndicatorTrackerIndicator, indicator_cnt);
+			items = just_do_it(collector, indicator->dbus_name, indicator->dbus_object, search, items, indicator->name, indicator->prefix);
+		}
 	}
 
 	items = g_list_sort(items, dbusmenu_collector_found_sort);
