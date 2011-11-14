@@ -30,6 +30,7 @@ struct _IndicatorTracker {
 struct _IndicatorTrackerIndicator {
 	gchar * name;
 	gchar * dbus_name;
+	gchar * dbus_name_wellknown;
 	gchar * dbus_object;
 	gchar * prefix;
 };

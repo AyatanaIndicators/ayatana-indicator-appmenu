@@ -110,19 +110,98 @@ indicator_tracker_get_indicators (IndicatorTracker * tracker)
 	return tracker->priv->indicators;
 }
 
+/* Function watches names on Dbus to find out when the system indicators
+   go on and off the bus.  This makes it so that we can handle them properly
+   at the higher levels in the system.  If a system indicator gets added to
+   the list it gets put the indicator structure. */
 static void
 system_watch_appeared (GDBusConnection * connection, const gchar * name, const gchar * name_owner, gpointer user_data)
 {
 	g_return_if_fail(IS_INDICATOR_TRACKER(user_data));
+	g_return_if_fail(name_owner != NULL);
+	g_return_if_fail(name_owner[0] != '\0');
+	IndicatorTracker * self = INDICATOR_TRACKER(user_data);
+
+	/* Check all the system indicators because there might be more than
+	   one menu/indicator on a well known name */
+	int indicator_cnt;
+	for (indicator_cnt = 0; indicator_cnt < G_N_ELEMENTS(system_indicators); indicator_cnt++) {
+		SystemIndicator * sys_indicator = &system_indicators[indicator_cnt];
+
+		if (g_strcmp0(sys_indicator->dbus_name, name) != 0) {
+			continue;
+		}
+
+		/* Check to see if we already have this system indicator in the
+		   list of indicators */
+		int i;
+		for (i = 0; i < self->priv->indicators->len; i++) {
+			IndicatorTrackerIndicator * indicator = &g_array_index(self->priv->indicators, IndicatorTrackerIndicator, i);
+
+			if (g_strcmp0(sys_indicator->dbus_name, indicator->dbus_name_wellknown) != 0) {
+				continue;
+			}
+
+			if (g_strcmp0(sys_indicator->dbus_menu_path, indicator->dbus_object) != 0) {
+				continue;
+			}
+
+			/* If both of them match, we need to break */
+			break;
+		}
+
+		/* We found it in the list so we broke out eary */
+		if (i != self->priv->indicators->len) {
+			continue;
+		}
+
+		g_debug("Adding an indicator for '%s' at owner '%s'", name, name_owner);
+		/* Okay, we need to build one for this system indicator */
+		IndicatorTrackerIndicator final_indicator = {
+			name: g_strdup(sys_indicator->indicator_name),
+			dbus_name: g_strdup(name_owner),
+			dbus_name_wellknown: g_strdup(sys_indicator->dbus_name),
+			dbus_object: g_strdup(sys_indicator->dbus_menu_path),
+			prefix: g_strdup(_(sys_indicator->user_visible_name))
+		};
+
+		g_array_append_val(self->priv->indicators, final_indicator);
+	}
 
 	return;
 }
 
+/* When the names drop off of DBus we need to check to see if that
+   means any indicators getting lost as well.  If so, remove them from
+   the indicator list. */
 static void
 system_watch_vanished (GDBusConnection * connection, const gchar * name, gpointer user_data)
 {
 	g_return_if_fail(IS_INDICATOR_TRACKER(user_data));
+	IndicatorTracker * self = INDICATOR_TRACKER(user_data);
 
+	/* See if any of our indicators know this name */
+	int i;
+	for (i = 0; i < self->priv->indicators->len; i++) {
+		IndicatorTrackerIndicator * indicator = &g_array_index(self->priv->indicators, IndicatorTrackerIndicator, i);
+
+		/* Doesn't match */
+		if (g_strcmp0(indicator->dbus_name_wellknown, name) != 0) {
+			continue;
+		}
+
+		g_free(indicator->name);
+		g_free(indicator->dbus_name);
+		g_free(indicator->dbus_name_wellknown);
+		g_free(indicator->dbus_object);
+		g_free(indicator->prefix);
+
+		g_array_remove_index_fast(self->priv->indicators, i);
+		/* Oh, this is confusing.  Basically becasue we shorten the array
+		   we need to check the one that replaced the entry we deleted
+		   so we have to look in this same slot again. */
+		i--;
+	}
 
 	return;
 }
