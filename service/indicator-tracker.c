@@ -16,7 +16,11 @@ struct _SystemIndicator {
 };
 
 SystemIndicator system_indicators[] = {
-	{dbus_name: "com.canonical.indicator.messages", dbus_menu_path: "/com/canonical/indicator/messages/menu", indicator_name: "indicator-messages", user_visible_name: N_("Messages") }
+	{dbus_name: "com.canonical.indicator.datetime", dbus_menu_path: "/com/canonical/indicator/datetime/menu", indicator_name: "indicator-datetime",       user_visible_name: N_("Date") },
+	{dbus_name: "com.canonical.indicator.session",  dbus_menu_path: "/com/canonical/indicator/session/menu",  indicator_name: "indicator-session-device", user_visible_name: N_("Device") },
+	{dbus_name: "com.canonical.indicator.session",  dbus_menu_path: "/com/canonical/indicator/user/menu",     indicator_name: "indicator-session-user",   user_visible_name: N_("User") },
+	{dbus_name: "com.canonical.indicators.sound",   dbus_menu_path: "/com/canonical/indicators/sound/menu",   indicator_name: "indicator-sound",          user_visible_name: N_("Sound") },
+	{dbus_name: "com.canonical.indicator.messages", dbus_menu_path: "/com/canonical/indicator/messages/menu", indicator_name: "indicator-messages",       user_visible_name: N_("Messages") }
 };
 
 struct _IndicatorTrackerPrivate {
