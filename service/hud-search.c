@@ -345,6 +345,13 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 		return;
 	}
 
+	/* Ignore the hud prototype window directly */
+	const gchar * window_name = bamf_view_get_name(newview);
+	if (g_strcmp0(window_name, "Hud Prototype Test") == 0
+	  || g_strcmp0(window_name, "Hud") == 0) {
+		return;
+	}
+
 	/* This should ignore most of the windows involved in Unity */
 	const gchar * name = bamf_view_get_name(newview);
 	if (g_strcmp0(name, "DNDCollectionWindow") == 0) {
