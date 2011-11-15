@@ -357,7 +357,17 @@ dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_add
 		gint indicator_cnt;
 		for (indicator_cnt = 0; indicator_cnt < indicators->len; indicator_cnt++) {
 			IndicatorTrackerIndicator * indicator = &g_array_index(indicators, IndicatorTrackerIndicator, indicator_cnt);
-			items = just_do_it(collector, indicator->dbus_name, indicator->dbus_object, search, items, indicator->name, indicator->prefix);
+			GList * iitems = just_do_it(collector, indicator->dbus_name, indicator->dbus_object, search, NULL, indicator->name, indicator->prefix);
+
+			/* Increase indicator's distance by 50% */
+			GList * iitem = iitems;
+			while (iitem != NULL) {
+				DbusmenuCollectorFound * found = (DbusmenuCollectorFound *)iitem->data;
+				found->distance = found->distance + (found->distance / 2);
+				iitem = g_list_next(iitem);
+			}
+
+			items = g_list_concat(items, iitems);
 		}
 	}
 
