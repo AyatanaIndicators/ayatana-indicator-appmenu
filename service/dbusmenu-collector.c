@@ -383,6 +383,33 @@ dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_add
 void
 dbusmenu_collector_execute (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, gint id, guint timestamp)
 {
+	g_return_if_fail(IS_DBUSMENU_COLLECTOR(collector));
+
+	menu_key_t search_key = {
+		sender: (gchar *)dbus_addr,
+		path:   (gchar *)dbus_path
+	};
+
+	gpointer found = g_hash_table_lookup(collector->priv->hash, &search_key);
+	if (found == NULL) {
+		g_warning("Unable to find dbusmenu client: %s:%s", dbus_addr, dbus_path);
+		return;
+	}
+
+	DbusmenuMenuitem * root = dbusmenu_client_get_root(DBUSMENU_CLIENT(found));
+	if (root == NULL) {
+		g_warning("Dbusmenu Client %s:%s has no menuitems", dbus_addr, dbus_path);
+		return;
+	}
+
+	DbusmenuMenuitem * item = dbusmenu_menuitem_find_id(root, id);
+	if (item == NULL) {
+		g_warning("Unable to find menuitem %d on client %s:%s", id, dbus_addr, dbus_path);
+		return;
+	}
+
+	g_debug("Executing menuitem %d: %s", id, dbusmenu_menuitem_property_get(item, DBUSMENU_MENUITEM_PROP_LABEL));
+	dbusmenu_menuitem_handle_event(item, DBUSMENU_MENUITEM_EVENT_ACTIVATED, NULL, timestamp);
 
 	return;
 }
@@ -399,17 +426,6 @@ dbusmenu_collector_found_get_display (DbusmenuCollectorFound * found)
 {
 	g_return_val_if_fail(found != NULL, NULL);
 	return found->display_string;
-}
-
-void
-dbusmenu_collector_found_exec (DbusmenuCollectorFound * found)
-{
-	g_return_if_fail(found != NULL);
-	g_return_if_fail(found->item != NULL);
-
-	g_debug("Executing menuitem %d: %s", dbusmenu_menuitem_get_id(found->item), dbusmenu_menuitem_property_get(found->item, DBUSMENU_MENUITEM_PROP_LABEL));
-	dbusmenu_menuitem_handle_event(found->item, DBUSMENU_MENUITEM_EVENT_ACTIVATED, NULL, 0);
-	return;
 }
 
 void

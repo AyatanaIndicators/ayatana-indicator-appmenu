@@ -35,7 +35,6 @@ void dbusmenu_collector_execute (DbusmenuCollector * collector, const gchar * db
 
 guint dbusmenu_collector_found_get_distance (DbusmenuCollectorFound * found);
 const gchar * dbusmenu_collector_found_get_display (DbusmenuCollectorFound * found);
-void dbusmenu_collector_found_exec (DbusmenuCollectorFound * found);
 void dbusmenu_collector_found_free (DbusmenuCollectorFound * found);
 void dbusmenu_collector_found_list_free (GList * found_list);
 const gchar *  dbusmenu_collector_found_get_indicator (DbusmenuCollectorFound * found);
