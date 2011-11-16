@@ -163,18 +163,20 @@ static void
 execute_query (void)
 {
 	GError * error = NULL;
-	GVariant * tuple = NULL;
 
-	if (last_key != NULL) {
-		tuple = g_variant_new_tuple(&last_key, 1);
-	} else {
-		g_warning("No previous suggestion to execute");
+	if (last_key == NULL) {
+		g_warning("Unable to execute without previous suggestion");
 		return;
 	}
 
+	GVariantBuilder tuple;
+	g_variant_builder_init(&tuple, G_VARIANT_TYPE_TUPLE);
+	g_variant_builder_add_value(&tuple, last_key);
+	g_variant_builder_add_value(&tuple, g_variant_new_uint32(0));
+
 	g_dbus_proxy_call_sync(proxy,
 	                       "ExecuteQuery",
-	                       tuple,
+	                       g_variant_builder_end(&tuple),
 	                       G_DBUS_CALL_FLAGS_NONE,
 	                       -1,
 	                       NULL,
