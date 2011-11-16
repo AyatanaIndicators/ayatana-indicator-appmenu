@@ -356,3 +356,57 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 
 	return;
 }
+
+struct _HudSearchSuggest {
+	gchar * display;
+	gchar * icon;
+	GVariant * key;
+};
+
+HudSearchSuggest *
+hud_search_suggest_new (const gchar * display, const gchar * icon, const gchar * dbus_address, const gchar * dbus_path, gint dbus_id)
+{
+	HudSearchSuggest * suggest = g_new0(HudSearchSuggest, 1);
+
+	suggest->display = g_strdup(display);
+	suggest->icon = g_strdup(icon);
+
+	GVariantBuilder builder;
+	g_variant_builder_init(&builder, G_VARIANT_TYPE_TUPLE);
+	g_variant_builder_add_value(&builder, g_variant_new_string(dbus_address));
+	g_variant_builder_add_value(&builder, g_variant_new_object_path(dbus_path));
+	g_variant_builder_add_value(&builder, g_variant_new_int32(dbus_id));
+
+	suggest->key = g_variant_new_variant(g_variant_builder_end(&builder));
+	g_variant_ref_sink(suggest->key);
+
+	return suggest;
+}
+
+const gchar *
+hud_search_suggest_get_icon (HudSearchSuggest * suggest)
+{
+	return suggest->icon;
+}
+
+const gchar *
+hud_search_suggest_get_display (HudSearchSuggest * suggest)
+{
+	return suggest->display;
+}
+
+const GVariant *
+hud_search_suggest_get_key (HudSearchSuggest * suggest)
+{
+	return suggest->key;
+}
+
+void
+hud_search_suggest_free (HudSearchSuggest * suggest)
+{
+	g_free(suggest->display);
+	g_free(suggest->icon);
+	g_variant_unref(suggest->key);
+	g_free(suggest);
+	return;
+}

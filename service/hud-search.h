@@ -16,6 +16,7 @@ G_BEGIN_DECLS
 typedef struct _HudSearch         HudSearch;
 typedef struct _HudSearchClass    HudSearchClass;
 typedef struct _HudSearchPrivate  HudSearchPrivate;
+typedef struct _HudSearchSuggest  HudSearchSuggest;
 
 struct _HudSearchClass {
 	GObjectClass parent_class;
@@ -30,6 +31,11 @@ GType hud_search_get_type (void);
 HudSearch * hud_search_new (void);
 GStrv hud_search_suggestions (HudSearch * search, const gchar * searchstr);
 void hud_search_execute (HudSearch * search, const gchar * searchstr);
+
+const gchar * hud_search_suggest_get_icon (HudSearchSuggest * suggest);
+const gchar * hud_search_suggest_get_display (HudSearchSuggest * suggest);
+const GVariant * hud_search_suggest_get_key (HudSearchSuggest * suggest);
+void hud_search_suggest_free (HudSearchSuggest * suggest);
 
 G_END_DECLS
 
