@@ -204,15 +204,33 @@ get_suggestions (HudDbus * self, const gchar * query)
 	g_variant_builder_init(&ret, G_VARIANT_TYPE_TUPLE);
 	g_variant_builder_add_value(&ret, g_variant_new_string("New Document"));
 
-	GStrv suggestions = hud_search_suggestions(self->priv->search, query);
+	GList * suggestions = hud_search_suggestions(self->priv->search, query);
 
-	if (suggestions != NULL && suggestions[0] != NULL) {
-		g_variant_builder_add_value(&ret, g_variant_new_strv((const gchar * const *)suggestions, -1));
+	if (suggestions != NULL) {
+		GList * suggestion = suggestions;
+		GVariantBuilder builder;
+		g_variant_builder_init(&builder, G_VARIANT_TYPE_ARRAY);
+
+		while (suggestion != NULL) {
+			HudSearchSuggest * suggest = (HudSearchSuggest *)suggestion->data;
+
+			GVariantBuilder tuple;
+			g_variant_builder_init(&tuple, G_VARIANT_TYPE_TUPLE);
+			g_variant_builder_add_value(&tuple, g_variant_new_string(hud_search_suggest_get_display(suggest)));
+			g_variant_builder_add_value(&tuple, g_variant_new_string(hud_search_suggest_get_icon(suggest)));
+			g_variant_builder_add_value(&tuple, hud_search_suggest_get_key(suggest));
+
+			g_variant_builder_add_value(&builder, g_variant_builder_end(&tuple));
+
+			suggestion = g_list_next(suggestion);
+		}
+
+		g_variant_builder_add_value(&ret, g_variant_builder_end(&builder));
 	} else {
-		g_variant_builder_add_value(&ret, g_variant_new_array(G_VARIANT_TYPE_STRING, NULL, 0));
+		g_variant_builder_add_value(&ret, g_variant_new_array(G_VARIANT_TYPE("(ssv)"), NULL, 0));
 	}
 
-	g_strfreev(suggestions);
+	g_list_free_full(suggestions, (GDestroyNotify)hud_search_suggest_free);
 
 	return g_variant_builder_end(&ret);
 }

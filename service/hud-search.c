@@ -31,7 +31,7 @@ static void hud_search_dispose    (GObject *object);
 static void hud_search_finalize   (GObject *object);
 
 static void active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * newview, gpointer user_data);
-
+HudSearchSuggest * hud_search_suggest_new (const gchar * display, const gchar * icon, const gchar * dbus_address, const gchar * dbus_path, gint dbus_id);
 
 G_DEFINE_TYPE (HudSearch, hud_search, G_TYPE_OBJECT);
 
@@ -259,7 +259,7 @@ search_and_sort (HudSearch * search, const gchar * searchstr, GArray * usagedata
 	return;
 }
 
-GStrv
+GList *
 hud_search_suggestions (HudSearch * search, const gchar * searchstr)
 {
 	g_return_val_if_fail(IS_HUD_SEARCH(search), NULL);
@@ -269,13 +269,20 @@ hud_search_suggestions (HudSearch * search, const gchar * searchstr)
 
 	search_and_sort(search, searchstr, usagedata, &found_list);
 
+	GList * retval = NULL;
 	int count;
-	gchar ** retval = g_new0(gchar *, 6);
 	for (count = 0; count < 5 && count < usagedata->len; count++) {
 		usage_wrapper_t * usage = &g_array_index(usagedata, usage_wrapper_t, count);
-		retval[count] = g_strdup(dbusmenu_collector_found_get_display(usage->found));
+
+		HudSearchSuggest * suggest = hud_search_suggest_new(dbusmenu_collector_found_get_display(usage->found),
+		                                                    "none",
+		                                                    dbusmenu_collector_found_get_dbus_addr(usage->found),
+		                                                    dbusmenu_collector_found_get_dbus_path(usage->found),
+		                                                    dbusmenu_collector_found_get_dbus_id(usage->found)
+		                                                    );
+
+		retval = g_list_append(retval, suggest);
 	}
-	retval[count] = NULL;
 
 	g_array_free(usagedata, TRUE);
 	dbusmenu_collector_found_list_free(found_list);
@@ -395,7 +402,7 @@ hud_search_suggest_get_display (HudSearchSuggest * suggest)
 	return suggest->display;
 }
 
-const GVariant *
+GVariant *
 hud_search_suggest_get_key (HudSearchSuggest * suggest)
 {
 	return suggest->key;
