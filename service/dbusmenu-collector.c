@@ -380,6 +380,13 @@ dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_add
 	return items;
 }
 
+void
+dbusmenu_collector_execute (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, gint id, guint timestamp)
+{
+
+	return;
+}
+
 guint
 dbusmenu_collector_found_get_distance (DbusmenuCollectorFound * found)
 {

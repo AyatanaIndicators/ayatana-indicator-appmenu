@@ -294,34 +294,16 @@ void
 hud_search_execute (HudSearch * search, GVariant * key, guint timestamp)
 {
 	g_return_if_fail(IS_HUD_SEARCH(search));
+	gchar * address = NULL;
+	gchar * path = NULL;
+	gint id = 0;
 
-	GArray * usagedata = g_array_sized_new(FALSE, TRUE, sizeof(usage_wrapper_t), 15);
-	GList * found_list = NULL;
+	g_variant_get(key, "(ssi)", &address, &path, &id);
 
-	search_and_sort(search, NULL, usagedata, &found_list);
+	dbusmenu_collector_execute(search->priv->collector, address, path, id, timestamp);
 
-	if (usagedata->len != 0) {
-		usage_wrapper_t * usage = &g_array_index(usagedata, usage_wrapper_t, 0);
-
-		dbusmenu_collector_found_exec(usage->found);
-
-		const gchar * desktopfile = NULL;
-
-		desktopfile = dbusmenu_collector_found_get_indicator(usage->found);
-
-		if (desktopfile == NULL && search->priv->active_app != NULL) {
-			desktopfile = bamf_application_get_desktop_file(search->priv->active_app);
-		}
-
-		if (desktopfile != NULL) {
-			usage_tracker_mark_usage(search->priv->usage, desktopfile, dbusmenu_collector_found_get_display(usage->found));
-		}
-	} else {
-		g_warning("Unable to execute as we couldn't find anything");
-	}
-
-	g_array_free(usagedata, TRUE);
-	dbusmenu_collector_found_list_free(found_list);
+	g_free(address);
+	g_free(path);
 
 	return;
 }

@@ -31,6 +31,7 @@ struct _DbusmenuCollector {
 GType dbusmenu_collector_get_type (void);
 DbusmenuCollector * dbusmenu_collector_new (void);
 GList * dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, const gchar * search);
+void dbusmenu_collector_execute (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, gint id, guint timestamp);
 
 guint dbusmenu_collector_found_get_distance (DbusmenuCollectorFound * found);
 const gchar * dbusmenu_collector_found_get_display (DbusmenuCollectorFound * found);
