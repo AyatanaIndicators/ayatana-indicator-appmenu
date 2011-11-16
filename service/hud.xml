@@ -8,11 +8,11 @@
 		<method name="GetSuggestions">
 			<arg type="s" name="query" direction="in" />
 			<arg type="s" name="target" direction="out" />
-			<arg type="as" name="suggestions" direction="out" />
+			<arg type="a(ssv)" name="suggestions" direction="out" />
 		</method>
 
 		<method name="ExecuteQuery">
-			<arg type="s" name="query" direction="in" />
+			<arg type="v" name="key" direction="in" />
 		</method>
 
 <!-- Signals -->
