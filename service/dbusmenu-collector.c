@@ -458,3 +458,24 @@ dbusmenu_collector_found_get_indicator (DbusmenuCollectorFound * found)
 	g_return_val_if_fail(found != NULL, NULL);
 	return found->indicator;
 }
+
+const gchar *
+dbusmenu_collector_found_get_dbus_addr (DbusmenuCollectorFound * found)
+{
+	g_return_val_if_fail(found != NULL, NULL);
+	return found->dbus_addr;
+}
+
+const gchar *
+dbusmenu_collector_found_get_dbus_path (DbusmenuCollectorFound * found)
+{
+	g_return_val_if_fail(found != NULL, NULL);
+	return found->dbus_path;
+}
+
+gint
+dbusmenu_collector_found_get_dbus_id (DbusmenuCollectorFound * found)
+{
+	g_return_val_if_fail(found != NULL, -1);
+	return found->dbus_id;
+}
