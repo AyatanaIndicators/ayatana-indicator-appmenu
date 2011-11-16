@@ -291,14 +291,14 @@ hud_search_suggestions (HudSearch * search, const gchar * searchstr)
 }
 
 void
-hud_search_execute (HudSearch * search, const gchar * searchstr)
+hud_search_execute (HudSearch * search, GVariant * key, guint timestamp)
 {
 	g_return_if_fail(IS_HUD_SEARCH(search));
 
 	GArray * usagedata = g_array_sized_new(FALSE, TRUE, sizeof(usage_wrapper_t), 15);
 	GList * found_list = NULL;
 
-	search_and_sort(search, searchstr, usagedata, &found_list);
+	search_and_sort(search, NULL, usagedata, &found_list);
 
 	if (usagedata->len != 0) {
 		usage_wrapper_t * usage = &g_array_index(usagedata, usage_wrapper_t, 0);

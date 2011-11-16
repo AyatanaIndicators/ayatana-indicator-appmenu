@@ -34,7 +34,7 @@ static void bus_method          (GDBusConnection *connection,
                                  GDBusMethodInvocation *invocation,
                                  gpointer user_data);
 static GVariant * get_suggestions (HudDbus * self, const gchar * query);
-static void execute_query (HudDbus * self, const gchar * query);
+static void execute_query (HudDbus * self, GVariant * key, guint timestamp);
 
 
 G_DEFINE_TYPE (HudDbus, hud_dbus, G_TYPE_OBJECT);
@@ -183,14 +183,16 @@ bus_method (GDBusConnection *connection, const gchar *sender, const gchar *objec
 		g_dbus_method_invocation_return_value(invocation, ret);
 		g_free(query);
 	} else if (g_strcmp0(method_name, "ExecuteQuery") == 0) {
-		gchar * query = NULL;
+		GVariant * key = NULL;
+		guint timestamp = 0;
 
-		g_variant_get(parameters, "(s)", &query);
+		key = g_variant_get_child_value(parameters, 0);
+		g_variant_get_child(parameters, 1, "u", &timestamp);
 
-		execute_query(self, query);
+		execute_query(self, key, timestamp);
 		
 		g_dbus_method_invocation_return_value(invocation, NULL);
-		g_free(query);
+		g_variant_unref(key);
 	}
 
 	return;
@@ -236,11 +238,8 @@ get_suggestions (HudDbus * self, const gchar * query)
 }
 
 static void
-execute_query (HudDbus * self, const gchar * query)
+execute_query (HudDbus * self, GVariant * key, guint timestamp)
 {
-	g_debug("Execute: %s", query);
-
-	hud_search_execute(self->priv->search, query);
-
+	hud_search_execute(self->priv->search, key, timestamp);
 	return;
 }
