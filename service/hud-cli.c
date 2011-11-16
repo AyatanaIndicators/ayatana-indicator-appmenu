@@ -9,12 +9,13 @@
 
 static void input_cb (GObject * object, GAsyncResult * res, gpointer user_data);
 static void print_suggestions(const gchar * query);
-static void execute_query(const gchar * query);
+static void execute_query();
 static void append_query (gchar ** query, const gchar * append);
 
 static GMainLoop * mainloop = NULL;
 static gchar * query = NULL;
 static GDBusProxy * proxy = NULL;
+static GVariant * last_key = NULL;
 
 int
 main (int argv, char * argc[])
@@ -87,7 +88,7 @@ input_cb (GObject * object, GAsyncResult * res, gpointer user_data)
 
 	if (size == 0 || size == 1) {
 		g_print("Final command, executing\n");
-		execute_query(query);
+		execute_query();
 		g_main_loop_quit(mainloop);
 		return;
 	}
@@ -137,9 +138,20 @@ print_suggestions (const gchar * query)
 	GVariantIter iter;
 	g_variant_iter_init(&iter, suggestions);
 	gchar * suggestion = NULL;
+	gchar * icon = NULL;
+	GVariant * key = NULL;
 
-	while (g_variant_iter_loop(&iter, "s", &suggestion)) {
+	if (last_key != NULL) {
+		g_variant_unref(last_key);
+		last_key = NULL;
+	}
+
+	while (g_variant_iter_loop(&iter, "(ssv)", &suggestion, &icon, &key)) {
 		g_print(" %s\n", suggestion);
+		if (last_key == NULL) {
+			last_key = key;
+			g_variant_ref(last_key);
+		}
 	}
 
 	g_variant_unref(suggestions);
@@ -148,12 +160,23 @@ print_suggestions (const gchar * query)
 }
 
 static void
-execute_query (const gchar * query)
+execute_query (void)
 {
 	GError * error = NULL;
+
+	if (last_key == NULL) {
+		g_warning("Unable to execute without previous suggestion");
+		return;
+	}
+
+	GVariantBuilder tuple;
+	g_variant_builder_init(&tuple, G_VARIANT_TYPE_TUPLE);
+	g_variant_builder_add_value(&tuple, g_variant_new_variant(last_key));
+	g_variant_builder_add_value(&tuple, g_variant_new_uint32(0));
+
 	g_dbus_proxy_call_sync(proxy,
 	                       "ExecuteQuery",
-	                       g_variant_new("(s)", query),
+	                       g_variant_builder_end(&tuple),
 	                       G_DBUS_CALL_FLAGS_NONE,
 	                       -1,
 	                       NULL,

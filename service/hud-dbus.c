@@ -34,7 +34,7 @@ static void bus_method          (GDBusConnection *connection,
                                  GDBusMethodInvocation *invocation,
                                  gpointer user_data);
 static GVariant * get_suggestions (HudDbus * self, const gchar * query);
-static void execute_query (HudDbus * self, const gchar * query);
+static void execute_query (HudDbus * self, GVariant * key, guint timestamp);
 
 
 G_DEFINE_TYPE (HudDbus, hud_dbus, G_TYPE_OBJECT);
@@ -183,14 +183,16 @@ bus_method (GDBusConnection *connection, const gchar *sender, const gchar *objec
 		g_dbus_method_invocation_return_value(invocation, ret);
 		g_free(query);
 	} else if (g_strcmp0(method_name, "ExecuteQuery") == 0) {
-		gchar * query = NULL;
+		GVariant * key = NULL;
+		guint timestamp = 0;
 
-		g_variant_get(parameters, "(s)", &query);
+		key = g_variant_get_child_value(parameters, 0);
+		g_variant_get_child(parameters, 1, "u", &timestamp);
 
-		execute_query(self, query);
+		execute_query(self, key, timestamp);
 		
 		g_dbus_method_invocation_return_value(invocation, NULL);
-		g_free(query);
+		g_variant_unref(key);
 	}
 
 	return;
@@ -204,25 +206,40 @@ get_suggestions (HudDbus * self, const gchar * query)
 	g_variant_builder_init(&ret, G_VARIANT_TYPE_TUPLE);
 	g_variant_builder_add_value(&ret, g_variant_new_string("New Document"));
 
-	GStrv suggestions = hud_search_suggestions(self->priv->search, query);
+	GList * suggestions = hud_search_suggestions(self->priv->search, query);
 
-	if (suggestions != NULL && suggestions[0] != NULL) {
-		g_variant_builder_add_value(&ret, g_variant_new_strv((const gchar * const *)suggestions, -1));
+	if (suggestions != NULL) {
+		GList * suggestion = suggestions;
+		GVariantBuilder builder;
+		g_variant_builder_init(&builder, G_VARIANT_TYPE_ARRAY);
+
+		while (suggestion != NULL) {
+			HudSearchSuggest * suggest = (HudSearchSuggest *)suggestion->data;
+
+			GVariantBuilder tuple;
+			g_variant_builder_init(&tuple, G_VARIANT_TYPE_TUPLE);
+			g_variant_builder_add_value(&tuple, g_variant_new_string(hud_search_suggest_get_display(suggest)));
+			g_variant_builder_add_value(&tuple, g_variant_new_string(hud_search_suggest_get_icon(suggest)));
+			g_variant_builder_add_value(&tuple, hud_search_suggest_get_key(suggest));
+
+			g_variant_builder_add_value(&builder, g_variant_builder_end(&tuple));
+
+			suggestion = g_list_next(suggestion);
+		}
+
+		g_variant_builder_add_value(&ret, g_variant_builder_end(&builder));
 	} else {
-		g_variant_builder_add_value(&ret, g_variant_new_array(G_VARIANT_TYPE_STRING, NULL, 0));
+		g_variant_builder_add_value(&ret, g_variant_new_array(G_VARIANT_TYPE("(ssv)"), NULL, 0));
 	}
 
-	g_strfreev(suggestions);
+	g_list_free_full(suggestions, (GDestroyNotify)hud_search_suggest_free);
 
 	return g_variant_builder_end(&ret);
 }
 
 static void
-execute_query (HudDbus * self, const gchar * query)
+execute_query (HudDbus * self, GVariant * key, guint timestamp)
 {
-	g_debug("Execute: %s", query);
-
-	hud_search_execute(self->priv->search, query);
-
+	hud_search_execute(self->priv->search, key, timestamp);
 	return;
 }
