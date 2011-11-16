@@ -146,7 +146,7 @@ print_suggestions (const gchar * query)
 		last_key = NULL;
 	}
 
-	while (g_variant_iter_loop(&iter, "ssv", &suggestion, &icon, &key)) {
+	while (g_variant_iter_loop(&iter, "(ssv)", &suggestion, &icon, &key)) {
 		g_print(" %s\n", suggestion);
 		if (last_key == NULL) {
 			last_key = key;
