@@ -15,6 +15,7 @@ static void append_query (gchar ** query, const gchar * append);
 static GMainLoop * mainloop = NULL;
 static gchar * query = NULL;
 static GDBusProxy * proxy = NULL;
+static GVariant * last_key = NULL;
 
 int
 main (int argv, char * argc[])
@@ -137,9 +138,20 @@ print_suggestions (const gchar * query)
 	GVariantIter iter;
 	g_variant_iter_init(&iter, suggestions);
 	gchar * suggestion = NULL;
+	gchar * icon = NULL;
+	GVariant * key = NULL;
 
-	while (g_variant_iter_loop(&iter, "s", &suggestion)) {
+	if (last_key != NULL) {
+		g_variant_unref(last_key);
+		last_key = NULL;
+	}
+
+	while (g_variant_iter_loop(&iter, "ssv", &suggestion, &icon, &key)) {
 		g_print(" %s\n", suggestion);
+		if (last_key == NULL) {
+			last_key = key;
+			g_variant_ref(last_key);
+		}
 	}
 
 	g_variant_unref(suggestions);
