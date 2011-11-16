@@ -171,7 +171,7 @@ execute_query (void)
 
 	GVariantBuilder tuple;
 	g_variant_builder_init(&tuple, G_VARIANT_TYPE_TUPLE);
-	g_variant_builder_add_value(&tuple, last_key);
+	g_variant_builder_add_value(&tuple, g_variant_new_variant(last_key));
 	g_variant_builder_add_value(&tuple, g_variant_new_uint32(0));
 
 	g_dbus_proxy_call_sync(proxy,

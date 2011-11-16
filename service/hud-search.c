@@ -297,13 +297,15 @@ hud_search_execute (HudSearch * search, GVariant * key, guint timestamp)
 	gchar * address = NULL;
 	gchar * path = NULL;
 	gint id = 0;
+	GVariant * unwrapped_key = g_variant_get_variant(key);
 
-	g_variant_get(key, "(ssi)", &address, &path, &id);
+	g_variant_get(unwrapped_key, "(soi)", &address, &path, &id);
 
 	dbusmenu_collector_execute(search->priv->collector, address, path, id, timestamp);
 
 	g_free(address);
 	g_free(path);
+	g_variant_unref(unwrapped_key);
 
 	return;
 }
