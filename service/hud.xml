@@ -13,6 +13,7 @@
 
 		<method name="ExecuteQuery">
 			<arg type="v" name="key" direction="in" />
+			<arg type="u" name="timestamp" direction="in" />
 		</method>
 
 <!-- Signals -->
