@@ -9,7 +9,7 @@
 
 static void input_cb (GObject * object, GAsyncResult * res, gpointer user_data);
 static void print_suggestions(const gchar * query);
-static void execute_query(const gchar * query);
+static void execute_query();
 static void append_query (gchar ** query, const gchar * append);
 
 static GMainLoop * mainloop = NULL;
@@ -88,7 +88,7 @@ input_cb (GObject * object, GAsyncResult * res, gpointer user_data)
 
 	if (size == 0 || size == 1) {
 		g_print("Final command, executing\n");
-		execute_query(query);
+		execute_query();
 		g_main_loop_quit(mainloop);
 		return;
 	}
@@ -160,12 +160,21 @@ print_suggestions (const gchar * query)
 }
 
 static void
-execute_query (const gchar * query)
+execute_query (void)
 {
 	GError * error = NULL;
+	GVariant * tuple = NULL;
+
+	if (last_key != NULL) {
+		tuple = g_variant_new_tuple(&last_key, 1);
+	} else {
+		g_warning("No previous suggestion to execute");
+		return;
+	}
+
 	g_dbus_proxy_call_sync(proxy,
 	                       "ExecuteQuery",
-	                       g_variant_new("(s)", query),
+	                       tuple,
 	                       G_DBUS_CALL_FLAGS_NONE,
 	                       -1,
 	                       NULL,
