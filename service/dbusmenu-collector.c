@@ -4,6 +4,7 @@
 
 #include <gio/gio.h>
 #include <glib.h>
+#include <glib/gi18n.h>
 
 #include <libdbusmenu-glib/client.h>
 
@@ -260,7 +261,12 @@ tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GList * r
 			!dbusmenu_menuitem_property_exist(rootitem, DBUSMENU_MENUITEM_PROP_TYPE)) {
 		gchar * nounderline = remove_underline(dbusmenu_menuitem_property_get(rootitem, DBUSMENU_MENUITEM_PROP_LABEL));
 		if (label_prefix != NULL && label_prefix[0] != '\0') {
-			newstr = g_strdup_printf("%s > %s", label_prefix, nounderline);
+			/* TRANSLATORS: This string is a printf format string to build
+			   a string representing menu hierarchy in an application.  The
+			   strings are <top> <separator> <bottom>.  So if the separator
+			   is ">" and the item is "Open" in the "File" menu the final
+			   string would be "File > Open" */
+			newstr = g_strdup_printf(_("%s > %s"), label_prefix, nounderline);
 			g_free(nounderline);
 		} else {
 			newstr = nounderline;
