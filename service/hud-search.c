@@ -224,10 +224,7 @@ search_and_sort (HudSearch * search, const gchar * searchstr, GArray * usagedata
 	GList * found = NULL;
 
 	get_current_window_address(search, &address, &path);
-
-	if (address != NULL && path != NULL) {
-		found_list = dbusmenu_collector_search(search->priv->collector, address, path, searchstr);
-	}
+	found_list = dbusmenu_collector_search(search->priv->collector, address, path, searchstr);
 
 	g_free(address);
 	g_free(path);

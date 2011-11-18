@@ -379,7 +379,11 @@ dbusmenu_collector_found_sort (gconstpointer a, gconstpointer b)
 GList *
 dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, const gchar * search)
 {
-	GList * items = just_do_it(collector, dbus_addr, dbus_path, search, NULL, NULL, "");
+	GList * items = NULL;
+
+	if (dbus_addr != NULL && dbus_path != NULL) {
+		items = just_do_it(collector, dbus_addr, dbus_path, search, NULL, NULL, "");
+	}
 
 	/* This is where we'll do the indicators if we're not
 	   looking at the null search.  In that case we'll let
