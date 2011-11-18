@@ -342,7 +342,11 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 	BamfWindow * window = BAMF_WINDOW(newview);
 
 	BamfApplication * app = bamf_matcher_get_application_for_window(self->priv->matcher, window);
-	const gchar * desktop = bamf_application_get_desktop_file(app);
+	const gchar * desktop = NULL;
+
+	if (app != NULL) {
+		desktop = bamf_application_get_desktop_file(app);
+	}
 
 	/* If BAMF can't match it to an application we probably don't
 	   want to be involved with it anyway. */
