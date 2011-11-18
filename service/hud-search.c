@@ -238,6 +238,10 @@ search_and_sort (HudSearch * search, const gchar * searchstr, GArray * usagedata
 		usage.found = (DbusmenuCollectorFound *)found->data;
 		usage.count = 0;
 
+		if (dbusmenu_collector_found_get_distance(usage.found) > 30) {
+			break;
+		}
+
 		const gchar * desktopfile = NULL;
 
 		desktopfile = dbusmenu_collector_found_get_indicator(usage.found);
