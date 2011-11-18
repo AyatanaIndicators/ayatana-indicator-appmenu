@@ -1,6 +1,28 @@
+/*
+Functions to calculate the distance between two strings.
+
+Copyright 2011 Canonical Ltd.
+
+Authors:
+    Ted Gould <ted@canonical.com>
+
+This program is free software: you can redistribute it and/or modify it 
+under the terms of the GNU General Public License version 3, as published 
+by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful, but 
+WITHOUT ANY WARRANTY; without even the implied warranties of 
+MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR 
+PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along 
+with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #include <glib.h>
 #include <glib/gprintf.h>
 #include <glib-object.h>
+#include <glib/gi18n.h>
 
 #include "distance.h"
 
@@ -12,11 +34,17 @@
 #define DELETE_PENALTY 10
 #define SWAP_PENALTY 10
 
-gchar ignore[] = " _->";
-
 static gboolean
 ignore_character (gchar inchar)
 {
+	static gchar * ignore = NULL;
+	if (ignore == NULL) {
+		/* TRANSLATORS: These are chacaters that should not be considered
+		   mistakes in the comparison functions.  Typically they are gramatical
+		   characters that can be found in menus. */
+		ignore = _(" _->");
+	}
+
 	int i;
 	for (i = 0; i < 4; i++) {
 		if (ignore[i] == inchar) {

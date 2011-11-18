@@ -1,9 +1,32 @@
+/*
+An object to collect the various DBusmenu objects that exist
+on dbus.
+
+Copyright 2011 Canonical Ltd.
+
+Authors:
+    Ted Gould <ted@canonical.com>
+
+This program is free software: you can redistribute it and/or modify it 
+under the terms of the GNU General Public License version 3, as published 
+by the Free Software Foundation.
+
+This program is distributed in the hope that it will be useful, but 
+WITHOUT ANY WARRANTY; without even the implied warranties of 
+MERCHANTABILITY, SATISFACTORY QUALITY, or FITNESS FOR A PARTICULAR 
+PURPOSE.  See the GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License along 
+with this program.  If not, see <http://www.gnu.org/licenses/>.
+*/
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
 
 #include <gio/gio.h>
 #include <glib.h>
+#include <glib/gi18n.h>
 
 #include <libdbusmenu-glib/client.h>
 
@@ -260,7 +283,12 @@ tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GList * r
 			!dbusmenu_menuitem_property_exist(rootitem, DBUSMENU_MENUITEM_PROP_TYPE)) {
 		gchar * nounderline = remove_underline(dbusmenu_menuitem_property_get(rootitem, DBUSMENU_MENUITEM_PROP_LABEL));
 		if (label_prefix != NULL && label_prefix[0] != '\0') {
-			newstr = g_strdup_printf("%s > %s", label_prefix, nounderline);
+			/* TRANSLATORS: This string is a printf format string to build
+			   a string representing menu hierarchy in an application.  The
+			   strings are <top> <separator> <bottom>.  So if the separator
+			   is ">" and the item is "Open" in the "File" menu the final
+			   string would be "File > Open" */
+			newstr = g_strdup_printf(_("%s > %s"), label_prefix, nounderline);
 			g_free(nounderline);
 		} else {
 			newstr = nounderline;
