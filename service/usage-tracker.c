@@ -44,6 +44,7 @@ static void usage_tracker_dispose    (GObject *object);
 static void usage_tracker_finalize   (GObject *object);
 static void build_db                 (UsageTracker * self);
 static gboolean drop_entries         (gpointer user_data);
+static void check_app_init (UsageTracker * self, const gchar * application);
 
 G_DEFINE_TYPE (UsageTracker, usage_tracker, G_TYPE_OBJECT);
 
@@ -164,6 +165,7 @@ void
 usage_tracker_mark_usage (UsageTracker * self, const gchar * application, const gchar * entry)
 {
 	g_return_if_fail(IS_USAGE_TRACKER(self));
+	check_app_init(self, application);
 
 	gchar * statement = g_strdup_printf("insert into usage (application, entry, timestamp) values ('%s', '%s', date('now'));", application, entry);
 	// g_debug("Executing: %s", statement);
@@ -197,8 +199,7 @@ guint
 usage_tracker_get_usage (UsageTracker * self, const gchar * application, const gchar * entry)
 {
 	g_return_val_if_fail(IS_USAGE_TRACKER(self), 0);
-
-	// TODO: Check if application has entries, if not, import defaults
+	check_app_init(self, application);
 
 	gchar * statement = g_strdup_printf("select count(*) from usage where application = '%s' and entry = '%s' and timestamp > date('now', 'utc', '-30 days');", application, entry); // TODO: Add timestamp
 	// g_debug("Executing: %s", statement);
@@ -236,4 +237,13 @@ drop_entries (gpointer user_data)
 	}
 
 	return TRUE;
+}
+
+static void
+check_app_init (UsageTracker * self, const gchar * application)
+{
+
+
+
+	return;
 }
