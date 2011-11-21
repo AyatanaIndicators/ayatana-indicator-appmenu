@@ -17,6 +17,8 @@ hud_service_SOURCES = \
 	dbusmenu-collector.c \
 	distance.h \
 	distance.c \
+	dump-app-info.h \
+	dump-app-info.c \
 	shared-values.h \
 	hud-service.c \
 	hud-dbus.h \
