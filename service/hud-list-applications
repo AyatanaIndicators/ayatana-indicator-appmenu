@@ -1,0 +1,3 @@
+#!/bin/sh
+
+sqlite3 ~/.cache/hud/usage-log.sqlite "select distinct application from usage"

@@ -9,6 +9,9 @@ libexec_PROGRAMS = \
 	hud-dump-application \
 	hud-service
 
+libexec_SCRIPTS = \
+	hud-list-applications
+
 ####################
 # HUD Service
 ####################
