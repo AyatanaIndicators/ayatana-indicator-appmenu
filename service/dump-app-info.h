@@ -25,6 +25,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <glib.h>
 #include <sqlite3.h>
 
-void dump_app_info (const gchar * app, sqlite3 * db);
+void dump_app_info (const gchar * app, const gchar * domain, sqlite3 * db);
 
 #endif /* __DUMP_APP_INFO_H__ */

@@ -25,8 +25,8 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 int
 main (int argv, char * argc[])
 {
-	if (argv != 2) {
-		g_error("Usage: %s <desktop file path>\n", argc[0]);
+	if (argv != 2 && argv != 3) {
+		g_error("Usage: %s <desktop file path> [gettext domain]\n", argc[0]);
 		return 1;
 	}
 
@@ -59,7 +59,12 @@ main (int argv, char * argc[])
 		return 1;
 	}
 
-	dump_app_info(argc[1], db);
+	gchar * domain = NULL;
+	if (argv == 3) {
+		domain = argc[2];
+	}
+
+	dump_app_info(argc[1], domain, db);
 
 	sqlite3_close(db);
 	g_free(cachefile);
