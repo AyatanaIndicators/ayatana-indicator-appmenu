@@ -242,7 +242,25 @@ drop_entries (gpointer user_data)
 static void
 check_app_init (UsageTracker * self, const gchar * application)
 {
+	gchar * statement = g_strdup_printf("select count(*) from usage where application = '%s';", application);
 
+	int exec_status = SQLITE_OK;
+	gchar * failstring = NULL;
+	guint count = 0;
+	exec_status = sqlite3_exec(self->priv->db,
+	                           statement,
+	                           count_cb, &count, &failstring);
+	if (exec_status != SQLITE_OK) {
+		g_warning("Unable to insert into table: %s", failstring);
+	}
+
+	g_free(statement);
+
+	if (count > 0) {
+		return;
+	}
+
+	g_debug("Initializing application: %s", application);
 
 
 	return;
