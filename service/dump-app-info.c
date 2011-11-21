@@ -21,10 +21,82 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "dump-app-info.h"
 
+typedef enum _tree_type_t tree_type_t;
+enum _tree_type_t {
+	MENU_TYPE,
+	ITEM_TYPE
+};
+
+typedef struct _menu_t menu_t;
+struct _menu_t {
+	tree_type_t tree_type;
+	gchar * name;
+	int count;
+	GList * subitems;
+};
+
+GList *
+place_on_tree (GList * tree_in, gchar ** entries)
+{
+	menu_t * menu;
+
+	if (entries[0] == NULL) {
+		return tree_in;
+	}
+
+	GList * entry = tree_in;
+	while (entry != NULL) {
+		menu = (menu_t *)entry->data;
+
+		if (g_strcmp0(menu->name, entries[0]) == 0) {
+			break;
+		}
+
+		entry = g_list_next(entry);
+	}
+
+	if (entry != NULL) {
+		if (menu->tree_type == ITEM_TYPE) {
+			if (entries[1] != NULL) {
+				g_warning("Error parsing on entry '%s'", entries[0]);
+			} else {
+				menu->count++;
+			}
+		} else {
+			menu->subitems = place_on_tree(menu->subitems, &entries[1]);
+		}
+
+		return tree_in;
+	}
+
+	menu = g_new0(menu_t, 1);
+	menu->name = g_strdup(entries[0]);
+
+	if (entries[1] == NULL) {
+		/* This is an item */
+		menu->tree_type = ITEM_TYPE;
+		menu->count = 1;
+		menu->subitems = NULL;
+	} else {
+		/* This is a menu */
+		menu->tree_type = MENU_TYPE;
+		menu->subitems = place_on_tree(NULL, &entries[1]);
+	}
+
+	return g_list_append(tree_in, menu);
+}
+
 static int
 entry_cb (void * user_data, int columns, char ** values, char ** names)
 {
 	g_print("Entry: %s", values[0]);
+	GList ** tree = (GList **)user_data;
+
+	gchar ** entries = g_strsplit(values[0], " > ", -1); // TODO: Get from: _("%s > %s")
+
+	*tree = place_on_tree(*tree, entries);
+
+	g_strfreev(entries);
 
 	return SQLITE_OK;
 }
