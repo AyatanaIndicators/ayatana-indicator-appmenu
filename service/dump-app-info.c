@@ -89,7 +89,6 @@ place_on_tree (GList * tree_in, gchar ** entries)
 static int
 entry_cb (void * user_data, int columns, char ** values, char ** names)
 {
-	g_print("Entry: %s", values[0]);
 	GList ** tree = (GList **)user_data;
 
 	gchar ** entries = g_strsplit(values[0], " > ", -1); // TODO: Get from: _("%s > %s")
@@ -104,7 +103,33 @@ entry_cb (void * user_data, int columns, char ** values, char ** names)
 void
 print_tree (GList * tree, guint tab_depth)
 {
+	if (tree == NULL) {
+		return;
+	}
 
+	int i;
+	for (i = 0; i < tab_depth; i++) {
+		g_print("\t");
+	}
+
+	menu_t * menu = (menu_t *)tree->data;
+
+	if (menu->tree_type == ITEM_TYPE) {
+		g_print("<item name=\"%s\" count=\"%d\" />\n", menu->name, menu->count);
+	} else {
+		g_print("<menu name=\"%s\">\n", menu->name);
+
+		GList * subs = menu->subitems;
+		while (subs != NULL) {
+			print_tree(subs, tab_depth + 1);
+			subs = g_list_next(subs);
+		}
+
+		for (i = 0; i < tab_depth; i++) {
+			g_print("\t");
+		}
+		g_print("</menu>\n");
+	}
 
 	return;
 }
@@ -139,7 +164,7 @@ dump_app_info (const gchar * app, const gchar * domain, sqlite3 * db)
 
 	if (tree != NULL) {
 		g_print("\t<menus>\n");
-		print_tree(tree, 1);
+		print_tree(tree, 2);
 		g_print("\t</menus>\n");
 	}
 
