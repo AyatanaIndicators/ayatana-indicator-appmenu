@@ -6,6 +6,7 @@ EXTRA_DIST =
 
 libexec_PROGRAMS = \
 	hud-cli \
+	hud-dump-application \
 	hud-service
 
 ####################
@@ -52,6 +53,21 @@ hud_cli_CFLAGS = \
 	$(HUD_CFLAGS) \
 	-Wall -Werror
 hud_cli_LDFLAGS = \
+	$(HUD_LIBS)
+
+####################
+# HUD CLI
+####################
+
+hud_dump_application_SOURCES = \
+	dump-app-info.h \
+	dump-app-info.c \
+	hud-dump-application.c
+
+hud_dump_application_CFLAGS = \
+	$(HUD_CFLAGS) \
+	-Wall -Werror
+hud_dump_application_LDFLAGS = \
 	$(HUD_LIBS)
 
 ####################

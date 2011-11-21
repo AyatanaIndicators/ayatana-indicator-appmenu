@@ -35,3 +35,4 @@ tests/test-distance
 tests/test-distance-test
 tests/test-distance.xml
 po/hud.pot
+hud-dump-application
