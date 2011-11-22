@@ -33,6 +33,8 @@ hud_service_SOURCES = \
 	hud.interface.c \
 	indicator-tracker.h \
 	indicator-tracker.c \
+	load-app-info.h \
+	load-app-info.c \
 	usage-tracker.h \
 	usage-tracker.c
 
