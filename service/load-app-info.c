@@ -22,8 +22,11 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "load-app-info.h"
 #include <gio/gio.h>
 
+
+static void new_element (GMarkupParseContext *context, const gchar * name, const gchar ** attribute_names, const gchar ** attribute_values, gpointer user_data, GError **error);
+
 static GMarkupParser app_info_parser = {
-	start_element:  NULL,
+	start_element:  new_element,
 	end_element:    NULL,
 	text:           NULL,
 	passthrough:    NULL,
@@ -35,6 +38,13 @@ struct _menu_data_t {
 	sqlite3 * db;
 	gchar * desktopfile;
 	gchar * domain;
+	gboolean seen_header;
+};
+
+typedef enum _menu_errors_t menu_errors_t;
+enum _menu_errors_t {
+	DUPLICATE_HEADERS,
+	ERROR_LAST
 };
 
 gboolean
@@ -77,6 +87,7 @@ load_app_info (const gchar * filename, sqlite3 * db)
 	/* parse it */
 	menu_data_t menu_data = {
 		db: db,
+		seen_header: FALSE,
 		desktopfile: NULL,
 		domain: NULL
 	};
@@ -108,4 +119,36 @@ load_app_info (const gchar * filename, sqlite3 * db)
 	g_object_unref(file);
 
 	return parsed;
+}
+
+static GQuark
+error_domain (void)
+{
+	static GQuark domain = 0;
+	if (domain == 0) {
+		domain = g_quark_from_static_string("hud-app-info-parser");
+	}
+	return domain;
+}
+
+static void
+new_element (GMarkupParseContext *context, const gchar * name, const gchar ** attribute_names, const gchar ** attribute_values, gpointer user_data, GError **error)
+{
+	menu_data_t * menu_data = (menu_data_t *)user_data;
+
+	if (g_strcmp0(name, "hudappinfo") == 0) {
+		if (menu_data->seen_header) {
+			*error = g_error_new(error_domain(), DUPLICATE_HEADERS, "Recieved second header");
+		}
+
+		menu_data->seen_header = TRUE;
+		return;
+	}
+
+	if (!menu_data->seen_header) {
+
+	}
+
+
+	return;
 }
