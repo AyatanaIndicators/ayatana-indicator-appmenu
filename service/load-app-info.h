@@ -25,6 +25,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <glib.h>
 #include <sqlite3.h>
 
-gboolean load_app_info (const gchar * filename, const gchar * domain, sqlite3 * db);
+gboolean load_app_info (const gchar * filename, sqlite3 * db);
 
 #endif /* __LOAD_APP_INFO_H__ */

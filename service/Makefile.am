@@ -40,6 +40,7 @@ hud_service_SOURCES = \
 
 hud_service_CFLAGS = \
 	$(HUD_CFLAGS) \
+	-DDATADIR=\""$(datadir)"\" \
 	-Wall -Werror
 hud_service_LDFLAGS = \
 	$(HUD_LIBS)

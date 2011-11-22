@@ -22,7 +22,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "load-app-info.h"
 
 gboolean
-load_app_info (const gchar * filename, const gchar * domain, sqlite3 * db)
+load_app_info (const gchar * filename, sqlite3 * db)
 {
 
 
