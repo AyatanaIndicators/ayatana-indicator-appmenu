@@ -44,6 +44,8 @@ struct _menu_data_t {
 typedef enum _menu_errors_t menu_errors_t;
 enum _menu_errors_t {
 	DUPLICATE_HEADERS,
+	DUPLICATE_DESKTOPFILE,
+	MISSING_HEADER,
 	ERROR_LAST
 };
 
@@ -131,6 +133,15 @@ error_domain (void)
 	return domain;
 }
 
+#define COLLECT(first, ...) \
+  g_markup_collect_attributes (name,                                         \
+                               attribute_names, attribute_values, error,     \
+                               first, __VA_ARGS__, G_MARKUP_COLLECT_INVALID)
+#define OPTIONAL   G_MARKUP_COLLECT_OPTIONAL
+#define STRDUP     G_MARKUP_COLLECT_STRDUP
+#define STRING     G_MARKUP_COLLECT_STRING
+#define NO_ATTRS() COLLECT (G_MARKUP_COLLECT_INVALID, NULL)
+
 static void
 new_element (GMarkupParseContext *context, const gchar * name, const gchar ** attribute_names, const gchar ** attribute_values, gpointer user_data, GError **error)
 {
@@ -146,9 +157,25 @@ new_element (GMarkupParseContext *context, const gchar * name, const gchar ** at
 	}
 
 	if (!menu_data->seen_header) {
-
+		*error = g_error_new(error_domain(), MISSING_HEADER, "Missing the header when we got to element '%s'", name);
+		return;
 	}
 
+	if (g_strcmp0(name, "desktopfile") == 0) {
+		const gchar * desktopfile;
+
+		if (!COLLECT(STRING, "path", &desktopfile)) {
+			return;
+		}
+
+		if (menu_data->desktopfile != NULL) {
+			*error = g_error_new(error_domain(), DUPLICATE_DESKTOPFILE, "Two desktop file definitions.  First as '%s' then as '%s'.", menu_data->desktopfile, desktopfile);
+			return;
+		}
+
+		menu_data->desktopfile = g_strdup(desktopfile);
+		return;
+	}
 
 	return;
 }
