@@ -1,8 +1,11 @@
 
-SUBDIRS = \
-	src \
+SUBDIRS = src
+
+if BUILD_TESTS
+SUBDIRS += \
 	scripts \
 	tools
+endif
 
 DISTCHECK_CONFIGURE_FLAGS = --enable-localinstall --enable-deprecations
 
