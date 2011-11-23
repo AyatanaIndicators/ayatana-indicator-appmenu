@@ -142,7 +142,7 @@ dump_app_info (const gchar * app, const gchar * domain, sqlite3 * db)
 
 	g_print("<hudappinfo>\n");
 
-	g_print("\t<desktopfile>%s</desktopfile>\n", app);
+	g_print("\t<desktopfile path=\"%s\" />\n", app);
 
 	if (domain != NULL) {
 		g_print("\t<gettext-domain>%s</gettext-domain>\n", domain);
