@@ -41,6 +41,7 @@ struct _menu_data_t {
 	gchar * domain;
 	gboolean seen_header;
 	GQueue queue;
+	GString * statement;
 };
 
 typedef enum _menu_errors_t menu_errors_t;
@@ -95,8 +96,11 @@ load_app_info (const gchar * filename, sqlite3 * db)
 		seen_header: FALSE,
 		desktopfile: NULL,
 		domain: NULL,
-		queue: G_QUEUE_INIT
+		queue: G_QUEUE_INIT,
+		statement: NULL
 	};
+
+	menu_data.statement = g_string_new("");
 
 	GMarkupParseContext * context = g_markup_parse_context_new(&app_info_parser,
 	                                                           0, /* flags */
@@ -119,6 +123,8 @@ load_app_info (const gchar * filename, sqlite3 * db)
 
 	g_free(menu_data.desktopfile);
 	g_free(menu_data.domain);
+	g_debug("SQL: %s", menu_data.statement->str);
+	g_string_free(menu_data.statement, TRUE);
 
 	/* Free data */
 	g_free(data);
@@ -207,16 +213,25 @@ new_element (GMarkupParseContext *context, const gchar * name, const gchar ** at
 
 	if (g_strcmp0(name, "item") == 0) {
 		const gchar * iname;
-		const gchar * count;
+		const gchar * scount;
 
 		if (!COLLECT(STRING, "name", &iname,
-		             STRING, "count", &count)) {
+		             STRING, "count", &scount)) {
 			return;
 		}
 
 		gchar * finalitem = g_strdup_printf(_("%s > %s"), (gchar *)g_queue_peek_head(&menu_data->queue), iname);
+		gint64 count = g_ascii_strtoll(scount, NULL, 10);
 
-		g_debug("Adding '%s' %s times", finalitem, count);
+		g_debug("Adding '%s' %s times", finalitem, scount);
+		int i;
+		for (i = 0; i < count; i++) {
+			if (i == 0) {
+				g_string_append_printf(menu_data->statement, "insert into usage (application, entry, timestamp) values ('%s', '%s', date('now', 'utc'));", menu_data->desktopfile, finalitem);
+			} else {
+				g_string_append_printf(menu_data->statement, "insert into usage (application, entry, timestamp) values ('%s', '%s', date('now', 'utc', '-%d days'));", menu_data->desktopfile, finalitem, i);
+			}
+		}
 
 		g_free(finalitem);
 		return;
