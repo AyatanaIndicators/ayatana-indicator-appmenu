@@ -150,7 +150,7 @@ new_element (GMarkupParseContext *context, const gchar * name, const gchar ** at
 
 	if (g_strcmp0(name, "hudappinfo") == 0) {
 		if (menu_data->seen_header) {
-			*error = g_error_new(error_domain(), DUPLICATE_HEADERS, "Recieved second header");
+			g_set_error(error, error_domain(), DUPLICATE_HEADERS, "Recieved second header");
 		}
 
 		menu_data->seen_header = TRUE;
@@ -158,7 +158,7 @@ new_element (GMarkupParseContext *context, const gchar * name, const gchar ** at
 	}
 
 	if (!menu_data->seen_header) {
-		*error = g_error_new(error_domain(), MISSING_HEADER, "Missing the header when we got to element '%s'", name);
+		g_set_error(error, error_domain(), MISSING_HEADER, "Missing the header when we got to element '%s'", name);
 		return;
 	}
 
@@ -170,7 +170,7 @@ new_element (GMarkupParseContext *context, const gchar * name, const gchar ** at
 		}
 
 		if (menu_data->desktopfile != NULL) {
-			*error = g_error_new(error_domain(), DUPLICATE_DESKTOPFILE, "Two desktop file definitions.  First as '%s' then as '%s'.", menu_data->desktopfile, desktopfile);
+			g_set_error(error, error_domain(), DUPLICATE_DESKTOPFILE, "Two desktop file definitions.  First as '%s' then as '%s'.", menu_data->desktopfile, desktopfile);
 			return;
 		}
 
