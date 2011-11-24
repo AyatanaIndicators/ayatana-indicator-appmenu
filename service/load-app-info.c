@@ -46,6 +46,7 @@ enum _menu_errors_t {
 	DUPLICATE_HEADERS,
 	DUPLICATE_DESKTOPFILE,
 	MISSING_HEADER,
+	MISSING_DESKTOP,
 	ERROR_LAST
 };
 
@@ -174,6 +175,14 @@ new_element (GMarkupParseContext *context, const gchar * name, const gchar ** at
 		}
 
 		menu_data->desktopfile = g_strdup(desktopfile);
+		return;
+	}
+
+	if (g_strcmp0(name, "menus") == 0) {
+		if (menu_data->desktopfile == NULL) {
+			g_set_error(error, error_domain(), MISSING_DESKTOP, "No desktop file is defined");
+		}
+
 		return;
 	}
 
