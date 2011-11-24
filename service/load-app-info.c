@@ -21,13 +21,14 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "load-app-info.h"
 #include <gio/gio.h>
-
+#include <glib/gi18n.h>
 
 static void new_element (GMarkupParseContext *context, const gchar * name, const gchar ** attribute_names, const gchar ** attribute_values, gpointer user_data, GError **error);
+static void end_element (GMarkupParseContext  *context, const gchar * name, gpointer user_data, GError ** error);
 
 static GMarkupParser app_info_parser = {
 	start_element:  new_element,
-	end_element:    NULL,
+	end_element:    end_element,
 	text:           NULL,
 	passthrough:    NULL,
 	error:          NULL
@@ -183,6 +184,57 @@ new_element (GMarkupParseContext *context, const gchar * name, const gchar ** at
 	if (g_strcmp0(name, "menus") == 0) {
 		if (menu_data->desktopfile == NULL) {
 			g_set_error(error, error_domain(), MISSING_DESKTOP, "No desktop file is defined");
+		}
+
+		return;
+	}
+
+	if (g_strcmp0(name, "menu") == 0) {
+		const gchar * mname;
+
+		if (!COLLECT(STRING, "name", &mname)) {
+			return;
+		}
+
+		if (g_queue_is_empty(&menu_data->queue)) {
+			g_queue_push_head(&menu_data->queue, g_strdup(mname));
+		} else {
+			g_queue_push_head(&menu_data->queue, g_strdup_printf(_("%s > %s"), (gchar *)g_queue_peek_head(&menu_data->queue), mname));
+		}
+
+		return;
+	}
+
+	if (g_strcmp0(name, "item") == 0) {
+		const gchar * iname;
+		const gchar * count;
+
+		if (!COLLECT(STRING, "name", &iname,
+		             STRING, "count", &count)) {
+			return;
+		}
+
+		gchar * finalitem = g_strdup_printf(_("%s > %s"), (gchar *)g_queue_peek_head(&menu_data->queue), iname);
+
+		g_debug("Adding '%s' %s times", finalitem, count);
+
+		g_free(finalitem);
+		return;
+	}
+
+	return;
+}
+
+static void
+end_element (GMarkupParseContext  *context, const gchar * name, gpointer user_data, GError ** error)
+{
+	menu_data_t * menu_data = (menu_data_t *)user_data;
+
+	if (g_strcmp0(name, "menu") == 0) {
+		if (g_queue_is_empty(&menu_data->queue)) {
+			g_warning("Menu stack is empty!");
+		} else {
+			g_free(g_queue_pop_head(&menu_data->queue));
 		}
 
 		return;
