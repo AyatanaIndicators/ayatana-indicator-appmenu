@@ -7,7 +7,8 @@ EXTRA_DIST =
 libexec_PROGRAMS = \
 	hud-cli \
 	hud-dump-application \
-	hud-service
+	hud-service \
+	hud-verify-app-info
 
 libexec_SCRIPTS = \
 	hud-list-applications
@@ -61,9 +62,9 @@ hud_cli_CFLAGS = \
 hud_cli_LDFLAGS = \
 	$(HUD_LIBS)
 
-####################
-# HUD CLI
-####################
+#######################
+# HUD Dump Application
+#######################
 
 hud_dump_application_SOURCES = \
 	dump-app-info.h \
@@ -74,6 +75,21 @@ hud_dump_application_CFLAGS = \
 	$(HUD_CFLAGS) \
 	-Wall -Werror
 hud_dump_application_LDFLAGS = \
+	$(HUD_LIBS)
+
+#######################
+# HUD Verify App Info
+#######################
+
+hud_verify_app_info_SOURCES = \
+	load-app-info.h \
+	load-app-info.c \
+	hud-verify-app-info.c
+
+hud_verify_app_info_CFLAGS = \
+	$(HUD_CFLAGS) \
+	-Wall -Werror
+hud_verify_app_info_LDFLAGS = \
 	$(HUD_LIBS)
 
 ####################
