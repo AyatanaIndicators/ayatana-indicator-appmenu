@@ -22,6 +22,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <unistd.h>
 #include <glib.h>
 #include <glib/gstdio.h>
+#include <glib-object.h>
 #include "load-app-info.h"
 
 int
@@ -33,6 +34,8 @@ main (int argv, char * argc[])
 		g_printerr("Usage: %s <app-info file path>\n", argc[0]);
 		return 1;
 	}
+
+	g_type_init();
 
 	gchar * filename = NULL;
 	gint tmpfile = g_file_open_tmp("hud-verify-app-info-temp-db-XXXXXX", &filename, NULL);
