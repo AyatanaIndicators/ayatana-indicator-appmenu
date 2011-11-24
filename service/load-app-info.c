@@ -39,6 +39,7 @@ struct _menu_data_t {
 	gchar * desktopfile;
 	gchar * domain;
 	gboolean seen_header;
+	GQueue queue;
 };
 
 typedef enum _menu_errors_t menu_errors_t;
@@ -92,7 +93,8 @@ load_app_info (const gchar * filename, sqlite3 * db)
 		db: db,
 		seen_header: FALSE,
 		desktopfile: NULL,
-		domain: NULL
+		domain: NULL,
+		queue: G_QUEUE_INIT
 	};
 
 	GMarkupParseContext * context = g_markup_parse_context_new(&app_info_parser,
