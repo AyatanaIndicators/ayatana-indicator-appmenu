@@ -1,33 +1,21 @@
 DISTCLEANFILES =
 EXTRA_DIST =
 
-TESTS = \
-	test-bad-app-info-dual-header \
-	test-distance-test \
-	test-usage-db-ancient-test \
-	test-usage-db-old-test \
-	test-usage-db-simple-test \
-	test-indicator-tracker-test
-
-check_PROGRAMS = \
-	test-distance \
-	test-usage-db-ancient \
-	test-usage-db-old \
-	test-usage-db-simple \
-	test-indicator-tracker \
-	test-indicator-tracker-owner
-
-XFAIL_TESTS = \
-	test-bad-app-info-dual-header
-
-
-DISTCLEANFILES += $(TESTS)
+TESTS =
+check_PROGRAMS =
+XFAIL_TESTS =
 
 DBUS_RUNNER=dbus-test-runner
 
 ######################
 # Test Distance
 ######################
+
+TESTS += \
+	test-distance-test
+
+check_PROGRAMS += \
+	test-distance
 
 DISTANCE_XML_REPORT = test-distance.xml
 
@@ -52,6 +40,12 @@ DISTCLEANFILES += $(DISTANCE_XML_REPORT)
 ######################
 # Test Usage DB Simple
 ######################
+
+TESTS += \
+	test-usage-db-simple-test
+
+check_PROGRAMS += \
+	test-usage-db-simple
 
 USAGE_DB_SIMPLE_XML_REPORT = test-usage-db-simple.xml
 
@@ -84,6 +78,12 @@ EXTRA_DIST += test-usage-db-simple.sql
 # Test Usage DB Old
 ######################
 
+TESTS += \
+	test-usage-db-old-test
+
+check_PROGRAMS += \
+	test-usage-db-old
+
 USAGE_DB_OLD_XML_REPORT = test-usage-db-old.xml
 
 test-usage-db-old-test: test-usage-db-old test-usage-db-old.sql Makefile.am
@@ -114,6 +114,12 @@ EXTRA_DIST += test-usage-db-old.sql
 #######################
 # Test Usage DB Ancient
 #######################
+
+TESTS += \
+	test-usage-db-ancient-test
+
+check_PROGRAMS += \
+	test-usage-db-ancient
 
 test-usage-db-ancient-test: test-usage-db-ancient test-usage-db-ancient.sql test-usage-db-ancient-test.sql Makefile.am
 	@echo "#!/bin/bash -e" > $@
@@ -149,6 +155,13 @@ EXTRA_DIST += \
 # Test Indicator Tracker
 #########################
 
+TESTS += \
+	test-indicator-tracker-test
+
+check_PROGRAMS += \
+	test-indicator-tracker \
+	test-indicator-tracker-owner
+
 test-indicator-tracker-test: test-indicator-tracker test-indicator-tracker-owner Makefile.am
 	@echo "#!/bin/bash -e" > $@
 	@echo $(XVFB_RUN) >> $@
@@ -179,6 +192,12 @@ test_indicator_tracker_owner_LDADD = \
 # Test Bad App Info
 #########################
 
+TESTS += \
+	test-bad-app-info-dual-header
+
+XFAIL_TESTS += \
+	test-bad-app-info-dual-header
+
 test-bad-app-info-dual-header: bad-app-info/dual-headers.hud-app-info Makefile.am
 	@echo "#!/bin/bash -e" > $@
 	@echo $(top_builddir)/service/hud-verify-app-info $(srcdir)/bad-app-info/dual-headers.hud-app-info >> $@
@@ -186,3 +205,10 @@ test-bad-app-info-dual-header: bad-app-info/dual-headers.hud-app-info Makefile.a
 
 EXTRA_DIST += \
 	bad-app-info/dual-headers.hud-app-info
+
+
+#########################
+# Footer
+#########################
+
+DISTCLEANFILES += $(TESTS)
