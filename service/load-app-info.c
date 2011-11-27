@@ -40,6 +40,7 @@ struct _menu_data_t {
 	gchar * desktopfile;
 	gchar * domain;
 	gboolean seen_header;
+	gboolean seen_menus;
 	GQueue queue;
 	GString * statement;
 };
@@ -48,8 +49,10 @@ typedef enum _menu_errors_t menu_errors_t;
 enum _menu_errors_t {
 	DUPLICATE_HEADERS,
 	DUPLICATE_DESKTOPFILE,
+	DUPLICATE_MENUS,
 	MISSING_HEADER,
 	MISSING_DESKTOP,
+	MISSING_MENUS,
 	ERROR_LAST
 };
 
@@ -94,6 +97,7 @@ load_app_info (const gchar * filename, sqlite3 * db)
 	menu_data_t menu_data = {
 		db: db,
 		seen_header: FALSE,
+		seen_menus: FALSE,
 		desktopfile: NULL,
 		domain: NULL,
 		queue: G_QUEUE_INIT,
@@ -119,11 +123,21 @@ load_app_info (const gchar * filename, sqlite3 * db)
 		g_warning("Unable to parse file '%s'", filename);
 	}
 
+	if (!menu_data.seen_header) {
+		g_warning("Never found a header in '%s'", filename);
+		parsed = FALSE;
+	}
+
+	if (!menu_data.seen_menus) {
+		g_warning("Never found menus in '%s'", filename);
+		parsed = FALSE;
+	}
+
 	g_markup_parse_context_free(context);
 
 	/* Execute SQL Statement */
 	/* If we have one */
-	if (menu_data.statement->str[0] != '\0') {
+	if (parsed && menu_data.statement->str[0] != '\0') {
 		int exec_status = SQLITE_OK;
 		gchar * failstring = NULL;
 		exec_status = sqlite3_exec(db,
@@ -136,7 +150,6 @@ load_app_info (const gchar * filename, sqlite3 * db)
 
 	g_free(menu_data.desktopfile);
 	g_free(menu_data.domain);
-	g_debug("SQL: %s", menu_data.statement->str);
 	g_string_free(menu_data.statement, TRUE);
 
 	/* Free data */
@@ -205,10 +218,21 @@ new_element (GMarkupParseContext *context, const gchar * name, const gchar ** at
 			g_set_error(error, error_domain(), MISSING_DESKTOP, "No desktop file is defined");
 		}
 
+		if (menu_data->seen_menus) {
+			g_set_error(error, error_domain(), DUPLICATE_MENUS, "Second set of menus found");
+		}
+
+		menu_data->seen_menus = TRUE;
+
 		return;
 	}
 
 	if (g_strcmp0(name, "menu") == 0) {
+		if (!menu_data->seen_menus) {
+			g_set_error(error, error_domain(), MISSING_MENUS, "Menu tag found without enclosing menus");
+			return;
+		}
+
 		const gchar * mname;
 
 		if (!COLLECT(STRING, "name", &mname)) {
@@ -225,6 +249,11 @@ new_element (GMarkupParseContext *context, const gchar * name, const gchar ** at
 	}
 
 	if (g_strcmp0(name, "item") == 0) {
+		if (!menu_data->seen_menus) {
+			g_set_error(error, error_domain(), MISSING_MENUS, "Item tag found without enclosing menus");
+			return;
+		}
+
 		const gchar * iname;
 		const gchar * scount;
 
