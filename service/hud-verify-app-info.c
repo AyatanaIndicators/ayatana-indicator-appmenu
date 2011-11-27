@@ -25,6 +25,24 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <glib-object.h>
 #include "load-app-info.h"
 
+static void
+build_db (sqlite3 * db)
+{
+	/* Create the table */
+	int exec_status = SQLITE_OK;
+	gchar * failstring = NULL;
+	exec_status = sqlite3_exec(db,
+	                           "create table usage (application text, entry text, timestamp datetime);",
+	                           NULL, NULL, &failstring);
+	if (exec_status != SQLITE_OK) {
+		g_warning("Unable to create table: %s", failstring);
+	}
+
+	/* Import data from the system */
+
+	return;
+}
+
 int
 main (int argv, char * argc[])
 {
@@ -59,6 +77,9 @@ main (int argv, char * argc[])
 		passed = FALSE;
 		goto cleanup;
 	}
+
+	/* Create the table in the DB */
+	build_db(db);
 
 	passed = load_app_info(argc[1], db);
 
