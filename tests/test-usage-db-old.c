@@ -22,6 +22,8 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <glib.h>
 #include <glib-object.h>
 
+#include "../service/load-app-info.h"
+#include "../service/load-app-info.c"
 #include "../service/usage-tracker.h"
 #include "../service/usage-tracker.c"
 
