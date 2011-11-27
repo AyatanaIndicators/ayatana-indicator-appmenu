@@ -2,7 +2,8 @@
 BUILT_SOURCES =
 CLEANFILES =
 DISTCLEANFILES =
-EXTRA_DIST =
+EXTRA_DIST = \
+	hud-list-applications
 
 libexec_PROGRAMS = \
 	hud-cli \
