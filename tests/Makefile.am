@@ -66,6 +66,7 @@ test_usage_db_simple_SOURCES = \
 test_usage_db_simple_CFLAGS = \
 	$(HUD_CFLAGS) \
 	-DDATADIR=\""$(datadir)"\" \
+	-I$(top_srcdir)/service \
 	-Wall -Werror
 
 test_usage_db_simple_LDADD = \
@@ -103,6 +104,7 @@ test_usage_db_old_SOURCES = \
 test_usage_db_old_CFLAGS = \
 	$(HUD_CFLAGS) \
 	-DDATADIR=\""$(datadir)"\" \
+	-I$(top_srcdir)/service \
 	-Wall -Werror
 
 test_usage_db_old_LDADD = \
@@ -142,6 +144,7 @@ test_usage_db_ancient_SOURCES = \
 test_usage_db_ancient_CFLAGS = \
 	$(HUD_CFLAGS) \
 	-DDATADIR=\""$(datadir)"\" \
+	-I$(top_srcdir)/service \
 	-Wall -Werror
 
 test_usage_db_ancient_LDADD = \
