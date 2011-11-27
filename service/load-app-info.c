@@ -121,6 +121,19 @@ load_app_info (const gchar * filename, sqlite3 * db)
 
 	g_markup_parse_context_free(context);
 
+	/* Execute SQL Statement */
+	/* If we have one */
+	if (menu_data.statement->str[0] != '\0') {
+		int exec_status = SQLITE_OK;
+		gchar * failstring = NULL;
+		exec_status = sqlite3_exec(db,
+		                           menu_data.statement->str,
+		                           NULL, NULL, &failstring);
+		if (exec_status != SQLITE_OK) {
+			g_warning("Unable to execute SQL statement to load DB: %s", failstring);
+		}
+	}
+
 	g_free(menu_data.desktopfile);
 	g_free(menu_data.domain);
 	g_debug("SQL: %s", menu_data.statement->str);
