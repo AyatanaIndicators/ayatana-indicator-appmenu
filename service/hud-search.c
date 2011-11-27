@@ -53,7 +53,7 @@ static void hud_search_dispose    (GObject *object);
 static void hud_search_finalize   (GObject *object);
 
 static void active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * newview, gpointer user_data);
-HudSearchSuggest * hud_search_suggest_new (const gchar * display, const gchar * icon, const gchar * dbus_address, const gchar * dbus_path, gint dbus_id);
+HudSearchSuggest * hud_search_suggest_new (const gchar * app, const gchar * display, const gchar * icon, const gchar * dbus_address, const gchar * dbus_path, gint dbus_id);
 
 G_DEFINE_TYPE (HudSearch, hud_search, G_TYPE_OBJECT);
 
@@ -290,6 +290,16 @@ hud_search_suggestions (HudSearch * search, const gchar * searchstr)
 	GArray * usagedata = g_array_sized_new(FALSE, TRUE, sizeof(usage_wrapper_t), 15);
 	GList * found_list = NULL;
 
+	const gchar * appdesktopfile = NULL;
+
+	if (search->priv->active_app != NULL) {
+		appdesktopfile = bamf_application_get_desktop_file(search->priv->active_app);
+	}
+
+	if (appdesktopfile == NULL) {
+		appdesktopfile = "";
+	}
+
 	search_and_sort(search, searchstr, usagedata, &found_list);
 
 	GList * retval = NULL;
@@ -297,7 +307,13 @@ hud_search_suggestions (HudSearch * search, const gchar * searchstr)
 	for (count = 0; count < 5 && count < usagedata->len; count++) {
 		usage_wrapper_t * usage = &g_array_index(usagedata, usage_wrapper_t, count);
 
-		HudSearchSuggest * suggest = hud_search_suggest_new(dbusmenu_collector_found_get_display(usage->found),
+		const gchar * desktopfile = dbusmenu_collector_found_get_indicator(usage->found);
+		if (desktopfile == NULL) {
+			desktopfile = appdesktopfile;
+		}
+
+		HudSearchSuggest * suggest = hud_search_suggest_new(desktopfile,
+		                                                    dbusmenu_collector_found_get_display(usage->found),
 		                                                    "none",
 		                                                    dbusmenu_collector_found_get_dbus_addr(usage->found),
 		                                                    dbusmenu_collector_found_get_dbus_path(usage->found),
@@ -317,12 +333,14 @@ void
 hud_search_execute (HudSearch * search, GVariant * key, guint timestamp)
 {
 	g_return_if_fail(IS_HUD_SEARCH(search));
+	gchar * app = NULL;
+	gchar * display = NULL;
 	gchar * address = NULL;
 	gchar * path = NULL;
 	gint id = 0;
 	GVariant * unwrapped_key = g_variant_get_variant(key);
 
-	g_variant_get(unwrapped_key, "(soi)", &address, &path, &id);
+	g_variant_get(unwrapped_key, "(sssoi)", &app, &display, &address, &path, &id);
 
 	dbusmenu_collector_execute(search->priv->collector, address, path, id, timestamp);
 
@@ -389,7 +407,7 @@ struct _HudSearchSuggest {
 };
 
 HudSearchSuggest *
-hud_search_suggest_new (const gchar * display, const gchar * icon, const gchar * dbus_address, const gchar * dbus_path, gint dbus_id)
+hud_search_suggest_new (const gchar * app, const gchar * display, const gchar * icon, const gchar * dbus_address, const gchar * dbus_path, gint dbus_id)
 {
 	HudSearchSuggest * suggest = g_new0(HudSearchSuggest, 1);
 
@@ -398,6 +416,8 @@ hud_search_suggest_new (const gchar * display, const gchar * icon, const gchar *
 
 	GVariantBuilder builder;
 	g_variant_builder_init(&builder, G_VARIANT_TYPE_TUPLE);
+	g_variant_builder_add_value(&builder, g_variant_new_string(app));
+	g_variant_builder_add_value(&builder, g_variant_new_string(display));
 	g_variant_builder_add_value(&builder, g_variant_new_string(dbus_address));
 	g_variant_builder_add_value(&builder, g_variant_new_object_path(dbus_path));
 	g_variant_builder_add_value(&builder, g_variant_new_int32(dbus_id));
