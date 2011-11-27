@@ -123,14 +123,14 @@ TESTS += \
 check_PROGRAMS += \
 	test-usage-db-ancient
 
-test-usage-db-ancient-test: test-usage-db-ancient test-usage-db-ancient.sql test-usage-db-ancient-test.sql Makefile.am
+test-usage-db-ancient-test: test-usage-db-ancient test-usage-db-ancient.sql test-usage-dump-entries.sql Makefile.am
 	@echo "#!/bin/bash -e" > $@
 	@echo cd \`mktemp -d $(abs_builddir)/test-usage-db-ancient.dir.XXXXXX\` >> $@
 	@echo mkdir -p hud >> $@
 	@echo cat $(abs_srcdir)/test-usage-db-ancient.sql \| sqlite3 hud/usage-log.sqlite >> $@
 	@echo export HUD_CACHE_DIR=\`pwd\` >> $@
 	@echo $(abs_builddir)/test-usage-db-ancient >> $@
-	@echo if test \`cat $(abs_srcdir)/test-usage-db-ancient-test.sql \| sqlite3 hud/usage-log.sqlite \| wc -l\` -gt 0\; then >> $@
+	@echo if test \`cat $(abs_srcdir)/test-usage-dump-entries.sql \| sqlite3 hud/usage-log.sqlite \| wc -l\` -gt 0\; then >> $@
 	@echo echo Database has entries >> $@
 	@echo exit 1 >> $@
 	@echo fi >> $@
@@ -152,7 +152,7 @@ test_usage_db_ancient_LDADD = \
 
 EXTRA_DIST += \
 	test-usage-db-ancient.sql \
-	test-usage-db-ancient-test.sql
+	test-usage-dump-entries.sql
 
 #########################
 # Test Indicator Tracker
@@ -251,6 +251,45 @@ test_bad_app_info_CFLAGS = \
 
 test_bad_app_info_LDADD = \
 	$(HUD_LIBS)
+
+#########################
+# Test Good App Info
+#########################
+
+TESTS += \
+	test-good-app-info-tons-of-entries
+
+check_PROGRAMS += \
+	test-load-app-info
+
+test_load_app_info_SOURCES = \
+	test-load-app-info.c
+
+test_load_app_info_CFLAGS = \
+	$(HUD_CFLAGS) \
+	-I$(top_srcdir)/service \
+	-Wall -Werror
+
+test_load_app_info_LDADD = \
+	$(HUD_LIBS)
+
+test-good-app-info-tons-of-entries: good-app-info/tons-of-entries.hud-app-info test-load-app-info test-usage-dump-entries.sql Makefile.am
+	@echo "#!/bin/bash -e" > $@
+	@echo cd \`mktemp -d $(abs_builddir)/test-good-app-info-tons-of-entries.dir.XXXXXX\` >> $@
+	@echo mkdir -p hud >> $@
+	@echo $(abs_builddir)/test-load-app-info hud/usage-log.sqlite $(abs_srcdir)/good-app-info/tons-of-entries.hud-app-info >> $@
+	@echo export HUD_CACHE_DIR=\`pwd\` >> $@
+	@echo if test \`cat $(abs_srcdir)/test-usage-dump-entries.sql \| sqlite3 hud/usage-log.sqlite \| wc -l\` -ne 540\; then >> $@
+	@echo echo Database has wrong number of entries >> $@
+	@echo exit 1 >> $@
+	@echo fi >> $@
+	@echo cd .. >> $@
+	@echo rm -rf test-good-app-info-tons-of-entries.dir.\* >> $@
+	@chmod +x $@
+
+EXTRA_DIST += \
+	good-app-info/tons-of-entries.hud-app-info \
+	test-usage-dump-entries.sql
 
 #########################
 # Footer

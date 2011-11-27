@@ -44,3 +44,5 @@ test-bad-app-info-menu-no-name
 test-bad-app-info-missing-desktop
 test-bad-app-info-missing-menus
 test-bad-app-info
+test-good-app-info-tons-of-entries
+test-load-app-info
