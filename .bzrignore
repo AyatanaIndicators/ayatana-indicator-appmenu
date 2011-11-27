@@ -37,3 +37,4 @@ tests/test-distance.xml
 po/hud.pot
 hud-dump-application
 hud-verify-app-info
+test-bad-app-info-dual-header

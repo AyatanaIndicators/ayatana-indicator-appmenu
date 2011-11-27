@@ -2,6 +2,7 @@ DISTCLEANFILES =
 EXTRA_DIST =
 
 TESTS = \
+	test-bad-app-info-dual-header \
 	test-distance-test \
 	test-usage-db-ancient-test \
 	test-usage-db-old-test \
@@ -15,6 +16,10 @@ check_PROGRAMS = \
 	test-usage-db-simple \
 	test-indicator-tracker \
 	test-indicator-tracker-owner
+
+XFAIL_TESTS = \
+	test-bad-app-info-dual-header
+
 
 DISTCLEANFILES += $(TESTS)
 
@@ -167,3 +172,14 @@ test_indicator_tracker_owner_CFLAGS = \
 test_indicator_tracker_owner_LDADD = \
 	$(HUD_LIBS)
 
+#########################
+# Test Bad App Info
+#########################
+
+test-bad-app-info-dual-header: bad-app-info/dual-headers.hud-app-info Makefile.am
+	@echo "#!/bin/bash -e" > $@
+	@echo $(top_builddir)/service/hud-verify-app-info $(srcdir)/bad-app-info/dual-headers.hud-app-info >> $@
+	@chmod +x $@
+
+EXTRA_DIST += \
+	bad-app-info/dual-headers.hud-app-info
