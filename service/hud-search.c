@@ -343,9 +343,13 @@ hud_search_execute (HudSearch * search, GVariant * key, guint timestamp)
 	g_variant_get(unwrapped_key, "(sssoi)", &app, &display, &address, &path, &id);
 
 	dbusmenu_collector_execute(search->priv->collector, address, path, id, timestamp);
+	usage_tracker_mark_usage(search->priv->usage, app, display);
 
 	g_free(address);
 	g_free(path);
+	g_free(app);
+	g_free(display);
+
 	g_variant_unref(unwrapped_key);
 
 	return;
