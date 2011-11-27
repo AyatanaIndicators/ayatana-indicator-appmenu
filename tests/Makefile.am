@@ -203,42 +203,34 @@ TESTS += \
 	test-bad-app-info-missing-desktop \
 	test-bad-app-info-missing-menus
 
-XFAIL_TESTS += \
-	test-bad-app-info-dual-header \
-	test-bad-app-info-item-no-count \
-	test-bad-app-info-item-no-name \
-	test-bad-app-info-menu-no-name \
-	test-bad-app-info-missing-desktop \
-	test-bad-app-info-missing-menus
-
-test-bad-app-info-dual-header: bad-app-info/dual-headers.hud-app-info Makefile.am
+test-bad-app-info-dual-header: bad-app-info/dual-headers.hud-app-info test-bad-app-info Makefile.am
 	@echo "#!/bin/bash -e" > $@
-	@echo $(top_builddir)/service/hud-verify-app-info $(srcdir)/bad-app-info/dual-headers.hud-app-info >> $@
+	@echo $(builddir)/test-bad-app-info $(srcdir)/bad-app-info/dual-headers.hud-app-info >> $@
 	@chmod +x $@
 
-test-bad-app-info-item-no-count: bad-app-info/item-no-count.hud-app-info Makefile.am
+test-bad-app-info-item-no-count: bad-app-info/item-no-count.hud-app-info test-bad-app-info Makefile.am
 	@echo "#!/bin/bash -e" > $@
-	@echo $(top_builddir)/service/hud-verify-app-info $(srcdir)/bad-app-info/item-no-count.hud-app-info >> $@
+	@echo $(builddir)/test-bad-app-info $(srcdir)/bad-app-info/item-no-count.hud-app-info >> $@
 	@chmod +x $@
 
-test-bad-app-info-item-no-name: bad-app-info/item-no-name.hud-app-info Makefile.am
+test-bad-app-info-item-no-name: bad-app-info/item-no-name.hud-app-info test-bad-app-info Makefile.am
 	@echo "#!/bin/bash -e" > $@
-	@echo $(top_builddir)/service/hud-verify-app-info $(srcdir)/bad-app-info/item-no-name.hud-app-info >> $@
+	@echo $(builddir)/test-bad-app-info $(srcdir)/bad-app-info/item-no-name.hud-app-info >> $@
 	@chmod +x $@
 
-test-bad-app-info-menu-no-name: bad-app-info/menu-no-name.hud-app-info Makefile.am
+test-bad-app-info-menu-no-name: bad-app-info/menu-no-name.hud-app-info test-bad-app-info Makefile.am
 	@echo "#!/bin/bash -e" > $@
-	@echo $(top_builddir)/service/hud-verify-app-info $(srcdir)/bad-app-info/menu-no-name.hud-app-info >> $@
+	@echo $(builddir)/test-bad-app-info $(srcdir)/bad-app-info/menu-no-name.hud-app-info >> $@
 	@chmod +x $@
 
-test-bad-app-info-missing-menus: bad-app-info/missing-menus.hud-app-info Makefile.am
+test-bad-app-info-missing-menus: bad-app-info/missing-menus.hud-app-info test-bad-app-info Makefile.am
 	@echo "#!/bin/bash -e" > $@
-	@echo $(top_builddir)/service/hud-verify-app-info $(srcdir)/bad-app-info/missing-menus.hud-app-info >> $@
+	@echo $(builddir)/test-bad-app-info $(srcdir)/bad-app-info/missing-menus.hud-app-info >> $@
 	@chmod +x $@
 
-test-bad-app-info-missing-desktop: bad-app-info/missing-desktop.hud-app-info Makefile.am
+test-bad-app-info-missing-desktop: bad-app-info/missing-desktop.hud-app-info test-bad-app-info Makefile.am
 	@echo "#!/bin/bash -e" > $@
-	@echo $(top_builddir)/service/hud-verify-app-info $(srcdir)/bad-app-info/missing-desktop.hud-app-info >> $@
+	@echo $(builddir)/test-bad-app-info $(srcdir)/bad-app-info/missing-desktop.hud-app-info >> $@
 	@chmod +x $@
 
 EXTRA_DIST += \
@@ -246,6 +238,19 @@ EXTRA_DIST += \
 	bad-app-info/missing-destkop.hud-app-info \
 	bad-app-info/missing-menus.hud-app-info
 
+check_PROGRAMS += \
+	test-bad-app-info
+
+test_bad_app_info_SOURCES = \
+	test-bad-app-info.c
+
+test_bad_app_info_CFLAGS = \
+	$(HUD_CFLAGS) \
+	-I$(top_srcdir)/service \
+	-Wall -Werror
+
+test_bad_app_info_LDADD = \
+	$(HUD_LIBS)
 
 #########################
 # Footer
