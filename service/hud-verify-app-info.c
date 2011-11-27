@@ -89,7 +89,11 @@ cleanup:
 	}
 
 	if (filename != NULL) {
-		g_unlink(filename);
+		if (g_getenv("HUD_VERIFY_NO_UNLINK") == NULL) {
+			g_unlink(filename);
+		} else {
+			g_print("Temp db '%s' not deleted\n", filename);
+		}
 		g_free(filename);
 	}
 
