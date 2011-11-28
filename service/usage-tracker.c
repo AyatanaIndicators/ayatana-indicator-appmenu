@@ -272,7 +272,7 @@ check_app_init (UsageTracker * self, const gchar * application)
 		app_info_path = g_build_filename(DATADIR, "hud", "app-info", NULL);
 	}
 
-	gchar * app_info_filename = g_strdup_printf("%s.hud-app-info.xml", basename);
+	gchar * app_info_filename = g_strdup_printf("%s.hud-app-info", basename);
 	gchar * app_info = g_build_filename(app_info_path, app_info_filename, NULL);
 
 	if (!load_app_info(app_info, self->priv->db)) {
