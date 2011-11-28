@@ -154,6 +154,48 @@ EXTRA_DIST += \
 	test-usage-db-ancient.sql \
 	test-usage-dump-entries.sql
 
+#######################
+# Test Usage DB Testapp
+#######################
+
+TESTS += \
+	test-usage-db-testapp-test
+
+check_PROGRAMS += \
+	test-usage-db-testapp
+
+USAGE_TESTAPP_XML_REPORT = $(abs_builddir)/test-distance.xml
+
+test-usage-db-testapp-test: test-usage-db-testapp good-app-info/testapp.desktop.hud-app-info.xml test-create-db.sql Makefile.am
+	@echo "#!/bin/bash -e" > $@
+	@echo cd \`mktemp -d $(abs_builddir)/test-usage-db-testapp.dir.XXXXXX\` >> $@
+	@echo mkdir -p hud >> $@
+	@echo cat $(abs_srcdir)/test-create-db.sql \| sqlite3 hud/usage-log.sqlite >> $@
+	@echo export HUD_CACHE_DIR=\`pwd\` >> $@
+	@echo export HUD_APP_INFO_DIR=$(abs_srcdir)/good-app-info >> $@
+	@echo gtester --verbose -k -o $(USAGE_TESTAPP_XML_REPORT) $(abs_builddir)/test-usage-db-testapp >> $@
+	@echo cd .. >> $@
+	@echo rm -rf test-usage-db-testapp.dir.\* >> $@
+	@chmod +x $@
+
+test_usage_db_testapp_SOURCES = \
+	test-usage-db-testapp.c
+
+test_usage_db_testapp_CFLAGS = \
+	$(HUD_CFLAGS) \
+	-DDATADIR=\""$(datadir)"\" \
+	-I$(top_srcdir)/service \
+	-Wall -Werror
+
+test_usage_db_testapp_LDADD = \
+	$(HUD_LIBS)
+
+EXTRA_DIST += \
+	test-create-db.sql \
+	good-app-info/testapp.desktop.hud-app-info.xml
+
+DISTCLEANFILES += $(USAGE_TESTAPP_XML_REPORT)
+
 #########################
 # Test Indicator Tracker
 #########################

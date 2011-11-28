@@ -46,3 +46,5 @@ test-bad-app-info-missing-menus
 test-bad-app-info
 test-good-app-info-tons-of-entries
 test-load-app-info
+test-usage-db-testapp
+test-usage-db-testapp-test
