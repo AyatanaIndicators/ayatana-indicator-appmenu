@@ -25,6 +25,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 static void new_element (GMarkupParseContext *context, const gchar * name, const gchar ** attribute_names, const gchar ** attribute_values, gpointer user_data, GError **error);
 static void end_element (GMarkupParseContext  *context, const gchar * name, gpointer user_data, GError ** error);
+static gchar * remove_underline (const gchar * input);
 
 static GMarkupParser app_info_parser = {
 	start_element:  new_element,
@@ -246,10 +247,13 @@ new_element (GMarkupParseContext *context, const gchar * name, const gchar ** at
 			translated = _(mname);
 		}
 
+		gchar * cleanedup = remove_underline(translated);
+
 		if (g_queue_is_empty(&menu_data->queue)) {
-			g_queue_push_head(&menu_data->queue, g_strdup(translated));
+			g_queue_push_head(&menu_data->queue, cleanedup);
 		} else {
-			g_queue_push_head(&menu_data->queue, g_strdup_printf(_("%s > %s"), (gchar *)g_queue_peek_head(&menu_data->queue), translated));
+			g_queue_push_head(&menu_data->queue, g_strdup_printf(_("%s > %s"), (gchar *)g_queue_peek_head(&menu_data->queue), cleanedup));
+			g_free(cleanedup);
 		}
 
 		return;
@@ -276,7 +280,9 @@ new_element (GMarkupParseContext *context, const gchar * name, const gchar ** at
 			translated = _(iname);
 		}
 
-		gchar * finalitem = g_strdup_printf(_("%s > %s"), (gchar *)g_queue_peek_head(&menu_data->queue), translated);
+		gchar * cleanedup = remove_underline(translated);
+		gchar * finalitem = g_strdup_printf(_("%s > %s"), (gchar *)g_queue_peek_head(&menu_data->queue), cleanedup);
+		g_free(cleanedup);
 		gint64 count = g_ascii_strtoll(scount, NULL, 10);
 
 		g_debug("Adding '%s' %s times", finalitem, scount);
@@ -312,4 +318,24 @@ end_element (GMarkupParseContext  *context, const gchar * name, gpointer user_da
 	}
 
 	return;
+}
+
+static gchar *
+remove_underline (const gchar * input)
+{
+	const gchar * in = input;
+	gchar * output = g_new0(gchar, g_utf8_strlen(input, -1) + 1);
+	gchar * out = output;
+
+	while (in[0] != '\0') {
+		if (in[0] == '_') {
+			in++;
+		} else {
+			out[0] = in[0];
+			in++;
+			out++;
+		}
+	}
+
+	return output;
 }
