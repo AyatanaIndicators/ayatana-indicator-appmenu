@@ -285,7 +285,6 @@ new_element (GMarkupParseContext *context, const gchar * name, const gchar ** at
 		g_free(cleanedup);
 		gint64 count = g_ascii_strtoll(scount, NULL, 10);
 
-		g_debug("Adding '%s' %s times", finalitem, scount);
 		int i;
 		for (i = 0; i < count; i++) {
 			if (i == 0) {
