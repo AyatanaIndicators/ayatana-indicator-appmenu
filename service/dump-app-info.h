@@ -1,5 +1,5 @@
 /*
-Test function to ensure we auto-clear the old databse
+Prints out application info for debugging and CLI tools
 
 Copyright 2011 Canonical Ltd.
 
@@ -19,19 +19,12 @@ You should have received a copy of the GNU General Public License along
 with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef __DUMP_APP_INFO_H__
+#define __DUMP_APP_INFO_H__
+
 #include <glib.h>
-#include <glib-object.h>
+#include <sqlite3.h>
 
-#include "load-app-info.h"
-#include "load-app-info.c"
-#include "usage-tracker.h"
-#include "usage-tracker.c"
+void dump_app_info (const gchar * app, const gchar * domain, sqlite3 * db);
 
-gint
-main (gint argc, gchar * argv[])
-{
-	g_type_init();
-	UsageTracker * tracker = usage_tracker_new();
-	g_object_unref(tracker);
-	return 0;
-}
+#endif /* __DUMP_APP_INFO_H__ */

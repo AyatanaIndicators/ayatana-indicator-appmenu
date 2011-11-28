@@ -28,6 +28,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <glib/gstdio.h>
 #include <sqlite3.h>
 #include "usage-tracker.h"
+#include "load-app-info.h"
 
 struct _UsageTrackerPrivate {
 	gchar * cachefile;
@@ -44,6 +45,7 @@ static void usage_tracker_dispose    (GObject *object);
 static void usage_tracker_finalize   (GObject *object);
 static void build_db                 (UsageTracker * self);
 static gboolean drop_entries         (gpointer user_data);
+static void check_app_init (UsageTracker * self, const gchar * application);
 
 G_DEFINE_TYPE (UsageTracker, usage_tracker, G_TYPE_OBJECT);
 
@@ -164,6 +166,7 @@ void
 usage_tracker_mark_usage (UsageTracker * self, const gchar * application, const gchar * entry)
 {
 	g_return_if_fail(IS_USAGE_TRACKER(self));
+	check_app_init(self, application);
 
 	gchar * statement = g_strdup_printf("insert into usage (application, entry, timestamp) values ('%s', '%s', date('now'));", application, entry);
 	// g_debug("Executing: %s", statement);
@@ -197,8 +200,7 @@ guint
 usage_tracker_get_usage (UsageTracker * self, const gchar * application, const gchar * entry)
 {
 	g_return_val_if_fail(IS_USAGE_TRACKER(self), 0);
-
-	// TODO: Check if application has entries, if not, import defaults
+	check_app_init(self, application);
 
 	gchar * statement = g_strdup_printf("select count(*) from usage where application = '%s' and entry = '%s' and timestamp > date('now', 'utc', '-30 days');", application, entry); // TODO: Add timestamp
 	// g_debug("Executing: %s", statement);
@@ -236,4 +238,51 @@ drop_entries (gpointer user_data)
 	}
 
 	return TRUE;
+}
+
+static void
+check_app_init (UsageTracker * self, const gchar * application)
+{
+	gchar * statement = g_strdup_printf("select count(*) from usage where application = '%s';", application);
+
+	int exec_status = SQLITE_OK;
+	gchar * failstring = NULL;
+	guint count = 0;
+	exec_status = sqlite3_exec(self->priv->db,
+	                           statement,
+	                           count_cb, &count, &failstring);
+	if (exec_status != SQLITE_OK) {
+		g_warning("Unable to insert into table: %s", failstring);
+	}
+
+	g_free(statement);
+
+	if (count > 0) {
+		return;
+	}
+
+	g_debug("Initializing application: %s", application);
+	gchar * basename = g_path_get_basename(application);
+
+	gchar * app_info_path = NULL;
+
+	if (g_getenv("HUD_APP_INFO_DIR") != NULL) {
+		app_info_path = g_strdup(g_getenv("HUD_APP_INFO_DIR"));
+	} else {
+		app_info_path = g_build_filename(DATADIR, "hud", "app-info", NULL);
+	}
+
+	gchar * app_info_filename = g_strdup_printf("%s.hud-app-info", basename);
+	gchar * app_info = g_build_filename(app_info_path, app_info_filename, NULL);
+
+	if (!load_app_info(app_info, self->priv->db)) {
+		g_warning("Unable to load application information for application '%s' at path '%s'", application, app_info);
+	}
+
+	g_free(app_info);
+	g_free(app_info_filename);
+	g_free(app_info_path);
+	g_free(basename);
+
+	return;
 }

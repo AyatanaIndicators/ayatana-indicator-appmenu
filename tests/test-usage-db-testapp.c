@@ -1,5 +1,5 @@
 /*
-Test function to ensure we can use a simple databse
+Test code for usage DB based on testapp data
 
 Copyright 2011 Canonical Ltd.
 
@@ -22,60 +22,35 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <glib.h>
 #include <glib-object.h>
 
+#define DUMP_MATRIX 1
 #include "load-app-info.h"
 #include "load-app-info.c"
 #include "usage-tracker.h"
 #include "usage-tracker.c"
 
-/* Ensure the base object works */
 static void
-test_usage_db_base (void)
+test_usage_testapp (void)
 {
 	UsageTracker * tracker = usage_tracker_new();
+
 	g_assert(tracker != NULL);
 	g_assert(IS_USAGE_TRACKER(tracker));
+
+	g_assert(usage_tracker_get_usage(tracker, "/usr/share/applications/testapp.desktop", "Menu > Item") == 7);
 
 	g_object_unref(tracker);
 	return;
 }
 
 static void
-test_usage_db_counts (void)
+test_usage_testapp_clip (void)
 {
 	UsageTracker * tracker = usage_tracker_new();
+
 	g_assert(tracker != NULL);
 	g_assert(IS_USAGE_TRACKER(tracker));
 
-	g_assert(usage_tracker_get_usage(tracker, "testapp.desktop", "Zero") == 0);
-	g_assert(usage_tracker_get_usage(tracker, "testapp.desktop", "One") == 1);
-	g_assert(usage_tracker_get_usage(tracker, "testapp.desktop", "Two") == 2);
-	g_assert(usage_tracker_get_usage(tracker, "testapp.desktop", "Three") == 3);
-	g_assert(usage_tracker_get_usage(tracker, "testapp.desktop", "Four") == 4);
-
-	g_object_unref(tracker);
-	return;
-}
-
-static void
-test_usage_db_insert (void)
-{
-	UsageTracker * tracker = usage_tracker_new();
-	g_assert(tracker != NULL);
-	g_assert(IS_USAGE_TRACKER(tracker));
-
-	int i = 0;
-
-	for (i = 0; i < 5; i++) {
-		usage_tracker_mark_usage(tracker, "testapp.desktop", "Five");
-	}
-
-	g_assert(usage_tracker_get_usage(tracker, "testapp.desktop", "Five") == 5);
-
-	for (i = 0; i < 100; i++) {
-		usage_tracker_mark_usage(tracker, "testapp.desktop", "Hundred");
-	}
-
-	g_assert(usage_tracker_get_usage(tracker, "testapp.desktop", "Hundred") == 100);
+	g_assert(usage_tracker_get_usage(tracker, "/usr/share/applications/testapp100.desktop", "Menu > Item") == 30);
 
 	g_object_unref(tracker);
 	return;
@@ -83,11 +58,10 @@ test_usage_db_insert (void)
 
 /* Build the test suite */
 static void
-test_usage_db_suite (void)
+test_usage_testapp_suite (void)
 {
-	g_test_add_func ("/hud/usage/simple/base",          test_usage_db_base);
-	g_test_add_func ("/hud/usage/simple/counts",        test_usage_db_counts);
-	g_test_add_func ("/hud/usage/simple/insert",        test_usage_db_insert);
+	g_test_add_func ("/hud/usage/testapp/basic",     test_usage_testapp);
+	g_test_add_func ("/hud/usage/testapp/clip",      test_usage_testapp_clip);
 	return;
 }
 
@@ -100,7 +74,7 @@ main (gint argc, gchar * argv[])
 	g_test_init(&argc, &argv, NULL);
 
 	/* Test suites */
-	test_usage_db_suite();
+	test_usage_testapp_suite();
 
 	return g_test_run ();
 }

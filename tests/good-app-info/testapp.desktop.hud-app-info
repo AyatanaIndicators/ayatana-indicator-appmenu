@@ -1,0 +1,8 @@
+<hudappinfo>
+	<desktopfile path="/usr/share/applications/testapp.desktop" />
+	<menus>
+		<menu name="Menu">
+			<item name="Item" count="7" />
+		</menu>
+	</menus>
+</hudappinfo>

@@ -7,3 +7,5 @@ service/hud.interface.c
 service/hud-search.c
 service/hud-cli.c
 service/distance.c
+service/load-app-info.c
+service/dump-app-info.c

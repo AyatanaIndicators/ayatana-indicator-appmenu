@@ -2,11 +2,17 @@
 BUILT_SOURCES =
 CLEANFILES =
 DISTCLEANFILES =
-EXTRA_DIST =
+EXTRA_DIST = \
+	hud-list-applications
 
 libexec_PROGRAMS = \
 	hud-cli \
-	hud-service
+	hud-dump-application \
+	hud-service \
+	hud-verify-app-info
+
+libexec_SCRIPTS = \
+	hud-list-applications
 
 ####################
 # HUD Service
@@ -17,6 +23,8 @@ hud_service_SOURCES = \
 	dbusmenu-collector.c \
 	distance.h \
 	distance.c \
+	dump-app-info.h \
+	dump-app-info.c \
 	shared-values.h \
 	hud-service.c \
 	hud-dbus.h \
@@ -27,11 +35,14 @@ hud_service_SOURCES = \
 	hud.interface.c \
 	indicator-tracker.h \
 	indicator-tracker.c \
+	load-app-info.h \
+	load-app-info.c \
 	usage-tracker.h \
 	usage-tracker.c
 
 hud_service_CFLAGS = \
 	$(HUD_CFLAGS) \
+	-DDATADIR=\""$(datadir)"\" \
 	-Wall -Werror
 hud_service_LDFLAGS = \
 	$(HUD_LIBS)
@@ -50,6 +61,36 @@ hud_cli_CFLAGS = \
 	$(HUD_CFLAGS) \
 	-Wall -Werror
 hud_cli_LDFLAGS = \
+	$(HUD_LIBS)
+
+#######################
+# HUD Dump Application
+#######################
+
+hud_dump_application_SOURCES = \
+	dump-app-info.h \
+	dump-app-info.c \
+	hud-dump-application.c
+
+hud_dump_application_CFLAGS = \
+	$(HUD_CFLAGS) \
+	-Wall -Werror
+hud_dump_application_LDFLAGS = \
+	$(HUD_LIBS)
+
+#######################
+# HUD Verify App Info
+#######################
+
+hud_verify_app_info_SOURCES = \
+	load-app-info.h \
+	load-app-info.c \
+	hud-verify-app-info.c
+
+hud_verify_app_info_CFLAGS = \
+	$(HUD_CFLAGS) \
+	-Wall -Werror
+hud_verify_app_info_LDFLAGS = \
 	$(HUD_LIBS)
 
 ####################
