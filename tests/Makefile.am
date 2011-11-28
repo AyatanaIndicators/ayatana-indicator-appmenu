@@ -277,7 +277,10 @@ test-bad-app-info-missing-desktop: bad-app-info/missing-desktop.hud-app-info tes
 
 EXTRA_DIST += \
 	bad-app-info/dual-headers.hud-app-info \
-	bad-app-info/missing-destkop.hud-app-info \
+	bad-app-info/item-no-count.hud-app-info \
+	bad-app-info/item-no-name.hud-app-info \
+	bad-app-info/menu-no-name.hud-app-info \
+	bad-app-info/missing-desktop.hud-app-info \
 	bad-app-info/missing-menus.hud-app-info
 
 check_PROGRAMS += \
