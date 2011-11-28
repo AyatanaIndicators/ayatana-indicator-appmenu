@@ -42,11 +42,26 @@ test_usage_testapp (void)
 	return;
 }
 
+static void
+test_usage_testapp_clip (void)
+{
+	UsageTracker * tracker = usage_tracker_new();
+
+	g_assert(tracker != NULL);
+	g_assert(IS_USAGE_TRACKER(tracker));
+
+	g_assert(usage_tracker_get_usage(tracker, "/usr/share/applications/testapp100.desktop", "Menu > Item") == 30);
+
+	g_object_unref(tracker);
+	return;
+}
+
 /* Build the test suite */
 static void
 test_usage_testapp_suite (void)
 {
-	g_test_add_func ("/hud/usage/testapp",          test_usage_testapp);
+	g_test_add_func ("/hud/usage/testapp/basic",     test_usage_testapp);
+	g_test_add_func ("/hud/usage/testapp/clip",      test_usage_testapp_clip);
 	return;
 }
 
