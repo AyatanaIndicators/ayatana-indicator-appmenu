@@ -49,3 +49,4 @@ test-load-app-info
 test-usage-db-testapp
 test-usage-db-testapp-test
 test-usage-db-testapp.xml
+test-bad-app-info-multiple-menus

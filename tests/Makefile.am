@@ -244,7 +244,8 @@ TESTS += \
 	test-bad-app-info-item-no-name \
 	test-bad-app-info-menu-no-name \
 	test-bad-app-info-missing-desktop \
-	test-bad-app-info-missing-menus
+	test-bad-app-info-missing-menus \
+	test-bad-app-info-multiple-menus
 
 test-bad-app-info-dual-header: bad-app-info/dual-headers.hud-app-info test-bad-app-info Makefile.am
 	@echo "#!/bin/bash -e" > $@
@@ -276,13 +277,19 @@ test-bad-app-info-missing-desktop: bad-app-info/missing-desktop.hud-app-info tes
 	@echo $(builddir)/test-bad-app-info $(srcdir)/bad-app-info/missing-desktop.hud-app-info >> $@
 	@chmod +x $@
 
+test-bad-app-info-multiple-menus: bad-app-info/multiple-menus.hud-app-info test-bad-app-info Makefile.am
+	@echo "#!/bin/bash -e" > $@
+	@echo $(builddir)/test-bad-app-info $(srcdir)/bad-app-info/multiple-menus.hud-app-info >> $@
+	@chmod +x $@
+
 EXTRA_DIST += \
 	bad-app-info/dual-headers.hud-app-info \
 	bad-app-info/item-no-count.hud-app-info \
 	bad-app-info/item-no-name.hud-app-info \
 	bad-app-info/menu-no-name.hud-app-info \
 	bad-app-info/missing-desktop.hud-app-info \
-	bad-app-info/missing-menus.hud-app-info
+	bad-app-info/missing-menus.hud-app-info \
+	bad-app-info/multiple-menus.hud-app-info
 
 check_PROGRAMS += \
 	test-bad-app-info
