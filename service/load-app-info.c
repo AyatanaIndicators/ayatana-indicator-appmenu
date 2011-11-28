@@ -239,10 +239,17 @@ new_element (GMarkupParseContext *context, const gchar * name, const gchar ** at
 			return;
 		}
 
-		if (g_queue_is_empty(&menu_data->queue)) {
-			g_queue_push_head(&menu_data->queue, g_strdup(mname));
+		const gchar * translated = NULL;
+		if (menu_data->domain != NULL) {
+			translated = g_dgettext(menu_data->domain, mname);
 		} else {
-			g_queue_push_head(&menu_data->queue, g_strdup_printf(_("%s > %s"), (gchar *)g_queue_peek_head(&menu_data->queue), mname));
+			translated = _(mname);
+		}
+
+		if (g_queue_is_empty(&menu_data->queue)) {
+			g_queue_push_head(&menu_data->queue, g_strdup(translated));
+		} else {
+			g_queue_push_head(&menu_data->queue, g_strdup_printf(_("%s > %s"), (gchar *)g_queue_peek_head(&menu_data->queue), translated));
 		}
 
 		return;
@@ -262,7 +269,14 @@ new_element (GMarkupParseContext *context, const gchar * name, const gchar ** at
 			return;
 		}
 
-		gchar * finalitem = g_strdup_printf(_("%s > %s"), (gchar *)g_queue_peek_head(&menu_data->queue), iname);
+		const gchar * translated = NULL;
+		if (menu_data->domain != NULL) {
+			translated = g_dgettext(menu_data->domain, iname);
+		} else {
+			translated = _(iname);
+		}
+
+		gchar * finalitem = g_strdup_printf(_("%s > %s"), (gchar *)g_queue_peek_head(&menu_data->queue), translated);
 		gint64 count = g_ascii_strtoll(scount, NULL, 10);
 
 		g_debug("Adding '%s' %s times", finalitem, scount);
