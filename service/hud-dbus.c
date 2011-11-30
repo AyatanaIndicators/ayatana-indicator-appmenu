@@ -219,16 +219,38 @@ bus_method (GDBusConnection *connection, const gchar *sender, const gchar *objec
 	return;
 }
 
+/* Take a path to a desktop file and find its icon */
+static gchar *
+desktop2icon (gchar * desktop)
+{
+
+
+	return g_strdup("");
+}
+
+/* Respond to the GetSuggestions command from DBus by looking
+   in our HUD search object for suggestions from that query */
 static GVariant *
 get_suggestions (HudDbus * self, const gchar * query)
 {
+	/* Do the search */
+	gchar * desktop = NULL;
+	gchar * target = NULL;
+	GList * suggestions = hud_search_suggestions(self->priv->search, query, &desktop, &target);
+
+	gchar * icon = NULL;
+	icon = desktop2icon(desktop);
+
+	/* Build into into a variant */
 	GVariantBuilder ret;
-
 	g_variant_builder_init(&ret, G_VARIANT_TYPE_TUPLE);
-	g_variant_builder_add_value(&ret, g_variant_new_string(""));
-	g_variant_builder_add_value(&ret, g_variant_new_string("New Document"));
+	g_variant_builder_add_value(&ret, g_variant_new_string(icon));
+	g_variant_builder_add_value(&ret, g_variant_new_string(target));
 
-	GList * suggestions = hud_search_suggestions(self->priv->search, query);
+	/* Free the strings */
+	g_free(icon);
+	g_free(target);
+	g_free(desktop);
 
 	if (suggestions != NULL) {
 		GList * suggestion = suggestions;
@@ -251,9 +273,12 @@ get_suggestions (HudDbus * self, const gchar * query)
 
 		g_variant_builder_add_value(&ret, g_variant_builder_end(&builder));
 	} else {
+		/* If we didn't get any suggestions we need to build
+		   a null array to make the DBus interface happy */
 		g_variant_builder_add_value(&ret, g_variant_new_array(G_VARIANT_TYPE("(ssv)"), NULL, 0));
 	}
 
+	/* Clean up the list */
 	g_list_free_full(suggestions, (GDestroyNotify)hud_search_suggest_free);
 
 	return g_variant_builder_end(&ret);
