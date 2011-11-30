@@ -51,7 +51,7 @@ struct _HudSearch {
 
 GType hud_search_get_type (void);
 HudSearch * hud_search_new (void);
-GList * hud_search_suggestions (HudSearch * search, const gchar * searchstr);
+GList * hud_search_suggestions (HudSearch * search, const gchar * searchstr, gchar ** desktop, gchar ** target);
 void hud_search_execute (HudSearch * search, GVariant * key, guint timestamp);
 
 const gchar * hud_search_suggest_get_icon (HudSearchSuggest * suggest);

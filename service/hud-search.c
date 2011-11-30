@@ -282,14 +282,27 @@ search_and_sort (HudSearch * search, const gchar * searchstr, GArray * usagedata
 	return;
 }
 
+/* Find a list of suggestions that should be sent to the user.  Looks
+   through both applications and indicators. */
 GList *
-hud_search_suggestions (HudSearch * search, const gchar * searchstr)
+hud_search_suggestions (HudSearch * search, const gchar * searchstr, gchar ** desktop, gchar ** target)
 {
 	g_return_val_if_fail(IS_HUD_SEARCH(search), NULL);
 
+	/* We're currently not getting this data, let's just give a
+	   NULL string back for now */
+	if (target != NULL) {
+		*target = g_strdup("");
+	}
+
+	/* Build an array of the entries that we're going
+	   to use as an interim structure */
 	GArray * usagedata = g_array_sized_new(FALSE, TRUE, sizeof(usage_wrapper_t), 15);
 	GList * found_list = NULL;
 
+
+	/* The application desktop file is the default if the
+	   entry in question is not for an indicator */
 	const gchar * appdesktopfile = NULL;
 
 	if (search->priv->active_app != NULL) {
@@ -300,8 +313,18 @@ hud_search_suggestions (HudSearch * search, const gchar * searchstr)
 		appdesktopfile = "";
 	}
 
+	/* If we're given a valid pointer, return the value back to
+	   it */
+	if (desktop != NULL) {
+		*desktop = g_strdup(appdesktopfile);
+	}
+
+	/* This is the core of searching a given application for their
+	   entries.  It will also delve into the indicators */
 	search_and_sort(search, searchstr, usagedata, &found_list);
 
+	/* Convert the entries that we were given into a list of structures
+	   that we want to export an an API */
 	GList * retval = NULL;
 	int count;
 	for (count = 0; count < 5 && count < usagedata->len; count++) {
@@ -323,6 +346,7 @@ hud_search_suggestions (HudSearch * search, const gchar * searchstr)
 		retval = g_list_append(retval, suggest);
 	}
 
+	/* Free the interim arrays of data */
 	g_array_free(usagedata, TRUE);
 	dbusmenu_collector_found_list_free(found_list);
 
