@@ -225,6 +225,7 @@ get_suggestions (HudDbus * self, const gchar * query)
 	GVariantBuilder ret;
 
 	g_variant_builder_init(&ret, G_VARIANT_TYPE_TUPLE);
+	g_variant_builder_add_value(&ret, g_variant_new_string(""));
 	g_variant_builder_add_value(&ret, g_variant_new_string("New Document"));
 
 	GList * suggestions = hud_search_suggestions(self->priv->search, query);
