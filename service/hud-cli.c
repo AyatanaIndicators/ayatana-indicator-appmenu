@@ -150,11 +150,15 @@ print_suggestions (const gchar * query)
 		return;
 	}
 
-	GVariant * target = g_variant_get_child_value(suggests, 0);
+	GVariant * appicon = g_variant_get_child_value(suggests, 0);
+	// g_print("Icon: %s\n", g_variant_get_string(appicon, NULL));
+	g_variant_unref(appicon);
+
+	GVariant * target = g_variant_get_child_value(suggests, 1);
 	// g_print("Target: %s\n", g_variant_get_string(target, NULL));
 	g_variant_unref(target);
 
-	GVariant * suggestions = g_variant_get_child_value(suggests, 1);
+	GVariant * suggestions = g_variant_get_child_value(suggests, 2);
 	GVariantIter iter;
 	g_variant_iter_init(&iter, suggestions);
 	gchar * suggestion = NULL;
