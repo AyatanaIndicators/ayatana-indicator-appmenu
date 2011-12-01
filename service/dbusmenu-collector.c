@@ -76,7 +76,7 @@ static void update_layout_cb (GDBusConnection * connection, const gchar * sender
 static guint menu_hash_func (gconstpointer key);
 static gboolean menu_equal_func (gconstpointer a, gconstpointer b);
 static void menu_key_destroy (gpointer key);
-static DbusmenuCollectorFound * dbusmenu_collector_found_new (DbusmenuClient * client, DbusmenuMenuitem * item, const gchar * string, guint distance, const gchar * indicator_name);
+static DbusmenuCollectorFound * dbusmenu_collector_found_new (DbusmenuClient * client, DbusmenuMenuitem * item, GStrv strings, guint distance, const gchar * indicator_name);
 
 G_DEFINE_TYPE (DbusmenuCollector, dbusmenu_collector, G_TYPE_OBJECT);
 
@@ -260,7 +260,7 @@ remove_underline (const gchar * input)
 }
 
 static GList *
-tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GList * results, const gchar * label_prefix, DbusmenuClient * client, const gchar * indicator_name)
+tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GList * results, GStrv label_prefix, DbusmenuClient * client, const gchar * indicator_name)
 {
 	if (search == NULL) {
 		return results;
@@ -278,20 +278,24 @@ tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GList * r
 		return results;
 	}
 
-	gchar * newstr = NULL;
+	GStrv newstr = NULL;
 	if (dbusmenu_menuitem_property_exist(rootitem, DBUSMENU_MENUITEM_PROP_LABEL) &&
 			!dbusmenu_menuitem_property_exist(rootitem, DBUSMENU_MENUITEM_PROP_TYPE)) {
-		gchar * nounderline = remove_underline(dbusmenu_menuitem_property_get(rootitem, DBUSMENU_MENUITEM_PROP_LABEL));
-		if (label_prefix != NULL && label_prefix[0] != '\0') {
-			/* TRANSLATORS: This string is a printf format string to build
-			   a string representing menu hierarchy in an application.  The
-			   strings are <top> <separator> <bottom>.  So if the separator
-			   is ">" and the item is "Open" in the "File" menu the final
-			   string would be "File > Open" */
-			newstr = g_strdup_printf(_("%s > %s"), label_prefix, nounderline);
-			g_free(nounderline);
+		const gchar * label = dbusmenu_menuitem_property_get(rootitem, DBUSMENU_MENUITEM_PROP_LABEL);
+
+		if (label_prefix != NULL && label_prefix[0] != NULL) {
+			gint i;
+			guint prefix_len = g_strv_length(label_prefix);
+			newstr = g_new(gchar *, prefix_len + 2);
+
+			for (i = 0; i < prefix_len; i++) {
+				newstr[i] = g_strdup(label_prefix[i]);
+			}
+
+			newstr[i] = g_strdup(label);
 		} else {
-			newstr = nounderline;
+			newstr = g_new0(gchar *, 2);
+			newstr[0] = g_strdup(label);
 		}
 	}
 
@@ -301,7 +305,7 @@ tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GList * r
 	}
 
 	if (newstr == NULL) {
-		newstr = g_strdup(label_prefix);
+		newstr = g_strdupv(label_prefix);
 	}
 
 	GList * children = dbusmenu_menuitem_get_children(rootitem);
@@ -313,12 +317,12 @@ tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GList * r
 		results = tokens_to_children(item, search, results, newstr, client, indicator_name);
 	}
 
-	g_free(newstr);
+	g_strfreev(newstr);
 	return results;
 }
 
 static GList *
-process_client (DbusmenuCollector * collector, DbusmenuClient * client, const gchar * search, GList * results, const gchar * indicator_name, const gchar * prefix)
+process_client (DbusmenuCollector * collector, DbusmenuClient * client, const gchar * search, GList * results, const gchar * indicator_name, GStrv prefix)
 {
 	/* Handle the case where there are no search terms */
 	if (search == NULL || search[0] == '\0') {
@@ -333,10 +337,11 @@ process_client (DbusmenuCollector * collector, DbusmenuClient * client, const gc
 			}
 
 			const gchar * label = dbusmenu_menuitem_property_get(item, DBUSMENU_MENUITEM_PROP_LABEL);
-			gchar * nounderline = remove_underline(label);
+			const gchar * array[2];
+			array[0] = label;
+			array[1] = NULL;
 
-			results = g_list_prepend(results, dbusmenu_collector_found_new(client, item, nounderline, calculate_distance(nounderline, NULL), indicator_name));
-			g_free(nounderline);
+			results = g_list_prepend(results, dbusmenu_collector_found_new(client, item, (GStrv)array, calculate_distance(NULL, (GStrv)array), indicator_name));
 		}
 
 		return results;
@@ -347,7 +352,7 @@ process_client (DbusmenuCollector * collector, DbusmenuClient * client, const gc
 }
 
 static GList *
-just_do_it (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, const gchar * search, GList * results, const gchar * indicator_name, const gchar * prefix)
+just_do_it (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, const gchar * search, GList * results, const gchar * indicator_name, GStrv prefix)
 {
 	g_return_val_if_fail(IS_DBUSMENU_COLLECTOR(collector), results);
 
@@ -382,7 +387,7 @@ dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_add
 	GList * items = NULL;
 
 	if (dbus_addr != NULL && dbus_path != NULL) {
-		items = just_do_it(collector, dbus_addr, dbus_path, search, NULL, NULL, "");
+		items = just_do_it(collector, dbus_addr, dbus_path, search, NULL, NULL, NULL);
 	}
 
 	/* This is where we'll do the indicators if we're not
@@ -393,7 +398,12 @@ dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_add
 		gint indicator_cnt;
 		for (indicator_cnt = 0; indicator_cnt < indicators->len; indicator_cnt++) {
 			IndicatorTrackerIndicator * indicator = &g_array_index(indicators, IndicatorTrackerIndicator, indicator_cnt);
-			GList * iitems = just_do_it(collector, indicator->dbus_name, indicator->dbus_object, search, NULL, indicator->name, indicator->prefix);
+
+			gchar * array[2];
+			array[0] = indicator->prefix;
+			array[1] = NULL;
+
+			GList * iitems = just_do_it(collector, indicator->dbus_name, indicator->dbus_object, search, NULL, indicator->name, array);
 
 			/* Increase indicator's distance by 50% */
 			GList * iitem = iitems;
@@ -475,10 +485,20 @@ dbusmenu_collector_found_list_free (GList * found_list)
 }
 
 static DbusmenuCollectorFound *
-dbusmenu_collector_found_new (DbusmenuClient * client, DbusmenuMenuitem * item, const gchar * string, guint distance, const gchar * indicator_name)
+dbusmenu_collector_found_new (DbusmenuClient * client, DbusmenuMenuitem * item, GStrv strings, guint distance, const gchar * indicator_name)
 {
 	// g_debug("New Found: '%s', %d, '%s'", string, distance, indicator_name);
 	DbusmenuCollectorFound * found = g_new0(DbusmenuCollectorFound, 1);
+
+#if 0
+// Holding this snippet here
+			/* TRANSLATORS: This string is a printf format string to build
+			   a string representing menu hierarchy in an application.  The
+			   strings are <top> <separator> <bottom>.  So if the separator
+			   is ">" and the item is "Open" in the "File" menu the final
+			   string would be "File > Open" */
+			newstr = g_strdup_printf(_("%s > %s"), label_prefix, nounderline);
+#endif
 
 	g_object_get(client,
 	             DBUSMENU_CLIENT_PROP_DBUS_NAME, &found->dbus_addr,
@@ -486,7 +506,7 @@ dbusmenu_collector_found_new (DbusmenuClient * client, DbusmenuMenuitem * item, 
 	             NULL);
 	found->dbus_id = dbusmenu_menuitem_get_id(item);
 
-	found->display_string = g_strdup(string);
+	found->display_string = g_strjoinv(" > ", strings);
 	found->distance = distance;
 	found->item = item;
 	found->indicator = NULL;
