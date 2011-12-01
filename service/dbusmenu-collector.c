@@ -79,7 +79,7 @@ static void update_layout_cb (GDBusConnection * connection, const gchar * sender
 static guint menu_hash_func (gconstpointer key);
 static gboolean menu_equal_func (gconstpointer a, gconstpointer b);
 static void menu_key_destroy (gpointer key);
-static DbusmenuCollectorFound * dbusmenu_collector_found_new (DbusmenuClient * client, DbusmenuMenuitem * item, GStrv strings, guint distance, const gchar * indicator_name);
+static DbusmenuCollectorFound * dbusmenu_collector_found_new (DbusmenuClient * client, DbusmenuMenuitem * item, GStrv strings, guint distance, GStrv usedstrings, const gchar * indicator_name);
 
 G_DEFINE_TYPE (DbusmenuCollector, dbusmenu_collector, G_TYPE_OBJECT);
 
@@ -303,8 +303,10 @@ tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GList * r
 	}
 
 	if (!dbusmenu_menuitem_get_root(rootitem) && newstr != NULL) {
-		guint distance = calculate_distance(search, newstr, NULL);
-		results = g_list_prepend(results, dbusmenu_collector_found_new(client, rootitem, newstr, distance, indicator_name));
+		GStrv used_strings = NULL;
+		guint distance = calculate_distance(search, newstr, &used_strings);
+		results = g_list_prepend(results, dbusmenu_collector_found_new(client, rootitem, newstr, distance, used_strings, indicator_name));
+		g_strfreev(used_strings);
 	}
 
 	if (newstr == NULL) {
@@ -344,7 +346,7 @@ process_client (DbusmenuCollector * collector, DbusmenuClient * client, const gc
 			array[0] = label;
 			array[1] = NULL;
 
-			results = g_list_prepend(results, dbusmenu_collector_found_new(client, item, (GStrv)array, calculate_distance(NULL, (GStrv)array, NULL), indicator_name));
+			results = g_list_prepend(results, dbusmenu_collector_found_new(client, item, (GStrv)array, calculate_distance(NULL, (GStrv)array, NULL), NULL, indicator_name));
 		}
 
 		return results;
@@ -488,7 +490,7 @@ dbusmenu_collector_found_list_free (GList * found_list)
 }
 
 static DbusmenuCollectorFound *
-dbusmenu_collector_found_new (DbusmenuClient * client, DbusmenuMenuitem * item, GStrv strings, guint distance, const gchar * indicator_name)
+dbusmenu_collector_found_new (DbusmenuClient * client, DbusmenuMenuitem * item, GStrv strings, guint distance, GStrv usedstrings, const gchar * indicator_name)
 {
 	// g_debug("New Found: '%s', %d, '%s'", string, distance, indicator_name);
 	DbusmenuCollectorFound * found = g_new0(DbusmenuCollectorFound, 1);
