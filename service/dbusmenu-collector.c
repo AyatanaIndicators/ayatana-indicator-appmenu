@@ -493,27 +493,44 @@ dbusmenu_collector_found_new (DbusmenuClient * client, DbusmenuMenuitem * item, 
 	// g_debug("New Found: '%s', %d, '%s'", string, distance, indicator_name);
 	DbusmenuCollectorFound * found = g_new0(DbusmenuCollectorFound, 1);
 
-#if 0
-// Holding this snippet here
-			/* TRANSLATORS: This string is a printf format string to build
-			   a string representing menu hierarchy in an application.  The
-			   strings are <top> <separator> <bottom>.  So if the separator
-			   is ">" and the item is "Open" in the "File" menu the final
-			   string would be "File > Open" */
-			newstr = g_strdup_printf(_("%s > %s"), label_prefix, nounderline);
-#endif
-
 	g_object_get(client,
 	             DBUSMENU_CLIENT_PROP_DBUS_NAME, &found->dbus_addr,
 	             DBUSMENU_CLIENT_PROP_DBUS_OBJECT, &found->dbus_path,
 	             NULL);
 	found->dbus_id = dbusmenu_menuitem_get_id(item);
 
-	found->display_string = g_strjoinv(" > ", strings);
 	found->db_string = g_strjoinv(DB_SEPARATOR, strings);
 	found->distance = distance;
 	found->item = item;
 	found->indicator = NULL;
+
+	found->display_string = NULL;
+	if (strings != NULL) {
+		static gchar * connector = NULL;
+
+		if (connector == NULL) {
+			/* TRANSLATORS: This string is a printf format string to build
+			   a string representing menu hierarchy in an application.  The
+			   strings are <top> <separator> <bottom>.  So if the separator
+			   is ">" and the item is "Open" in the "File" menu the final
+			   string would be "File > Open" */
+			connector = g_markup_escape_text(_("%s > %s"), -1);
+		}
+
+		found->display_string = g_markup_escape_text(strings[0], -1);
+		int i;
+		for (i = 1; strings[i] != NULL; i++) {
+			gchar * nounder = remove_underline(strings[i]);
+			gchar * tmp = g_markup_printf_escaped(connector, found->display_string, strings[i]);
+			g_free(found->display_string);
+			g_free(nounder);
+			found->display_string = tmp;
+		}
+
+		/* NOTE: Should probably find some way to use remalloc here, not sure
+		   how to do that with the escaping and the translated connector
+		   though.  Will take some thinking. */
+	}
 
 	if (indicator_name != NULL) {
 		found->indicator = g_strdup(indicator_name);
