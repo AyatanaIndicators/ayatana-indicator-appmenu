@@ -189,7 +189,7 @@ calculate_token_distance (const gchar * needle, const gchar * haystack)
 #define SEPARATORS " .->"
 
 guint
-calculate_distance (const gchar * needle, GStrv haystacks)
+calculate_distance (const gchar * needle, GStrv haystacks, GStrv * matches)
 {
 	g_return_val_if_fail(needle != NULL || haystacks != NULL, G_MAXUINT);
 
@@ -207,6 +207,14 @@ calculate_distance (const gchar * needle, GStrv haystacks)
 
 	GStrv haystack_tokens = g_strsplit_set(haystack, SEPARATORS, 0);
 	g_return_val_if_fail(haystack_tokens != NULL, G_MAXUINT);
+
+	/* Set up an array for matches so that we can enter
+	   the items as we go, if we have some place to put it
+	   when we're done */
+	GArray * match_array = NULL;
+	if (matches != NULL) {
+		match_array = g_array_sized_new(TRUE, TRUE, sizeof(gchar *), g_strv_length(needle_tokens));
+	}
 
 	// g_debug("Needle tokens: '%s'", g_strjoinv("', '", needle_tokens));
 	// g_debug("Haystack tokens: '%s'", g_strjoinv("', '", haystack_tokens));
@@ -226,10 +234,25 @@ calculate_distance (const gchar * needle, GStrv haystacks)
 
 			if (distance < best_fit) {
 				best_fit = distance;
+
+				/* Place the pointer into the array, notice no copy here
+				   so this will go away when hastack_tokens is free'd */
+				if (match_array != NULL) {
+					g_array_insert_val(match_array, needle_token, ihaystack);
+				}
 			}
 		}
 
 		final_distance += best_fit;
+	}
+
+	/* Copy the strings that we care about */
+	if (match_array != NULL) {
+		int i;
+		for (i = 0; i < match_array->len; i++) {
+			gchar * tmp = g_strdup(g_array_index(match_array, gchar *, i));
+			g_array_insert_val(match_array, i, tmp);
+		}
 	}
 
 	g_strfreev(needle_tokens);

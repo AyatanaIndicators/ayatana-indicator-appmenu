@@ -24,7 +24,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 G_BEGIN_DECLS
 
-guint calculate_distance (const gchar * needle, GStrv haystack);
+guint calculate_distance (const gchar * needle, GStrv haystack, GStrv * matched);
 
 G_END_DECLS
 

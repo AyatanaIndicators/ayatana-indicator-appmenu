@@ -303,7 +303,7 @@ tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GList * r
 	}
 
 	if (!dbusmenu_menuitem_get_root(rootitem) && newstr != NULL) {
-		guint distance = calculate_distance(search, newstr);
+		guint distance = calculate_distance(search, newstr, NULL);
 		results = g_list_prepend(results, dbusmenu_collector_found_new(client, rootitem, newstr, distance, indicator_name));
 	}
 
@@ -344,7 +344,7 @@ process_client (DbusmenuCollector * collector, DbusmenuClient * client, const gc
 			array[0] = label;
 			array[1] = NULL;
 
-			results = g_list_prepend(results, dbusmenu_collector_found_new(client, item, (GStrv)array, calculate_distance(NULL, (GStrv)array), indicator_name));
+			results = g_list_prepend(results, dbusmenu_collector_found_new(client, item, (GStrv)array, calculate_distance(NULL, (GStrv)array, NULL), indicator_name));
 		}
 
 		return results;
