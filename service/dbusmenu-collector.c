@@ -33,6 +33,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "dbusmenu-collector.h"
 #include "distance.h"
 #include "indicator-tracker.h"
+#include "shared-values.h"
 
 #define GENERIC_ICON   "dbusmenu-lens-panel"
 
@@ -51,6 +52,8 @@ struct _DbusmenuCollectorFound {
 	gint dbus_id;
 
 	gchar * display_string;
+	gchar * db_string;
+
 	guint distance;
 	DbusmenuMenuitem * item;
 	gchar * indicator;
@@ -474,7 +477,7 @@ const gchar *
 dbusmenu_collector_found_get_db (DbusmenuCollectorFound * found)
 {
 	g_return_val_if_fail(found != NULL, NULL);
-	return found->display_string;
+	return found->db_string;
 }
 
 void
@@ -507,6 +510,7 @@ dbusmenu_collector_found_new (DbusmenuClient * client, DbusmenuMenuitem * item, 
 	found->dbus_id = dbusmenu_menuitem_get_id(item);
 
 	found->display_string = g_strjoinv(" > ", strings);
+	found->db_string = g_strjoinv(DB_SEPARATOR, strings);
 	found->distance = distance;
 	found->item = item;
 	found->indicator = NULL;
@@ -527,6 +531,7 @@ dbusmenu_collector_found_free (DbusmenuCollectorFound * found)
 	g_free(found->dbus_addr);
 	g_free(found->dbus_path);
 	g_free(found->display_string);
+	g_free(found->db_string);
 	g_free(found->indicator);
 	g_object_unref(found->item);
 	g_free(found);
