@@ -460,6 +460,13 @@ dbusmenu_collector_found_get_display (DbusmenuCollectorFound * found)
 	return found->display_string;
 }
 
+const gchar *
+dbusmenu_collector_found_get_db (DbusmenuCollectorFound * found)
+{
+	g_return_val_if_fail(found != NULL, NULL);
+	return found->display_string;
+}
+
 void
 dbusmenu_collector_found_list_free (GList * found_list)
 {
