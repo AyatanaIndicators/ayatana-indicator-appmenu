@@ -19,9 +19,11 @@ You should have received a copy of the GNU General Public License along
 with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include "load-app-info.h"
 #include <gio/gio.h>
 #include <glib/gi18n.h>
+
+#include "load-app-info.h"
+#include "shared-values.h"
 
 static void new_element (GMarkupParseContext *context, const gchar * name, const gchar ** attribute_names, const gchar ** attribute_values, gpointer user_data, GError **error);
 static void end_element (GMarkupParseContext  *context, const gchar * name, gpointer user_data, GError ** error);
@@ -252,7 +254,7 @@ new_element (GMarkupParseContext *context, const gchar * name, const gchar ** at
 		if (g_queue_is_empty(&menu_data->queue)) {
 			g_queue_push_head(&menu_data->queue, cleanedup);
 		} else {
-			g_queue_push_head(&menu_data->queue, g_strdup_printf(_("%s > %s"), (gchar *)g_queue_peek_head(&menu_data->queue), cleanedup));
+			g_queue_push_head(&menu_data->queue, g_strconcat((gchar *)g_queue_peek_head(&menu_data->queue), DB_SEPARATOR, cleanedup, NULL));
 			g_free(cleanedup);
 		}
 
@@ -281,7 +283,7 @@ new_element (GMarkupParseContext *context, const gchar * name, const gchar ** at
 		}
 
 		gchar * cleanedup = remove_underline(translated);
-		gchar * finalitem = g_strdup_printf(_("%s > %s"), (gchar *)g_queue_peek_head(&menu_data->queue), cleanedup);
+		gchar * finalitem = g_strconcat((gchar *)g_queue_peek_head(&menu_data->queue), DB_SEPARATOR, cleanedup, NULL);
 		g_free(cleanedup);
 		gint64 count = g_ascii_strtoll(scount, NULL, 10);
 

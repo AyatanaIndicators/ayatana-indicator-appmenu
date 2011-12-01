@@ -20,6 +20,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include "dump-app-info.h"
+#include "shared-values.h"
 
 typedef enum _tree_type_t tree_type_t;
 enum _tree_type_t {
@@ -91,7 +92,7 @@ entry_cb (void * user_data, int columns, char ** values, char ** names)
 {
 	GList ** tree = (GList **)user_data;
 
-	gchar ** entries = g_strsplit(values[0], " > ", -1); // TODO: Get from: _("%s > %s")
+	gchar ** entries = g_strsplit(values[0], DB_SEPARATOR, -1);
 
 	*tree = place_on_tree(*tree, entries);
 

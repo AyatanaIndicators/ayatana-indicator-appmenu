@@ -27,6 +27,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define DBUS_PATH  "/com/canonical/hud"
 #define DBUS_IFACE "com.canonical.hud"
 
+#define DB_SEPARATOR "||"
 
 
 #endif /* SHARED_VALUES_H__ */
