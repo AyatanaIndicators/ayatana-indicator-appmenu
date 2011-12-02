@@ -27,6 +27,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "load-app-info.c"
 #include "usage-tracker.h"
 #include "usage-tracker.c"
+#include "shared-values.h"
 
 static void
 test_usage_testapp (void)
@@ -36,7 +37,7 @@ test_usage_testapp (void)
 	g_assert(tracker != NULL);
 	g_assert(IS_USAGE_TRACKER(tracker));
 
-	g_assert(usage_tracker_get_usage(tracker, "/usr/share/applications/testapp.desktop", "Menu > Item") == 7);
+	g_assert(usage_tracker_get_usage(tracker, "/usr/share/applications/testapp.desktop", "Menu" DB_SEPARATOR "Item") == 7);
 
 	g_object_unref(tracker);
 	return;
@@ -50,7 +51,7 @@ test_usage_testapp_clip (void)
 	g_assert(tracker != NULL);
 	g_assert(IS_USAGE_TRACKER(tracker));
 
-	g_assert(usage_tracker_get_usage(tracker, "/usr/share/applications/testapp100.desktop", "Menu > Item") == 30);
+	g_assert(usage_tracker_get_usage(tracker, "/usr/share/applications/testapp100.desktop", "Menu" DB_SEPARATOR "Item") == 30);
 
 	g_object_unref(tracker);
 	return;
