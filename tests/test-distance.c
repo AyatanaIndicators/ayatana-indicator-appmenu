@@ -117,6 +117,23 @@ test_distance_print_issues (void)
 	return;
 }
 
+/* Check to make sure the returned hits are not dups and the
+   proper number */
+static void
+test_distance_dups (void)
+{
+	GStrv hits = NULL;
+	gchar * teststrings[] = {"Inflated", "Confluated", "Sublimated", "Sadated", "Situated", "Infatuated", NULL};
+
+	g_assert(calculate_distance("ted inf", teststrings, &hits) != 0);
+	g_assert(g_strv_length(hits) == 2);
+	g_assert(g_strcmp0(hits[0], hits[1]) != 0);
+
+	g_strfreev(hits);
+
+	return;
+}
+
 /* Build the test suite */
 static void
 test_distance_suite (void)
@@ -125,6 +142,7 @@ test_distance_suite (void)
 	g_test_add_func ("/hud/distance/subfunction",   test_distance_subfunction);
 	g_test_add_func ("/hud/distance/missspelll",    test_distance_missspelll);
 	g_test_add_func ("/hud/distance/print_issues",  test_distance_print_issues);
+	g_test_add_func ("/hud/distance/duplicates",    test_distance_dups);
 	return;
 }
 
