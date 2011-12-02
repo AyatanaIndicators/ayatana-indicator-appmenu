@@ -30,17 +30,22 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 static void
 test_distance_base (void)
 {
-	g_assert(calculate_distance("foo", "foo") == 0);
-	g_assert(calculate_distance("foo", "bar") != 0);
-	g_assert(calculate_distance("foo", NULL) != 0);
-	g_assert(calculate_distance(NULL, "foo") != 0);
+	gchar * testdata1[] = {"foo", NULL};
+	g_assert(calculate_distance("foo", testdata1, NULL) == 0);
+
+	gchar * testdata2[] = {"bar", NULL};
+	g_assert(calculate_distance("foo", testdata2, NULL) != 0);
+
+	g_assert(calculate_distance("foo", NULL, NULL) != 0);
+
+	g_assert(calculate_distance(NULL, testdata1, NULL) != 0);
 
 	return;
 }
 
 /* Test a set of strings */
 static void
-test_set (const gchar ** teststrings, int num_tests, const gchar * search, int right)
+test_set (GStrv * teststrings, int num_tests, const gchar * search, int right)
 {
 	int i;
 
@@ -48,8 +53,14 @@ test_set (const gchar ** teststrings, int num_tests, const gchar * search, int r
 		if (i == right)
 			continue;
 
-		if (calculate_distance(search, teststrings[i]) < calculate_distance(search, teststrings[right])) {
-			g_error("Found '%s' with search string '%s' instead of '%s'", teststrings[i], search, teststrings[right]);
+		if (calculate_distance(search, teststrings[i], NULL) < calculate_distance(search, teststrings[right], NULL)) {
+			gchar * teststr = g_strjoinv(" > ", teststrings[i]);
+			gchar * rightstr = g_strjoinv(" > ", teststrings[right]);
+
+			g_error("Found '%s' with search string '%s' instead of '%s'", teststr, search, rightstr);
+
+			g_free(teststr);
+			g_free(rightstr);
 		}
 	}
 
@@ -60,12 +71,11 @@ test_set (const gchar ** teststrings, int num_tests, const gchar * search, int r
 static void
 test_distance_subfunction (void)
 {
-	const gchar * teststrings[] = {
-		"File > Open",
-		"File > New",
-		"File > Print",
-		"File > Print Preview",
-	};
+	GStrv teststrings[4];
+	gchar * teststrings0[] = {"File", "Open", NULL}; teststrings[0] = teststrings0;
+	gchar * teststrings1[] = {"File", "New", NULL}; teststrings[1] = teststrings1;
+	gchar * teststrings2[] = {"File", "Print", NULL}; teststrings[2] = teststrings2;
+	gchar * teststrings3[] = {"File", "Print Preview", NULL}; teststrings[3] = teststrings3;
 
 	test_set(teststrings, 4, "Print Pre", 3);
 	return;
@@ -75,12 +85,11 @@ test_distance_subfunction (void)
 static void
 test_distance_missspelll (void)
 {
-	const gchar * teststrings[] = {
-		"File > Open",
-		"File > New",
-		"File > Print",
-		"File > Print Preview",
-	};
+	GStrv teststrings[4];
+	gchar * teststrings0[] = {"File", "Open", NULL}; teststrings[0] = teststrings0;
+	gchar * teststrings1[] = {"File", "New", NULL}; teststrings[1] = teststrings1;
+	gchar * teststrings2[] = {"File", "Print", NULL}; teststrings[2] = teststrings2;
+	gchar * teststrings3[] = {"File", "Print Preview", NULL}; teststrings[3] = teststrings3;
 
 	test_set(teststrings, 4, "Prnt Pr", 3);
 	test_set(teststrings, 4, "Print Preiw", 3);
@@ -93,14 +102,13 @@ test_distance_missspelll (void)
 static void
 test_distance_print_issues (void)
 {
-	const gchar * teststrings[] = {
-		"File > New",
-		"File > Open",
-		"Edit > Undo",
-		"Help > About",
-		"Help > Empty",
-		"File > Print...",
-	};
+	GStrv teststrings[6];
+	gchar * teststrings0[] = {"File", "New", NULL}; teststrings[0] = teststrings0;
+	gchar * teststrings1[] = {"File", "Open", NULL}; teststrings[1] = teststrings1;
+	gchar * teststrings2[] = {"Edit", "Undo", NULL}; teststrings[2] = teststrings2;
+	gchar * teststrings3[] = {"Help", "About", NULL}; teststrings[3] = teststrings3;
+	gchar * teststrings4[] = {"Help", "Empty", NULL}; teststrings[4] = teststrings4;
+	gchar * teststrings5[] = {"File", "Print...", NULL}; teststrings[5] = teststrings5;
 
 	test_set(teststrings, 6, "Pr", 5);
 	test_set(teststrings, 6, "Print", 5);
