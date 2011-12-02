@@ -307,7 +307,10 @@ tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GList * r
 	if (!dbusmenu_menuitem_get_root(rootitem) && newstr != NULL) {
 		GStrv used_strings = NULL;
 		guint distance = calculate_distance(search, newstr, &used_strings);
-		results = g_list_prepend(results, dbusmenu_collector_found_new(client, rootitem, newstr, distance, used_strings, indicator_name));
+		if (distance < G_MAXUINT) {
+			// g_debug("Distance %d for '%s' in \"'%s'\" using \"'%s'\"", distance, search, g_strjoinv("' '", newstr), g_strjoinv("' '", used_strings));
+			results = g_list_prepend(results, dbusmenu_collector_found_new(client, rootitem, newstr, distance, used_strings, indicator_name));
+		}
 		g_strfreev(used_strings);
 	}
 
