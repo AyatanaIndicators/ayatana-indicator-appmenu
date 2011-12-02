@@ -295,10 +295,12 @@ tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GList * r
 				newstr[i] = g_strdup(label_prefix[i]);
 			}
 
-			newstr[i] = g_strdup(label);
+			newstr[prefix_len] = g_strdup(label);
+			newstr[prefix_len + 1] = NULL;
 		} else {
 			newstr = g_new0(gchar *, 2);
 			newstr[0] = g_strdup(label);
+			newstr[1] = NULL;
 		}
 	}
 
@@ -519,11 +521,13 @@ dbusmenu_collector_found_new (DbusmenuClient * client, DbusmenuMenuitem * item, 
 			connector = g_markup_escape_text(_("%s > %s"), -1);
 		}
 
-		found->display_string = g_markup_escape_text(strings[0], -1);
+		gchar * firstunderline = remove_underline(strings[0]);
+		found->display_string = g_markup_escape_text(firstunderline, -1);
+		g_free(firstunderline);
 		int i;
 		for (i = 1; strings[i] != NULL; i++) {
 			gchar * nounder = remove_underline(strings[i]);
-			gchar * tmp = g_markup_printf_escaped(connector, found->display_string, strings[i]);
+			gchar * tmp = g_markup_printf_escaped(connector, found->display_string, nounder);
 			g_free(found->display_string);
 			g_free(nounder);
 			found->display_string = tmp;
@@ -532,6 +536,24 @@ dbusmenu_collector_found_new (DbusmenuClient * client, DbusmenuMenuitem * item, 
 		/* NOTE: Should probably find some way to use remalloc here, not sure
 		   how to do that with the escaping and the translated connector
 		   though.  Will take some thinking. */
+	}
+
+	if (found->display_string != NULL && usedstrings != NULL) {
+		int str;
+		for (str = 0; usedstrings[str] != NULL; str++) {
+			if (usedstrings[str][0] == '\0') continue; // No NULL strings
+			gchar * nounder = remove_underline(usedstrings[str]);
+			GStrv split = g_strsplit(found->display_string, nounder, -1);
+			gchar * bold = g_strconcat("<b>", nounder, "</b>", NULL);
+			gchar * tmp = g_strjoinv(bold, split);
+
+			g_free(found->display_string);
+			found->display_string = tmp;
+
+			g_strfreev(split);
+			g_free(bold);
+			g_free(nounder);
+		}
 	}
 
 	if (indicator_name != NULL) {
