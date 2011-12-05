@@ -48,6 +48,9 @@ SystemIndicator system_indicators[] = {
 struct _IndicatorTrackerPrivate {
 	GArray * indicators;
 	guint watches[G_N_ELEMENTS(system_indicators)];
+
+	GDBusProxy * app_proxy;
+	GCancellable * app_proxy_cancel;
 };
 
 #define INDICATOR_TRACKER_GET_PRIVATE(o) \
@@ -59,6 +62,7 @@ static void indicator_tracker_dispose    (GObject *object);
 static void indicator_tracker_finalize   (GObject *object);
 static void system_watch_appeared        (GDBusConnection * connection, const gchar * name, const gchar * name_owner, gpointer user_data);
 static void system_watch_vanished        (GDBusConnection * connection, const gchar * name, gpointer user_data);
+static void app_proxy_built              (GObject * object, GAsyncResult * result, gpointer user_data);
 
 G_DEFINE_TYPE (IndicatorTracker, indicator_tracker, G_TYPE_OBJECT);
 
@@ -80,6 +84,8 @@ indicator_tracker_init (IndicatorTracker *self)
 {
 	self->priv = INDICATOR_TRACKER_GET_PRIVATE(self);
 	self->priv->indicators = NULL;
+	self->priv->app_proxy = NULL;
+	self->priv->app_proxy_cancel = NULL;
 
 	self->priv->indicators = g_array_new(FALSE, TRUE, sizeof(IndicatorTrackerIndicator));
 
@@ -93,6 +99,18 @@ indicator_tracker_init (IndicatorTracker *self)
 		                                                      self,
 		                                                      NULL); /* free func */
 	}
+
+	self->priv->app_proxy_cancel = g_cancellable_new();
+
+	g_dbus_proxy_new_for_bus(G_BUS_TYPE_SESSION,
+	                         G_DBUS_PROXY_FLAGS_DO_NOT_AUTO_START | G_DBUS_PROXY_FLAGS_DO_NOT_LOAD_PROPERTIES,
+	                         NULL, /* interface info */
+	                         "com.canonical.indicator.application",
+	                         "/com/canonical/indicator/application/service",
+	                         "com.canonical.indicator.application.service",
+	                         self->priv->app_proxy_cancel,
+	                         app_proxy_built,
+	                         self);
 
 	return;
 }
@@ -109,7 +127,17 @@ indicator_tracker_dispose (GObject *object)
 			self->priv->watches[indicator_cnt] = 0;
 		}
 	}
-	
+
+	if (self->priv->app_proxy_cancel != NULL) {
+		g_cancellable_cancel(self->priv->app_proxy_cancel);
+		g_object_unref(self->priv->app_proxy_cancel);
+		self->priv->app_proxy_cancel = NULL;
+	}
+
+	if (self->priv->app_proxy != NULL) {
+		g_object_unref(self->priv->app_proxy);
+		self->priv->app_proxy = NULL;
+	}
 
 	G_OBJECT_CLASS (indicator_tracker_parent_class)->dispose (object);
 	return;
@@ -228,6 +256,17 @@ system_watch_vanished (GDBusConnection * connection, const gchar * name, gpointe
 		   so we have to look in this same slot again. */
 		i--;
 	}
+
+	return;
+}
+
+/* Gets called when we have an app proxy.  Now we can start talking
+   to it, and learning from it */
+static void
+app_proxy_built (GObject * object, GAsyncResult * result, gpointer user_data)
+{
+
+
 
 	return;
 }
