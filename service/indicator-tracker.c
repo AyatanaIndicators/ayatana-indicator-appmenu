@@ -63,6 +63,8 @@ static void indicator_tracker_finalize   (GObject *object);
 static void system_watch_appeared        (GDBusConnection * connection, const gchar * name, const gchar * name_owner, gpointer user_data);
 static void system_watch_vanished        (GDBusConnection * connection, const gchar * name, gpointer user_data);
 static void app_proxy_built              (GObject * object, GAsyncResult * result, gpointer user_data);
+static void app_proxy_name_change        (GObject * gobject, GParamSpec * pspec, gpointer user_data);
+static void app_proxy_signal             (GDBusProxy *proxy, gchar * sender_name, gchar * signal_name, GVariant * parameters, gpointer user_data);
 
 G_DEFINE_TYPE (IndicatorTracker, indicator_tracker, G_TYPE_OBJECT);
 
@@ -265,7 +267,59 @@ system_watch_vanished (GDBusConnection * connection, const gchar * name, gpointe
 static void
 app_proxy_built (GObject * object, GAsyncResult * result, gpointer user_data)
 {
+	GError * error = NULL;
+	GDBusProxy * proxy = g_dbus_proxy_new_for_bus_finish(result, &error);
 
+	if (error != NULL) {
+		g_warning("Unable to build App Indicator Proxy: %s", error->message);
+		g_error_free(error);
+		return;
+	}
+
+	g_return_if_fail(IS_INDICATOR_TRACKER(user_data));
+	IndicatorTracker * self = INDICATOR_TRACKER(user_data);
+
+	self->priv->app_proxy = proxy;
+
+	/* Watch to see if we get dropped off the bus or not */
+	g_signal_connect(G_OBJECT(self->priv->app_proxy), "notify::g-name-owner", G_CALLBACK(app_proxy_name_change), self);
+	g_signal_connect(G_OBJECT(self->priv->app_proxy), "g-signal",             G_CALLBACK(app_proxy_signal),      self);
+
+	/* Act like the name changed, as this function checks to see
+	   if it is there or not anyway */
+	app_proxy_name_change(G_OBJECT(self->priv->app_proxy), NULL, self);
+
+	return;
+}
+
+/* React to the name changing, this usually means the service is either
+   leaving or joining the bus. */
+static void
+app_proxy_name_change (GObject * gobject, GParamSpec * pspec, gpointer user_data)
+{
+	g_return_if_fail(IS_INDICATOR_TRACKER(user_data));
+	IndicatorTracker * self = INDICATOR_TRACKER(user_data);
+
+	/* Check to see if this wire is hot! */
+	gchar * owner = g_dbus_proxy_get_name_owner(self->priv->app_proxy);
+	if (owner == NULL) {
+		/* Delete entries if we have them */
+
+		return;
+	}
+	g_free(owner);
+
+
+	/* Query to see if there's any indicator already out there. */
+
+	return;
+}
+
+/* Signals coming over dbus from the app indicator service.  Gives
+   us updates to the indicator cache that we have. */
+static void
+app_proxy_signal (GDBusProxy *proxy, gchar * sender_name, gchar * signal_name, GVariant * parameters, gpointer user_data) 
+{
 
 
 	return;
