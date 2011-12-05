@@ -530,8 +530,10 @@ dbusmenu_collector_found_new (DbusmenuClient * client, DbusmenuMenuitem * item, 
 		int i;
 		for (i = 1; strings[i] != NULL; i++) {
 			gchar * nounder = remove_underline(strings[i]);
-			gchar * tmp = g_markup_printf_escaped(connector, found->display_string, nounder);
+			gchar * escaped = g_markup_escape_text(nounder, -1);
+			gchar * tmp = g_strdup_printf(connector, found->display_string, escaped);
 			g_free(found->display_string);
+			g_free(escaped);
 			g_free(nounder);
 			found->display_string = tmp;
 		}
