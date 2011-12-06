@@ -45,12 +45,24 @@ SystemIndicator system_indicators[] = {
 	{dbus_name: "com.canonical.indicator.messages", dbus_menu_path: "/com/canonical/indicator/messages/menu", indicator_name: "indicator-messages",       user_visible_name: N_("Messages") }
 };
 
+typedef struct _AppIndicator AppIndicator;
+struct _AppIndicator {
+	IndicatorTrackerIndicator system;
+
+	gboolean alert;
+
+	gchar * alert_name;
+	gchar * normal_name;
+};
+
+
 struct _IndicatorTrackerPrivate {
 	GArray * indicators;
 	guint watches[G_N_ELEMENTS(system_indicators)];
 
 	GDBusProxy * app_proxy;
 	GCancellable * app_proxy_cancel;
+	GArray * app_indicators;
 };
 
 #define INDICATOR_TRACKER_GET_PRIVATE(o) \
@@ -62,6 +74,8 @@ static void indicator_tracker_dispose    (GObject *object);
 static void indicator_tracker_finalize   (GObject *object);
 static void system_watch_appeared        (GDBusConnection * connection, const gchar * name, const gchar * name_owner, gpointer user_data);
 static void system_watch_vanished        (GDBusConnection * connection, const gchar * name, gpointer user_data);
+static void system_indicator_cleanup     (gpointer pindicator);
+static void app_indicator_cleanup        (gpointer pindicator);
 static void app_proxy_built              (GObject * object, GAsyncResult * result, gpointer user_data);
 static void app_proxy_name_change        (GObject * gobject, GParamSpec * pspec, gpointer user_data);
 static void app_proxy_signal             (GDBusProxy *proxy, gchar * sender_name, gchar * signal_name, GVariant * parameters, gpointer user_data);
@@ -88,8 +102,14 @@ indicator_tracker_init (IndicatorTracker *self)
 	self->priv->indicators = NULL;
 	self->priv->app_proxy = NULL;
 	self->priv->app_proxy_cancel = NULL;
+	self->priv->app_indicators = NULL;
 
+	/* NOTE: It would seem like we could combine these, eh?
+	   Well, not really.  And the reason is because the app
+	   indicator service sends everything based on array index
+	   so it's a lot easier to have an array to track that */
 	self->priv->indicators = g_array_new(FALSE, TRUE, sizeof(IndicatorTrackerIndicator));
+	self->priv->app_indicators = g_array_new(FALSE, FALSE, sizeof(AppIndicator));
 
 	int indicator_cnt;
 	for (indicator_cnt = 0; indicator_cnt < G_N_ELEMENTS(system_indicators); indicator_cnt++) {
@@ -148,6 +168,37 @@ indicator_tracker_dispose (GObject *object)
 static void
 indicator_tracker_finalize (GObject *object)
 {
+	g_return_if_fail(IS_INDICATOR_TRACKER(object));
+	IndicatorTracker * self = INDICATOR_TRACKER(object);
+
+
+	if (self->priv->indicators != NULL) {
+		/* Clear all the entries in the system indicator array */
+		while (self->priv->indicators->len != 0) {
+			IndicatorTrackerIndicator * indicator = &g_array_index(self->priv->indicators, IndicatorTrackerIndicator, 0);
+
+			system_indicator_cleanup(indicator);
+
+			g_array_remove_index_fast(self->priv->indicators, 0);
+		}
+
+		g_array_free(self->priv->indicators, TRUE /* delete segment */);
+		self->priv->indicators = NULL;
+	}
+
+	if (self->priv->app_indicators != NULL) {
+		/* Clear all the entries in the system indicator array */
+		while (self->priv->app_indicators->len != 0) {
+			AppIndicator * indicator = &g_array_index(self->priv->app_indicators, AppIndicator, 0);
+
+			app_indicator_cleanup(indicator);
+
+			g_array_remove_index_fast(self->priv->app_indicators, 0);
+		}
+
+		g_array_free(self->priv->app_indicators, TRUE /* delete segment */);
+		self->priv->app_indicators = NULL;
+	}
 
 	G_OBJECT_CLASS (indicator_tracker_parent_class)->finalize (object);
 	return;
@@ -246,11 +297,7 @@ system_watch_vanished (GDBusConnection * connection, const gchar * name, gpointe
 			continue;
 		}
 
-		g_free(indicator->name);
-		g_free(indicator->dbus_name);
-		g_free(indicator->dbus_name_wellknown);
-		g_free(indicator->dbus_object);
-		g_free(indicator->prefix);
+		system_indicator_cleanup(indicator);
 
 		g_array_remove_index_fast(self->priv->indicators, i);
 		/* Oh, this is confusing.  Basically becasue we shorten the array
@@ -258,6 +305,38 @@ system_watch_vanished (GDBusConnection * connection, const gchar * name, gpointe
 		   so we have to look in this same slot again. */
 		i--;
 	}
+
+	return;
+}
+
+/* Removes all the memory that is allocated inside the system indicator
+   structure.  The actual indicator is not free'd */
+static void
+system_indicator_cleanup (gpointer pindicator)
+{
+	g_return_if_fail(pindicator != NULL);
+
+	IndicatorTrackerIndicator * indicator = (IndicatorTrackerIndicator *)pindicator;
+
+	g_free(indicator->name);
+	g_free(indicator->dbus_name);
+	g_free(indicator->dbus_name_wellknown);
+	g_free(indicator->dbus_object);
+	g_free(indicator->prefix);
+
+	return;
+}
+
+/* Deletes the allocated memory in the app indicator structure so
+   that we don't leak any! */
+static void
+app_indicator_cleanup (gpointer pindicator)
+{
+	g_return_if_fail(pindicator != NULL);
+
+	AppIndicator * indicator = (AppIndicator *)pindicator;
+
+	system_indicator_cleanup(&(indicator->system));
 
 	return;
 }
