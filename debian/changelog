@@ -1,9 +1,9 @@
-indicator-appmenu (0.3.2+hud1-0ubuntu1~ppa2) UNRELEASED; urgency=low
+indicator-appmenu (0.3.2+hud1-0ubuntu1~ppa2) oneiric; urgency=low
 
   * indicator-appmenu.install, indicator-appmenu-tools.install: Adding
     in the HUD components to the various packages.
 
- -- Ted Gould <ted@ubuntu.com>  Sun, 11 Dec 2011 21:36:09 -0600
+ -- Ted Gould <ted@ubuntu.com>  Sun, 11 Dec 2011 21:40:43 -0600
 
 indicator-appmenu (0.3.2+hud1-0ubuntu1~ppa1) oneiric; urgency=low
 
