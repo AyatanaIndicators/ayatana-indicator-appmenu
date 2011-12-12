@@ -1,0 +1,6 @@
+<hudappinfo>
+	<desktopfile path="/usr/share/applications/testapp.desktop" />
+	<menu name="File">
+		<item name="Open" count="1" />
+	</menu>
+</hudappinfo>
