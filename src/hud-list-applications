@@ -1,0 +1,9 @@
+#!/bin/sh
+
+if [ -n $HUD_CACHE_DIR ]; then
+	HUD_CACHE_DIR=~/.cache
+fi;
+
+FINAL_DIR="$HUD_CACHE_DIR/hud"
+
+sqlite3 $FINAL_DIR/usage-log.sqlite "select distinct application from usage"

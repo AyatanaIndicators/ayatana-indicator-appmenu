@@ -1,0 +1,7 @@
+<hudappinfo>
+	<menus>
+		<menu name="File">
+			<item name="Open" count="1" />
+		</menu>
+	</menus>
+</hudappinfo>
