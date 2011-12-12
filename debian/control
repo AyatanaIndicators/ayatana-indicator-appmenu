@@ -31,7 +31,9 @@ Recommends: indicator-applet | indicator-renderer,
             appmenu-qt
 Breaks: indicator-applet (<< 0.3.0)
 Conflicts: libdbusmenu-glib1 (<< 0.3.7),
-           libdbusmenu-gtk1 (<< 0.3.7)
+           libdbusmenu-gtk1 (<< 0.3.7),
+           hud
+Replaces: hud
 Description: Indicator for application menus.
  .
  This package provides support for application menus.
@@ -56,6 +58,7 @@ Depends: ${shlibs:Depends},
          ${misc:Depends},
          indicator-appmenu (= ${binary:Version}),
          libdbusmenu-tools
+Conflicts: hud
 Description: Tools for debuging application menus.
  .
  This package provides tools for supporting application menus.
