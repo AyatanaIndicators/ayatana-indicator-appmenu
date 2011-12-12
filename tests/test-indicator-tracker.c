@@ -22,8 +22,8 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <glib.h>
 #include <glib-object.h>
 
-#include "../service/indicator-tracker.h"
-#include "../service/indicator-tracker.c"
+#include "indicator-tracker.h"
+#include "indicator-tracker.c"
 
 gboolean
 end_of_line (gpointer user_data)

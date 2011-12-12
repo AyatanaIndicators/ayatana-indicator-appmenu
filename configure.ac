@@ -194,7 +194,6 @@ src/Makefile
 scripts/Makefile
 tools/Makefile
 po/Makefile.in
-service/Makefile
 data/Makefile
 tests/Makefile
 ])
