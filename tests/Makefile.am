@@ -53,8 +53,8 @@ USAGE_DB_SIMPLE_XML_REPORT = test-usage-db-simple.xml
 test-usage-db-simple-test: test-usage-db-simple test-usage-db-simple.sql Makefile.am
 	@echo "#!/bin/bash -e" > $@
 	@echo cd \`mktemp -d $(abs_builddir)/test-usage-db-simple.dir.XXXXXX\` >> $@
-	@echo mkdir -p hud >> $@
-	@echo cat $(abs_srcdir)/test-usage-db-simple.sql \| sqlite3 hud/usage-log.sqlite >> $@
+	@echo mkdir -p indicator-appmenu >> $@
+	@echo cat $(abs_srcdir)/test-usage-db-simple.sql \| sqlite3 indicator-appmenu/hud-usage-log.sqlite >> $@
 	@echo export HUD_CACHE_DIR=\`pwd\` >> $@
 	@echo gtester --verbose -k -o $(USAGE_DB_SIMPLE_XML_REPORT) $(abs_builddir)/test-usage-db-simple >> $@
 	@echo cd .. >> $@
@@ -91,8 +91,8 @@ USAGE_DB_OLD_XML_REPORT = test-usage-db-old.xml
 test-usage-db-old-test: test-usage-db-old test-usage-db-old.sql Makefile.am
 	@echo "#!/bin/bash -e" > $@
 	@echo cd \`mktemp -d $(abs_builddir)/test-usage-db-old.dir.XXXXXX\` >> $@
-	@echo mkdir -p hud >> $@
-	@echo cat $(abs_srcdir)/test-usage-db-old.sql \| sqlite3 hud/usage-log.sqlite >> $@
+	@echo mkdir -p indicator-appmenu >> $@
+	@echo cat $(abs_srcdir)/test-usage-db-old.sql \| sqlite3 indicator-appmenu/hud-usage-log.sqlite >> $@
 	@echo export HUD_CACHE_DIR=\`pwd\` >> $@
 	@echo gtester --verbose -k -o $(USAGE_DB_SIMPLE_XML_REPORT) $(abs_builddir)/test-usage-db-old >> $@
 	@echo cd .. >> $@
@@ -127,11 +127,11 @@ check_PROGRAMS += \
 test-usage-db-ancient-test: test-usage-db-ancient test-usage-db-ancient.sql test-usage-dump-entries.sql Makefile.am
 	@echo "#!/bin/bash -e" > $@
 	@echo cd \`mktemp -d $(abs_builddir)/test-usage-db-ancient.dir.XXXXXX\` >> $@
-	@echo mkdir -p hud >> $@
-	@echo cat $(abs_srcdir)/test-usage-db-ancient.sql \| sqlite3 hud/usage-log.sqlite >> $@
+	@echo mkdir -p indicator-appmenu >> $@
+	@echo cat $(abs_srcdir)/test-usage-db-ancient.sql \| sqlite3 indicator-appmenu/hud-usage-log.sqlite >> $@
 	@echo export HUD_CACHE_DIR=\`pwd\` >> $@
 	@echo $(abs_builddir)/test-usage-db-ancient >> $@
-	@echo if test \`cat $(abs_srcdir)/test-usage-dump-entries.sql \| sqlite3 hud/usage-log.sqlite \| wc -l\` -gt 0\; then >> $@
+	@echo if test \`cat $(abs_srcdir)/test-usage-dump-entries.sql \| sqlite3 indicator-appmenu/hud-usage-log.sqlite \| wc -l\` -gt 0\; then >> $@
 	@echo echo Database has entries >> $@
 	@echo exit 1 >> $@
 	@echo fi >> $@
@@ -170,8 +170,8 @@ USAGE_TESTAPP_XML_REPORT = $(abs_builddir)/test-usage-db-testapp.xml
 test-usage-db-testapp-test: test-usage-db-testapp good-app-info/testapp.desktop.hud-app-info good-app-info/testapp100.desktop.hud-app-info test-create-db.sql Makefile.am
 	@echo "#!/bin/bash -e" > $@
 	@echo cd \`mktemp -d $(abs_builddir)/test-usage-db-testapp.dir.XXXXXX\` >> $@
-	@echo mkdir -p hud >> $@
-	@echo cat $(abs_srcdir)/test-create-db.sql \| sqlite3 hud/usage-log.sqlite >> $@
+	@echo mkdir -p indicator-appmenu >> $@
+	@echo cat $(abs_srcdir)/test-create-db.sql \| sqlite3 indicator-appmenu/hud-usage-log.sqlite >> $@
 	@echo export HUD_CACHE_DIR=\`pwd\` >> $@
 	@echo export HUD_APP_INFO_DIR=$(abs_srcdir)/good-app-info >> $@
 	@echo gtester --verbose -k -o $(USAGE_TESTAPP_XML_REPORT) $(abs_builddir)/test-usage-db-testapp >> $@
@@ -331,10 +331,10 @@ test_load_app_info_LDADD = \
 test-good-app-info-tons-of-entries: good-app-info/tons-of-entries.hud-app-info test-load-app-info test-usage-dump-entries.sql Makefile.am
 	@echo "#!/bin/bash -e" > $@
 	@echo cd \`mktemp -d $(abs_builddir)/test-good-app-info-tons-of-entries.dir.XXXXXX\` >> $@
-	@echo mkdir -p hud >> $@
-	@echo $(abs_builddir)/test-load-app-info hud/usage-log.sqlite $(abs_srcdir)/good-app-info/tons-of-entries.hud-app-info >> $@
+	@echo mkdir -p indicator-appmenu >> $@
+	@echo $(abs_builddir)/test-load-app-info indicator-appmenu/hud-usage-log.sqlite $(abs_srcdir)/good-app-info/tons-of-entries.hud-app-info >> $@
 	@echo export HUD_CACHE_DIR=\`pwd\` >> $@
-	@echo if test \`cat $(abs_srcdir)/test-usage-dump-entries.sql \| sqlite3 hud/usage-log.sqlite \| wc -l\` -ne 540\; then >> $@
+	@echo if test \`cat $(abs_srcdir)/test-usage-dump-entries.sql \| sqlite3 indicator-appmenu/hud-usage-log.sqlite \| wc -l\` -ne 540\; then >> $@
 	@echo echo Database has wrong number of entries >> $@
 	@echo exit 1 >> $@
 	@echo fi >> $@

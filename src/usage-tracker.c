@@ -76,13 +76,13 @@ usage_tracker_init (UsageTracker *self)
 		basecachedir = g_get_user_cache_dir();
 	}
 
-	gchar * cachedir = g_build_filename(basecachedir, "hud", NULL);
+	gchar * cachedir = g_build_filename(basecachedir, "indicator-appmenu", NULL);
 	if (!g_file_test(cachedir, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR)) {
 		g_mkdir(cachedir, 1 << 6 | 1 << 7 | 1 << 8); // 700
 	}
 	g_free(cachedir);
 
-	self->priv->cachefile = g_build_filename(basecachedir, "hud", "usage-log.sqlite", NULL);
+	self->priv->cachefile = g_build_filename(basecachedir, "indicator-appmenu", "hud-usage-log.sqlite", NULL);
 	gboolean db_exists = g_file_test(self->priv->cachefile, G_FILE_TEST_EXISTS);
 	int open_status = sqlite3_open(self->priv->cachefile, &self->priv->db); 
 

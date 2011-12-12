@@ -4,6 +4,6 @@ if [ -n $HUD_CACHE_DIR ]; then
 	HUD_CACHE_DIR=~/.cache
 fi;
 
-FINAL_DIR="$HUD_CACHE_DIR/hud"
+FINAL_DIR="$HUD_CACHE_DIR/indicator-appmenu"
 
-sqlite3 $FINAL_DIR/usage-log.sqlite "select distinct application from usage"
+sqlite3 $FINAL_DIR/hud-usage-log.sqlite "select distinct application from usage"
