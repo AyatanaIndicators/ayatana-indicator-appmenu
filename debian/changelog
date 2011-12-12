@@ -1,10 +1,10 @@
-indicator-appmenu (0.3.2+hud1-0ubuntu1~ppa3) UNRELEASED; urgency=low
+indicator-appmenu (0.3.2+hud1-0ubuntu1~ppa3) oneiric; urgency=low
 
   * indicator-appmenu.install: Grabbing the dbus service too
   * debian/control: Making the packages with HUD components conflict
     with the legacy hud package.
 
- -- Ted Gould <ted@ubuntu.com>  Sun, 11 Dec 2011 21:46:34 -0600
+ -- Ted Gould <ted@ubuntu.com>  Sun, 11 Dec 2011 21:48:16 -0600
 
 indicator-appmenu (0.3.2+hud1-0ubuntu1~ppa2) oneiric; urgency=low
 
