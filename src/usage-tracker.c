@@ -269,7 +269,7 @@ check_app_init (UsageTracker * self, const gchar * application)
 	if (g_getenv("HUD_APP_INFO_DIR") != NULL) {
 		app_info_path = g_strdup(g_getenv("HUD_APP_INFO_DIR"));
 	} else {
-		app_info_path = g_build_filename(DATADIR, "hud", "app-info", NULL);
+		app_info_path = g_build_filename(DATADIR, "indicator-appmenu", "hud", "app-info", NULL);
 	}
 
 	gchar * app_info_filename = g_strdup_printf("%s.hud-app-info", basename);
