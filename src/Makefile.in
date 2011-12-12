@@ -31,6 +31,8 @@
 #
 # Author: Emmanuele Bassi <ebassi@linux.intel.com>
 
+
+
 VPATH = @srcdir@
 pkgdatadir = $(datadir)/@PACKAGE@
 pkgincludedir = $(includedir)/@PACKAGE@
@@ -50,11 +52,21 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+libexec_PROGRAMS = hud-cli$(EXEEXT) hud-dump-application$(EXEEXT) \
+	hud-service$(EXEEXT) hud-verify-app-info$(EXEEXT)
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(top_srcdir)/Makefile.am.marshal
 subdir = src
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/m4/gettext.m4 \
+	$(top_srcdir)/m4/gtk-doc.m4 $(top_srcdir)/m4/iconv.m4 \
+	$(top_srcdir)/m4/intlmacosx.m4 $(top_srcdir)/m4/intltool.m4 \
+	$(top_srcdir)/m4/lib-ld.m4 $(top_srcdir)/m4/lib-link.m4 \
+	$(top_srcdir)/m4/lib-prefix.m4 $(top_srcdir)/m4/libtool.m4 \
+	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
+	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
+	$(top_srcdir)/m4/nls.m4 $(top_srcdir)/m4/po.m4 \
+	$(top_srcdir)/m4/progtest.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -82,7 +94,8 @@ am__nobase_list = $(am__nobase_strip_setup); \
 am__base_list = \
   sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
   sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
-am__installdirs = "$(DESTDIR)$(appmenulibdir)"
+am__installdirs = "$(DESTDIR)$(appmenulibdir)" \
+	"$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(libexecdir)"
 LTLIBRARIES = $(appmenulib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libappmenu_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
@@ -99,6 +112,48 @@ am__v_lt_0 = --silent
 libappmenu_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(libappmenu_la_CFLAGS) \
 	$(CFLAGS) $(libappmenu_la_LDFLAGS) $(LDFLAGS) -o $@
+PROGRAMS = $(libexec_PROGRAMS)
+am_hud_cli_OBJECTS = hud_cli-hud-cli.$(OBJEXT) \
+	hud_cli-hud.interface.$(OBJEXT)
+hud_cli_OBJECTS = $(am_hud_cli_OBJECTS)
+hud_cli_LDADD = $(LDADD)
+hud_cli_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(hud_cli_CFLAGS) \
+	$(CFLAGS) $(hud_cli_LDFLAGS) $(LDFLAGS) -o $@
+am_hud_dump_application_OBJECTS =  \
+	hud_dump_application-dump-app-info.$(OBJEXT) \
+	hud_dump_application-hud-dump-application.$(OBJEXT)
+hud_dump_application_OBJECTS = $(am_hud_dump_application_OBJECTS)
+hud_dump_application_LDADD = $(LDADD)
+hud_dump_application_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(hud_dump_application_CFLAGS) $(CFLAGS) \
+	$(hud_dump_application_LDFLAGS) $(LDFLAGS) -o $@
+am_hud_service_OBJECTS = hud_service-dbusmenu-collector.$(OBJEXT) \
+	hud_service-distance.$(OBJEXT) \
+	hud_service-dump-app-info.$(OBJEXT) \
+	hud_service-hud-service.$(OBJEXT) \
+	hud_service-hud-dbus.$(OBJEXT) \
+	hud_service-hud-search.$(OBJEXT) \
+	hud_service-hud.interface.$(OBJEXT) \
+	hud_service-indicator-tracker.$(OBJEXT) \
+	hud_service-load-app-info.$(OBJEXT) \
+	hud_service-usage-tracker.$(OBJEXT)
+hud_service_OBJECTS = $(am_hud_service_OBJECTS)
+hud_service_LDADD = $(LDADD)
+hud_service_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
+	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(hud_service_CFLAGS) \
+	$(CFLAGS) $(hud_service_LDFLAGS) $(LDFLAGS) -o $@
+am_hud_verify_app_info_OBJECTS =  \
+	hud_verify_app_info-load-app-info.$(OBJEXT) \
+	hud_verify_app_info-hud-verify-app-info.$(OBJEXT)
+hud_verify_app_info_OBJECTS = $(am_hud_verify_app_info_OBJECTS)
+hud_verify_app_info_LDADD = $(LDADD)
+hud_verify_app_info_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(hud_verify_app_info_CFLAGS) $(CFLAGS) \
+	$(hud_verify_app_info_LDFLAGS) $(LDFLAGS) -o $@
+SCRIPTS = $(libexec_SCRIPTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -125,12 +180,17 @@ am__v_CCLD_0 = @echo "  CCLD  " $@;
 AM_V_GEN = $(am__v_GEN_$(V))
 am__v_GEN_ = $(am__v_GEN_$(AM_DEFAULT_VERBOSITY))
 am__v_GEN_0 = @echo "  GEN   " $@;
-SOURCES = $(libappmenu_la_SOURCES)
-DIST_SOURCES = $(libappmenu_la_SOURCES)
+SOURCES = $(libappmenu_la_SOURCES) $(hud_cli_SOURCES) \
+	$(hud_dump_application_SOURCES) $(hud_service_SOURCES) \
+	$(hud_verify_app_info_SOURCES)
+DIST_SOURCES = $(libappmenu_la_SOURCES) $(hud_cli_SOURCES) \
+	$(hud_dump_application_SOURCES) $(hud_service_SOURCES) \
+	$(hud_verify_app_info_SOURCES)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 ACLOCAL = @ACLOCAL@
+ALL_LINGUAS = @ALL_LINGUAS@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
@@ -144,6 +204,7 @@ CFLAGS = @CFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CYGPATH_W = @CYGPATH_W@
+DATADIRNAME = @DATADIRNAME@
 DBUSSERVICEDIR = @DBUSSERVICEDIR@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
@@ -156,8 +217,13 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
+GETTEXT_MACRO_VERSION = @GETTEXT_MACRO_VERSION@
+GETTEXT_PACKAGE = @GETTEXT_PACKAGE@
 GLIB_GENMARSHAL = @GLIB_GENMARSHAL@
 GLIB_MKENUMS = @GLIB_MKENUMS@
+GMSGFMT = @GMSGFMT@
+GMSGFMT_015 = @GMSGFMT_015@
+GNOMELOCALEDIR = @GNOMELOCALEDIR@
 GREP = @GREP@
 GTKDOC_CHECK = @GTKDOC_CHECK@
 GTKDOC_DEPS_CFLAGS = @GTKDOC_DEPS_CFLAGS@
@@ -165,6 +231,8 @@ GTKDOC_DEPS_LIBS = @GTKDOC_DEPS_LIBS@
 GTKDOC_MKPDF = @GTKDOC_MKPDF@
 GTKDOC_REBASE = @GTKDOC_REBASE@
 HTML_DIR = @HTML_DIR@
+HUD_CFLAGS = @HUD_CFLAGS@
+HUD_LIBS = @HUD_LIBS@
 INDICATORDIR = @INDICATORDIR@
 INDICATORICONSDIR = @INDICATORICONSDIR@
 INDICATORTEST_CFLAGS = @INDICATORTEST_CFLAGS@
@@ -176,18 +244,31 @@ INSTALL_DATA = @INSTALL_DATA@
 INSTALL_PROGRAM = @INSTALL_PROGRAM@
 INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
+INTLLIBS = @INTLLIBS@
+INTLTOOL_EXTRACT = @INTLTOOL_EXTRACT@
+INTLTOOL_MERGE = @INTLTOOL_MERGE@
+INTLTOOL_PERL = @INTLTOOL_PERL@
+INTLTOOL_UPDATE = @INTLTOOL_UPDATE@
+INTL_MACOSX_LIBS = @INTL_MACOSX_LIBS@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
+LIBICONV = @LIBICONV@
+LIBINTL = @LIBINTL@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
 LIPO = @LIPO@
 LN_S = @LN_S@
+LTLIBICONV = @LTLIBICONV@
+LTLIBINTL = @LTLIBINTL@
 LTLIBOBJS = @LTLIBOBJS@
 MAINT = @MAINT@
 MAKEINFO = @MAKEINFO@
 MANIFEST_TOOL = @MANIFEST_TOOL@
 MKDIR_P = @MKDIR_P@
+MSGFMT = @MSGFMT@
+MSGFMT_015 = @MSGFMT_015@
+MSGMERGE = @MSGMERGE@
 NM = @NM@
 NMEDIT = @NMEDIT@
 OBJDUMP = @OBJDUMP@
@@ -205,12 +286,17 @@ PATH_SEPARATOR = @PATH_SEPARATOR@
 PKG_CONFIG = @PKG_CONFIG@
 PKG_CONFIG_LIBDIR = @PKG_CONFIG_LIBDIR@
 PKG_CONFIG_PATH = @PKG_CONFIG_PATH@
+POSUB = @POSUB@
 RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
+USE_NLS = @USE_NLS@
 VERSION = @VERSION@
+XGETTEXT = @XGETTEXT@
+XGETTEXT_015 = @XGETTEXT_015@
+XGETTEXT_EXTRA_OPTIONS = @XGETTEXT_EXTRA_OPTIONS@
 XSLT_PROC = @XSLT_PROC@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
@@ -270,8 +356,17 @@ BUILT_SOURCES = $(marshal_h) $(marshal_c) \
 	gen-application-menu-renderer.xml.c \
 	gen-application-menu-renderer.xml.h \
 	gen-application-menu-registrar.xml.c \
-	gen-application-menu-registrar.xml.h
-EXTRA_DIST = $(glib_marshal_list) $(DBUS_SPECS) clean-namespaces.xslt
+	gen-application-menu-registrar.xml.h hud.interface.c \
+	hud.interface.h
+
+####################
+# HUD DBus Interface
+####################
+EXTRA_DIST = hud-list-applications $(glib_marshal_list) hud.xml \
+	$(DBUS_SPECS) clean-namespaces.xslt
+libexec_SCRIPTS = \
+	hud-list-applications
+
 marshal_h = $(glib_marshal_list:.list=.h)
 marshal_c = $(glib_marshal_list:.list=.c)
 
@@ -311,6 +406,89 @@ DBUS_SPECS = \
 	application-menu-renderer.xml \
 	application-menu-registrar.xml
 
+
+####################
+# HUD Service
+####################
+hud_service_SOURCES = \
+	dbusmenu-collector.h \
+	dbusmenu-collector.c \
+	distance.h \
+	distance.c \
+	dump-app-info.h \
+	dump-app-info.c \
+	shared-values.h \
+	hud-service.c \
+	hud-dbus.h \
+	hud-dbus.c \
+	hud-search.h \
+	hud-search.c \
+	hud.interface.h \
+	hud.interface.c \
+	indicator-tracker.h \
+	indicator-tracker.c \
+	load-app-info.h \
+	load-app-info.c \
+	usage-tracker.h \
+	usage-tracker.c
+
+hud_service_CFLAGS = \
+	$(HUD_CFLAGS) \
+	-DDATADIR=\""$(datadir)"\" \
+	-Wall -Werror
+
+hud_service_LDFLAGS = \
+	$(HUD_LIBS)
+
+
+####################
+# HUD CLI
+####################
+hud_cli_SOURCES = \
+	shared-values.h \
+	hud-cli.c \
+	hud.interface.h \
+	hud.interface.c
+
+hud_cli_CFLAGS = \
+	$(HUD_CFLAGS) \
+	-Wall -Werror
+
+hud_cli_LDFLAGS = \
+	$(HUD_LIBS)
+
+
+#######################
+# HUD Dump Application
+#######################
+hud_dump_application_SOURCES = \
+	dump-app-info.h \
+	dump-app-info.c \
+	hud-dump-application.c
+
+hud_dump_application_CFLAGS = \
+	$(HUD_CFLAGS) \
+	-Wall -Werror
+
+hud_dump_application_LDFLAGS = \
+	$(HUD_LIBS)
+
+
+#######################
+# HUD Verify App Info
+#######################
+hud_verify_app_info_SOURCES = \
+	load-app-info.h \
+	load-app-info.c \
+	hud-verify-app-info.c
+
+hud_verify_app_info_CFLAGS = \
+	$(HUD_CFLAGS) \
+	-Wall -Werror
+
+hud_verify_app_info_LDFLAGS = \
+	$(HUD_LIBS)
+
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
@@ -325,9 +503,9 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(top_srcdir
 	      exit 1;; \
 	  esac; \
 	done; \
-	echo ' cd $(top_srcdir) && $(AUTOMAKE) --gnu src/Makefile'; \
+	echo ' cd $(top_srcdir) && $(AUTOMAKE) --foreign src/Makefile'; \
 	$(am__cd) $(top_srcdir) && \
-	  $(AUTOMAKE) --gnu src/Makefile
+	  $(AUTOMAKE) --foreign src/Makefile
 .PRECIOUS: Makefile
 Makefile: $(srcdir)/Makefile.in $(top_builddir)/config.status
 	@case '$?' in \
@@ -379,6 +557,95 @@ clean-appmenulibLTLIBRARIES:
 	done
 libappmenu.la: $(libappmenu_la_OBJECTS) $(libappmenu_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libappmenu_la_LINK) -rpath $(appmenulibdir) $(libappmenu_la_OBJECTS) $(libappmenu_la_LIBADD) $(LIBS)
+install-libexecPROGRAMS: $(libexec_PROGRAMS)
+	@$(NORMAL_INSTALL)
+	test -z "$(libexecdir)" || $(MKDIR_P) "$(DESTDIR)$(libexecdir)"
+	@list='$(libexec_PROGRAMS)'; test -n "$(libexecdir)" || list=; \
+	for p in $$list; do echo "$$p $$p"; done | \
+	sed 's/$(EXEEXT)$$//' | \
+	while read p p1; do if test -f $$p || test -f $$p1; \
+	  then echo "$$p"; echo "$$p"; else :; fi; \
+	done | \
+	sed -e 'p;s,.*/,,;n;h' -e 's|.*|.|' \
+	    -e 'p;x;s,.*/,,;s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/' | \
+	sed 'N;N;N;s,\n, ,g' | \
+	$(AWK) 'BEGIN { files["."] = ""; dirs["."] = 1 } \
+	  { d=$$3; if (dirs[d] != 1) { print "d", d; dirs[d] = 1 } \
+	    if ($$2 == $$4) files[d] = files[d] " " $$1; \
+	    else { print "f", $$3 "/" $$4, $$1; } } \
+	  END { for (d in files) print "f", d, files[d] }' | \
+	while read type dir files; do \
+	    if test "$$dir" = .; then dir=; else dir=/$$dir; fi; \
+	    test -z "$$files" || { \
+	    echo " $(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) $$files '$(DESTDIR)$(libexecdir)$$dir'"; \
+	    $(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) $$files "$(DESTDIR)$(libexecdir)$$dir" || exit $$?; \
+	    } \
+	; done
+
+uninstall-libexecPROGRAMS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(libexec_PROGRAMS)'; test -n "$(libexecdir)" || list=; \
+	files=`for p in $$list; do echo "$$p"; done | \
+	  sed -e 'h;s,^.*/,,;s/$(EXEEXT)$$//;$(transform)' \
+	      -e 's/$$/$(EXEEXT)/' `; \
+	test -n "$$list" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(libexecdir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(libexecdir)" && rm -f $$files
+
+clean-libexecPROGRAMS:
+	@list='$(libexec_PROGRAMS)'; test -n "$$list" || exit 0; \
+	echo " rm -f" $$list; \
+	rm -f $$list || exit $$?; \
+	test -n "$(EXEEXT)" || exit 0; \
+	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
+	echo " rm -f" $$list; \
+	rm -f $$list
+hud-cli$(EXEEXT): $(hud_cli_OBJECTS) $(hud_cli_DEPENDENCIES) 
+	@rm -f hud-cli$(EXEEXT)
+	$(AM_V_CCLD)$(hud_cli_LINK) $(hud_cli_OBJECTS) $(hud_cli_LDADD) $(LIBS)
+hud-dump-application$(EXEEXT): $(hud_dump_application_OBJECTS) $(hud_dump_application_DEPENDENCIES) 
+	@rm -f hud-dump-application$(EXEEXT)
+	$(AM_V_CCLD)$(hud_dump_application_LINK) $(hud_dump_application_OBJECTS) $(hud_dump_application_LDADD) $(LIBS)
+hud-service$(EXEEXT): $(hud_service_OBJECTS) $(hud_service_DEPENDENCIES) 
+	@rm -f hud-service$(EXEEXT)
+	$(AM_V_CCLD)$(hud_service_LINK) $(hud_service_OBJECTS) $(hud_service_LDADD) $(LIBS)
+hud-verify-app-info$(EXEEXT): $(hud_verify_app_info_OBJECTS) $(hud_verify_app_info_DEPENDENCIES) 
+	@rm -f hud-verify-app-info$(EXEEXT)
+	$(AM_V_CCLD)$(hud_verify_app_info_LINK) $(hud_verify_app_info_OBJECTS) $(hud_verify_app_info_LDADD) $(LIBS)
+install-libexecSCRIPTS: $(libexec_SCRIPTS)
+	@$(NORMAL_INSTALL)
+	test -z "$(libexecdir)" || $(MKDIR_P) "$(DESTDIR)$(libexecdir)"
+	@list='$(libexec_SCRIPTS)'; test -n "$(libexecdir)" || list=; \
+	for p in $$list; do \
+	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
+	  if test -f "$$d$$p"; then echo "$$d$$p"; echo "$$p"; else :; fi; \
+	done | \
+	sed -e 'p;s,.*/,,;n' \
+	    -e 'h;s|.*|.|' \
+	    -e 'p;x;s,.*/,,;$(transform)' | sed 'N;N;N;s,\n, ,g' | \
+	$(AWK) 'BEGIN { files["."] = ""; dirs["."] = 1; } \
+	  { d=$$3; if (dirs[d] != 1) { print "d", d; dirs[d] = 1 } \
+	    if ($$2 == $$4) { files[d] = files[d] " " $$1; \
+	      if (++n[d] == $(am__install_max)) { \
+		print "f", d, files[d]; n[d] = 0; files[d] = "" } } \
+	    else { print "f", d "/" $$4, $$1 } } \
+	  END { for (d in files) print "f", d, files[d] }' | \
+	while read type dir files; do \
+	     if test "$$dir" = .; then dir=; else dir=/$$dir; fi; \
+	     test -z "$$files" || { \
+	       echo " $(INSTALL_SCRIPT) $$files '$(DESTDIR)$(libexecdir)$$dir'"; \
+	       $(INSTALL_SCRIPT) $$files "$(DESTDIR)$(libexecdir)$$dir" || exit $$?; \
+	     } \
+	; done
+
+uninstall-libexecSCRIPTS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(libexec_SCRIPTS)'; test -n "$(libexecdir)" || exit 0; \
+	files=`for p in $$list; do echo "$$p"; done | \
+	       sed -e 's,.*/,,;$(transform)'`; \
+	test -n "$$list" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(libexecdir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(libexecdir)" && rm -f $$files
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -386,6 +653,22 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_cli-hud-cli.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_cli-hud.interface.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_dump_application-dump-app-info.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_dump_application-hud-dump-application.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_service-dbusmenu-collector.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_service-distance.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_service-dump-app-info.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_service-hud-dbus.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_service-hud-search.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_service-hud-service.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_service-hud.interface.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_service-indicator-tracker.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_service-load-app-info.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_service-usage-tracker.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_verify_app_info-hud-verify-app-info.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_verify_app_info-load-app-info.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libappmenu_la-gdk-get-func.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libappmenu_la-gen-application-menu-registrar.xml.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libappmenu_la-gen-application-menu-renderer.xml.Plo@am__quote@
@@ -394,24 +677,27 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libappmenu_la-window-menus.Plo@am__quote@
 
 .c.o:
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
+@am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
+@am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(COMPILE) -c $<
+@am__fastdepCC_FALSE@	$(COMPILE) -c -o $@ $<
 
 .c.obj:
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
+@am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ `$(CYGPATH_W) '$<'` &&\
+@am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(COMPILE) -c `$(CYGPATH_W) '$<'`
+@am__fastdepCC_FALSE@	$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
 .c.lo:
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LTCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
+@am__fastdepCC_TRUE@	$(LTCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
+@am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Plo
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
@@ -464,6 +750,262 @@ libappmenu_la-gen-application-menu-registrar.xml.lo: gen-application-menu-regist
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='gen-application-menu-registrar.xml.c' object='libappmenu_la-gen-application-menu-registrar.xml.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libappmenu_la_CFLAGS) $(CFLAGS) -c -o libappmenu_la-gen-application-menu-registrar.xml.lo `test -f 'gen-application-menu-registrar.xml.c' || echo '$(srcdir)/'`gen-application-menu-registrar.xml.c
+
+hud_cli-hud-cli.o: hud-cli.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_cli_CFLAGS) $(CFLAGS) -MT hud_cli-hud-cli.o -MD -MP -MF $(DEPDIR)/hud_cli-hud-cli.Tpo -c -o hud_cli-hud-cli.o `test -f 'hud-cli.c' || echo '$(srcdir)/'`hud-cli.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_cli-hud-cli.Tpo $(DEPDIR)/hud_cli-hud-cli.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='hud-cli.c' object='hud_cli-hud-cli.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_cli_CFLAGS) $(CFLAGS) -c -o hud_cli-hud-cli.o `test -f 'hud-cli.c' || echo '$(srcdir)/'`hud-cli.c
+
+hud_cli-hud-cli.obj: hud-cli.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_cli_CFLAGS) $(CFLAGS) -MT hud_cli-hud-cli.obj -MD -MP -MF $(DEPDIR)/hud_cli-hud-cli.Tpo -c -o hud_cli-hud-cli.obj `if test -f 'hud-cli.c'; then $(CYGPATH_W) 'hud-cli.c'; else $(CYGPATH_W) '$(srcdir)/hud-cli.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_cli-hud-cli.Tpo $(DEPDIR)/hud_cli-hud-cli.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='hud-cli.c' object='hud_cli-hud-cli.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_cli_CFLAGS) $(CFLAGS) -c -o hud_cli-hud-cli.obj `if test -f 'hud-cli.c'; then $(CYGPATH_W) 'hud-cli.c'; else $(CYGPATH_W) '$(srcdir)/hud-cli.c'; fi`
+
+hud_cli-hud.interface.o: hud.interface.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_cli_CFLAGS) $(CFLAGS) -MT hud_cli-hud.interface.o -MD -MP -MF $(DEPDIR)/hud_cli-hud.interface.Tpo -c -o hud_cli-hud.interface.o `test -f 'hud.interface.c' || echo '$(srcdir)/'`hud.interface.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_cli-hud.interface.Tpo $(DEPDIR)/hud_cli-hud.interface.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='hud.interface.c' object='hud_cli-hud.interface.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_cli_CFLAGS) $(CFLAGS) -c -o hud_cli-hud.interface.o `test -f 'hud.interface.c' || echo '$(srcdir)/'`hud.interface.c
+
+hud_cli-hud.interface.obj: hud.interface.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_cli_CFLAGS) $(CFLAGS) -MT hud_cli-hud.interface.obj -MD -MP -MF $(DEPDIR)/hud_cli-hud.interface.Tpo -c -o hud_cli-hud.interface.obj `if test -f 'hud.interface.c'; then $(CYGPATH_W) 'hud.interface.c'; else $(CYGPATH_W) '$(srcdir)/hud.interface.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_cli-hud.interface.Tpo $(DEPDIR)/hud_cli-hud.interface.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='hud.interface.c' object='hud_cli-hud.interface.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_cli_CFLAGS) $(CFLAGS) -c -o hud_cli-hud.interface.obj `if test -f 'hud.interface.c'; then $(CYGPATH_W) 'hud.interface.c'; else $(CYGPATH_W) '$(srcdir)/hud.interface.c'; fi`
+
+hud_dump_application-dump-app-info.o: dump-app-info.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_dump_application_CFLAGS) $(CFLAGS) -MT hud_dump_application-dump-app-info.o -MD -MP -MF $(DEPDIR)/hud_dump_application-dump-app-info.Tpo -c -o hud_dump_application-dump-app-info.o `test -f 'dump-app-info.c' || echo '$(srcdir)/'`dump-app-info.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_dump_application-dump-app-info.Tpo $(DEPDIR)/hud_dump_application-dump-app-info.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='dump-app-info.c' object='hud_dump_application-dump-app-info.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_dump_application_CFLAGS) $(CFLAGS) -c -o hud_dump_application-dump-app-info.o `test -f 'dump-app-info.c' || echo '$(srcdir)/'`dump-app-info.c
+
+hud_dump_application-dump-app-info.obj: dump-app-info.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_dump_application_CFLAGS) $(CFLAGS) -MT hud_dump_application-dump-app-info.obj -MD -MP -MF $(DEPDIR)/hud_dump_application-dump-app-info.Tpo -c -o hud_dump_application-dump-app-info.obj `if test -f 'dump-app-info.c'; then $(CYGPATH_W) 'dump-app-info.c'; else $(CYGPATH_W) '$(srcdir)/dump-app-info.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_dump_application-dump-app-info.Tpo $(DEPDIR)/hud_dump_application-dump-app-info.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='dump-app-info.c' object='hud_dump_application-dump-app-info.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_dump_application_CFLAGS) $(CFLAGS) -c -o hud_dump_application-dump-app-info.obj `if test -f 'dump-app-info.c'; then $(CYGPATH_W) 'dump-app-info.c'; else $(CYGPATH_W) '$(srcdir)/dump-app-info.c'; fi`
+
+hud_dump_application-hud-dump-application.o: hud-dump-application.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_dump_application_CFLAGS) $(CFLAGS) -MT hud_dump_application-hud-dump-application.o -MD -MP -MF $(DEPDIR)/hud_dump_application-hud-dump-application.Tpo -c -o hud_dump_application-hud-dump-application.o `test -f 'hud-dump-application.c' || echo '$(srcdir)/'`hud-dump-application.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_dump_application-hud-dump-application.Tpo $(DEPDIR)/hud_dump_application-hud-dump-application.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='hud-dump-application.c' object='hud_dump_application-hud-dump-application.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_dump_application_CFLAGS) $(CFLAGS) -c -o hud_dump_application-hud-dump-application.o `test -f 'hud-dump-application.c' || echo '$(srcdir)/'`hud-dump-application.c
+
+hud_dump_application-hud-dump-application.obj: hud-dump-application.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_dump_application_CFLAGS) $(CFLAGS) -MT hud_dump_application-hud-dump-application.obj -MD -MP -MF $(DEPDIR)/hud_dump_application-hud-dump-application.Tpo -c -o hud_dump_application-hud-dump-application.obj `if test -f 'hud-dump-application.c'; then $(CYGPATH_W) 'hud-dump-application.c'; else $(CYGPATH_W) '$(srcdir)/hud-dump-application.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_dump_application-hud-dump-application.Tpo $(DEPDIR)/hud_dump_application-hud-dump-application.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='hud-dump-application.c' object='hud_dump_application-hud-dump-application.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_dump_application_CFLAGS) $(CFLAGS) -c -o hud_dump_application-hud-dump-application.obj `if test -f 'hud-dump-application.c'; then $(CYGPATH_W) 'hud-dump-application.c'; else $(CYGPATH_W) '$(srcdir)/hud-dump-application.c'; fi`
+
+hud_service-dbusmenu-collector.o: dbusmenu-collector.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -MT hud_service-dbusmenu-collector.o -MD -MP -MF $(DEPDIR)/hud_service-dbusmenu-collector.Tpo -c -o hud_service-dbusmenu-collector.o `test -f 'dbusmenu-collector.c' || echo '$(srcdir)/'`dbusmenu-collector.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_service-dbusmenu-collector.Tpo $(DEPDIR)/hud_service-dbusmenu-collector.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='dbusmenu-collector.c' object='hud_service-dbusmenu-collector.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -c -o hud_service-dbusmenu-collector.o `test -f 'dbusmenu-collector.c' || echo '$(srcdir)/'`dbusmenu-collector.c
+
+hud_service-dbusmenu-collector.obj: dbusmenu-collector.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -MT hud_service-dbusmenu-collector.obj -MD -MP -MF $(DEPDIR)/hud_service-dbusmenu-collector.Tpo -c -o hud_service-dbusmenu-collector.obj `if test -f 'dbusmenu-collector.c'; then $(CYGPATH_W) 'dbusmenu-collector.c'; else $(CYGPATH_W) '$(srcdir)/dbusmenu-collector.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_service-dbusmenu-collector.Tpo $(DEPDIR)/hud_service-dbusmenu-collector.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='dbusmenu-collector.c' object='hud_service-dbusmenu-collector.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -c -o hud_service-dbusmenu-collector.obj `if test -f 'dbusmenu-collector.c'; then $(CYGPATH_W) 'dbusmenu-collector.c'; else $(CYGPATH_W) '$(srcdir)/dbusmenu-collector.c'; fi`
+
+hud_service-distance.o: distance.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -MT hud_service-distance.o -MD -MP -MF $(DEPDIR)/hud_service-distance.Tpo -c -o hud_service-distance.o `test -f 'distance.c' || echo '$(srcdir)/'`distance.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_service-distance.Tpo $(DEPDIR)/hud_service-distance.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='distance.c' object='hud_service-distance.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -c -o hud_service-distance.o `test -f 'distance.c' || echo '$(srcdir)/'`distance.c
+
+hud_service-distance.obj: distance.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -MT hud_service-distance.obj -MD -MP -MF $(DEPDIR)/hud_service-distance.Tpo -c -o hud_service-distance.obj `if test -f 'distance.c'; then $(CYGPATH_W) 'distance.c'; else $(CYGPATH_W) '$(srcdir)/distance.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_service-distance.Tpo $(DEPDIR)/hud_service-distance.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='distance.c' object='hud_service-distance.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -c -o hud_service-distance.obj `if test -f 'distance.c'; then $(CYGPATH_W) 'distance.c'; else $(CYGPATH_W) '$(srcdir)/distance.c'; fi`
+
+hud_service-dump-app-info.o: dump-app-info.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -MT hud_service-dump-app-info.o -MD -MP -MF $(DEPDIR)/hud_service-dump-app-info.Tpo -c -o hud_service-dump-app-info.o `test -f 'dump-app-info.c' || echo '$(srcdir)/'`dump-app-info.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_service-dump-app-info.Tpo $(DEPDIR)/hud_service-dump-app-info.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='dump-app-info.c' object='hud_service-dump-app-info.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -c -o hud_service-dump-app-info.o `test -f 'dump-app-info.c' || echo '$(srcdir)/'`dump-app-info.c
+
+hud_service-dump-app-info.obj: dump-app-info.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -MT hud_service-dump-app-info.obj -MD -MP -MF $(DEPDIR)/hud_service-dump-app-info.Tpo -c -o hud_service-dump-app-info.obj `if test -f 'dump-app-info.c'; then $(CYGPATH_W) 'dump-app-info.c'; else $(CYGPATH_W) '$(srcdir)/dump-app-info.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_service-dump-app-info.Tpo $(DEPDIR)/hud_service-dump-app-info.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='dump-app-info.c' object='hud_service-dump-app-info.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -c -o hud_service-dump-app-info.obj `if test -f 'dump-app-info.c'; then $(CYGPATH_W) 'dump-app-info.c'; else $(CYGPATH_W) '$(srcdir)/dump-app-info.c'; fi`
+
+hud_service-hud-service.o: hud-service.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -MT hud_service-hud-service.o -MD -MP -MF $(DEPDIR)/hud_service-hud-service.Tpo -c -o hud_service-hud-service.o `test -f 'hud-service.c' || echo '$(srcdir)/'`hud-service.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_service-hud-service.Tpo $(DEPDIR)/hud_service-hud-service.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='hud-service.c' object='hud_service-hud-service.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -c -o hud_service-hud-service.o `test -f 'hud-service.c' || echo '$(srcdir)/'`hud-service.c
+
+hud_service-hud-service.obj: hud-service.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -MT hud_service-hud-service.obj -MD -MP -MF $(DEPDIR)/hud_service-hud-service.Tpo -c -o hud_service-hud-service.obj `if test -f 'hud-service.c'; then $(CYGPATH_W) 'hud-service.c'; else $(CYGPATH_W) '$(srcdir)/hud-service.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_service-hud-service.Tpo $(DEPDIR)/hud_service-hud-service.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='hud-service.c' object='hud_service-hud-service.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -c -o hud_service-hud-service.obj `if test -f 'hud-service.c'; then $(CYGPATH_W) 'hud-service.c'; else $(CYGPATH_W) '$(srcdir)/hud-service.c'; fi`
+
+hud_service-hud-dbus.o: hud-dbus.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -MT hud_service-hud-dbus.o -MD -MP -MF $(DEPDIR)/hud_service-hud-dbus.Tpo -c -o hud_service-hud-dbus.o `test -f 'hud-dbus.c' || echo '$(srcdir)/'`hud-dbus.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_service-hud-dbus.Tpo $(DEPDIR)/hud_service-hud-dbus.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='hud-dbus.c' object='hud_service-hud-dbus.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -c -o hud_service-hud-dbus.o `test -f 'hud-dbus.c' || echo '$(srcdir)/'`hud-dbus.c
+
+hud_service-hud-dbus.obj: hud-dbus.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -MT hud_service-hud-dbus.obj -MD -MP -MF $(DEPDIR)/hud_service-hud-dbus.Tpo -c -o hud_service-hud-dbus.obj `if test -f 'hud-dbus.c'; then $(CYGPATH_W) 'hud-dbus.c'; else $(CYGPATH_W) '$(srcdir)/hud-dbus.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_service-hud-dbus.Tpo $(DEPDIR)/hud_service-hud-dbus.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='hud-dbus.c' object='hud_service-hud-dbus.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -c -o hud_service-hud-dbus.obj `if test -f 'hud-dbus.c'; then $(CYGPATH_W) 'hud-dbus.c'; else $(CYGPATH_W) '$(srcdir)/hud-dbus.c'; fi`
+
+hud_service-hud-search.o: hud-search.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -MT hud_service-hud-search.o -MD -MP -MF $(DEPDIR)/hud_service-hud-search.Tpo -c -o hud_service-hud-search.o `test -f 'hud-search.c' || echo '$(srcdir)/'`hud-search.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_service-hud-search.Tpo $(DEPDIR)/hud_service-hud-search.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='hud-search.c' object='hud_service-hud-search.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -c -o hud_service-hud-search.o `test -f 'hud-search.c' || echo '$(srcdir)/'`hud-search.c
+
+hud_service-hud-search.obj: hud-search.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -MT hud_service-hud-search.obj -MD -MP -MF $(DEPDIR)/hud_service-hud-search.Tpo -c -o hud_service-hud-search.obj `if test -f 'hud-search.c'; then $(CYGPATH_W) 'hud-search.c'; else $(CYGPATH_W) '$(srcdir)/hud-search.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_service-hud-search.Tpo $(DEPDIR)/hud_service-hud-search.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='hud-search.c' object='hud_service-hud-search.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -c -o hud_service-hud-search.obj `if test -f 'hud-search.c'; then $(CYGPATH_W) 'hud-search.c'; else $(CYGPATH_W) '$(srcdir)/hud-search.c'; fi`
+
+hud_service-hud.interface.o: hud.interface.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -MT hud_service-hud.interface.o -MD -MP -MF $(DEPDIR)/hud_service-hud.interface.Tpo -c -o hud_service-hud.interface.o `test -f 'hud.interface.c' || echo '$(srcdir)/'`hud.interface.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_service-hud.interface.Tpo $(DEPDIR)/hud_service-hud.interface.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='hud.interface.c' object='hud_service-hud.interface.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -c -o hud_service-hud.interface.o `test -f 'hud.interface.c' || echo '$(srcdir)/'`hud.interface.c
+
+hud_service-hud.interface.obj: hud.interface.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -MT hud_service-hud.interface.obj -MD -MP -MF $(DEPDIR)/hud_service-hud.interface.Tpo -c -o hud_service-hud.interface.obj `if test -f 'hud.interface.c'; then $(CYGPATH_W) 'hud.interface.c'; else $(CYGPATH_W) '$(srcdir)/hud.interface.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_service-hud.interface.Tpo $(DEPDIR)/hud_service-hud.interface.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='hud.interface.c' object='hud_service-hud.interface.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -c -o hud_service-hud.interface.obj `if test -f 'hud.interface.c'; then $(CYGPATH_W) 'hud.interface.c'; else $(CYGPATH_W) '$(srcdir)/hud.interface.c'; fi`
+
+hud_service-indicator-tracker.o: indicator-tracker.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -MT hud_service-indicator-tracker.o -MD -MP -MF $(DEPDIR)/hud_service-indicator-tracker.Tpo -c -o hud_service-indicator-tracker.o `test -f 'indicator-tracker.c' || echo '$(srcdir)/'`indicator-tracker.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_service-indicator-tracker.Tpo $(DEPDIR)/hud_service-indicator-tracker.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='indicator-tracker.c' object='hud_service-indicator-tracker.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -c -o hud_service-indicator-tracker.o `test -f 'indicator-tracker.c' || echo '$(srcdir)/'`indicator-tracker.c
+
+hud_service-indicator-tracker.obj: indicator-tracker.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -MT hud_service-indicator-tracker.obj -MD -MP -MF $(DEPDIR)/hud_service-indicator-tracker.Tpo -c -o hud_service-indicator-tracker.obj `if test -f 'indicator-tracker.c'; then $(CYGPATH_W) 'indicator-tracker.c'; else $(CYGPATH_W) '$(srcdir)/indicator-tracker.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_service-indicator-tracker.Tpo $(DEPDIR)/hud_service-indicator-tracker.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='indicator-tracker.c' object='hud_service-indicator-tracker.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -c -o hud_service-indicator-tracker.obj `if test -f 'indicator-tracker.c'; then $(CYGPATH_W) 'indicator-tracker.c'; else $(CYGPATH_W) '$(srcdir)/indicator-tracker.c'; fi`
+
+hud_service-load-app-info.o: load-app-info.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -MT hud_service-load-app-info.o -MD -MP -MF $(DEPDIR)/hud_service-load-app-info.Tpo -c -o hud_service-load-app-info.o `test -f 'load-app-info.c' || echo '$(srcdir)/'`load-app-info.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_service-load-app-info.Tpo $(DEPDIR)/hud_service-load-app-info.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='load-app-info.c' object='hud_service-load-app-info.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -c -o hud_service-load-app-info.o `test -f 'load-app-info.c' || echo '$(srcdir)/'`load-app-info.c
+
+hud_service-load-app-info.obj: load-app-info.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -MT hud_service-load-app-info.obj -MD -MP -MF $(DEPDIR)/hud_service-load-app-info.Tpo -c -o hud_service-load-app-info.obj `if test -f 'load-app-info.c'; then $(CYGPATH_W) 'load-app-info.c'; else $(CYGPATH_W) '$(srcdir)/load-app-info.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_service-load-app-info.Tpo $(DEPDIR)/hud_service-load-app-info.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='load-app-info.c' object='hud_service-load-app-info.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -c -o hud_service-load-app-info.obj `if test -f 'load-app-info.c'; then $(CYGPATH_W) 'load-app-info.c'; else $(CYGPATH_W) '$(srcdir)/load-app-info.c'; fi`
+
+hud_service-usage-tracker.o: usage-tracker.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -MT hud_service-usage-tracker.o -MD -MP -MF $(DEPDIR)/hud_service-usage-tracker.Tpo -c -o hud_service-usage-tracker.o `test -f 'usage-tracker.c' || echo '$(srcdir)/'`usage-tracker.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_service-usage-tracker.Tpo $(DEPDIR)/hud_service-usage-tracker.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='usage-tracker.c' object='hud_service-usage-tracker.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -c -o hud_service-usage-tracker.o `test -f 'usage-tracker.c' || echo '$(srcdir)/'`usage-tracker.c
+
+hud_service-usage-tracker.obj: usage-tracker.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -MT hud_service-usage-tracker.obj -MD -MP -MF $(DEPDIR)/hud_service-usage-tracker.Tpo -c -o hud_service-usage-tracker.obj `if test -f 'usage-tracker.c'; then $(CYGPATH_W) 'usage-tracker.c'; else $(CYGPATH_W) '$(srcdir)/usage-tracker.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_service-usage-tracker.Tpo $(DEPDIR)/hud_service-usage-tracker.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='usage-tracker.c' object='hud_service-usage-tracker.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -c -o hud_service-usage-tracker.obj `if test -f 'usage-tracker.c'; then $(CYGPATH_W) 'usage-tracker.c'; else $(CYGPATH_W) '$(srcdir)/usage-tracker.c'; fi`
+
+hud_verify_app_info-load-app-info.o: load-app-info.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_verify_app_info_CFLAGS) $(CFLAGS) -MT hud_verify_app_info-load-app-info.o -MD -MP -MF $(DEPDIR)/hud_verify_app_info-load-app-info.Tpo -c -o hud_verify_app_info-load-app-info.o `test -f 'load-app-info.c' || echo '$(srcdir)/'`load-app-info.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_verify_app_info-load-app-info.Tpo $(DEPDIR)/hud_verify_app_info-load-app-info.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='load-app-info.c' object='hud_verify_app_info-load-app-info.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_verify_app_info_CFLAGS) $(CFLAGS) -c -o hud_verify_app_info-load-app-info.o `test -f 'load-app-info.c' || echo '$(srcdir)/'`load-app-info.c
+
+hud_verify_app_info-load-app-info.obj: load-app-info.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_verify_app_info_CFLAGS) $(CFLAGS) -MT hud_verify_app_info-load-app-info.obj -MD -MP -MF $(DEPDIR)/hud_verify_app_info-load-app-info.Tpo -c -o hud_verify_app_info-load-app-info.obj `if test -f 'load-app-info.c'; then $(CYGPATH_W) 'load-app-info.c'; else $(CYGPATH_W) '$(srcdir)/load-app-info.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_verify_app_info-load-app-info.Tpo $(DEPDIR)/hud_verify_app_info-load-app-info.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='load-app-info.c' object='hud_verify_app_info-load-app-info.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_verify_app_info_CFLAGS) $(CFLAGS) -c -o hud_verify_app_info-load-app-info.obj `if test -f 'load-app-info.c'; then $(CYGPATH_W) 'load-app-info.c'; else $(CYGPATH_W) '$(srcdir)/load-app-info.c'; fi`
+
+hud_verify_app_info-hud-verify-app-info.o: hud-verify-app-info.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_verify_app_info_CFLAGS) $(CFLAGS) -MT hud_verify_app_info-hud-verify-app-info.o -MD -MP -MF $(DEPDIR)/hud_verify_app_info-hud-verify-app-info.Tpo -c -o hud_verify_app_info-hud-verify-app-info.o `test -f 'hud-verify-app-info.c' || echo '$(srcdir)/'`hud-verify-app-info.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_verify_app_info-hud-verify-app-info.Tpo $(DEPDIR)/hud_verify_app_info-hud-verify-app-info.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='hud-verify-app-info.c' object='hud_verify_app_info-hud-verify-app-info.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_verify_app_info_CFLAGS) $(CFLAGS) -c -o hud_verify_app_info-hud-verify-app-info.o `test -f 'hud-verify-app-info.c' || echo '$(srcdir)/'`hud-verify-app-info.c
+
+hud_verify_app_info-hud-verify-app-info.obj: hud-verify-app-info.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_verify_app_info_CFLAGS) $(CFLAGS) -MT hud_verify_app_info-hud-verify-app-info.obj -MD -MP -MF $(DEPDIR)/hud_verify_app_info-hud-verify-app-info.Tpo -c -o hud_verify_app_info-hud-verify-app-info.obj `if test -f 'hud-verify-app-info.c'; then $(CYGPATH_W) 'hud-verify-app-info.c'; else $(CYGPATH_W) '$(srcdir)/hud-verify-app-info.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_verify_app_info-hud-verify-app-info.Tpo $(DEPDIR)/hud_verify_app_info-hud-verify-app-info.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='hud-verify-app-info.c' object='hud_verify_app_info-hud-verify-app-info.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_verify_app_info_CFLAGS) $(CFLAGS) -c -o hud_verify_app_info-hud-verify-app-info.obj `if test -f 'hud-verify-app-info.c'; then $(CYGPATH_W) 'hud-verify-app-info.c'; else $(CYGPATH_W) '$(srcdir)/hud-verify-app-info.c'; fi`
 
 mostlyclean-libtool:
 	-rm -f *.lo
@@ -556,9 +1098,9 @@ distdir: $(DISTFILES)
 check-am: all-am
 check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
-all-am: Makefile $(LTLIBRARIES)
+all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(SCRIPTS)
 installdirs:
-	for dir in "$(DESTDIR)$(appmenulibdir)"; do \
+	for dir in "$(DESTDIR)$(appmenulibdir)" "$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(libexecdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: $(BUILT_SOURCES)
@@ -592,8 +1134,8 @@ maintainer-clean-generic:
 	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-am
 
-clean-am: clean-appmenulibLTLIBRARIES clean-generic clean-libtool \
-	mostlyclean-am
+clean-am: clean-appmenulibLTLIBRARIES clean-generic \
+	clean-libexecPROGRAMS clean-libtool mostlyclean-am
 
 distclean: distclean-am
 	-rm -rf ./$(DEPDIR)
@@ -619,7 +1161,7 @@ install-dvi: install-dvi-am
 
 install-dvi-am:
 
-install-exec-am:
+install-exec-am: install-libexecPROGRAMS install-libexecSCRIPTS
 
 install-html: install-html-am
 
@@ -659,24 +1201,27 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-appmenulibLTLIBRARIES
+uninstall-am: uninstall-appmenulibLTLIBRARIES \
+	uninstall-libexecPROGRAMS uninstall-libexecSCRIPTS
 
 .MAKE: all check install install-am install-strip
 
 .PHONY: CTAGS GTAGS all all-am check check-am clean \
-	clean-appmenulibLTLIBRARIES clean-generic clean-libtool ctags \
-	distclean distclean-compile distclean-generic \
-	distclean-libtool distclean-tags distdir dvi dvi-am html \
-	html-am info info-am install install-am \
-	install-appmenulibLTLIBRARIES install-data install-data-am \
-	install-dvi install-dvi-am install-exec install-exec-am \
-	install-html install-html-am install-info install-info-am \
+	clean-appmenulibLTLIBRARIES clean-generic \
+	clean-libexecPROGRAMS clean-libtool ctags distclean \
+	distclean-compile distclean-generic distclean-libtool \
+	distclean-tags distdir dvi dvi-am html html-am info info-am \
+	install install-am install-appmenulibLTLIBRARIES install-data \
+	install-data-am install-dvi install-dvi-am install-exec \
+	install-exec-am install-html install-html-am install-info \
+	install-info-am install-libexecPROGRAMS install-libexecSCRIPTS \
 	install-man install-pdf install-pdf-am install-ps \
 	install-ps-am install-strip installcheck installcheck-am \
 	installdirs maintainer-clean maintainer-clean-generic \
 	mostlyclean mostlyclean-compile mostlyclean-generic \
 	mostlyclean-libtool pdf pdf-am ps ps-am tags uninstall \
-	uninstall-am uninstall-appmenulibLTLIBRARIES
+	uninstall-am uninstall-appmenulibLTLIBRARIES \
+	uninstall-libexecPROGRAMS uninstall-libexecSCRIPTS
 
 
 stamp-marshal: $(glib_marshal_list)
@@ -710,6 +1255,14 @@ gen-%.xml.c: %.xml
 gen-%.xml.h: %.xml
 	@echo "Building $@ from $<"
 	@echo "extern const char * _$(subst -,_,$(subst .,_,$(basename $(notdir $<))));" > $@
+
+%.interface.h: %.xml
+	echo "extern const char * $(subst -,_,$(subst .,_,$(basename $(notdir $@))));" > $@
+
+%.interface.c: %.xml
+	echo "const char * $(subst -,_,$(subst .,_,$(basename $(notdir $@)))) = " > $@
+	sed -e "s:\":\\\\\":g" -e s:^:\": -e s:\$$:\\\\n\": $< >> $@
+	echo ";" >> $@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

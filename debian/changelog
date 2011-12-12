@@ -1,3 +1,10 @@
+indicator-appmenu (0.3.2+hud1-0ubuntu1~ppa1) UNRELEASED; urgency=low
+
+  * New upstream release.
+    * Adding in HUD service
+
+ -- Ted Gould <ted@ubuntu.com>  Sun, 11 Dec 2011 21:24:35 -0600
+
 indicator-appmenu (0.3.2-0ubuntu1~ppa1) oneiric; urgency=low
 
   * New upstream release.
