@@ -1,3 +1,10 @@
+indicator-appmenu (0.3.2+hud1-0ubuntu1~ppa5) UNRELEASED; urgency=low
+
+  * debian/control: Adding sqlite and dbus-test-runner deps
+  * debian/rules: Adding make check
+
+ -- Ted Gould <ted@ubuntu.com>  Mon, 12 Dec 2011 13:26:49 -0600
+
 indicator-appmenu (0.3.2+hud1-0ubuntu1~ppa4) oneiric; urgency=low
 
   * debian/indicator-appmenu.install: Fixing dbus service path

@@ -13,6 +13,8 @@ DEB_CONFIGURE_FLAGS_gtk2 = --with-gtk=2
 DEB_CONFIGURE_FLAGS_gtk3 = --with-gtk=3
 DEB_CONFIGURE_EXTRA_FLAGS = --disable-static
 
+DEB_MAKE_CHECK_TARGET := check
+
 LDFLAGS += -Wl,-z,defs -Wl,--as-needed
 
 debian/stamp-autotools/gtk2: cdbs_configure_flags += $(DEB_CONFIGURE_FLAGS_gtk2)

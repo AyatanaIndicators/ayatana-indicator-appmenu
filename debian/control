@@ -16,7 +16,10 @@ Build-Depends: debhelper (>= 5.0),
                libdbusmenu-gtk3-dev (>= 0.3.94),
                libdbusmenu-jsonloader-dev (>= 0.3.94),
                libbamf-dev (>= 0.2.53),
-               libbamf3-dev (>= 0.2.53)
+               libbamf3-dev (>= 0.2.53),
+               libsqlite3-dev,
+               sqlite3,
+               dbus-test-runner
 Standards-Version: 3.9.2
 Homepage: http://launchpad.net/indicator-appmenu
 Vcs-Bzr: http://bazaar.launchpad.net/~ubuntu-desktop/indicator-appmenu/ubuntu
