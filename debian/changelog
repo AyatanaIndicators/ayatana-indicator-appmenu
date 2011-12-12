@@ -1,8 +1,8 @@
-indicator-appmenu (0.3.2+hud1-0ubuntu1~ppa4) UNRELEASED; urgency=low
+indicator-appmenu (0.3.2+hud1-0ubuntu1~ppa4) oneiric; urgency=low
 
   * debian/indicator-appmenu.install: Fixing dbus service path
 
- -- Ted Gould <ted@ubuntu.com>  Sun, 11 Dec 2011 21:57:18 -0600
+ -- Ted Gould <ted@ubuntu.com>  Sun, 11 Dec 2011 22:03:30 -0600
 
 indicator-appmenu (0.3.2+hud1-0ubuntu1~ppa3) oneiric; urgency=low
 
