@@ -105,9 +105,23 @@ PKG_CHECK_MODULES([HUD],[
 
 DBUSMENU_JSONLOADER_REQUIRED_VERSION=0.3.3
 
-PKG_CHECK_MODULES(INDICATORTEST,
-                  dbusmenu-jsonloader-0.4 >= $DBUSMENU_JSONLOADER_REQUIRED_VERSION
-                 )
+AC_ARG_ENABLE([tests],
+	AC_HELP_STRING([--disable-tests], [Disable test scripts and tools]),,
+	[enable_tests=auto])
+
+if test x"$enable_tests" != x"no" ; then
+   PKG_CHECK_MODULES(INDICATORTEST,
+                     dbusmenu-jsonloader-0.4 >= $DBUSMENU_JSONLOADER_REQUIRED_VERSION,
+                     [have_dbusmenu_jsonloader=yes],
+                     [have_dbusmenu_jsonloader=no]
+                    )
+   if test x${enable_tests} = xyes && test x${have_dbusmenu_jsonloader} = xno; then
+     AC_MSG_ERROR([Test scripts and tools configured but dbusmenu-jsonloader not found])
+   fi
+else
+   have_dbusmenu-jsonloader=no
+fi
+AM_CONDITIONAL(BUILD_TESTS, test x${have_dbusmenu_jsonloader} = xyes)
 
 AC_SUBST(INDICATORTEST_CFLAGS)
 AC_SUBST(INDICATORTEST_LIBS)
@@ -220,4 +234,5 @@ App Menu Indicator Configuration:
 	Indicator Dir: $INDICATORDIR
 	gcov:          $use_gcov
 	Local Install: $with_localinstall
+	Test tools:    $have_dbusmenu_jsonloader
 ])
