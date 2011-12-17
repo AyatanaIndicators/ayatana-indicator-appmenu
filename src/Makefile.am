@@ -124,7 +124,7 @@ hud_cli_CFLAGS = \
 	$(COVERAGE_CFLAGS) \
 	-Wall -Werror
 hud_cli_LDFLAGS = \
-	$(HUD_LIBS)
+	$(HUD_LIBS) -lreadline -lcurses
 
 #######################
 # HUD Dump Application
