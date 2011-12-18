@@ -21,6 +21,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <glib.h>
 #include <gio/gunixinputstream.h>
+#include <gtk/gtk.h>
 #include <unistd.h>
 #include <stdio.h>
 #include <readline/readline.h>
@@ -38,22 +39,19 @@ static GVariant * last_key = NULL;
 static void update(char *string);
 void sighandler(int);
 
-char blank[80];
 WINDOW *twindow = NULL;
+int use_curses = 0;
 
 int
-main (int argv, char * argc[])
+main (int argc, char *argv[])
 {
 
 	g_type_init();
 
-	int c;
+	int single_char;
 	int pos = 0;
-	int run = 1;
-	char line[256]; 
 	
-	memset( blank, ' ', 80 );
-	blank[79] = '\0';
+	char *line = (char*) malloc(256 * sizeof(char));
 
 	signal(SIGINT, sighandler);
 
@@ -75,24 +73,48 @@ main (int argv, char * argc[])
 	                              NULL, NULL);
 	g_return_val_if_fail(proxy != NULL, 1);
 
-	if (!isatty (STDIN_FILENO)) {
-		// FIXME - reading from STDIN seems to not have right dbus context
+
+	// reading from pipe
+	if (!isatty (STDIN_FILENO) ) {
+		size_t a;
+		int r;
+		r = getline (&line, &a, stdin);
+	
+		if ( r == -1 ){
+			perror("Error reading from pipe");
+			exit(EXIT_FAILURE);	
+		}
+
+		// get rid of newline
+		if( line[r-1] == '\n' )
+			line[r-1] = '\0';	
+	
+		printf("\nsearch token: %s\n", line);
+		print_suggestions( line );
 	}
+	// read command line parameter - hud-cli "search string"
+	else if( argc > 1 ){
+		printf("\nsearch token: %s\n", argv[1]);
+		print_suggestions( argv[1] );
+	}
+	// interactive mode
      	else{
+		use_curses = 1;
+		
 		twindow = initscr(); 		
 		cbreak();
 		keypad(stdscr, TRUE);	
 		noecho();
-	
+		
 		/* initialize the query screen */
 		update( "" );
 
 		/* interactive shell interface */
-		while( run ){
+		while( 1 ){
 		
-			c = getch();		
+			single_char = getch();		
 			/* need to go left in the buffer */
-			if ( c == KEY_BACKSPACE ){
+			if ( single_char == KEY_BACKSPACE ){
 				/* don't go too far left */
 				if( pos > 0 ){
 					pos--;
@@ -103,17 +125,15 @@ main (int argv, char * argc[])
 					; /* we are at the beginning of the buffer already */
 			}
 			/* ENTER will trigger the action for the first selected suggestion */
-			else if ( c == '\n' ){
-
-				/* break */ 
-				run = 0;
+			else if ( single_char == '\n' ){
 
 				/* FIXME: execute action on RETURN */
+				break;
 			}
 			/* add character to the buffer and terminate string */
 			else{
-				if ( pos > 256 -1 ){ // -1 for \0
-					line[pos] = c;
+				if ( pos < 256 -1 ){ // -1 for \0
+					line[pos] = single_char;
 					line[pos+1] = '\0';
 					pos++;
 					update( line );
@@ -123,9 +143,10 @@ main (int argv, char * argc[])
 				}
 			}
 		}
-
 		endwin();
 	}
+	
+	free(line);
 
 	g_dbus_node_info_unref(nodeinfo);
 	g_object_unref(session);
@@ -182,9 +203,16 @@ print_suggestions (const char *query)
 	last_key = NULL;
 
 	int i=0;
+	char *clean_line;
 
 	while (g_variant_iter_loop(&iter, "(ssv)", &suggestion, &icon, &key)) {
-		mvwprintw(twindow, 9 + i, 15, "%s", suggestion);
+		if( use_curses)
+			mvwprintw(twindow, 9 + i, 15, "%s", suggestion);
+		else{
+			pango_parse_markup(suggestion, -1, 0, NULL, &clean_line, NULL, NULL);
+			printf("\t%s\n", clean_line);
+			free(clean_line);
+		}
 		i++;
 
 	}
