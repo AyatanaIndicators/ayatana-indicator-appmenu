@@ -1,0 +1,28 @@
+<refentry id="hud-verify-app-info" lang="en">
+
+<refmeta>
+	<refentrytitle>hud-verify-app-info</refentrytitle>
+	<manvolnum>1</manvolnum>
+	<refmiscinfo class="manual">User Commands</refmiscinfo>
+</refmeta>
+
+<refnamediv>
+	<refname>hud-verify-app-info</refname>
+	<refpurpose>Tool to verify an app-info file that is expected to be used in the HUD</refpurpose>
+</refnamediv>
+
+<refsect1>
+	<title>AUTHOR</title>
+	<para>
+		Written by Ted Gould <email>ted@canonical.com</email> and others.
+	</para>
+</refsect1>
+
+<refsect1>
+	<title>BUGS</title>
+	<para>
+		Bugs should be submitted to Launchpad: <ulink url="https://bugs.launchpad.net/indicator-appmenu/+filebug"/>
+	</para>
+</refsect1>
+
+</refentry>

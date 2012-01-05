@@ -1,0 +1,28 @@
+<refentry id="hud-dump-application" lang="en">
+
+<refmeta>
+	<refentrytitle>hud-dump-application</refentrytitle>
+	<manvolnum>1</manvolnum>
+	<refmiscinfo class="manual">User Commands</refmiscinfo>
+</refmeta>
+
+<refnamediv>
+	<refname>hud-dump-application</refname>
+	<refpurpose>Tool to dump information on an application from the HUD usage database</refpurpose>
+</refnamediv>
+
+<refsect1>
+	<title>AUTHOR</title>
+	<para>
+		Written by Ted Gould <email>ted@canonical.com</email> and others.
+	</para>
+</refsect1>
+
+<refsect1>
+	<title>BUGS</title>
+	<para>
+		Bugs should be submitted to Launchpad: <ulink url="https://bugs.launchpad.net/indicator-appmenu/+filebug"/>
+	</para>
+</refsect1>
+
+</refentry>
