@@ -98,6 +98,18 @@ PKG_CHECK_MODULES([HUD],[
 		sqlite3 >= $SQLITE_REQUIRED_VERSION
 ])
 
+###########################
+# CLI Dependencies
+###########################
+
+AC_CHECK_HEADER("readline/readline.h",
+	[has_readline_h="yes"])
+AC_CHECK_HEADER("readline/history.h",
+	[has_history_h="yes"])
+AC_CHECK_HEADER("curses.h",
+	[has_curses_h="yes"])
+
+AM_CONDITIONAL([BUILD_CLI], [test "x$has_readline_h" == "xyes" && test "x$has_history_h" == "xyes" && test "x$has_curses_h" == "xyes"]),
 
 ###########################
 # Test Dependencies

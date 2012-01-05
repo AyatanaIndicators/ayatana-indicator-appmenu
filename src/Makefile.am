@@ -5,7 +5,6 @@ EXTRA_DIST = \
 	hud-list-applications
 
 libexec_PROGRAMS = \
-	hud-cli \
 	hud-dump-application \
 	hud-service \
 	hud-verify-app-info
@@ -123,8 +122,19 @@ hud_cli_CFLAGS = \
 	$(HUD_CFLAGS) \
 	$(COVERAGE_CFLAGS) \
 	-Wall -Werror
+
 hud_cli_LDFLAGS = \
-	$(HUD_LIBS) -lreadline -lcurses
+	$(HUD_LIBS) \
+	-lreadline -lcurses
+
+
+if BUILD_CLI
+libexec_PROGRAMS += \
+	hud-cli
+else
+EXTRA_DIST += \
+	$(hud_cli_SOURCES)
+endif
 
 #######################
 # HUD Dump Application
