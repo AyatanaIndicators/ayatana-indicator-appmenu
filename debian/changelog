@@ -5,8 +5,9 @@ indicator-appmenu (0.3.2+hud2-0ubuntu1~ppa1) UNRELEASED; urgency=low
     * Adding code coverage testing
     * Moving tools to bin
   * debian/control: Adding build deps on new libraries for CLI tool
+  * debina/indicator-appmenu-tools: Move tools to /usr/bin
 
- -- Ted Gould <ted@ubuntu.com>  Thu, 05 Jan 2012 00:03:24 -0600
+ -- Ted Gould <ted@ubuntu.com>  Thu, 05 Jan 2012 00:04:49 -0600
 
 indicator-appmenu (0.3.2+hud1-0ubuntu1~ppa5) oneiric; urgency=low
 

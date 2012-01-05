@@ -1,7 +1,7 @@
 debian/tmp/gtk3/usr/lib/indicator-appmenu/current-menu* /usr/lib/indicator-appmenu/
 debian/tmp/gtk3/usr/lib/indicator-appmenu/menu-pusher /usr/lib/indicator-appmenu/
 debian/tmp/gtk3/usr/lib/indicator-appmenu/mock-json-app /usr/lib/indicator-appmenu/
-debian/tmp/gtk3/usr/lib/indicator-appmenu/hud-cli /usr/lib/indicator-appmenu/
-debian/tmp/gtk3/usr/lib/indicator-appmenu/hud-dump-application /usr/lib/indicator-appmenu/
-debian/tmp/gtk3/usr/lib/indicator-appmenu/hud-list-applications /usr/lib/indicator-appmenu/
-debian/tmp/gtk3/usr/lib/indicator-appmenu/hud-verify-app-info /usr/lib/indicator-appmenu/
+debian/tmp/gtk3/usr/bin/hud-cli /usr/bin/
+debian/tmp/gtk3/usr/bin/hud-dump-application /usr/bin/
+debian/tmp/gtk3/usr/bin/hud-list-applications /usr/bin/
+debian/tmp/gtk3/usr/bin/hud-verify-app-info /usr/bin/
