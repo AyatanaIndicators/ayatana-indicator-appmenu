@@ -4,13 +4,15 @@ BUILT_SOURCES =
 EXTRA_DIST = \
 	hud-list-applications
 
-libexec_PROGRAMS = \
+bin_PROGRAMS = \
 	hud-dump-application \
-	hud-service \
 	hud-verify-app-info
 
-libexec_SCRIPTS = \
+bin_SCRIPTS = \
 	hud-list-applications
+
+libexec_PROGRAMS = \
+	hud-service
 
 include $(top_srcdir)/Makefile.am.marshal
 
@@ -129,7 +131,7 @@ hud_cli_LDFLAGS = \
 
 
 if BUILD_CLI
-libexec_PROGRAMS += \
+bin_PROGRAMS += \
 	hud-cli
 else
 EXTRA_DIST += \
