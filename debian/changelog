@@ -4,8 +4,9 @@ indicator-appmenu (0.3.2+hud2-0ubuntu1~ppa1) UNRELEASED; urgency=low
     * Adding curses support to CLI client
     * Adding code coverage testing
     * Moving tools to bin
+  * debian/control: Adding build deps on new libraries for CLI tool
 
- -- Ted Gould <ted@ubuntu.com>  Wed, 04 Jan 2012 23:59:55 -0600
+ -- Ted Gould <ted@ubuntu.com>  Thu, 05 Jan 2012 00:03:24 -0600
 
 indicator-appmenu (0.3.2+hud1-0ubuntu1~ppa5) oneiric; urgency=low
 
