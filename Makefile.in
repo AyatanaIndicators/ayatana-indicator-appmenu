@@ -33,6 +33,11 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
+@BUILD_TESTS_TRUE@am__append_1 = \
+@BUILD_TESTS_TRUE@	scripts \
+@BUILD_TESTS_TRUE@	tests \
+@BUILD_TESTS_TRUE@	tools
+
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
 	$(srcdir)/Makefile.in $(srcdir)/config.h.in \
@@ -48,7 +53,8 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/gettext.m4 \
 	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
 	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
 	$(top_srcdir)/m4/nls.m4 $(top_srcdir)/m4/po.m4 \
-	$(top_srcdir)/m4/progtest.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/progtest.m4 $(top_srcdir)/m4/gcov.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
@@ -79,7 +85,7 @@ AM_RECURSIVE_TARGETS = $(RECURSIVE_TARGETS:-recursive=) \
 	distdir dist dist-all distcheck
 ETAGS = etags
 CTAGS = ctags
-DIST_SUBDIRS = $(SUBDIRS)
+DIST_SUBDIRS = data po src scripts tests tools
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -128,6 +134,9 @@ AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+COVERAGE_CFLAGS = @COVERAGE_CFLAGS@
+COVERAGE_CXXFLAGS = @COVERAGE_CXXFLAGS@
+COVERAGE_LDFLAGS = @COVERAGE_LDFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CYGPATH_W = @CYGPATH_W@
@@ -144,6 +153,8 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
+GCOVR = @GCOVR@
+GENHTML = @GENHTML@
 GETTEXT_MACRO_VERSION = @GETTEXT_MACRO_VERSION@
 GETTEXT_PACKAGE = @GETTEXT_PACKAGE@
 GLIB_GENMARSHAL = @GLIB_GENMARSHAL@
@@ -177,6 +188,7 @@ INTLTOOL_MERGE = @INTLTOOL_MERGE@
 INTLTOOL_PERL = @INTLTOOL_PERL@
 INTLTOOL_UPDATE = @INTLTOOL_UPDATE@
 INTL_MACOSX_LIBS = @INTL_MACOSX_LIBS@
+LCOV = @LCOV@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBICONV = @LIBICONV@
@@ -218,6 +230,7 @@ RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
+SHTOOL = @SHTOOL@
 STRIP = @STRIP@
 USE_NLS = @USE_NLS@
 VERSION = @VERSION@
@@ -278,14 +291,7 @@ top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
-SUBDIRS = \
-	data \
-	po \
-	src \
-	scripts \
-	tests \
-	tools
-
+SUBDIRS = data po src $(am__append_1)
 DISTCHECK_CONFIGURE_FLAGS = --enable-localinstall --enable-deprecations
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
@@ -697,7 +703,7 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-recursive
 
-clean-am: clean-generic clean-libtool mostlyclean-am
+clean-am: clean-generic clean-libtool clean-local mostlyclean-am
 
 distclean: distclean-recursive
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
@@ -770,22 +776,23 @@ uninstall-am:
 
 .PHONY: $(RECURSIVE_CLEAN_TARGETS) $(RECURSIVE_TARGETS) CTAGS GTAGS \
 	all all-am am--refresh check check-am clean clean-generic \
-	clean-libtool ctags ctags-recursive dist dist-all dist-bzip2 \
-	dist-gzip dist-hook dist-lzma dist-shar dist-tarZ dist-xz \
-	dist-zip distcheck distclean distclean-generic distclean-hdr \
-	distclean-libtool distclean-tags distcleancheck distdir \
-	distuninstallcheck dvi dvi-am html html-am info info-am \
-	install install-am install-data install-data-am install-dvi \
-	install-dvi-am install-exec install-exec-am install-html \
-	install-html-am install-info install-info-am install-man \
-	install-pdf install-pdf-am install-ps install-ps-am \
-	install-strip installcheck installcheck-am installdirs \
-	installdirs-am maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-generic mostlyclean-libtool pdf pdf-am \
-	ps ps-am tags tags-recursive uninstall uninstall-am
+	clean-libtool clean-local ctags ctags-recursive dist dist-all \
+	dist-bzip2 dist-gzip dist-hook dist-lzma dist-shar dist-tarZ \
+	dist-xz dist-zip distcheck distclean distclean-generic \
+	distclean-hdr distclean-libtool distclean-tags distcleancheck \
+	distdir distuninstallcheck dvi dvi-am html html-am info \
+	info-am install install-am install-data install-data-am \
+	install-dvi install-dvi-am install-exec install-exec-am \
+	install-html install-html-am install-info install-info-am \
+	install-man install-pdf install-pdf-am install-ps \
+	install-ps-am install-strip installcheck installcheck-am \
+	installdirs installdirs-am maintainer-clean \
+	maintainer-clean-generic mostlyclean mostlyclean-generic \
+	mostlyclean-libtool pdf pdf-am ps ps-am tags tags-recursive \
+	uninstall uninstall-am
 
 
-tests: service src
+tests: src
 
 dist-hook:
 	@if test -d "$(top_srcdir)/.bzr"; \
@@ -812,6 +819,41 @@ dist-hook:
         else \
 			echo Failed to generate AUTHORS: not a branch >&2; \
 	fi
+
+# Coverage targets
+
+.PHONY: clean-gcda
+clean-gcda:
+	@echo Removing old coverage results
+	-find -name '*.gcda' -print | xargs -r rm
+
+.PHONY: coverage-html generate-coverage-html clean-coverage-html
+coverage-html: clean-gcda
+	-$(MAKE) $(AM_MAKEFLAGS) -k check
+	$(MAKE) $(AM_MAKEFLAGS) generate-coverage-html
+
+generate-coverage-html:
+	@echo Collecting coverage data
+	$(LCOV) --directory $(top_builddir) --capture --output-file coverage.info --no-checksum --compat-libtool
+	LANG=C $(GENHTML) --prefix $(top_builddir) --output-directory coveragereport --title "Code Coverage" --legend --show-details coverage.info
+
+clean-coverage-html: clean-gcda
+	-$(LCOV) --directory $(top_builddir) -z
+	-rm -rf coverage.info coveragereport
+
+.PHONY: coverage-xml generate-coverage-xml clean-coverage-xml
+coverage-xml: clean-gcda
+	-$(MAKE) $(AM_MAKEFLAGS) -k check
+	$(MAKE) $(AM_MAKEFLAGS) generate-coverage-xml
+
+generate-coverage-xml:
+	@echo Generating coverage XML report
+	$(GCOVR) -x -r $(top_builddir) -o $(top_builddir)/coverage.xml
+
+clean-coverage-xml: clean-gcda
+	-rm -rf $(top_builddir)/coverage.xml
+
+clean-local: clean-coverage-html clean-coverage-xml
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

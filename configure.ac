@@ -1,5 +1,5 @@
 AC_INIT([indicator-appmenu],
-        [0.3.2+hud1],
+        [0.3.2+hud2],
         [http://bugs.launchpad.net/indicator-appmenu],
         [indicator-appmenu],
         [http://launchpad.net/indicator-appmenu])
@@ -98,6 +98,18 @@ PKG_CHECK_MODULES([HUD],[
 		sqlite3 >= $SQLITE_REQUIRED_VERSION
 ])
 
+###########################
+# CLI Dependencies
+###########################
+
+AC_CHECK_HEADER("readline/readline.h",
+	[has_readline_h="yes"])
+AC_CHECK_HEADER("readline/history.h",
+	[has_history_h="yes"])
+AC_CHECK_HEADER("curses.h",
+	[has_curses_h="yes"])
+
+AM_CONDITIONAL([BUILD_CLI], [test "x$has_readline_h" == "xyes" && test "x$has_history_h" == "xyes" && test "x$has_curses_h" == "xyes"]),
 
 ###########################
 # Test Dependencies
@@ -105,12 +117,36 @@ PKG_CHECK_MODULES([HUD],[
 
 DBUSMENU_JSONLOADER_REQUIRED_VERSION=0.3.3
 
-PKG_CHECK_MODULES(INDICATORTEST,
-                  dbusmenu-jsonloader-0.4 >= $DBUSMENU_JSONLOADER_REQUIRED_VERSION
-                 )
+AC_ARG_ENABLE([tests],
+	AC_HELP_STRING([--disable-tests], [Disable test scripts and tools]),,
+	[enable_tests=auto])
+
+if test x"$enable_tests" != x"no" ; then
+   PKG_CHECK_MODULES(INDICATORTEST,
+                     dbusmenu-jsonloader-0.4 >= $DBUSMENU_JSONLOADER_REQUIRED_VERSION,
+                     [have_dbusmenu_jsonloader=yes],
+                     [have_dbusmenu_jsonloader=no]
+                    )
+   if test x${enable_tests} = xyes && test x${have_dbusmenu_jsonloader} = xno; then
+     AC_MSG_ERROR([Test scripts and tools configured but dbusmenu-jsonloader not found])
+   fi
+else
+   have_dbusmenu-jsonloader=no
+fi
+AM_CONDITIONAL(BUILD_TESTS, test x${have_dbusmenu_jsonloader} = xyes)
 
 AC_SUBST(INDICATORTEST_CFLAGS)
 AC_SUBST(INDICATORTEST_LIBS)
+
+###########################
+# gcov coverage reporting
+###########################
+
+m4_include([m4/gcov.m4])
+AC_TDD_GCOV
+AC_SUBST(COVERAGE_CFLAGS)
+AC_SUBST(COVERAGE_CXXFLAGS)
+AC_SUBST(COVERAGE_LDFLAGS)
 
 ###########################
 # XSLT Processor
@@ -208,5 +244,7 @@ App Menu Indicator Configuration:
 
 	Prefix:        $prefix
 	Indicator Dir: $INDICATORDIR
+	gcov:          $use_gcov
 	Local Install: $with_localinstall
+	Test tools:    $have_dbusmenu_jsonloader
 ])

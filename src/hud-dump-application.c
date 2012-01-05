@@ -42,7 +42,7 @@ main (int argv, char * argc[])
 	}
 	g_free(cachedir);
 
-	gchar * cachefile = g_build_filename(basecachedir, "hud", "usage-log.sqlite", NULL);
+	gchar * cachefile = g_build_filename(basecachedir, "indicator-appmenu", "hud-usage-log.sqlite", NULL);
 	gboolean db_exists = g_file_test(cachefile, G_FILE_TEST_EXISTS);
 
 	if (!db_exists) {

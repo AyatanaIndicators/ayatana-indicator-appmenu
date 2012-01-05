@@ -52,10 +52,17 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-libexec_PROGRAMS = hud-cli$(EXEEXT) hud-dump-application$(EXEEXT) \
-	hud-service$(EXEEXT) hud-verify-app-info$(EXEEXT)
+bin_PROGRAMS = hud-dump-application$(EXEEXT) \
+	hud-verify-app-info$(EXEEXT) $(am__EXEEXT_1)
+libexec_PROGRAMS = hud-service$(EXEEXT)
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(top_srcdir)/Makefile.am.marshal
+@BUILD_CLI_TRUE@am__append_1 = \
+@BUILD_CLI_TRUE@	hud-cli
+
+@BUILD_CLI_FALSE@am__append_2 = \
+@BUILD_CLI_FALSE@	$(hud_cli_SOURCES)
+
 subdir = src
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/m4/gettext.m4 \
@@ -66,7 +73,8 @@ am__aclocal_m4_deps = $(top_srcdir)/m4/gettext.m4 \
 	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
 	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
 	$(top_srcdir)/m4/nls.m4 $(top_srcdir)/m4/po.m4 \
-	$(top_srcdir)/m4/progtest.m4 $(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/progtest.m4 $(top_srcdir)/m4/gcov.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 mkinstalldirs = $(install_sh) -d
@@ -94,8 +102,8 @@ am__nobase_list = $(am__nobase_strip_setup); \
 am__base_list = \
   sed '$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;$$!N;s/\n/ /g' | \
   sed '$$!N;$$!N;$$!N;$$!N;s/\n/ /g'
-am__installdirs = "$(DESTDIR)$(appmenulibdir)" \
-	"$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(libexecdir)"
+am__installdirs = "$(DESTDIR)$(appmenulibdir)" "$(DESTDIR)$(bindir)" \
+	"$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(bindir)"
 LTLIBRARIES = $(appmenulib_LTLIBRARIES)
 am__DEPENDENCIES_1 =
 libappmenu_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
@@ -112,7 +120,8 @@ am__v_lt_0 = --silent
 libappmenu_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(libappmenu_la_CFLAGS) \
 	$(CFLAGS) $(libappmenu_la_LDFLAGS) $(LDFLAGS) -o $@
-PROGRAMS = $(libexec_PROGRAMS)
+@BUILD_CLI_TRUE@am__EXEEXT_1 = hud-cli$(EXEEXT)
+PROGRAMS = $(bin_PROGRAMS) $(libexec_PROGRAMS)
 am_hud_cli_OBJECTS = hud_cli-hud-cli.$(OBJEXT) \
 	hud_cli-hud.interface.$(OBJEXT)
 hud_cli_OBJECTS = $(am_hud_cli_OBJECTS)
@@ -153,7 +162,7 @@ hud_verify_app_info_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(hud_verify_app_info_CFLAGS) $(CFLAGS) \
 	$(hud_verify_app_info_LDFLAGS) $(LDFLAGS) -o $@
-SCRIPTS = $(libexec_SCRIPTS)
+SCRIPTS = $(bin_SCRIPTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
@@ -201,6 +210,9 @@ AWK = @AWK@
 CC = @CC@
 CCDEPMODE = @CCDEPMODE@
 CFLAGS = @CFLAGS@
+COVERAGE_CFLAGS = @COVERAGE_CFLAGS@
+COVERAGE_CXXFLAGS = @COVERAGE_CXXFLAGS@
+COVERAGE_LDFLAGS = @COVERAGE_LDFLAGS@
 CPP = @CPP@
 CPPFLAGS = @CPPFLAGS@
 CYGPATH_W = @CYGPATH_W@
@@ -217,6 +229,8 @@ ECHO_T = @ECHO_T@
 EGREP = @EGREP@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
+GCOVR = @GCOVR@
+GENHTML = @GENHTML@
 GETTEXT_MACRO_VERSION = @GETTEXT_MACRO_VERSION@
 GETTEXT_PACKAGE = @GETTEXT_PACKAGE@
 GLIB_GENMARSHAL = @GLIB_GENMARSHAL@
@@ -250,6 +264,7 @@ INTLTOOL_MERGE = @INTLTOOL_MERGE@
 INTLTOOL_PERL = @INTLTOOL_PERL@
 INTLTOOL_UPDATE = @INTLTOOL_UPDATE@
 INTL_MACOSX_LIBS = @INTL_MACOSX_LIBS@
+LCOV = @LCOV@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
 LIBICONV = @LIBICONV@
@@ -291,6 +306,7 @@ RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
+SHTOOL = @SHTOOL@
 STRIP = @STRIP@
 USE_NLS = @USE_NLS@
 VERSION = @VERSION@
@@ -362,9 +378,9 @@ BUILT_SOURCES = $(marshal_h) $(marshal_c) \
 ####################
 # HUD DBus Interface
 ####################
-EXTRA_DIST = hud-list-applications $(glib_marshal_list) hud.xml \
-	$(DBUS_SPECS) clean-namespaces.xslt
-libexec_SCRIPTS = \
+EXTRA_DIST = hud-list-applications $(glib_marshal_list) \
+	$(am__append_2) hud.xml $(DBUS_SPECS) clean-namespaces.xslt
+bin_SCRIPTS = \
 	hud-list-applications
 
 marshal_h = $(glib_marshal_list:.list=.h)
@@ -389,9 +405,16 @@ libappmenu_la_SOURCES = \
 	gen-application-menu-registrar.xml.c \
 	gen-application-menu-registrar.xml.h
 
-libappmenu_la_CFLAGS = $(INDICATOR_CFLAGS) -Wall -Wl,-Bsymbolic-functions -Wl,-z,defs -Wl,--as-needed -Werror -DG_LOG_DOMAIN=\"Indicator-Appmenu\"
+libappmenu_la_CFLAGS = \
+	$(INDICATOR_CFLAGS) \
+	$(COVERAGE_CFLAGS) \
+	-Wall -Wl,-Bsymbolic-functions -Wl,-z,defs -Wl,--as-needed -Werror -DG_LOG_DOMAIN=\"Indicator-Appmenu\"
+
 libappmenu_la_LIBADD = $(INDICATOR_LIBS) -lX11
-libappmenu_la_LDFLAGS = -module -avoid-version
+libappmenu_la_LDFLAGS = \
+	$(COVERAGE_CFLAGS) \
+	-module -avoid-version
+
 
 ######################################
 # Build your own marshaller
@@ -434,6 +457,7 @@ hud_service_SOURCES = \
 
 hud_service_CFLAGS = \
 	$(HUD_CFLAGS) \
+	$(COVERAGE_CFLAGS) \
 	-DDATADIR=\""$(datadir)"\" \
 	-Wall -Werror
 
@@ -452,10 +476,12 @@ hud_cli_SOURCES = \
 
 hud_cli_CFLAGS = \
 	$(HUD_CFLAGS) \
+	$(COVERAGE_CFLAGS) \
 	-Wall -Werror
 
 hud_cli_LDFLAGS = \
-	$(HUD_LIBS)
+	$(HUD_LIBS) \
+	-lreadline -lcurses
 
 
 #######################
@@ -468,6 +494,7 @@ hud_dump_application_SOURCES = \
 
 hud_dump_application_CFLAGS = \
 	$(HUD_CFLAGS) \
+	$(COVERAGE_CFLAGS) \
 	-Wall -Werror
 
 hud_dump_application_LDFLAGS = \
@@ -484,6 +511,7 @@ hud_verify_app_info_SOURCES = \
 
 hud_verify_app_info_CFLAGS = \
 	$(HUD_CFLAGS) \
+	$(COVERAGE_CFLAGS) \
 	-Wall -Werror
 
 hud_verify_app_info_LDFLAGS = \
@@ -557,6 +585,49 @@ clean-appmenulibLTLIBRARIES:
 	done
 libappmenu.la: $(libappmenu_la_OBJECTS) $(libappmenu_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libappmenu_la_LINK) -rpath $(appmenulibdir) $(libappmenu_la_OBJECTS) $(libappmenu_la_LIBADD) $(LIBS)
+install-binPROGRAMS: $(bin_PROGRAMS)
+	@$(NORMAL_INSTALL)
+	test -z "$(bindir)" || $(MKDIR_P) "$(DESTDIR)$(bindir)"
+	@list='$(bin_PROGRAMS)'; test -n "$(bindir)" || list=; \
+	for p in $$list; do echo "$$p $$p"; done | \
+	sed 's/$(EXEEXT)$$//' | \
+	while read p p1; do if test -f $$p || test -f $$p1; \
+	  then echo "$$p"; echo "$$p"; else :; fi; \
+	done | \
+	sed -e 'p;s,.*/,,;n;h' -e 's|.*|.|' \
+	    -e 'p;x;s,.*/,,;s/$(EXEEXT)$$//;$(transform);s/$$/$(EXEEXT)/' | \
+	sed 'N;N;N;s,\n, ,g' | \
+	$(AWK) 'BEGIN { files["."] = ""; dirs["."] = 1 } \
+	  { d=$$3; if (dirs[d] != 1) { print "d", d; dirs[d] = 1 } \
+	    if ($$2 == $$4) files[d] = files[d] " " $$1; \
+	    else { print "f", $$3 "/" $$4, $$1; } } \
+	  END { for (d in files) print "f", d, files[d] }' | \
+	while read type dir files; do \
+	    if test "$$dir" = .; then dir=; else dir=/$$dir; fi; \
+	    test -z "$$files" || { \
+	    echo " $(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) $$files '$(DESTDIR)$(bindir)$$dir'"; \
+	    $(INSTALL_PROGRAM_ENV) $(LIBTOOL) $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=install $(INSTALL_PROGRAM) $$files "$(DESTDIR)$(bindir)$$dir" || exit $$?; \
+	    } \
+	; done
+
+uninstall-binPROGRAMS:
+	@$(NORMAL_UNINSTALL)
+	@list='$(bin_PROGRAMS)'; test -n "$(bindir)" || list=; \
+	files=`for p in $$list; do echo "$$p"; done | \
+	  sed -e 'h;s,^.*/,,;s/$(EXEEXT)$$//;$(transform)' \
+	      -e 's/$$/$(EXEEXT)/' `; \
+	test -n "$$list" || exit 0; \
+	echo " ( cd '$(DESTDIR)$(bindir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(bindir)" && rm -f $$files
+
+clean-binPROGRAMS:
+	@list='$(bin_PROGRAMS)'; test -n "$$list" || exit 0; \
+	echo " rm -f" $$list; \
+	rm -f $$list || exit $$?; \
+	test -n "$(EXEEXT)" || exit 0; \
+	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
+	echo " rm -f" $$list; \
+	rm -f $$list
 install-libexecPROGRAMS: $(libexec_PROGRAMS)
 	@$(NORMAL_INSTALL)
 	test -z "$(libexecdir)" || $(MKDIR_P) "$(DESTDIR)$(libexecdir)"
@@ -612,10 +683,10 @@ hud-service$(EXEEXT): $(hud_service_OBJECTS) $(hud_service_DEPENDENCIES)
 hud-verify-app-info$(EXEEXT): $(hud_verify_app_info_OBJECTS) $(hud_verify_app_info_DEPENDENCIES) 
 	@rm -f hud-verify-app-info$(EXEEXT)
 	$(AM_V_CCLD)$(hud_verify_app_info_LINK) $(hud_verify_app_info_OBJECTS) $(hud_verify_app_info_LDADD) $(LIBS)
-install-libexecSCRIPTS: $(libexec_SCRIPTS)
+install-binSCRIPTS: $(bin_SCRIPTS)
 	@$(NORMAL_INSTALL)
-	test -z "$(libexecdir)" || $(MKDIR_P) "$(DESTDIR)$(libexecdir)"
-	@list='$(libexec_SCRIPTS)'; test -n "$(libexecdir)" || list=; \
+	test -z "$(bindir)" || $(MKDIR_P) "$(DESTDIR)$(bindir)"
+	@list='$(bin_SCRIPTS)'; test -n "$(bindir)" || list=; \
 	for p in $$list; do \
 	  if test -f "$$p"; then d=; else d="$(srcdir)/"; fi; \
 	  if test -f "$$d$$p"; then echo "$$d$$p"; echo "$$p"; else :; fi; \
@@ -633,19 +704,19 @@ install-libexecSCRIPTS: $(libexec_SCRIPTS)
 	while read type dir files; do \
 	     if test "$$dir" = .; then dir=; else dir=/$$dir; fi; \
 	     test -z "$$files" || { \
-	       echo " $(INSTALL_SCRIPT) $$files '$(DESTDIR)$(libexecdir)$$dir'"; \
-	       $(INSTALL_SCRIPT) $$files "$(DESTDIR)$(libexecdir)$$dir" || exit $$?; \
+	       echo " $(INSTALL_SCRIPT) $$files '$(DESTDIR)$(bindir)$$dir'"; \
+	       $(INSTALL_SCRIPT) $$files "$(DESTDIR)$(bindir)$$dir" || exit $$?; \
 	     } \
 	; done
 
-uninstall-libexecSCRIPTS:
+uninstall-binSCRIPTS:
 	@$(NORMAL_UNINSTALL)
-	@list='$(libexec_SCRIPTS)'; test -n "$(libexecdir)" || exit 0; \
+	@list='$(bin_SCRIPTS)'; test -n "$(bindir)" || exit 0; \
 	files=`for p in $$list; do echo "$$p"; done | \
 	       sed -e 's,.*/,,;$(transform)'`; \
 	test -n "$$list" || exit 0; \
-	echo " ( cd '$(DESTDIR)$(libexecdir)' && rm -f" $$files ")"; \
-	cd "$(DESTDIR)$(libexecdir)" && rm -f $$files
+	echo " ( cd '$(DESTDIR)$(bindir)' && rm -f" $$files ")"; \
+	cd "$(DESTDIR)$(bindir)" && rm -f $$files
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -1100,7 +1171,7 @@ check: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) check-am
 all-am: Makefile $(LTLIBRARIES) $(PROGRAMS) $(SCRIPTS)
 installdirs:
-	for dir in "$(DESTDIR)$(appmenulibdir)" "$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(libexecdir)"; do \
+	for dir in "$(DESTDIR)$(appmenulibdir)" "$(DESTDIR)$(bindir)" "$(DESTDIR)$(libexecdir)" "$(DESTDIR)$(bindir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
 install: $(BUILT_SOURCES)
@@ -1134,7 +1205,7 @@ maintainer-clean-generic:
 	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-am
 
-clean-am: clean-appmenulibLTLIBRARIES clean-generic \
+clean-am: clean-appmenulibLTLIBRARIES clean-binPROGRAMS clean-generic \
 	clean-libexecPROGRAMS clean-libtool mostlyclean-am
 
 distclean: distclean-am
@@ -1161,7 +1232,8 @@ install-dvi: install-dvi-am
 
 install-dvi-am:
 
-install-exec-am: install-libexecPROGRAMS install-libexecSCRIPTS
+install-exec-am: install-binPROGRAMS install-binSCRIPTS \
+	install-libexecPROGRAMS
 
 install-html: install-html-am
 
@@ -1201,27 +1273,28 @@ ps: ps-am
 
 ps-am:
 
-uninstall-am: uninstall-appmenulibLTLIBRARIES \
-	uninstall-libexecPROGRAMS uninstall-libexecSCRIPTS
+uninstall-am: uninstall-appmenulibLTLIBRARIES uninstall-binPROGRAMS \
+	uninstall-binSCRIPTS uninstall-libexecPROGRAMS
 
 .MAKE: all check install install-am install-strip
 
 .PHONY: CTAGS GTAGS all all-am check check-am clean \
-	clean-appmenulibLTLIBRARIES clean-generic \
+	clean-appmenulibLTLIBRARIES clean-binPROGRAMS clean-generic \
 	clean-libexecPROGRAMS clean-libtool ctags distclean \
 	distclean-compile distclean-generic distclean-libtool \
 	distclean-tags distdir dvi dvi-am html html-am info info-am \
-	install install-am install-appmenulibLTLIBRARIES install-data \
+	install install-am install-appmenulibLTLIBRARIES \
+	install-binPROGRAMS install-binSCRIPTS install-data \
 	install-data-am install-dvi install-dvi-am install-exec \
 	install-exec-am install-html install-html-am install-info \
-	install-info-am install-libexecPROGRAMS install-libexecSCRIPTS \
-	install-man install-pdf install-pdf-am install-ps \
-	install-ps-am install-strip installcheck installcheck-am \
-	installdirs maintainer-clean maintainer-clean-generic \
-	mostlyclean mostlyclean-compile mostlyclean-generic \
-	mostlyclean-libtool pdf pdf-am ps ps-am tags uninstall \
-	uninstall-am uninstall-appmenulibLTLIBRARIES \
-	uninstall-libexecPROGRAMS uninstall-libexecSCRIPTS
+	install-info-am install-libexecPROGRAMS install-man \
+	install-pdf install-pdf-am install-ps install-ps-am \
+	install-strip installcheck installcheck-am installdirs \
+	maintainer-clean maintainer-clean-generic mostlyclean \
+	mostlyclean-compile mostlyclean-generic mostlyclean-libtool \
+	pdf pdf-am ps ps-am tags uninstall uninstall-am \
+	uninstall-appmenulibLTLIBRARIES uninstall-binPROGRAMS \
+	uninstall-binSCRIPTS uninstall-libexecPROGRAMS
 
 
 stamp-marshal: $(glib_marshal_list)
