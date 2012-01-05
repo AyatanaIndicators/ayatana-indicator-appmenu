@@ -7,9 +7,8 @@
 <!-- Functions -->
 		<method name="GetSuggestions">
 			<arg type="s" name="query" direction="in" />
-			<arg type="s" name="icon" direction="out" />
 			<arg type="s" name="target" direction="out" />
-			<arg type="a(ssv)" name="suggestions" direction="out" />
+			<arg type="a(ssssv)" name="suggestions" direction="out" />
 		</method>
 
 		<method name="ExecuteQuery">

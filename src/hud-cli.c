@@ -187,17 +187,16 @@ print_suggestions (const char *query)
 		return ;
 	}
 
-	GVariant * appicon = g_variant_get_child_value(suggests, 0);
-	g_variant_unref(appicon);
-
-	GVariant * target = g_variant_get_child_value(suggests, 1);
+	GVariant * target = g_variant_get_child_value(suggests, 0);
 	g_variant_unref(target);
 
-	GVariant * suggestions = g_variant_get_child_value(suggests, 2);
+	GVariant * suggestions = g_variant_get_child_value(suggests, 1);
 	GVariantIter iter;
 	g_variant_iter_init(&iter, suggestions);
 	gchar * suggestion = NULL;
+	gchar * appicon = NULL;
 	gchar * icon = NULL;
+	gchar * complete = NULL;
 	GVariant * key = NULL;
 
 	last_key = NULL;
@@ -205,7 +204,7 @@ print_suggestions (const char *query)
 	int i=0;
 	char *clean_line;
 
-	while (g_variant_iter_loop(&iter, "(ssv)", &suggestion, &icon, &key)) {
+	while (g_variant_iter_loop(&iter, "(ssssv)", &suggestion, &appicon, &icon, &complete, &key)) {
 		if( use_curses)
 			mvwprintw(twindow, 9 + i, 15, "%s", suggestion);
 		else{
