@@ -1,6 +1,9 @@
 
 man_MANS = \
-	hud-cli.1
+	hud-cli.1 \
+	hud-dump-application.1 \
+	hud-list-applications.1 \
+	hud-verify-app-info.1
 
 .xml.1:
 	@$(XSLT_PROC) -nonet http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl $<
