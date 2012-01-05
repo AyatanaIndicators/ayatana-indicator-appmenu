@@ -3,7 +3,8 @@ ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 SUBDIRS = \
 	data \
 	po \
-	src
+	src \
+	docs
 
 if BUILD_TESTS
 SUBDIRS += \
