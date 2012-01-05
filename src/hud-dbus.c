@@ -274,7 +274,6 @@ get_suggestions (HudDbus * self, const gchar * query)
 	g_variant_builder_add_value(&ret, g_variant_new_string(target));
 
 	/* Free the strings */
-	g_free(icon);
 	g_free(target);
 	g_free(desktop);
 
@@ -305,6 +304,9 @@ get_suggestions (HudDbus * self, const gchar * query)
 		   a null array to make the DBus interface happy */
 		g_variant_builder_add_value(&ret, g_variant_new_array(G_VARIANT_TYPE("(ssssv)"), NULL, 0));
 	}
+
+	/* Free the remaining icon */
+	g_free(icon);
 
 	/* Clean up the list */
 	g_list_free_full(suggestions, (GDestroyNotify)hud_search_suggest_free);
