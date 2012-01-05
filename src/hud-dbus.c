@@ -271,7 +271,6 @@ get_suggestions (HudDbus * self, const gchar * query)
 	/* Build into into a variant */
 	GVariantBuilder ret;
 	g_variant_builder_init(&ret, G_VARIANT_TYPE_TUPLE);
-	g_variant_builder_add_value(&ret, g_variant_new_string(icon));
 	g_variant_builder_add_value(&ret, g_variant_new_string(target));
 
 	/* Free the strings */
@@ -290,7 +289,9 @@ get_suggestions (HudDbus * self, const gchar * query)
 			GVariantBuilder tuple;
 			g_variant_builder_init(&tuple, G_VARIANT_TYPE_TUPLE);
 			g_variant_builder_add_value(&tuple, g_variant_new_string(hud_search_suggest_get_display(suggest)));
+			g_variant_builder_add_value(&tuple, g_variant_new_string(icon));
 			g_variant_builder_add_value(&tuple, g_variant_new_string(hud_search_suggest_get_icon(suggest)));
+			g_variant_builder_add_value(&tuple, g_variant_new_string(""));
 			g_variant_builder_add_value(&tuple, hud_search_suggest_get_key(suggest));
 
 			g_variant_builder_add_value(&builder, g_variant_builder_end(&tuple));
@@ -302,7 +303,7 @@ get_suggestions (HudDbus * self, const gchar * query)
 	} else {
 		/* If we didn't get any suggestions we need to build
 		   a null array to make the DBus interface happy */
-		g_variant_builder_add_value(&ret, g_variant_new_array(G_VARIANT_TYPE("(ssv)"), NULL, 0));
+		g_variant_builder_add_value(&ret, g_variant_new_array(G_VARIANT_TYPE("(ssssv)"), NULL, 0));
 	}
 
 	/* Clean up the list */
