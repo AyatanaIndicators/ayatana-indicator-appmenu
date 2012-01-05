@@ -11,6 +11,16 @@
 	<refpurpose>Tool to exercise the HUD on the command line</refpurpose>
 </refnamediv>
 
+<refsynopsisdiv>
+	<cmdsynopsis>
+		<command>hud-cli</command>
+	</cmdsynopsis>
+	<cmdsynopsis>
+		<command>hud-cli</command>
+		<arg choice="plain"><replaceable>search string</replaceable></arg>
+	</cmdsynopsis>
+</refsynopsisdiv>
+
 <refsect1>
 	<title>AUTHOR</title>
 	<para>

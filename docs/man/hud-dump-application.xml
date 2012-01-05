@@ -11,6 +11,13 @@
 	<refpurpose>Tool to dump information on an application from the HUD usage database</refpurpose>
 </refnamediv>
 
+<refsynopsisdiv>
+	<cmdsynopsis>
+		<command>hud-dump-application</command>
+		<arg choice="plain"><replaceable>desktop file path</replaceable></arg>
+	</cmdsynopsis>
+</refsynopsisdiv>
+
 <refsect1>
 	<title>AUTHOR</title>
 	<para>
@@ -22,6 +29,16 @@
 	<title>BUGS</title>
 	<para>
 		Bugs should be submitted to Launchpad: <ulink url="https://bugs.launchpad.net/indicator-appmenu/+filebug"/>
+	</para>
+</refsect1>
+
+<refsect1>
+	<title>SEE ALSO</title>
+	<para>
+		<citerefentry>
+			<refentrytitle>hud-list-applications</refentrytitle>
+			<manvolnum>1</manvolnum>
+		</citerefentry>
 	</para>
 </refsect1>
 

@@ -11,6 +11,13 @@
 	<refpurpose>Tool to verify an app-info file that is expected to be used in the HUD</refpurpose>
 </refnamediv>
 
+<refsynopsisdiv>
+	<cmdsynopsis>
+		<command>hud-verify-app-info</command>
+		<arg choice="plain"><replaceable>path to app info file</replaceable></arg>
+	</cmdsynopsis>
+</refsynopsisdiv>
+
 <refsect1>
 	<title>AUTHOR</title>
 	<para>
