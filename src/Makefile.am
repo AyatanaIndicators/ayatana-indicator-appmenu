@@ -4,14 +4,15 @@ BUILT_SOURCES =
 EXTRA_DIST = \
 	hud-list-applications
 
-libexec_PROGRAMS = \
-	hud-cli \
+bin_PROGRAMS = \
 	hud-dump-application \
-	hud-service \
 	hud-verify-app-info
 
-libexec_SCRIPTS = \
+bin_SCRIPTS = \
 	hud-list-applications
+
+libexec_PROGRAMS = \
+	hud-service
 
 include $(top_srcdir)/Makefile.am.marshal
 
@@ -34,9 +35,14 @@ libappmenu_la_SOURCES = \
 	gen-application-menu-renderer.xml.h \
 	gen-application-menu-registrar.xml.c \
 	gen-application-menu-registrar.xml.h
-libappmenu_la_CFLAGS = $(INDICATOR_CFLAGS) -Wall -Wl,-Bsymbolic-functions -Wl,-z,defs -Wl,--as-needed -Werror -DG_LOG_DOMAIN=\"Indicator-Appmenu\"
+libappmenu_la_CFLAGS = \
+	$(INDICATOR_CFLAGS) \
+	$(COVERAGE_CFLAGS) \
+	-Wall -Wl,-Bsymbolic-functions -Wl,-z,defs -Wl,--as-needed -Werror -DG_LOG_DOMAIN=\"Indicator-Appmenu\"
 libappmenu_la_LIBADD = $(INDICATOR_LIBS) -lX11
-libappmenu_la_LDFLAGS = -module -avoid-version
+libappmenu_la_LDFLAGS = \
+	$(COVERAGE_CFLAGS) \
+	-module -avoid-version
 
 ######################################
 # Build your own marshaller
@@ -98,6 +104,7 @@ hud_service_SOURCES = \
 
 hud_service_CFLAGS = \
 	$(HUD_CFLAGS) \
+	$(COVERAGE_CFLAGS) \
 	-DDATADIR=\""$(datadir)"\" \
 	-Wall -Werror
 hud_service_LDFLAGS = \
@@ -115,9 +122,21 @@ hud_cli_SOURCES = \
 
 hud_cli_CFLAGS = \
 	$(HUD_CFLAGS) \
+	$(COVERAGE_CFLAGS) \
 	-Wall -Werror
+
 hud_cli_LDFLAGS = \
-	$(HUD_LIBS)
+	$(HUD_LIBS) \
+	-lreadline -lcurses
+
+
+if BUILD_CLI
+bin_PROGRAMS += \
+	hud-cli
+else
+EXTRA_DIST += \
+	$(hud_cli_SOURCES)
+endif
 
 #######################
 # HUD Dump Application
@@ -130,6 +149,7 @@ hud_dump_application_SOURCES = \
 
 hud_dump_application_CFLAGS = \
 	$(HUD_CFLAGS) \
+	$(COVERAGE_CFLAGS) \
 	-Wall -Werror
 hud_dump_application_LDFLAGS = \
 	$(HUD_LIBS)
@@ -145,6 +165,7 @@ hud_verify_app_info_SOURCES = \
 
 hud_verify_app_info_CFLAGS = \
 	$(HUD_CFLAGS) \
+	$(COVERAGE_CFLAGS) \
 	-Wall -Werror
 hud_verify_app_info_LDFLAGS = \
 	$(HUD_LIBS)

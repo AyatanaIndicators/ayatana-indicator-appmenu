@@ -1,3 +1,12 @@
+indicator-appmenu (0.3.2+hud2-0ubuntu1~ppa1) UNRELEASED; urgency=low
+
+  * New upstream release.
+    * Adding curses support to CLI client
+    * Adding code coverage testing
+    * Moving tools to bin
+
+ -- Ted Gould <ted@ubuntu.com>  Wed, 04 Jan 2012 23:59:55 -0600
+
 indicator-appmenu (0.3.2+hud1-0ubuntu1~ppa5) oneiric; urgency=low
 
   * debian/control: Adding sqlite and dbus-test-runner deps
