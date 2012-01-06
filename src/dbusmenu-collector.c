@@ -432,6 +432,8 @@ just_do_it (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar 
 	gpointer found = g_hash_table_lookup(collector->priv->hash, &search_key);
 	if (found != NULL) {
 		results = process_client(collector, DBUSMENU_CLIENT(found), search, results, indicator_name, prefix);
+	} else {
+		g_warning("Unable to find menu '%s' on '%s'", dbus_path, dbus_addr);
 	}
 
 	return results;
