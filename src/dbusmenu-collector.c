@@ -279,6 +279,15 @@ menuitem_to_tokens (DbusmenuMenuitem * item, GStrv label_prefix)
 		label_property = DBUSMENU_MENUITEM_PROP_LABEL;
 	}
 
+	/* Indicator Messages */
+	if (label_property != NULL && g_strcmp0(dbusmenu_menuitem_property_get(item, "application-item"), DBUSMENU_CLIENT_TYPES_DEFAULT) == 0) {
+		label_property = "label";
+	}
+
+	if (label_property != NULL && g_strcmp0(dbusmenu_menuitem_property_get(item, "indicator-item"), DBUSMENU_CLIENT_TYPES_DEFAULT) == 0) {
+		label_property = "indicator-label";
+	}
+
 	if (label_property != NULL && dbusmenu_menuitem_property_exist(item, label_property)) {
 		GStrv newstr = NULL;
 		const gchar * label = dbusmenu_menuitem_property_get(item, label_property);
