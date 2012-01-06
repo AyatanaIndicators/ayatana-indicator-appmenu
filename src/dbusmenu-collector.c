@@ -288,6 +288,15 @@ menuitem_to_tokens (DbusmenuMenuitem * item, GStrv label_prefix)
 		label_property = "indicator-label";
 	}
 
+	/* Indicator Date Time */
+	if (label_property != NULL && g_strcmp0(dbusmenu_menuitem_property_get(item, "appointment-item"), DBUSMENU_CLIENT_TYPES_DEFAULT) == 0) {
+		label_property = "appointment-label";
+	}
+
+	if (label_property != NULL && g_strcmp0(dbusmenu_menuitem_property_get(item, "timezone-item"), DBUSMENU_CLIENT_TYPES_DEFAULT) == 0) {
+		label_property = "timezone-name";
+	}
+
 	if (label_property != NULL && dbusmenu_menuitem_property_exist(item, label_property)) {
 		GStrv newstr = NULL;
 		const gchar * label = dbusmenu_menuitem_property_get(item, label_property);
