@@ -426,7 +426,7 @@ hash_print (gpointer key, gpointer value, gpointer user_data)
 {
 	menu_key_t * menukey = (menu_key_t *)key;
 
-	g_debug("Addr: '%s'  Path: '%s'", menukey->sender, menukey->path);
+	g_debug("Addr: '%s'  Path: '%s'  Hash: '%u'", menukey->sender, menukey->path, menu_hash_func(key));
 
 	return;
 }
@@ -445,7 +445,7 @@ just_do_it (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar 
 	if (found != NULL) {
 		results = process_client(collector, DBUSMENU_CLIENT(found), search, results, indicator_name, prefix);
 	} else {
-		g_warning("Unable to find menu '%s' on '%s'", dbus_path, dbus_addr);
+		g_warning("Unable to find menu '%s' on '%s' with hash '%u'", dbus_path, dbus_addr, menu_hash_func(&search_key));
 
 		g_debug("Dumping Hash");
 		g_hash_table_foreach(collector->priv->hash, hash_print, NULL);
