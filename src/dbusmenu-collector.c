@@ -267,49 +267,49 @@ menuitem_to_tokens (DbusmenuMenuitem * item, GStrv label_prefix)
 {
 	const gchar * label_property = NULL;
 
-	if (label_property != NULL && !dbusmenu_menuitem_property_exist(item, DBUSMENU_MENUITEM_PROP_TYPE)) {
+	if (label_property == NULL && !dbusmenu_menuitem_property_exist(item, DBUSMENU_MENUITEM_PROP_TYPE)) {
 		label_property = DBUSMENU_MENUITEM_PROP_LABEL;
 	}
 
-	if (label_property != NULL && g_strcmp0(dbusmenu_menuitem_property_get(item, DBUSMENU_MENUITEM_PROP_TYPE), DBUSMENU_CLIENT_TYPES_SEPARATOR) == 0) {
+	if (label_property == NULL && g_strcmp0(dbusmenu_menuitem_property_get(item, DBUSMENU_MENUITEM_PROP_TYPE), DBUSMENU_CLIENT_TYPES_SEPARATOR) == 0) {
 		return NULL;
 	}
 
-	if (label_property != NULL && g_strcmp0(dbusmenu_menuitem_property_get(item, DBUSMENU_MENUITEM_PROP_TYPE), DBUSMENU_CLIENT_TYPES_DEFAULT) == 0) {
+	if (label_property == NULL && g_strcmp0(dbusmenu_menuitem_property_get(item, DBUSMENU_MENUITEM_PROP_TYPE), DBUSMENU_CLIENT_TYPES_DEFAULT) == 0) {
 		label_property = DBUSMENU_MENUITEM_PROP_LABEL;
 	}
 
 	/* Indicator Messages */
-	if (label_property != NULL && g_strcmp0(dbusmenu_menuitem_property_get(item, "application-item"), DBUSMENU_CLIENT_TYPES_DEFAULT) == 0) {
+	if (label_property == NULL && g_strcmp0(dbusmenu_menuitem_property_get(item, "application-item"), DBUSMENU_CLIENT_TYPES_DEFAULT) == 0) {
 		label_property = "label";
 	}
 
-	if (label_property != NULL && g_strcmp0(dbusmenu_menuitem_property_get(item, "indicator-item"), DBUSMENU_CLIENT_TYPES_DEFAULT) == 0) {
+	if (label_property == NULL && g_strcmp0(dbusmenu_menuitem_property_get(item, "indicator-item"), DBUSMENU_CLIENT_TYPES_DEFAULT) == 0) {
 		label_property = "indicator-label";
 	}
 
 	/* Indicator Date Time */
-	if (label_property != NULL && g_strcmp0(dbusmenu_menuitem_property_get(item, "appointment-item"), DBUSMENU_CLIENT_TYPES_DEFAULT) == 0) {
+	if (label_property == NULL && g_strcmp0(dbusmenu_menuitem_property_get(item, "appointment-item"), DBUSMENU_CLIENT_TYPES_DEFAULT) == 0) {
 		label_property = "appointment-label";
 	}
 
-	if (label_property != NULL && g_strcmp0(dbusmenu_menuitem_property_get(item, "timezone-item"), DBUSMENU_CLIENT_TYPES_DEFAULT) == 0) {
+	if (label_property == NULL && g_strcmp0(dbusmenu_menuitem_property_get(item, "timezone-item"), DBUSMENU_CLIENT_TYPES_DEFAULT) == 0) {
 		label_property = "timezone-name";
 	}
 
 	/* Indicator Sound */
-	if (label_property != NULL && g_strcmp0(dbusmenu_menuitem_property_get(item, "x-canonical-sound-menu-player-metadata-type"), DBUSMENU_CLIENT_TYPES_DEFAULT) == 0) {
+	if (label_property == NULL && g_strcmp0(dbusmenu_menuitem_property_get(item, "x-canonical-sound-menu-player-metadata-type"), DBUSMENU_CLIENT_TYPES_DEFAULT) == 0) {
 		label_property = "x-canonical-sound-menu-player-metadata-player-name";
 	}
 
-	if (label_property != NULL && g_strcmp0(dbusmenu_menuitem_property_get(item, "x-canonical-sound-menu-mute-type"), DBUSMENU_CLIENT_TYPES_DEFAULT) == 0) {
+	if (label_property == NULL && g_strcmp0(dbusmenu_menuitem_property_get(item, "x-canonical-sound-menu-mute-type"), DBUSMENU_CLIENT_TYPES_DEFAULT) == 0) {
 		label_property = "label";
 	}
 
 	/* NOTE: Need to handle the transport item at some point */
 
 	/* Indicator User */
-	if (label_property != NULL && g_strcmp0(dbusmenu_menuitem_property_get(item, "x-canonical-user-item"), DBUSMENU_CLIENT_TYPES_DEFAULT) == 0) {
+	if (label_property == NULL && g_strcmp0(dbusmenu_menuitem_property_get(item, "x-canonical-user-item"), DBUSMENU_CLIENT_TYPES_DEFAULT) == 0) {
 		label_property = "user-item-name";
 	}
 
