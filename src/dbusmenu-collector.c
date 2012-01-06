@@ -221,11 +221,8 @@ menu_equal_func (gconstpointer a, gconstpointer b)
 	const menu_key_t * ak = (const menu_key_t *)a;
 	const menu_key_t * bk = (const menu_key_t *)b;
 
-	if (g_strcmp0(ak->sender, bk->sender) == 0) {
-		return TRUE;
-	}
-
-	if (g_strcmp0(ak->path, bk->path) == 0) {
+	if (g_strcmp0(ak->sender, bk->sender) == 0 &&
+			g_strcmp0(ak->path, bk->path) == 0) {
 		return TRUE;
 	}
 
