@@ -351,12 +351,16 @@ tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GList * r
 		return results;
 	}
 
-	if (!dbusmenu_menuitem_property_get_bool(rootitem, DBUSMENU_MENUITEM_PROP_ENABLED)) {
-		return results;
-	}
+	/* We can only evaluate these properties if we know the type */
+	if (!dbusmenu_menuitem_property_exist(rootitem, DBUSMENU_MENUITEM_PROP_TYPE) ||
+			g_strcmp0(dbusmenu_menuitem_property_get(rootitem, DBUSMENU_MENUITEM_PROP_TYPE), DBUSMENU_CLIENT_TYPES_DEFAULT) == 0) {
+		if (!dbusmenu_menuitem_property_get_bool(rootitem, DBUSMENU_MENUITEM_PROP_ENABLED)) {
+			return results;
+		}
 
-	if (!dbusmenu_menuitem_property_get_bool(rootitem, DBUSMENU_MENUITEM_PROP_VISIBLE)) {
-		return results;
+		if (!dbusmenu_menuitem_property_get_bool(rootitem, DBUSMENU_MENUITEM_PROP_VISIBLE)) {
+			return results;
+		}
 	}
 
 	GStrv newstr = menuitem_to_tokens(rootitem, label_prefix);
