@@ -199,6 +199,8 @@ update_layout_cb (GDBusConnection * connection, const gchar * sender, const gcha
 		DbusmenuClient * client = dbusmenu_client_new(sender, path);
 
 		g_hash_table_insert(collector->priv->hash, built_key, client);
+	} else {
+		g_debug("\tAlready exists");
 	}
 
 	/* Assume that dbusmenu client is doing this for us */
