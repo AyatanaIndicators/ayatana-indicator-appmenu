@@ -262,6 +262,50 @@ remove_underline (const gchar * input)
 	return output;
 }
 
+static GStrv
+menuitem_to_tokens (DbusmenuMenuitem * item, GStrv label_prefix)
+{
+	const gchar * label_property = NULL;
+
+	if (label_property != NULL && !dbusmenu_menuitem_property_exist(item, DBUSMENU_MENUITEM_PROP_TYPE)) {
+		label_property = DBUSMENU_MENUITEM_PROP_LABEL;
+	}
+
+	if (label_property != NULL && g_strcmp0(dbusmenu_menuitem_property_get(item, DBUSMENU_MENUITEM_PROP_TYPE), DBUSMENU_CLIENT_TYPES_SEPARATOR) == 0) {
+		return NULL;
+	}
+
+	if (label_property != NULL && g_strcmp0(dbusmenu_menuitem_property_get(item, DBUSMENU_MENUITEM_PROP_TYPE), DBUSMENU_CLIENT_TYPES_DEFAULT) == 0) {
+		label_property = DBUSMENU_MENUITEM_PROP_LABEL;
+	}
+
+	if (label_property != NULL && dbusmenu_menuitem_property_exist(item, label_property)) {
+		GStrv newstr = NULL;
+		const gchar * label = dbusmenu_menuitem_property_get(item, label_property);
+
+		if (label_prefix != NULL && label_prefix[0] != NULL) {
+			gint i;
+			guint prefix_len = g_strv_length(label_prefix);
+			newstr = g_new(gchar *, prefix_len + 2);
+
+			for (i = 0; i < prefix_len; i++) {
+				newstr[i] = g_strdup(label_prefix[i]);
+			}
+
+			newstr[prefix_len] = g_strdup(label);
+			newstr[prefix_len + 1] = NULL;
+		} else {
+			newstr = g_new0(gchar *, 2);
+			newstr[0] = g_strdup(label);
+			newstr[1] = NULL;
+		}
+
+		return newstr;
+	}
+
+	return NULL;
+}
+
 static GList *
 tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GList * results, GStrv label_prefix, DbusmenuClient * client, const gchar * indicator_name)
 {
@@ -281,28 +325,7 @@ tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GList * r
 		return results;
 	}
 
-	GStrv newstr = NULL;
-	if (dbusmenu_menuitem_property_exist(rootitem, DBUSMENU_MENUITEM_PROP_LABEL) &&
-			!dbusmenu_menuitem_property_exist(rootitem, DBUSMENU_MENUITEM_PROP_TYPE)) {
-		const gchar * label = dbusmenu_menuitem_property_get(rootitem, DBUSMENU_MENUITEM_PROP_LABEL);
-
-		if (label_prefix != NULL && label_prefix[0] != NULL) {
-			gint i;
-			guint prefix_len = g_strv_length(label_prefix);
-			newstr = g_new(gchar *, prefix_len + 2);
-
-			for (i = 0; i < prefix_len; i++) {
-				newstr[i] = g_strdup(label_prefix[i]);
-			}
-
-			newstr[prefix_len] = g_strdup(label);
-			newstr[prefix_len + 1] = NULL;
-		} else {
-			newstr = g_new0(gchar *, 2);
-			newstr[0] = g_strdup(label);
-			newstr[1] = NULL;
-		}
-	}
+	GStrv newstr = menuitem_to_tokens(rootitem, label_prefix);
 
 	if (!dbusmenu_menuitem_get_root(rootitem) && newstr != NULL) {
 		GStrv used_strings = NULL;
