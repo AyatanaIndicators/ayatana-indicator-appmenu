@@ -419,6 +419,16 @@ process_client (DbusmenuCollector * collector, DbusmenuClient * client, const gc
 	return results;
 }
 
+static void
+hash_print (gpointer key, gpointer value, gpointer user_data)
+{
+	menu_key_t * menukey = (menu_key_t *)key;
+
+	g_debug("Addr: '%s'  Path: '%s'", menukey->sender, menukey->path);
+
+	return;
+}
+
 static GList *
 just_do_it (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, const gchar * search, GList * results, const gchar * indicator_name, GStrv prefix)
 {
@@ -434,6 +444,9 @@ just_do_it (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar 
 		results = process_client(collector, DBUSMENU_CLIENT(found), search, results, indicator_name, prefix);
 	} else {
 		g_warning("Unable to find menu '%s' on '%s'", dbus_path, dbus_addr);
+
+		g_debug("Dumping Hash");
+		g_hash_table_foreach(collector->priv->hash, hash_print, NULL);
 	}
 
 	return results;
