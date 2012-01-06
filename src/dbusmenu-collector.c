@@ -308,6 +308,11 @@ menuitem_to_tokens (DbusmenuMenuitem * item, GStrv label_prefix)
 
 	/* NOTE: Need to handle the transport item at some point */
 
+	/* Indicator User */
+	if (label_property != NULL && g_strcmp0(dbusmenu_menuitem_property_get(item, "x-canonical-user-item"), DBUSMENU_CLIENT_TYPES_DEFAULT) == 0) {
+		label_property = "user-item-name";
+	}
+
 	/* Tokenize */
 	if (label_property != NULL && dbusmenu_menuitem_property_exist(item, label_property)) {
 		GStrv newstr = NULL;
