@@ -297,6 +297,18 @@ menuitem_to_tokens (DbusmenuMenuitem * item, GStrv label_prefix)
 		label_property = "timezone-name";
 	}
 
+	/* Indicator Sound */
+	if (label_property != NULL && g_strcmp0(dbusmenu_menuitem_property_get(item, "x-canonical-sound-menu-player-metadata-type"), DBUSMENU_CLIENT_TYPES_DEFAULT) == 0) {
+		label_property = "x-canonical-sound-menu-player-metadata-player-name";
+	}
+
+	if (label_property != NULL && g_strcmp0(dbusmenu_menuitem_property_get(item, "x-canonical-sound-menu-mute-type"), DBUSMENU_CLIENT_TYPES_DEFAULT) == 0) {
+		label_property = "label";
+	}
+
+	/* NOTE: Need to handle the transport item at some point */
+
+	/* Tokenize */
 	if (label_property != NULL && dbusmenu_menuitem_property_exist(item, label_property)) {
 		GStrv newstr = NULL;
 		const gchar * label = dbusmenu_menuitem_property_get(item, label_property);
