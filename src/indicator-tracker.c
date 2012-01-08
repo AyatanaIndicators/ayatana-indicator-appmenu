@@ -408,7 +408,46 @@ app_proxy_name_change (GObject * gobject, GParamSpec * pspec, gpointer user_data
 static void
 app_proxy_apps_replace (GObject * obj, GAsyncResult * res, gpointer user_data)
 {
+	GError * error = NULL;
 
+	GVariant * params = g_dbus_proxy_call_finish(G_DBUS_PROXY(obj), res, &error);
+
+	if (error != NULL) {
+		g_warning("Unable to get applications for indicator service: %s", error->message);
+		g_error_free(error);
+		return;
+	}
+
+	GVariantIter iter;
+	g_variant_iter_init(&iter, params);
+
+	IndicatorTracker * self = INDICATOR_TRACKER(user_data);
+
+	gchar * iconname = NULL;
+	guint position;
+	gchar * dbusaddress = NULL;
+	gchar * dbusobject = NULL;
+	gchar * iconpath = NULL;
+	gchar * label = NULL;
+	gchar * labelguide = NULL;
+	gchar * accessibledesc = NULL;
+	gchar * hint = NULL;
+
+	while (g_variant_iter_loop(&iter, 
+	                           "(sisosssss)",
+	                           iconname,
+	                           &position,
+	                           dbusaddress,
+	                           dbusobject,
+	                           iconpath,
+	                           label,
+	                           labelguide,
+	                           accessibledesc,
+	                           hint)) {
+		app_proxy_new_indicator(self, position, accessibledesc, dbusaddress, dbusobject, iconname);
+	}
+
+	g_variant_unref(params);
 
 	return;
 }
