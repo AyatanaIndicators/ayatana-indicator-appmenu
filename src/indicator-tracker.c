@@ -532,7 +532,15 @@ app_proxy_new_indicator (IndicatorTracker * self, gint position, const gchar * a
 static gboolean
 app_proxy_remove_indicator(IndicatorTracker * self, gint position)
 {
+	if (position >= self->priv->app_indicators->len) {
+		return FALSE;
+	}
 
+	AppIndicator * indicator = &g_array_index(self->priv->app_indicators, AppIndicator, position);
+
+	app_indicator_cleanup(indicator);
+
+	g_array_remove_index(self->priv->app_indicators, position);
 
 	return FALSE;
 }
