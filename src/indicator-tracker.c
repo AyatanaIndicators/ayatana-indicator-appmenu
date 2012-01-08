@@ -79,6 +79,7 @@ static void app_indicator_cleanup        (gpointer pindicator);
 static void app_proxy_built              (GObject * object, GAsyncResult * result, gpointer user_data);
 static void app_proxy_name_change        (GObject * gobject, GParamSpec * pspec, gpointer user_data);
 static void app_proxy_signal             (GDBusProxy *proxy, gchar * sender_name, gchar * signal_name, GVariant * parameters, gpointer user_data);
+static void app_proxy_apps_replace       (GObject * obj, GAsyncResult * res, gpointer user_data);
 
 G_DEFINE_TYPE (IndicatorTracker, indicator_tracker, G_TYPE_OBJECT);
 
@@ -388,8 +389,25 @@ app_proxy_name_change (GObject * gobject, GParamSpec * pspec, gpointer user_data
 	}
 	g_free(owner);
 
-
 	/* Query to see if there's any indicator already out there. */
+	g_dbus_proxy_call (self->priv->app_proxy,
+	                   "GetApplications",
+	                   NULL, /* paramaters */
+	                   G_DBUS_CALL_FLAGS_NO_AUTO_START,
+	                   -1, /* timeout */
+	                   NULL, /* cancellable */
+	                   app_proxy_apps_replace,
+	                   self);
+
+	return;
+}
+
+/* Replace our current list of applications with the new ones that we've
+   gotten from a 'GetApplications' to the application service */
+static void
+app_proxy_apps_replace (GObject * obj, GAsyncResult * res, gpointer user_data)
+{
+
 
 	return;
 }
