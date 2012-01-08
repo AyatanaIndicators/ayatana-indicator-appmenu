@@ -558,5 +558,5 @@ app_proxy_remove_indicator(IndicatorTracker * self, gint position)
 
 	g_array_remove_index(self->priv->app_indicators, position);
 
-	return FALSE;
+	return TRUE;
 }
