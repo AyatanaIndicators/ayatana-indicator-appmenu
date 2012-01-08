@@ -213,11 +213,20 @@ indicator_tracker_new (void)
 	return INDICATOR_TRACKER(g_object_new(INDICATOR_TRACKER_TYPE, NULL));
 }
 
-GArray *
+GList *
 indicator_tracker_get_indicators (IndicatorTracker * tracker)
 {
 	g_return_val_if_fail(IS_INDICATOR_TRACKER(tracker), NULL);
-	return tracker->priv->indicators;
+
+	GList * retval = NULL;
+	gint i;
+
+	for (i = 0; i < tracker->priv->indicators->len; i++) {
+		IndicatorTrackerIndicator * item = &g_array_index(tracker->priv->indicators, IndicatorTrackerIndicator, i);
+		retval = g_list_prepend(retval, item);
+	}
+
+	return retval;
 }
 
 /* Function watches names on Dbus to find out when the system indicators

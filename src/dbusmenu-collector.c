@@ -404,10 +404,10 @@ dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_add
 	   looking at the null search.  In that case we'll let
 	   the client take over. */
 	if (search != NULL && search[0] != '\0') {
-		GArray * indicators = indicator_tracker_get_indicators(collector->priv->tracker);
-		gint indicator_cnt;
-		for (indicator_cnt = 0; indicator_cnt < indicators->len; indicator_cnt++) {
-			IndicatorTrackerIndicator * indicator = &g_array_index(indicators, IndicatorTrackerIndicator, indicator_cnt);
+		GList * indicators = indicator_tracker_get_indicators(collector->priv->tracker);
+		GList * lindicator = NULL;
+		for (lindicator = indicators; lindicator != NULL; lindicator = g_list_next(lindicator)) {
+			IndicatorTrackerIndicator * indicator = (IndicatorTrackerIndicator *)lindicator->data;
 
 			gchar * array[2];
 			array[0] = indicator->prefix;
@@ -425,6 +425,8 @@ dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_add
 
 			items = g_list_concat(items, iitems);
 		}
+
+		g_list_free(indicators);
 	}
 
 	items = g_list_sort(items, dbusmenu_collector_found_sort);
