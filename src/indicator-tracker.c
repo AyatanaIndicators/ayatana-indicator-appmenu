@@ -80,6 +80,7 @@ static void app_proxy_built              (GObject * object, GAsyncResult * resul
 static void app_proxy_name_change        (GObject * gobject, GParamSpec * pspec, gpointer user_data);
 static void app_proxy_signal             (GDBusProxy *proxy, gchar * sender_name, gchar * signal_name, GVariant * parameters, gpointer user_data);
 static void app_proxy_apps_replace       (GObject * obj, GAsyncResult * res, gpointer user_data);
+static void app_proxy_new_indicator      (IndicatorTracker * self, gint position, const gchar * accessibledesc, const gchar * dbusaddress, const gchar * dbusobject, const gchar * iconname);
 
 G_DEFINE_TYPE (IndicatorTracker, indicator_tracker, G_TYPE_OBJECT);
 
@@ -417,6 +418,53 @@ app_proxy_apps_replace (GObject * obj, GAsyncResult * res, gpointer user_data)
 static void
 app_proxy_signal (GDBusProxy *proxy, gchar * sender_name, gchar * signal_name, GVariant * parameters, gpointer user_data) 
 {
+	IndicatorTracker * self = INDICATOR_TRACKER(user_data);
+
+	if (g_strcmp0(signal_name, "ApplicationAdded") == 0) {
+		gchar * iconname = NULL;
+		guint position;
+		gchar * dbusaddress = NULL;
+		gchar * dbusobject = NULL;
+		gchar * iconpath = NULL;
+		gchar * label = NULL;
+		gchar * labelguide = NULL;
+		gchar * accessibledesc = NULL;
+		gchar * hint = NULL;
+
+		g_variant_get(parameters, "(sisosssss)",
+		              iconname,
+		              &position,
+		              dbusaddress,
+		              dbusobject,
+		              iconpath,
+		              label,
+		              labelguide,
+		              accessibledesc,
+		              hint);
+
+		app_proxy_new_indicator(self, position, accessibledesc, dbusaddress, dbusobject, iconname);
+
+		g_free(iconname);
+		g_free(dbusaddress);
+		g_free(dbusobject);
+		g_free(iconpath);
+		g_free(label);
+		g_free(labelguide);
+		g_free(accessibledesc);
+		g_free(hint);
+
+	} else {
+		g_debug("Application Service signal '%s' not handled", signal_name);
+	}
+
+	return;
+}
+
+/* Add a new application indicator to our list */
+static void
+app_proxy_new_indicator (IndicatorTracker * self, gint position, const gchar * accessibledesc, const gchar * dbusaddress, const gchar * dbusobject, const gchar * iconname)
+{
+
 
 
 	return;
