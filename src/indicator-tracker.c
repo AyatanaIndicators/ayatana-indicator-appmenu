@@ -435,18 +435,19 @@ app_proxy_apps_replace (GObject * obj, GAsyncResult * res, gpointer user_data)
 
 	while (g_variant_iter_loop(&iter, 
 	                           "(sisosssss)",
-	                           iconname,
+	                           &iconname,
 	                           &position,
-	                           dbusaddress,
-	                           dbusobject,
-	                           iconpath,
-	                           label,
-	                           labelguide,
-	                           accessibledesc,
-	                           hint)) {
+	                           &dbusaddress,
+	                           &dbusobject,
+	                           &iconpath,
+	                           &label,
+	                           &labelguide,
+	                           &accessibledesc,
+	                           &hint)) {
 		app_proxy_new_indicator(self, position, accessibledesc, dbusaddress, dbusobject, iconname);
 	}
 
+	g_variant_unref(array);
 	g_variant_unref(params);
 
 	return;
@@ -471,15 +472,15 @@ app_proxy_signal (GDBusProxy *proxy, gchar * sender_name, gchar * signal_name, G
 		gchar * hint = NULL;
 
 		g_variant_get(parameters, "(sisosssss)",
-		              iconname,
+		              &iconname,
 		              &position,
-		              dbusaddress,
-		              dbusobject,
-		              iconpath,
-		              label,
-		              labelguide,
-		              accessibledesc,
-		              hint);
+		              &dbusaddress,
+		              &dbusobject,
+		              &iconpath,
+		              &label,
+		              &labelguide,
+		              &accessibledesc,
+		              &hint);
 
 		app_proxy_new_indicator(self, position, accessibledesc, dbusaddress, dbusobject, iconname);
 
