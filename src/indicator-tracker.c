@@ -80,7 +80,7 @@ static void app_proxy_built              (GObject * object, GAsyncResult * resul
 static void app_proxy_name_change        (GObject * gobject, GParamSpec * pspec, gpointer user_data);
 static void app_proxy_signal             (GDBusProxy *proxy, gchar * sender_name, gchar * signal_name, GVariant * parameters, gpointer user_data);
 static void app_proxy_apps_replace       (GObject * obj, GAsyncResult * res, gpointer user_data);
-static void app_proxy_new_indicator      (IndicatorTracker * self, gint position, const gchar * accessibledesc, const gchar * dbusaddress, const gchar * dbusobject, const gchar * iconname);
+static void app_proxy_new_indicator      (IndicatorTracker * self, gint position, const gchar * id, const gchar * accessibledesc, const gchar * dbusaddress, const gchar * dbusobject, const gchar * iconname);
 static gboolean app_proxy_remove_indicator (IndicatorTracker * self, gint position);
 
 G_DEFINE_TYPE (IndicatorTracker, indicator_tracker, G_TYPE_OBJECT);
@@ -450,7 +450,8 @@ app_proxy_apps_replace (GObject * obj, GAsyncResult * res, gpointer user_data)
 	                           &labelguide,
 	                           &accessibledesc,
 	                           &hint)) {
-		app_proxy_new_indicator(self, position, accessibledesc, dbusaddress, dbusobject, iconname);
+		/* TODO: No icon name for ID */
+		app_proxy_new_indicator(self, position, iconname, accessibledesc, dbusaddress, dbusobject, iconname);
 	}
 
 	g_variant_unref(array);
@@ -488,7 +489,8 @@ app_proxy_signal (GDBusProxy *proxy, gchar * sender_name, gchar * signal_name, G
 		              &accessibledesc,
 		              &hint);
 
-		app_proxy_new_indicator(self, position, accessibledesc, dbusaddress, dbusobject, iconname);
+		/* TODO: No icon name for ID */
+		app_proxy_new_indicator(self, position, iconname, accessibledesc, dbusaddress, dbusobject, iconname);
 
 		g_free(iconname);
 		g_free(dbusaddress);
@@ -520,10 +522,24 @@ app_proxy_signal (GDBusProxy *proxy, gchar * sender_name, gchar * signal_name, G
 
 /* Add a new application indicator to our list */
 static void
-app_proxy_new_indicator (IndicatorTracker * self, gint position, const gchar * accessibledesc, const gchar * dbusaddress, const gchar * dbusobject, const gchar * iconname)
+app_proxy_new_indicator (IndicatorTracker * self, gint position, const gchar * id, const gchar * accessibledesc, const gchar * dbusaddress, const gchar * dbusobject, const gchar * iconname)
 {
 	g_debug("New application indicator: %s", dbusobject);
 
+	AppIndicator indicator = {
+		system: {
+			name: g_strdup_printf("appindicator:%s", id),
+			dbus_name: g_strdup(dbusaddress),
+			dbus_name_wellknown: NULL,
+			dbus_object: g_strdup(dbusobject),
+			prefix: g_strdup(accessibledesc)
+		},
+		alert: FALSE,
+		alert_name: NULL,
+		normal_name: NULL
+	};
+
+	g_array_insert_val(self->priv->app_indicators, position, indicator);
 
 	return;
 }
