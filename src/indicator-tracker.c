@@ -418,8 +418,10 @@ app_proxy_apps_replace (GObject * obj, GAsyncResult * res, gpointer user_data)
 		return;
 	}
 
+	GVariant * array = g_variant_get_child_value(params, 0);
+
 	GVariantIter iter;
-	g_variant_iter_init(&iter, params);
+	g_variant_iter_init(&iter, array);
 
 	IndicatorTracker * self = INDICATOR_TRACKER(user_data);
 
