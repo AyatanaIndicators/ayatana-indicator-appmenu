@@ -226,6 +226,11 @@ indicator_tracker_get_indicators (IndicatorTracker * tracker)
 		retval = g_list_prepend(retval, item);
 	}
 
+	for (i = 0; i < tracker->priv->indicators->len; i++) {
+		AppIndicator * item = &g_array_index(tracker->priv->app_indicators, AppIndicator, i);
+		retval = g_list_prepend(retval, &(item->system));
+	}
+
 	return retval;
 }
 
