@@ -81,6 +81,7 @@ static void app_proxy_name_change        (GObject * gobject, GParamSpec * pspec,
 static void app_proxy_signal             (GDBusProxy *proxy, gchar * sender_name, gchar * signal_name, GVariant * parameters, gpointer user_data);
 static void app_proxy_apps_replace       (GObject * obj, GAsyncResult * res, gpointer user_data);
 static void app_proxy_new_indicator      (IndicatorTracker * self, gint position, const gchar * accessibledesc, const gchar * dbusaddress, const gchar * dbusobject, const gchar * iconname);
+static gboolean app_proxy_remove_indicator (IndicatorTracker * self, gint position);
 
 G_DEFINE_TYPE (IndicatorTracker, indicator_tracker, G_TYPE_OBJECT);
 
@@ -418,12 +419,15 @@ app_proxy_apps_replace (GObject * obj, GAsyncResult * res, gpointer user_data)
 		return;
 	}
 
+	/* Remove the first application indicator until it starts
+	   returning an error.  This will clear the array. */
+	IndicatorTracker * self = INDICATOR_TRACKER(user_data);
+	while (app_proxy_remove_indicator(self, 0));
+
 	GVariant * array = g_variant_get_child_value(params, 0);
 
 	GVariantIter iter;
 	g_variant_iter_init(&iter, array);
-
-	IndicatorTracker * self = INDICATOR_TRACKER(user_data);
 
 	gchar * iconname = NULL;
 	guint position;
@@ -494,7 +498,19 @@ app_proxy_signal (GDBusProxy *proxy, gchar * sender_name, gchar * signal_name, G
 		g_free(labelguide);
 		g_free(accessibledesc);
 		g_free(hint);
+	} else if (g_strcmp0(signal_name, "ApplicationRemoved") == 0) {
+		gint position;
 
+		g_variant_get_child(parameters, 0, "i", &position);
+
+		gboolean remove = app_proxy_remove_indicator(self, position);
+
+		/* If we can't remove it, something is really goofy, we're probably
+		   out of sync.  So let's go nuclear. */
+		if (!remove) {
+			g_warning("Unable to remove indicator '%d' getting full list", position);
+			app_proxy_name_change(G_OBJECT(self->priv->app_proxy), NULL, self);
+		}
 	} else {
 		g_debug("Application Service signal '%s' not handled", signal_name);
 	}
@@ -506,8 +522,17 @@ app_proxy_signal (GDBusProxy *proxy, gchar * sender_name, gchar * signal_name, G
 static void
 app_proxy_new_indicator (IndicatorTracker * self, gint position, const gchar * accessibledesc, const gchar * dbusaddress, const gchar * dbusobject, const gchar * iconname)
 {
-
+	g_debug("New application indicator: %s", dbusobject);
 
 
 	return;
+}
+
+/* Remove an application indicator */
+static gboolean
+app_proxy_remove_indicator(IndicatorTracker * self, gint position)
+{
+
+
+	return FALSE;
 }
