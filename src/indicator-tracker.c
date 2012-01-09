@@ -82,6 +82,7 @@ static void app_proxy_signal             (GDBusProxy *proxy, gchar * sender_name
 static void app_proxy_apps_replace       (GObject * obj, GAsyncResult * res, gpointer user_data);
 static void app_proxy_new_indicator      (IndicatorTracker * self, gint position, const gchar * id, const gchar * accessibledesc, const gchar * dbusaddress, const gchar * dbusobject, const gchar * iconname);
 static gboolean app_proxy_remove_indicator (IndicatorTracker * self, gint position);
+static void app_proxy_icon_changed       (IndicatorTracker * self, gint position, const gchar * iconname, const gchar * accessibledesc);
 
 G_DEFINE_TYPE (IndicatorTracker, indicator_tracker, G_TYPE_OBJECT);
 
@@ -528,6 +529,19 @@ app_proxy_signal (GDBusProxy *proxy, gchar * sender_name, gchar * signal_name, G
 			app_proxy_name_change(G_OBJECT(self->priv->app_proxy), NULL, self);
 		}
 	} else if (g_strcmp0(signal_name, "ApplicationIconChanged") == 0) {
+		gchar * iconname = NULL;
+		guint position;
+		gchar * accessibledesc = NULL;
+
+		g_variant_get(parameters, "(iss)",
+		              &position,
+		              &iconname,
+		              &accessibledesc);
+
+		app_proxy_icon_changed(self, position, iconname, accessibledesc);
+
+		g_free(iconname);
+		g_free(accessibledesc);
 	} else if (g_strcmp0(signal_name, "ApplicationIconThemePathChanged") == 0) {
 		/* Don't care */
 	} else if (g_strcmp0(signal_name, "ApplicationLabelChanged") == 0) {
@@ -577,4 +591,14 @@ app_proxy_remove_indicator(IndicatorTracker * self, gint position)
 	g_array_remove_index(self->priv->app_indicators, position);
 
 	return TRUE;
+}
+
+/* Change the name of the icon */
+static void
+app_proxy_icon_changed (IndicatorTracker * self, gint position, const gchar * iconname, const gchar * accessibledesc)
+{
+
+
+
+	return;
 }
