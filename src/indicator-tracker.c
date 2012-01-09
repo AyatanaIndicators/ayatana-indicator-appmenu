@@ -529,6 +529,7 @@ app_proxy_signal (GDBusProxy *proxy, gchar * sender_name, gchar * signal_name, G
 		}
 	} else if (g_strcmp0(signal_name, "ApplicationIconChanged") == 0) {
 	} else if (g_strcmp0(signal_name, "ApplicationIconThemePathChanged") == 0) {
+		/* Don't care */
 	} else if (g_strcmp0(signal_name, "ApplicationLabelChanged") == 0) {
 	} else {
 		g_debug("Application Service signal '%s' not handled", signal_name);
