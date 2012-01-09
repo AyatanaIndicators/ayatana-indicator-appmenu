@@ -597,8 +597,15 @@ app_proxy_remove_indicator(IndicatorTracker * self, gint position)
 static void
 app_proxy_icon_changed (IndicatorTracker * self, gint position, const gchar * iconname, const gchar * accessibledesc)
 {
+	if (position >= self->priv->app_indicators->len) {
+		g_warning("Application icon changed for position outside of array");
+		return;
+	}
 
+	AppIndicator * indicator = &g_array_index(self->priv->app_indicators, AppIndicator, position);
 
+	g_free(indicator->system.prefix);
+	indicator->system.prefix = g_strdup(accessibledesc);
 
 	return;
 }
