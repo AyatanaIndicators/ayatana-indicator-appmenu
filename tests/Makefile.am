@@ -356,6 +356,50 @@ EXTRA_DIST += \
 	test-usage-dump-entries.sql
 
 #########################
+# Test App Indicator
+#########################
+
+TESTS += \
+	test-app-indicator-test
+
+check_PROGRAMS += \
+	test-app-indicator \
+	test-app-indicator-tracker
+
+test_app_indicator_SOURCES = \
+	test-app-indicator.c
+
+test_app_indicator_CFLAGS = \
+	$(HUD_CFLAGS) \
+	$(COVERAGE_CFLAGS) \
+	$(INDICATORTEST_CFLAGS) \
+	-I$(top_srcdir)/src \
+	-Wall -Werror
+
+test_app_indicator_LDADD = \
+	$(INDICATORTEST_LIBS) \
+	$(HUD_LIBS)
+
+test_app_indicator_tracker_SOURCES = \
+	test-app-indicator-tracker.c
+
+test_app_indicator_tracker_CFLAGS = \
+	$(HUD_CFLAGS) \
+	$(COVERAGE_CFLAGS) \
+	-I$(top_srcdir)/src \
+	-Wall -Werror
+
+test_app_indicator_tracker_LDADD = \
+	$(HUD_LIBS)
+
+test-app-indicator-test: test-app-indicator-tracker test-app-indicator Makefile.am
+	@echo "#!/bin/bash -e" > $@
+	@echo $(XVFB_RUN) >> $@
+	@echo export INDICATOR_SERVICE_SHUTDOWN_TIMEOUT=2000 >> $@
+	@echo $(DBUS_RUNNER) --task $(builddir)/test-app-indicator-tracker --task-name Tracker --task $(builddir)/test-app-indicator --task-name AppIndicator --task /usr/lib/indicator-application/indicator-application-service --task-name Service --ignore-return >> $@
+	@chmod +x $@
+
+#########################
 # Footer
 #########################
 
