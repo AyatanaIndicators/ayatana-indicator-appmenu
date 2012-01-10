@@ -6,6 +6,10 @@ check_PROGRAMS =
 XFAIL_TESTS =
 
 DBUS_RUNNER=dbus-test-runner
+XVFB_RUN=". $(srcdir)/run-xvfb.sh"
+
+EXTRA_DIST = \
+	run-xvfb.sh
 
 ######################
 # Test Distance
