@@ -46,15 +46,15 @@ main (gint argc, gchar * argv[])
 	g_main_loop_run(mainloop);
 	g_main_loop_unref(mainloop);
 
-	int i;
 	gboolean found_messaging = FALSE;
 	gboolean found_sound = FALSE;
 	gboolean failed = FALSE;
 
-	GArray * indicators = indicator_tracker_get_indicators(tracker);
+	GList * indicators = indicator_tracker_get_indicators(tracker);
+	GList * indicator_pntr;
 
-	for (i = 0; i < indicators->len; i++) {
-		IndicatorTrackerIndicator * indicator = &g_array_index(indicators, IndicatorTrackerIndicator, i);
+	for (indicator_pntr = indicators; indicator_pntr != NULL; indicator_pntr = g_list_next(indicator_pntr)) {
+		IndicatorTrackerIndicator * indicator = (IndicatorTrackerIndicator *)indicator_pntr->data;
 
 		if (g_strcmp0(indicator->dbus_name_wellknown, "com.canonical.indicator.messages") == 0) {
 			found_messaging = TRUE;
