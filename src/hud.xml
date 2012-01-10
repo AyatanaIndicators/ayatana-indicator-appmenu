@@ -8,9 +8,9 @@
 		<method name="StartQuery">
 			<!-- in -->
 			<arg type="s" name="query" direction="in" />
-			<arg type="s" name="target" direction="out" />
-			<arg type="i" name="entries" direction="out" />
+			<arg type="i" name="entries" direction="in" />
 			<!-- out -->
+			<arg type="s" name="target" direction="out" />
 			<arg type="a(sssssv)" name="suggestions" direction="out" />
 			<arg type="v" name="querykey" direction="out" />
 		</method>
