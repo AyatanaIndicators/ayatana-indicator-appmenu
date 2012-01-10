@@ -104,6 +104,7 @@ PKG_CHECK_MODULES([HUD],[
 ###########################
 
 DBUSMENU_JSONLOADER_REQUIRED_VERSION=0.3.3
+LIBAPPINDICATOR_REQUIRED_VERSION=0.0.0
 
 AC_ARG_ENABLE([tests],
 	AC_HELP_STRING([--disable-tests], [Disable test scripts and tools]),,
@@ -111,7 +112,8 @@ AC_ARG_ENABLE([tests],
 
 if test x"$enable_tests" != x"no" ; then
    PKG_CHECK_MODULES(INDICATORTEST,
-                     dbusmenu-jsonloader-0.4 >= $DBUSMENU_JSONLOADER_REQUIRED_VERSION,
+                     dbusmenu-jsonloader-0.4 >= $DBUSMENU_JSONLOADER_REQUIRED_VERSION
+                     appindicator3-0.1 >= $LIBAPPINDICATOR_REQUIRED_VERSION,
                      [have_dbusmenu_jsonloader=yes],
                      [have_dbusmenu_jsonloader=no]
                     )
