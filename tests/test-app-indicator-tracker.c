@@ -57,8 +57,12 @@ main (gint argc, gchar * argv[])
 	for (indicator_pntr = indicators; indicator_pntr != NULL; indicator_pntr = g_list_next(indicator_pntr)) {
 		IndicatorTrackerIndicator * indicator = (IndicatorTrackerIndicator *)indicator_pntr->data;
 
+		if (g_strcmp0(indicator->dbus_object, "/org/ayatana/NotificationItem/example_simple_client/Menu") == 0) {
+			found_appindicator = TRUE;
+			continue;
+		}
 
-		g_print("Found indicator we didn't expect: %s\n", indicator->dbus_name_wellknown);
+		g_print("Found indicator we didn't expect: %s\n", indicator->dbus_object);
 		failed = TRUE;
 		break;
 	}
