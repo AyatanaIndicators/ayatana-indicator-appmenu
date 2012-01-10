@@ -6,8 +6,11 @@
 
 <!-- Functions -->
 		<method name="GetSuggestions">
+			<!-- in -->
 			<arg type="s" name="query" direction="in" />
 			<arg type="s" name="target" direction="out" />
+			<arg type="i" name="entries" direction="out" />
+			<!-- out -->
 			<arg type="a(ssssv)" name="suggestions" direction="out" />
 		</method>
 
