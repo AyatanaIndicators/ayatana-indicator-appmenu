@@ -43,6 +43,8 @@ main (int argc, char ** argv)
 	                        "indicator-messages",
 	                        APP_INDICATOR_CATEGORY_APPLICATION_STATUS);
 
+	app_indicator_set_status(ci, APP_INDICATOR_STATUS_ACTIVE);
+
 	g_assert (IS_APP_INDICATOR (ci));
 	g_assert (G_IS_OBJECT (ci));
 
