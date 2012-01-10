@@ -4,8 +4,10 @@ indicator-appmenu (0.3.2+hud3-0ubuntu1~ppa1) UNRELEASED; urgency=low
     * Custom menu items
     * Appindicator support
     * Man pages
+  * Merge from upstream
+    * Better support to Canonical
 
- -- Ted Gould <ted@ubuntu.com>  Tue, 10 Jan 2012 22:41:57 +0100
+ -- Ted Gould <ted@ubuntu.com>  Tue, 10 Jan 2012 22:52:22 +0100
 
 indicator-appmenu (0.3.2+hud2-0ubuntu1~ppa2) precise; urgency=low
 
