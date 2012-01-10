@@ -46,6 +46,8 @@ main (gint argc, gchar * argv[])
 	g_main_loop_run(mainloop);
 	g_main_loop_unref(mainloop);
 
+	g_print("Checking for indicators\n");
+
 	gboolean found_appindicator = FALSE;
 	gboolean failed = FALSE;
 
@@ -56,7 +58,7 @@ main (gint argc, gchar * argv[])
 		IndicatorTrackerIndicator * indicator = (IndicatorTrackerIndicator *)indicator_pntr->data;
 
 
-		g_warning("Found indicator we didn't expect: %s", indicator->dbus_name_wellknown);
+		g_print("Found indicator we didn't expect: %s\n", indicator->dbus_name_wellknown);
 		failed = TRUE;
 		break;
 	}
@@ -64,15 +66,15 @@ main (gint argc, gchar * argv[])
 	g_object_unref(tracker);
 
 	if (!found_appindicator) {
-		g_warning("Missing Indicators");
+		g_print("Missing Indicators\n");
 		failed = TRUE;
 	}
 
 	if (!failed) {
-		g_debug("Found everything");
+		g_print("Found everything\n");
 		return 0;
 	} else {
-		g_warning("Failed");
+		g_print("Failed\n");
 		return 1;
 	}
 }

@@ -395,7 +395,7 @@ test_app_indicator_tracker_LDADD = \
 test-app-indicator-test: test-app-indicator-tracker test-app-indicator Makefile.am
 	@echo "#!/bin/bash -e" > $@
 	@echo $(XVFB_RUN) >> $@
-	@echo export INDICATOR_SERVICE_SHUTDOWN_TIMEOUT=2 >> $@
+	@echo export INDICATOR_SERVICE_SHUTDOWN_TIMEOUT=2000 >> $@
 	@echo $(DBUS_RUNNER) --task $(builddir)/test-app-indicator-tracker --task-name Tracker --task $(builddir)/test-app-indicator --task-name AppIndicator --task /usr/lib/indicator-application/indicator-application-service --task-name Service --ignore-return >> $@
 	@chmod +x $@
 

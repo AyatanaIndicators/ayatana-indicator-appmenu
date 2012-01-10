@@ -21,6 +21,16 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <libappindicator/app-indicator.h>
 
+GMainLoop * mainloop = NULL;
+
+gboolean
+timeout (gpointer user_data)
+{
+	g_print("Timeout\n");
+	g_main_loop_quit(mainloop);
+	return FALSE;
+}
+
 int
 main (int argc, char ** argv)
 {
@@ -43,7 +53,9 @@ main (int argc, char ** argv)
 
 	app_indicator_set_menu (ci, GTK_MENU (menu));
 
-	GMainLoop * mainloop = g_main_loop_new(NULL, FALSE);
+	g_timeout_add_seconds(2, timeout, NULL);
+
+	mainloop = g_main_loop_new(NULL, FALSE);
 	g_main_loop_run(mainloop);
 
 	return 0;
