@@ -360,7 +360,8 @@ EXTRA_DIST += \
 #########################
 
 check_PROGRAMS += \
-	test-app-indicator
+	test-app-indicator \
+	test-app-indicator-tracker
 
 test_app_indicator_SOURCES = \
 	test-app-indicator.c
@@ -374,6 +375,18 @@ test_app_indicator_CFLAGS = \
 
 test_app_indicator_LDADD = \
 	$(INDICATORTEST_LIBS) \
+	$(HUD_LIBS)
+
+test_app_indicator_tracker_SOURCES = \
+	test-app-indicator-tracker.c
+
+test_app_indicator_tracker_CFLAGS = \
+	$(HUD_CFLAGS) \
+	$(COVERAGE_CFLAGS) \
+	-I$(top_srcdir)/src \
+	-Wall -Werror
+
+test_app_indicator_tracker_LDADD = \
 	$(HUD_LIBS)
 
 #########################
