@@ -173,9 +173,14 @@ static void
 print_suggestions (const char *query)
 {
 	GError * error = NULL;
+	GVariantBuilder querybuilder;
+	g_variant_builder_init(&querybuilder, G_VARIANT_TYPE_TUPLE);
+	g_variant_builder_add_value(&querybuilder, g_variant_new_string(query));
+	g_variant_builder_add_value(&querybuilder, g_variant_new_int32(5));
+
 	GVariant * suggests = g_dbus_proxy_call_sync(proxy,
-	                                             "GetSuggestions",
-	                                             g_variant_new("(s)", query),
+	                                             "StartQuery",
+	                                             g_variant_builder_end(&querybuilder),
 	                                             G_DBUS_CALL_FLAGS_NONE,
 	                                             -1,
 	                                             NULL,
@@ -197,6 +202,7 @@ print_suggestions (const char *query)
 	gchar * appicon = NULL;
 	gchar * icon = NULL;
 	gchar * complete = NULL;
+	gchar * accel = NULL;
 	GVariant * key = NULL;
 
 	last_key = NULL;
@@ -204,7 +210,7 @@ print_suggestions (const char *query)
 	int i=0;
 	char *clean_line;
 
-	while (g_variant_iter_loop(&iter, "(ssssv)", &suggestion, &appicon, &icon, &complete, &key)) {
+	while (g_variant_iter_loop(&iter, "(sssssv)", &suggestion, &appicon, &icon, &complete, &accel, &key)) {
 		if( use_curses)
 			mvwprintw(twindow, 9 + i, 15, "%s", suggestion);
 		else{
@@ -217,6 +223,9 @@ print_suggestions (const char *query)
 	}
 
 	g_variant_unref(suggestions);
+
+	/* NOTE: Ignoring the Query Key as we're not handling the signal now
+	   and just letting it timeout. */
 
 	return;
 }

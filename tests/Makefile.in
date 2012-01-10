@@ -37,7 +37,9 @@ check_PROGRAMS = test-distance$(EXEEXT) test-usage-db-simple$(EXEEXT) \
 	test-usage-db-old$(EXEEXT) test-usage-db-ancient$(EXEEXT) \
 	test-usage-db-testapp$(EXEEXT) test-indicator-tracker$(EXEEXT) \
 	test-indicator-tracker-owner$(EXEEXT) \
-	test-bad-app-info$(EXEEXT) test-load-app-info$(EXEEXT)
+	test-bad-app-info$(EXEEXT) test-load-app-info$(EXEEXT) \
+	test-app-indicator$(EXEEXT) \
+	test-app-indicator-tracker$(EXEEXT)
 XFAIL_TESTS =
 subdir = tests
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
@@ -58,14 +60,31 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am_test_bad_app_info_OBJECTS =  \
-	test_bad_app_info-test-bad-app-info.$(OBJEXT)
-test_bad_app_info_OBJECTS = $(am_test_bad_app_info_OBJECTS)
+am_test_app_indicator_OBJECTS =  \
+	test_app_indicator-test-app-indicator.$(OBJEXT)
+test_app_indicator_OBJECTS = $(am_test_app_indicator_OBJECTS)
 am__DEPENDENCIES_1 =
-test_bad_app_info_DEPENDENCIES = $(am__DEPENDENCIES_1)
+test_app_indicator_DEPENDENCIES = $(am__DEPENDENCIES_1) \
+	$(am__DEPENDENCIES_1)
 AM_V_lt = $(am__v_lt_$(V))
 am__v_lt_ = $(am__v_lt_$(AM_DEFAULT_VERBOSITY))
 am__v_lt_0 = --silent
+test_app_indicator_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(test_app_indicator_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
+	$(LDFLAGS) -o $@
+am_test_app_indicator_tracker_OBJECTS = test_app_indicator_tracker-test-app-indicator-tracker.$(OBJEXT)
+test_app_indicator_tracker_OBJECTS =  \
+	$(am_test_app_indicator_tracker_OBJECTS)
+test_app_indicator_tracker_DEPENDENCIES = $(am__DEPENDENCIES_1)
+test_app_indicator_tracker_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(test_app_indicator_tracker_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
+	$(LDFLAGS) -o $@
+am_test_bad_app_info_OBJECTS =  \
+	test_bad_app_info-test-bad-app-info.$(OBJEXT)
+test_bad_app_info_OBJECTS = $(am_test_bad_app_info_OBJECTS)
+test_bad_app_info_DEPENDENCIES = $(am__DEPENDENCIES_1)
 test_bad_app_info_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(test_bad_app_info_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
@@ -158,13 +177,17 @@ am__v_CCLD_0 = @echo "  CCLD  " $@;
 AM_V_GEN = $(am__v_GEN_$(V))
 am__v_GEN_ = $(am__v_GEN_$(AM_DEFAULT_VERBOSITY))
 am__v_GEN_0 = @echo "  GEN   " $@;
-SOURCES = $(test_bad_app_info_SOURCES) $(test_distance_SOURCES) \
+SOURCES = $(test_app_indicator_SOURCES) \
+	$(test_app_indicator_tracker_SOURCES) \
+	$(test_bad_app_info_SOURCES) $(test_distance_SOURCES) \
 	$(test_indicator_tracker_SOURCES) \
 	$(test_indicator_tracker_owner_SOURCES) \
 	$(test_load_app_info_SOURCES) $(test_usage_db_ancient_SOURCES) \
 	$(test_usage_db_old_SOURCES) $(test_usage_db_simple_SOURCES) \
 	$(test_usage_db_testapp_SOURCES)
-DIST_SOURCES = $(test_bad_app_info_SOURCES) $(test_distance_SOURCES) \
+DIST_SOURCES = $(test_app_indicator_SOURCES) \
+	$(test_app_indicator_tracker_SOURCES) \
+	$(test_bad_app_info_SOURCES) $(test_distance_SOURCES) \
 	$(test_indicator_tracker_SOURCES) \
 	$(test_indicator_tracker_owner_SOURCES) \
 	$(test_load_app_info_SOURCES) $(test_usage_db_ancient_SOURCES) \
@@ -396,6 +419,10 @@ EXTRA_DIST = test-usage-db-simple.sql test-usage-db-old.sql \
 #########################
 # Test Good App Info
 #########################
+
+#########################
+# Test App Indicator
+#########################
 TESTS = test-distance-test test-usage-db-simple-test \
 	test-usage-db-old-test test-usage-db-ancient-test \
 	test-usage-db-testapp-test test-indicator-tracker-test \
@@ -404,7 +431,7 @@ TESTS = test-distance-test test-usage-db-simple-test \
 	test-bad-app-info-missing-desktop \
 	test-bad-app-info-missing-menus \
 	test-bad-app-info-multiple-menus \
-	test-good-app-info-tons-of-entries
+	test-good-app-info-tons-of-entries test-app-indicator-test
 DBUS_RUNNER = dbus-test-runner
 DISTANCE_XML_REPORT = test-distance.xml
 test_distance_SOURCES = \
@@ -521,6 +548,32 @@ test_load_app_info_CFLAGS = \
 test_load_app_info_LDADD = \
 	$(HUD_LIBS)
 
+test_app_indicator_SOURCES = \
+	test-app-indicator.c
+
+test_app_indicator_CFLAGS = \
+	$(HUD_CFLAGS) \
+	$(COVERAGE_CFLAGS) \
+	$(INDICATORTEST_CFLAGS) \
+	-I$(top_srcdir)/src \
+	-Wall -Werror
+
+test_app_indicator_LDADD = \
+	$(INDICATORTEST_LIBS) \
+	$(HUD_LIBS)
+
+test_app_indicator_tracker_SOURCES = \
+	test-app-indicator-tracker.c
+
+test_app_indicator_tracker_CFLAGS = \
+	$(HUD_CFLAGS) \
+	$(COVERAGE_CFLAGS) \
+	-I$(top_srcdir)/src \
+	-Wall -Werror
+
+test_app_indicator_tracker_LDADD = \
+	$(HUD_LIBS)
+
 all: all-am
 
 .SUFFIXES:
@@ -564,6 +617,12 @@ clean-checkPROGRAMS:
 	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
 	echo " rm -f" $$list; \
 	rm -f $$list
+test-app-indicator$(EXEEXT): $(test_app_indicator_OBJECTS) $(test_app_indicator_DEPENDENCIES) 
+	@rm -f test-app-indicator$(EXEEXT)
+	$(AM_V_CCLD)$(test_app_indicator_LINK) $(test_app_indicator_OBJECTS) $(test_app_indicator_LDADD) $(LIBS)
+test-app-indicator-tracker$(EXEEXT): $(test_app_indicator_tracker_OBJECTS) $(test_app_indicator_tracker_DEPENDENCIES) 
+	@rm -f test-app-indicator-tracker$(EXEEXT)
+	$(AM_V_CCLD)$(test_app_indicator_tracker_LINK) $(test_app_indicator_tracker_OBJECTS) $(test_app_indicator_tracker_LDADD) $(LIBS)
 test-bad-app-info$(EXEEXT): $(test_bad_app_info_OBJECTS) $(test_bad_app_info_DEPENDENCIES) 
 	@rm -f test-bad-app-info$(EXEEXT)
 	$(AM_V_CCLD)$(test_bad_app_info_LINK) $(test_bad_app_info_OBJECTS) $(test_bad_app_info_LDADD) $(LIBS)
@@ -598,6 +657,8 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_app_indicator-test-app-indicator.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_app_indicator_tracker-test-app-indicator-tracker.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_bad_app_info-test-bad-app-info.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_distance-test-distance.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_indicator_tracker-test-indicator-tracker.Po@am__quote@
@@ -634,6 +695,38 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(LTCOMPILE) -c -o $@ $<
+
+test_app_indicator-test-app-indicator.o: test-app-indicator.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_app_indicator_CFLAGS) $(CFLAGS) -MT test_app_indicator-test-app-indicator.o -MD -MP -MF $(DEPDIR)/test_app_indicator-test-app-indicator.Tpo -c -o test_app_indicator-test-app-indicator.o `test -f 'test-app-indicator.c' || echo '$(srcdir)/'`test-app-indicator.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_app_indicator-test-app-indicator.Tpo $(DEPDIR)/test_app_indicator-test-app-indicator.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='test-app-indicator.c' object='test_app_indicator-test-app-indicator.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_app_indicator_CFLAGS) $(CFLAGS) -c -o test_app_indicator-test-app-indicator.o `test -f 'test-app-indicator.c' || echo '$(srcdir)/'`test-app-indicator.c
+
+test_app_indicator-test-app-indicator.obj: test-app-indicator.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_app_indicator_CFLAGS) $(CFLAGS) -MT test_app_indicator-test-app-indicator.obj -MD -MP -MF $(DEPDIR)/test_app_indicator-test-app-indicator.Tpo -c -o test_app_indicator-test-app-indicator.obj `if test -f 'test-app-indicator.c'; then $(CYGPATH_W) 'test-app-indicator.c'; else $(CYGPATH_W) '$(srcdir)/test-app-indicator.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_app_indicator-test-app-indicator.Tpo $(DEPDIR)/test_app_indicator-test-app-indicator.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='test-app-indicator.c' object='test_app_indicator-test-app-indicator.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_app_indicator_CFLAGS) $(CFLAGS) -c -o test_app_indicator-test-app-indicator.obj `if test -f 'test-app-indicator.c'; then $(CYGPATH_W) 'test-app-indicator.c'; else $(CYGPATH_W) '$(srcdir)/test-app-indicator.c'; fi`
+
+test_app_indicator_tracker-test-app-indicator-tracker.o: test-app-indicator-tracker.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_app_indicator_tracker_CFLAGS) $(CFLAGS) -MT test_app_indicator_tracker-test-app-indicator-tracker.o -MD -MP -MF $(DEPDIR)/test_app_indicator_tracker-test-app-indicator-tracker.Tpo -c -o test_app_indicator_tracker-test-app-indicator-tracker.o `test -f 'test-app-indicator-tracker.c' || echo '$(srcdir)/'`test-app-indicator-tracker.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_app_indicator_tracker-test-app-indicator-tracker.Tpo $(DEPDIR)/test_app_indicator_tracker-test-app-indicator-tracker.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='test-app-indicator-tracker.c' object='test_app_indicator_tracker-test-app-indicator-tracker.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_app_indicator_tracker_CFLAGS) $(CFLAGS) -c -o test_app_indicator_tracker-test-app-indicator-tracker.o `test -f 'test-app-indicator-tracker.c' || echo '$(srcdir)/'`test-app-indicator-tracker.c
+
+test_app_indicator_tracker-test-app-indicator-tracker.obj: test-app-indicator-tracker.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_app_indicator_tracker_CFLAGS) $(CFLAGS) -MT test_app_indicator_tracker-test-app-indicator-tracker.obj -MD -MP -MF $(DEPDIR)/test_app_indicator_tracker-test-app-indicator-tracker.Tpo -c -o test_app_indicator_tracker-test-app-indicator-tracker.obj `if test -f 'test-app-indicator-tracker.c'; then $(CYGPATH_W) 'test-app-indicator-tracker.c'; else $(CYGPATH_W) '$(srcdir)/test-app-indicator-tracker.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_app_indicator_tracker-test-app-indicator-tracker.Tpo $(DEPDIR)/test_app_indicator_tracker-test-app-indicator-tracker.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='test-app-indicator-tracker.c' object='test_app_indicator_tracker-test-app-indicator-tracker.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_app_indicator_tracker_CFLAGS) $(CFLAGS) -c -o test_app_indicator_tracker-test-app-indicator-tracker.obj `if test -f 'test-app-indicator-tracker.c'; then $(CYGPATH_W) 'test-app-indicator-tracker.c'; else $(CYGPATH_W) '$(srcdir)/test-app-indicator-tracker.c'; fi`
 
 test_bad_app_info-test-bad-app-info.o: test-bad-app-info.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_bad_app_info_CFLAGS) $(CFLAGS) -MT test_bad_app_info-test-bad-app-info.o -MD -MP -MF $(DEPDIR)/test_bad_app_info-test-bad-app-info.Tpo -c -o test_bad_app_info-test-bad-app-info.o `test -f 'test-bad-app-info.c' || echo '$(srcdir)/'`test-bad-app-info.c
@@ -1187,6 +1280,13 @@ test-good-app-info-tons-of-entries: good-app-info/tons-of-entries.hud-app-info t
 	@echo fi >> $@
 	@echo cd .. >> $@
 	@echo rm -rf test-good-app-info-tons-of-entries.dir.\* >> $@
+	@chmod +x $@
+
+test-app-indicator-test: test-app-indicator-tracker test-app-indicator Makefile.am
+	@echo "#!/bin/bash -e" > $@
+	@echo $(XVFB_RUN) >> $@
+	@echo export INDICATOR_SERVICE_SHUTDOWN_TIMEOUT=2000 >> $@
+	@echo $(DBUS_RUNNER) --task $(builddir)/test-app-indicator-tracker --task-name Tracker --task $(builddir)/test-app-indicator --task-name AppIndicator --task /usr/lib/indicator-application/indicator-application-service --task-name Service --ignore-return >> $@
 	@chmod +x $@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
