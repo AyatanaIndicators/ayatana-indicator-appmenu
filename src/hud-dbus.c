@@ -307,7 +307,7 @@ get_suggestions (HudDbus * self, const gchar * query)
 	} else {
 		/* If we didn't get any suggestions we need to build
 		   a null array to make the DBus interface happy */
-		g_variant_builder_add_value(&ret, g_variant_new_array(G_VARIANT_TYPE("(ssssv)"), NULL, 0));
+		g_variant_builder_add_value(&ret, g_variant_new_array(G_VARIANT_TYPE("(sssssv)"), NULL, 0));
 	}
 
 	/* Free the remaining icon */
