@@ -359,6 +359,9 @@ EXTRA_DIST += \
 # Test App Indicator
 #########################
 
+TESTS += \
+	test-app-indicator-test
+
 check_PROGRAMS += \
 	test-app-indicator \
 	test-app-indicator-tracker
@@ -388,6 +391,13 @@ test_app_indicator_tracker_CFLAGS = \
 
 test_app_indicator_tracker_LDADD = \
 	$(HUD_LIBS)
+
+test-app-indicator-test: test-app-indicator-tracker test-app-indicator Makefile.am
+	@echo "#!/bin/bash -e" > $@
+	@echo $(XVFB_RUN) >> $@
+	@echo export INDICATOR_SERVICE_SHUTDOWN_TIMEOUT=2 >> $@
+	@echo $(DBUS_RUNNER) --task $(builddir)/test-app-indicator-tracker --task-name Tracker --task $(builddir)/test-app-indicator --task-name AppIndicator --task /usr/lib/indicator-application/indicator-application-service --task-name Service --ignore-return >> $@
+	@chmod +x $@
 
 #########################
 # Footer
