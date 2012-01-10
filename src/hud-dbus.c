@@ -317,7 +317,7 @@ get_suggestions (HudDbus * self, const gchar * query)
 	g_list_free_full(suggestions, (GDestroyNotify)hud_search_suggest_free);
 
 	/* Add a query key */
-	g_variant_builder_add_value(&ret, g_variant_new_string("query key"));
+	g_variant_builder_add_value(&ret, g_variant_new_variant(g_variant_new_string("query key")));
 
 	return g_variant_builder_end(&ret);
 }
