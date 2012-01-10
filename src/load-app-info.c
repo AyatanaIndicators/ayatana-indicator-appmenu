@@ -106,7 +106,7 @@ load_app_info (const gchar * filename, sqlite3 * db)
 		statement: NULL
 	};
 
-	menu_data.statement = g_string_new("");
+	menu_data.statement = g_string_new("begin transaction;");
 
 	GMarkupParseContext * context = g_markup_parse_context_new(&app_info_parser,
 	                                                           0, /* flags */
@@ -140,6 +140,8 @@ load_app_info (const gchar * filename, sqlite3 * db)
 	/* Execute SQL Statement */
 	/* If we have one */
 	if (parsed && menu_data.statement->str[0] != '\0') {
+		g_string_append_printf(menu_data.statement, "end transaction;");
+
 		int exec_status = SQLITE_OK;
 		gchar * failstring = NULL;
 		exec_status = sqlite3_exec(db,
