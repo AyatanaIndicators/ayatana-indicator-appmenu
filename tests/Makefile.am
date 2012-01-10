@@ -356,6 +356,27 @@ EXTRA_DIST += \
 	test-usage-dump-entries.sql
 
 #########################
+# Test App Indicator
+#########################
+
+check_PROGRAMS += \
+	test-app-indicator
+
+test_app_indicator_SOURCES = \
+	test-app-indicator.c
+
+test_app_indicator_CFLAGS = \
+	$(HUD_CFLAGS) \
+	$(COVERAGE_CFLAGS) \
+	$(INDICATORTEST_CFLAGS) \
+	-I$(top_srcdir)/src \
+	-Wall -Werror
+
+test_app_indicator_LDADD = \
+	$(INDICATORTEST_LIBS) \
+	$(HUD_LIBS)
+
+#########################
 # Footer
 #########################
 
