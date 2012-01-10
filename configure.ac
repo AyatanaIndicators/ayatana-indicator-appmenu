@@ -1,5 +1,5 @@
 AC_INIT([indicator-appmenu],
-        [0.3.2+hud2],
+        [0.3.2+hud3],
         [http://bugs.launchpad.net/indicator-appmenu],
         [indicator-appmenu],
         [http://launchpad.net/indicator-appmenu])
@@ -116,6 +116,7 @@ AM_CONDITIONAL([BUILD_CLI], [test "x$has_readline_h" == "xyes" && test "x$has_hi
 ###########################
 
 DBUSMENU_JSONLOADER_REQUIRED_VERSION=0.3.3
+LIBAPPINDICATOR_REQUIRED_VERSION=0.0.0
 
 AC_ARG_ENABLE([tests],
 	AC_HELP_STRING([--disable-tests], [Disable test scripts and tools]),,
@@ -123,7 +124,8 @@ AC_ARG_ENABLE([tests],
 
 if test x"$enable_tests" != x"no" ; then
    PKG_CHECK_MODULES(INDICATORTEST,
-                     dbusmenu-jsonloader-0.4 >= $DBUSMENU_JSONLOADER_REQUIRED_VERSION,
+                     dbusmenu-jsonloader-0.4 >= $DBUSMENU_JSONLOADER_REQUIRED_VERSION
+                     appindicator3-0.1 >= $LIBAPPINDICATOR_REQUIRED_VERSION,
                      [have_dbusmenu_jsonloader=yes],
                      [have_dbusmenu_jsonloader=no]
                     )
@@ -232,6 +234,8 @@ tools/Makefile
 po/Makefile.in
 data/Makefile
 tests/Makefile
+docs/Makefile
+docs/man/Makefile
 ])
 
 ###########################

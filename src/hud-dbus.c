@@ -194,13 +194,14 @@ bus_method (GDBusConnection *connection, const gchar *sender, const gchar *objec
 {
 	HudDbus * self = HUD_DBUS(user_data);
 
-	if (g_strcmp0(method_name, "GetSuggestions") == 0) {
+	if (g_strcmp0(method_name, "StartQuery") == 0) {
 		GVariant * ret = NULL;
 		gchar * query = NULL;
+		guint suggestion_count = 5;
 
-		g_variant_get(parameters, "(s)", &query);
+		g_variant_get(parameters, "(si)", &query, &suggestion_count);
 
-		ret = get_suggestions(self, query);
+		ret = get_suggestions(self, query); // TODO: Add count
 
 		g_dbus_method_invocation_return_value(invocation, ret);
 		g_free(query);
@@ -215,6 +216,9 @@ bus_method (GDBusConnection *connection, const gchar *sender, const gchar *objec
 		
 		g_dbus_method_invocation_return_value(invocation, NULL);
 		g_variant_unref(key);
+	} else if (g_strcmp0(method_name, "CloseQuery") == 0) {
+		/* TODO: Use this */
+		g_dbus_method_invocation_return_value(invocation, NULL);
 	}
 
 	return;
@@ -290,7 +294,8 @@ get_suggestions (HudDbus * self, const gchar * query)
 			g_variant_builder_add_value(&tuple, g_variant_new_string(hud_search_suggest_get_display(suggest)));
 			g_variant_builder_add_value(&tuple, g_variant_new_string(icon));
 			g_variant_builder_add_value(&tuple, g_variant_new_string(hud_search_suggest_get_icon(suggest)));
-			g_variant_builder_add_value(&tuple, g_variant_new_string(""));
+			g_variant_builder_add_value(&tuple, g_variant_new_string("")); /* complete text */
+			g_variant_builder_add_value(&tuple, g_variant_new_string("")); /* accell */
 			g_variant_builder_add_value(&tuple, hud_search_suggest_get_key(suggest));
 
 			g_variant_builder_add_value(&builder, g_variant_builder_end(&tuple));
@@ -302,7 +307,7 @@ get_suggestions (HudDbus * self, const gchar * query)
 	} else {
 		/* If we didn't get any suggestions we need to build
 		   a null array to make the DBus interface happy */
-		g_variant_builder_add_value(&ret, g_variant_new_array(G_VARIANT_TYPE("(ssssv)"), NULL, 0));
+		g_variant_builder_add_value(&ret, g_variant_new_array(G_VARIANT_TYPE("(sssssv)"), NULL, 0));
 	}
 
 	/* Free the remaining icon */
@@ -310,6 +315,9 @@ get_suggestions (HudDbus * self, const gchar * query)
 
 	/* Clean up the list */
 	g_list_free_full(suggestions, (GDestroyNotify)hud_search_suggest_free);
+
+	/* Add a query key */
+	g_variant_builder_add_value(&ret, g_variant_new_variant(g_variant_new_string("query key")));
 
 	return g_variant_builder_end(&ret);
 }

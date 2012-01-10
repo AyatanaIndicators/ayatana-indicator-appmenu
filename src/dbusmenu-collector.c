@@ -199,6 +199,8 @@ update_layout_cb (GDBusConnection * connection, const gchar * sender, const gcha
 		DbusmenuClient * client = dbusmenu_client_new(sender, path);
 
 		g_hash_table_insert(collector->priv->hash, built_key, client);
+	} else {
+		g_debug("\tAlready exists");
 	}
 
 	/* Assume that dbusmenu client is doing this for us */
@@ -219,11 +221,8 @@ menu_equal_func (gconstpointer a, gconstpointer b)
 	const menu_key_t * ak = (const menu_key_t *)a;
 	const menu_key_t * bk = (const menu_key_t *)b;
 
-	if (g_strcmp0(ak->sender, bk->sender) == 0) {
-		return TRUE;
-	}
-
-	if (g_strcmp0(ak->path, bk->path) == 0) {
+	if (g_strcmp0(ak->sender, bk->sender) == 0 &&
+			g_strcmp0(ak->path, bk->path) == 0) {
 		return TRUE;
 	}
 
@@ -262,29 +261,61 @@ remove_underline (const gchar * input)
 	return output;
 }
 
-static GList *
-tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GList * results, GStrv label_prefix, DbusmenuClient * client, const gchar * indicator_name)
+static GStrv
+menuitem_to_tokens (DbusmenuMenuitem * item, GStrv label_prefix)
 {
-	if (search == NULL) {
-		return results;
+	const gchar * label_property = NULL;
+
+	if (label_property == NULL && !dbusmenu_menuitem_property_exist(item, DBUSMENU_MENUITEM_PROP_TYPE)) {
+		label_property = DBUSMENU_MENUITEM_PROP_LABEL;
 	}
 
-	if (rootitem == NULL) {
-		return results;
+	if (label_property == NULL && g_strcmp0(dbusmenu_menuitem_property_get(item, DBUSMENU_MENUITEM_PROP_TYPE), DBUSMENU_CLIENT_TYPES_SEPARATOR) == 0) {
+		return NULL;
 	}
 
-	if (!dbusmenu_menuitem_property_get_bool(rootitem, DBUSMENU_MENUITEM_PROP_ENABLED)) {
-		return results;
+	if (label_property == NULL && g_strcmp0(dbusmenu_menuitem_property_get(item, DBUSMENU_MENUITEM_PROP_TYPE), DBUSMENU_CLIENT_TYPES_DEFAULT) == 0) {
+		label_property = DBUSMENU_MENUITEM_PROP_LABEL;
 	}
 
-	if (!dbusmenu_menuitem_property_get_bool(rootitem, DBUSMENU_MENUITEM_PROP_VISIBLE)) {
-		return results;
+	/* Indicator Messages */
+	if (label_property == NULL && g_strcmp0(dbusmenu_menuitem_property_get(item, DBUSMENU_MENUITEM_PROP_TYPE), "application-item") == 0) {
+		label_property = "label";
 	}
 
-	GStrv newstr = NULL;
-	if (dbusmenu_menuitem_property_exist(rootitem, DBUSMENU_MENUITEM_PROP_LABEL) &&
-			!dbusmenu_menuitem_property_exist(rootitem, DBUSMENU_MENUITEM_PROP_TYPE)) {
-		const gchar * label = dbusmenu_menuitem_property_get(rootitem, DBUSMENU_MENUITEM_PROP_LABEL);
+	if (label_property == NULL && g_strcmp0(dbusmenu_menuitem_property_get(item, DBUSMENU_MENUITEM_PROP_TYPE), "indicator-item") == 0) {
+		label_property = "indicator-label";
+	}
+
+	/* Indicator Date Time */
+	if (label_property == NULL && g_strcmp0(dbusmenu_menuitem_property_get(item, DBUSMENU_MENUITEM_PROP_TYPE), "appointment-item") == 0) {
+		label_property = "appointment-label";
+	}
+
+	if (label_property == NULL && g_strcmp0(dbusmenu_menuitem_property_get(item, DBUSMENU_MENUITEM_PROP_TYPE), "timezone-item") == 0) {
+		label_property = "timezone-name";
+	}
+
+	/* Indicator Sound */
+	if (label_property == NULL && g_strcmp0(dbusmenu_menuitem_property_get(item, DBUSMENU_MENUITEM_PROP_TYPE), "x-canonical-sound-menu-player-metadata-type") == 0) {
+		label_property = "x-canonical-sound-menu-player-metadata-player-name";
+	}
+
+	if (label_property == NULL && g_strcmp0(dbusmenu_menuitem_property_get(item, DBUSMENU_MENUITEM_PROP_TYPE), "x-canonical-sound-menu-mute-type") == 0) {
+		label_property = "label";
+	}
+
+	/* NOTE: Need to handle the transport item at some point */
+
+	/* Indicator User */
+	if (label_property == NULL && g_strcmp0(dbusmenu_menuitem_property_get(item, DBUSMENU_MENUITEM_PROP_TYPE), "x-canonical-user-item") == 0) {
+		label_property = "user-item-name";
+	}
+
+	/* Tokenize */
+	if (label_property != NULL && dbusmenu_menuitem_property_exist(item, label_property)) {
+		GStrv newstr = NULL;
+		const gchar * label = dbusmenu_menuitem_property_get(item, label_property);
 
 		if (label_prefix != NULL && label_prefix[0] != NULL) {
 			gint i;
@@ -302,7 +333,37 @@ tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GList * r
 			newstr[0] = g_strdup(label);
 			newstr[1] = NULL;
 		}
+
+		return newstr;
 	}
+
+	return NULL;
+}
+
+static GList *
+tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GList * results, GStrv label_prefix, DbusmenuClient * client, const gchar * indicator_name)
+{
+	if (search == NULL) {
+		return results;
+	}
+
+	if (rootitem == NULL) {
+		return results;
+	}
+
+	/* We can only evaluate these properties if we know the type */
+	if (!dbusmenu_menuitem_property_exist(rootitem, DBUSMENU_MENUITEM_PROP_TYPE) ||
+			g_strcmp0(dbusmenu_menuitem_property_get(rootitem, DBUSMENU_MENUITEM_PROP_TYPE), DBUSMENU_CLIENT_TYPES_DEFAULT) == 0) {
+		if (!dbusmenu_menuitem_property_get_bool(rootitem, DBUSMENU_MENUITEM_PROP_ENABLED)) {
+			return results;
+		}
+
+		if (!dbusmenu_menuitem_property_get_bool(rootitem, DBUSMENU_MENUITEM_PROP_VISIBLE)) {
+			return results;
+		}
+	}
+
+	GStrv newstr = menuitem_to_tokens(rootitem, label_prefix);
 
 	if (!dbusmenu_menuitem_get_root(rootitem) && newstr != NULL) {
 		GStrv used_strings = NULL;
@@ -361,6 +422,16 @@ process_client (DbusmenuCollector * collector, DbusmenuClient * client, const gc
 	return results;
 }
 
+static void
+hash_print (gpointer key, gpointer value, gpointer user_data)
+{
+	menu_key_t * menukey = (menu_key_t *)key;
+
+	g_debug("Addr: '%s'  Path: '%s'  Hash: '%u'", menukey->sender, menukey->path, menu_hash_func(key));
+
+	return;
+}
+
 static GList *
 just_do_it (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, const gchar * search, GList * results, const gchar * indicator_name, GStrv prefix)
 {
@@ -374,6 +445,11 @@ just_do_it (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar 
 	gpointer found = g_hash_table_lookup(collector->priv->hash, &search_key);
 	if (found != NULL) {
 		results = process_client(collector, DBUSMENU_CLIENT(found), search, results, indicator_name, prefix);
+	} else {
+		g_warning("Unable to find menu '%s' on '%s' with hash '%u'", dbus_path, dbus_addr, menu_hash_func(&search_key));
+
+		g_debug("Dumping Hash");
+		g_hash_table_foreach(collector->priv->hash, hash_print, NULL);
 	}
 
 	return results;
@@ -404,10 +480,10 @@ dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_add
 	   looking at the null search.  In that case we'll let
 	   the client take over. */
 	if (search != NULL && search[0] != '\0') {
-		GArray * indicators = indicator_tracker_get_indicators(collector->priv->tracker);
-		gint indicator_cnt;
-		for (indicator_cnt = 0; indicator_cnt < indicators->len; indicator_cnt++) {
-			IndicatorTrackerIndicator * indicator = &g_array_index(indicators, IndicatorTrackerIndicator, indicator_cnt);
+		GList * indicators = indicator_tracker_get_indicators(collector->priv->tracker);
+		GList * lindicator = NULL;
+		for (lindicator = indicators; lindicator != NULL; lindicator = g_list_next(lindicator)) {
+			IndicatorTrackerIndicator * indicator = (IndicatorTrackerIndicator *)lindicator->data;
 
 			gchar * array[2];
 			array[0] = indicator->prefix;
@@ -425,6 +501,8 @@ dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_add
 
 			items = g_list_concat(items, iitems);
 		}
+
+		g_list_free(indicators);
 	}
 
 	items = g_list_sort(items, dbusmenu_collector_found_sort);

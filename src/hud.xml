@@ -5,10 +5,14 @@
 		<!-- None -->
 
 <!-- Functions -->
-		<method name="GetSuggestions">
+		<method name="StartQuery">
+			<!-- in -->
 			<arg type="s" name="query" direction="in" />
+			<arg type="i" name="entries" direction="in" />
+			<!-- out -->
 			<arg type="s" name="target" direction="out" />
-			<arg type="a(ssssv)" name="suggestions" direction="out" />
+			<arg type="a(sssssv)" name="suggestions" direction="out" />
+			<arg type="v" name="querykey" direction="out" />
 		</method>
 
 		<method name="ExecuteQuery">
@@ -16,8 +20,16 @@
 			<arg type="u" name="timestamp" direction="in" />
 		</method>
 
+		<method name="CloseQuery">
+			<arg type="v" name="querykey" direction="in" />
+		</method>
+
 <!-- Signals -->
-		<!-- None -->
+		<signal name="UpdatedQuery">
+			<arg type="s" name="target" direction="out" />
+			<arg type="a(sssssv)" name="suggestions" direction="out" />
+			<arg type="v" name="querykey" direction="out" />
+		</method>
 
 <!-- End of interesting stuff -->
 
