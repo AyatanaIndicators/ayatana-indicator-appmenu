@@ -46,8 +46,9 @@ main (gint argc, gchar * argv[])
 	g_main_loop_run(mainloop);
 	g_main_loop_unref(mainloop);
 
-	gboolean found_messaging = FALSE;
-	gboolean found_sound = FALSE;
+	g_print("Checking for indicators\n");
+
+	gboolean found_appindicator = FALSE;
 	gboolean failed = FALSE;
 
 	GList * indicators = indicator_tracker_get_indicators(tracker);
@@ -56,33 +57,28 @@ main (gint argc, gchar * argv[])
 	for (indicator_pntr = indicators; indicator_pntr != NULL; indicator_pntr = g_list_next(indicator_pntr)) {
 		IndicatorTrackerIndicator * indicator = (IndicatorTrackerIndicator *)indicator_pntr->data;
 
-		if (g_strcmp0(indicator->dbus_name_wellknown, "com.canonical.indicator.messages") == 0) {
-			found_messaging = TRUE;
+		if (g_strcmp0(indicator->dbus_object, "/org/ayatana/NotificationItem/example_simple_client/Menu") == 0) {
+			found_appindicator = TRUE;
 			continue;
 		}
 
-		if (g_strcmp0(indicator->dbus_name_wellknown, "com.canonical.indicators.sound") == 0) {
-			found_sound = TRUE;
-			continue;
-		}
-
-		g_warning("Found indicator we didn't expect: %s", indicator->dbus_name_wellknown);
+		g_print("Found indicator we didn't expect: %s\n", indicator->dbus_object);
 		failed = TRUE;
 		break;
 	}
 
 	g_object_unref(tracker);
 
-	if (!found_messaging || !found_sound) {
-		g_warning("Missing Indicators");
+	if (!found_appindicator) {
+		g_print("Missing Indicators\n");
 		failed = TRUE;
 	}
 
 	if (!failed) {
-		g_debug("Found everything");
+		g_print("Found everything\n");
 		return 0;
 	} else {
-		g_warning("Failed");
+		g_print("Failed\n");
 		return 1;
 	}
 }

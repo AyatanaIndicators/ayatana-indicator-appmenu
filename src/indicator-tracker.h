@@ -59,7 +59,7 @@ struct _IndicatorTrackerIndicator {
 
 GType indicator_tracker_get_type (void);
 IndicatorTracker * indicator_tracker_new (void);
-GArray * indicator_tracker_get_indicators (IndicatorTracker * tracker);
+GList * indicator_tracker_get_indicators (IndicatorTracker * tracker);
 
 G_END_DECLS
 
