@@ -25,7 +25,11 @@
 		</method>
 
 <!-- Signals -->
-		<!-- None -->
+		<signal name="UpdatedQuery">
+			<arg type="s" name="target" direction="out" />
+			<arg type="a(sssssv)" name="suggestions" direction="out" />
+			<arg type="v" name="querykey" direction="out" />
+		</method>
 
 <!-- End of interesting stuff -->
 
