@@ -6,8 +6,9 @@ indicator-appmenu (0.3.2+hud3-0ubuntu1~ppa1) UNRELEASED; urgency=low
     * Man pages
   * Merge from upstream
     * Better support to Canonical
+  * debian/rules: Adding in autoreconf.mk
 
- -- Ted Gould <ted@ubuntu.com>  Tue, 10 Jan 2012 22:52:22 +0100
+ -- Ted Gould <ted@ubuntu.com>  Wed, 11 Jan 2012 09:22:08 +0100
 
 indicator-appmenu (0.3.2+hud2-0ubuntu1~ppa2) precise; urgency=low
 
