@@ -1,8 +1,8 @@
-indicator-appmenu (0.3.2+hud3-0ubuntu1~ppa3) UNRELEASED; urgency=low
+indicator-appmenu (0.3.2+hud3-0ubuntu1~ppa3) precise; urgency=low
 
   * debian/control: added autoreconf
 
- -- Ted Gould <ted@ubuntu.com>  Wed, 11 Jan 2012 16:50:29 +0100
+ -- Ted Gould <ted@ubuntu.com>  Wed, 11 Jan 2012 16:52:43 +0100
 
 indicator-appmenu (0.3.2+hud3-0ubuntu1~ppa2) precise; urgency=low
 
