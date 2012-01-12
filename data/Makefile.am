@@ -1,4 +1,9 @@
 
+gsettings_SCHEMAS = \
+    com.canonical.indicator.appmenu.gschema.xml
+
+@GSETTINGS_RULES@
+
 dbus_servicesdir = $(DBUSSERVICEDIR)
 dbus_services_DATA = com.canonical.hud.service
 
@@ -8,3 +13,4 @@ dbus_services_DATA = com.canonical.hud.service
 EXTRA_DIST = com.canonical.hud.service.in
 
 CLEANFILES = com.canonical.hud.service
+
