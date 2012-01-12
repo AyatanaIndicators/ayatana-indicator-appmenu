@@ -1,3 +1,9 @@
+indicator-appmenu (0.3.2+hud3-0ubuntu1~ppa4) UNRELEASED; urgency=low
+
+  * debian/control: Adding xvfb
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 12 Jan 2012 08:49:31 +0100
+
 indicator-appmenu (0.3.2+hud3-0ubuntu1~ppa3) precise; urgency=low
 
   * debian/control: added autoreconf
