@@ -1,6 +1,7 @@
 
 gsettings_SCHEMAS = \
-    com.canonical.indicator.appmenu.gschema.xml
+    com.canonical.indicator.appmenu.gschema.xml \
+    com.canonical.indicator.appmenu.hud.gschema.xml
 
 @GSETTINGS_RULES@
 
