@@ -29,7 +29,7 @@
 			<arg type="s" name="target" direction="out" />
 			<arg type="a(sssssv)" name="suggestions" direction="out" />
 			<arg type="v" name="querykey" direction="out" />
-		</method>
+		</signal>
 
 <!-- End of interesting stuff -->
 
