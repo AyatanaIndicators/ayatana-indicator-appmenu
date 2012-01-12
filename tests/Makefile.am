@@ -6,6 +6,10 @@ check_PROGRAMS =
 XFAIL_TESTS =
 
 DBUS_RUNNER=dbus-test-runner
+XVFB_RUN=". $(srcdir)/run-xvfb.sh"
+
+EXTRA_DIST += \
+	run-xvfb.sh
 
 ######################
 # Test Distance
@@ -202,6 +206,30 @@ EXTRA_DIST += \
 	good-app-info/testapp.desktop.hud-app-info
 
 DISTCLEANFILES += $(USAGE_TESTAPP_XML_REPORT)
+
+######################
+# Test Usage DB Off
+######################
+
+TESTS += \
+	test-usage-db-off-test
+
+USAGE_OFF_XML_REPORT = $(abs_builddir)/test-usage-db-off.xml
+
+test-usage-db-off-test: test-usage-db-testapp good-app-info/testapp.desktop.hud-app-info good-app-info/testapp100.desktop.hud-app-info Makefile.am
+	@echo "#!/bin/bash -e" > $@
+	@echo cd \`mktemp -d $(abs_builddir)/test-usage-db-off.dir.XXXXXX\` >> $@
+	@echo mkdir -p indicator-appmenu >> $@
+	@echo export HUD_CACHE_DIR=\`pwd\` >> $@
+	@echo export HUD_APP_INFO_DIR=$(abs_srcdir)/good-app-info >> $@
+	@echo export HUD_NO_STORE_USAGE_DATA=1 >> $@
+	@echo gtester --verbose -k -o $(USAGE_OFF_XML_REPORT) $(abs_builddir)/test-usage-db-testapp >> $@
+	@echo test \! -e indicator-appmenu/hud-usage-log.sqlite >> $@
+	@echo cd .. >> $@
+	@echo rm -rf test-usage-db-off.dir.\* >> $@
+	@chmod +x $@
+
+DISTCLEANFILES += $(USAGE_OFF_XML_REPORT)
 
 #########################
 # Test Indicator Tracker

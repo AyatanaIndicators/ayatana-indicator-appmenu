@@ -120,12 +120,14 @@ GCOVR = @GCOVR@
 GENHTML = @GENHTML@
 GETTEXT_MACRO_VERSION = @GETTEXT_MACRO_VERSION@
 GETTEXT_PACKAGE = @GETTEXT_PACKAGE@
+GLIB_COMPILE_SCHEMAS = @GLIB_COMPILE_SCHEMAS@
 GLIB_GENMARSHAL = @GLIB_GENMARSHAL@
 GLIB_MKENUMS = @GLIB_MKENUMS@
 GMSGFMT = @GMSGFMT@
 GMSGFMT_015 = @GMSGFMT_015@
 GNOMELOCALEDIR = @GNOMELOCALEDIR@
 GREP = @GREP@
+GSETTINGS_DISABLE_SCHEMAS_COMPILE = @GSETTINGS_DISABLE_SCHEMAS_COMPILE@
 GTKDOC_CHECK = @GTKDOC_CHECK@
 GTKDOC_DEPS_CFLAGS = @GTKDOC_DEPS_CFLAGS@
 GTKDOC_DEPS_LIBS = @GTKDOC_DEPS_LIBS@
@@ -225,6 +227,7 @@ datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
+gsettingsschemadir = @gsettingsschemadir@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -253,10 +256,20 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+gsettings_SCHEMAS = \
+    com.canonical.indicator.appmenu.gschema.xml \
+    com.canonical.indicator.appmenu.hud.gschema.xml
+
 dbus_servicesdir = $(DBUSSERVICEDIR)
 dbus_services_DATA = com.canonical.hud.service
-EXTRA_DIST = com.canonical.hud.service.in
-CLEANFILES = com.canonical.hud.service
+EXTRA_DIST = \
+	$(dbus_services_DATA:.service=.service.in) \
+	$(gsettings_SCHEMAS)
+
+CLEANFILES = \
+	$(dbus_services_DATA) \
+	$(gsettings_SCHEMAS:.xml=.valid)
+
 all: all-am
 
 .SUFFIXES:
@@ -466,6 +479,8 @@ uninstall-am: uninstall-dbus_servicesDATA
 	mostlyclean mostlyclean-generic mostlyclean-libtool pdf pdf-am \
 	ps ps-am uninstall uninstall-am uninstall-dbus_servicesDATA
 
+
+@GSETTINGS_RULES@
 
 %.service: %.service.in
 	sed -e "s|\@libexecdir\@|$(libexecdir)|" $< > $@

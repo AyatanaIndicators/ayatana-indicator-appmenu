@@ -1,5 +1,5 @@
 AC_INIT([indicator-appmenu],
-        [0.3.2+hud3],
+        [0.3.2+hud4],
         [http://bugs.launchpad.net/indicator-appmenu],
         [indicator-appmenu],
         [http://launchpad.net/indicator-appmenu])
@@ -46,6 +46,11 @@ AS_IF([test "x$enable_deprecations" = xno],
 GTK_DOC_CHECK([1.9])
 AC_CONFIG_MACRO_DIR(m4)
 
+###########################
+# GLib GSettings
+###########################
+
+GLIB_GSETTINGS
 
 ###########################
 # Dependencies
@@ -230,9 +235,9 @@ AC_OUTPUT([
 Makefile
 src/Makefile
 scripts/Makefile
+data/Makefile
 tools/Makefile
 po/Makefile.in
-data/Makefile
 tests/Makefile
 docs/Makefile
 docs/man/Makefile

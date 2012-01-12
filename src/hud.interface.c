@@ -30,7 +30,7 @@ const char * hud_interface =
 "			<arg type=\"s\" name=\"target\" direction=\"out\" />\n"
 "			<arg type=\"a(sssssv)\" name=\"suggestions\" direction=\"out\" />\n"
 "			<arg type=\"v\" name=\"querykey\" direction=\"out\" />\n"
-"		</method>\n"
+"		</signal>\n"
 "\n"
 "<!-- End of interesting stuff -->\n"
 "\n"
