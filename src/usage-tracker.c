@@ -162,6 +162,16 @@ configure_db (UsageTracker * self)
 		g_free(self->priv->cachefile);
 		self->priv->cachefile = NULL;
 	}
+	
+	/* Determine where his database should be built */
+	gboolean usage_data = TRUE;
+	if (self->priv->settings != NULL) {
+		usage_data = g_settings_get_boolean(self->priv->settings, "store-usage-data");
+	}
+
+	if (usage_data) {
+		g_debug("Collecting usage data");
+	}
 
 	/* Setting up the new database */
 	const gchar * basecachedir = g_getenv("HUD_CACHE_DIR");
