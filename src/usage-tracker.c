@@ -43,6 +43,7 @@ static void usage_tracker_class_init (UsageTrackerClass *klass);
 static void usage_tracker_init       (UsageTracker *self);
 static void usage_tracker_dispose    (GObject *object);
 static void usage_tracker_finalize   (GObject *object);
+static void configure_db             (UsageTracker * self);
 static void build_db                 (UsageTracker * self);
 static gboolean drop_entries         (gpointer user_data);
 static void check_app_init (UsageTracker * self, const gchar * application);
@@ -71,32 +72,8 @@ usage_tracker_init (UsageTracker *self)
 	self->priv->db = NULL;
 	self->priv->drop_timer = 0;
 
-	const gchar * basecachedir = g_getenv("HUD_CACHE_DIR");
-	if (basecachedir == NULL) {
-		basecachedir = g_get_user_cache_dir();
-	}
+	configure_db(self);
 
-	gchar * cachedir = g_build_filename(basecachedir, "indicator-appmenu", NULL);
-	if (!g_file_test(cachedir, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR)) {
-		g_mkdir(cachedir, 1 << 6 | 1 << 7 | 1 << 8); // 700
-	}
-	g_free(cachedir);
-
-	self->priv->cachefile = g_build_filename(basecachedir, "indicator-appmenu", "hud-usage-log.sqlite", NULL);
-	gboolean db_exists = g_file_test(self->priv->cachefile, G_FILE_TEST_EXISTS);
-	int open_status = sqlite3_open(self->priv->cachefile, &self->priv->db); 
-
-	if (open_status != SQLITE_OK) {
-		g_warning("Error building LRU DB");
-		sqlite3_close(self->priv->db);
-		self->priv->db = NULL;
-	}
-
-	if (self->priv->db != NULL && !db_exists) {
-		build_db(self);
-	}
-
-	drop_entries(self);
 	/* Drop entries daily if we run for a really long time */
 	self->priv->drop_timer = g_timeout_add_seconds(24 * 60 * 60, drop_entries, self);
 	
@@ -142,6 +119,41 @@ usage_tracker_new (void)
 	return g_object_new(USAGE_TRACKER_TYPE, NULL);
 }
 
+/* Configure which database we should be using */
+static void
+configure_db (UsageTracker * self)
+{
+	const gchar * basecachedir = g_getenv("HUD_CACHE_DIR");
+	if (basecachedir == NULL) {
+		basecachedir = g_get_user_cache_dir();
+	}
+
+	gchar * cachedir = g_build_filename(basecachedir, "indicator-appmenu", NULL);
+	if (!g_file_test(cachedir, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR)) {
+		g_mkdir(cachedir, 1 << 6 | 1 << 7 | 1 << 8); // 700
+	}
+	g_free(cachedir);
+
+	self->priv->cachefile = g_build_filename(basecachedir, "indicator-appmenu", "hud-usage-log.sqlite", NULL);
+	gboolean db_exists = g_file_test(self->priv->cachefile, G_FILE_TEST_EXISTS);
+	int open_status = sqlite3_open(self->priv->cachefile, &self->priv->db); 
+
+	if (open_status != SQLITE_OK) {
+		g_warning("Error building LRU DB");
+		sqlite3_close(self->priv->db);
+		self->priv->db = NULL;
+	}
+
+	if (self->priv->db != NULL && !db_exists) {
+		build_db(self);
+	}
+
+	drop_entries(self);
+
+	return;
+}
+
+/* Build the database */
 static void
 build_db (UsageTracker * self)
 {
