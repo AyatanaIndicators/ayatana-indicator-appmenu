@@ -123,6 +123,18 @@ usage_tracker_new (void)
 static void
 configure_db (UsageTracker * self)
 {
+	/* Removing the previous database */
+	if (self->priv->db != NULL) {
+		sqlite3_close(self->priv->db);
+		self->priv->db = NULL;
+	}
+
+	if (self->priv->cachefile != NULL) {
+		g_free(self->priv->cachefile);
+		self->priv->cachefile = NULL;
+	}
+
+	/* Setting up the new database */
 	const gchar * basecachedir = g_getenv("HUD_CACHE_DIR");
 	if (basecachedir == NULL) {
 		basecachedir = g_get_user_cache_dir();
@@ -231,11 +243,17 @@ usage_tracker_get_usage (UsageTracker * self, const gchar * application, const g
 	return count;
 }
 
+/* Drop the entries from the database that have expired as they are
+   over 30 days old */
 static gboolean
 drop_entries (gpointer user_data)
 {
 	g_return_val_if_fail(IS_USAGE_TRACKER(user_data), FALSE);
 	UsageTracker * self = USAGE_TRACKER(user_data);
+
+	if (self->priv->db == NULL) {
+		return TRUE;
+	}
 
 	const gchar * statement = "delete from usage where timestamp < date('now', 'utc', '-30 days');";
 	// g_debug("Executing: %s", statement);
