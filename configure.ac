@@ -170,6 +170,7 @@ AC_OUTPUT([
 Makefile
 src/Makefile
 scripts/Makefile
+data/Makefile
 tools/Makefile
 ])
 
