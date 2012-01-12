@@ -5,3 +5,4 @@ debian/tmp/gtk3/usr/bin/hud-cli /usr/bin/
 debian/tmp/gtk3/usr/bin/hud-dump-application /usr/bin/
 debian/tmp/gtk3/usr/bin/hud-list-applications /usr/bin/
 debian/tmp/gtk3/usr/bin/hud-verify-app-info /usr/bin/
+debian/tmp/gtk3/usr/share/man/ /usr/share/

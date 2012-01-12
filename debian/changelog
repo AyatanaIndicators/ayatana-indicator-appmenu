@@ -3,8 +3,10 @@ indicator-appmenu (0.3.2+hud4-0ubuntu1~ppa1) UNRELEASED; urgency=low
   * New upstream release.
     * Setting to not save usage data
     * Fixes XML error
+  * debian/indicator-appmenu.install: Adding GSchemas
+  * debian/indicator-appmenu-tools.install: Adding man pages
 
- -- Ted Gould <ted@ubuntu.com>  Thu, 12 Jan 2012 18:31:39 +0100
+ -- Ted Gould <ted@ubuntu.com>  Thu, 12 Jan 2012 18:34:43 +0100
 
 indicator-appmenu (0.3.2+hud3-0ubuntu1~ppa4) precise; urgency=low
 
