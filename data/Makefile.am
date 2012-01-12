@@ -6,4 +6,4 @@ gsettings_SCHEMAS = \
 
 EXTRA_DIST = $(gsettings_SCHEMAS)
 
-CLEANFILES = $(gsettings_SCHEMAS:.xml,.valid)
+CLEANFILES = $(gsettings_SCHEMAS:.xml=.valid)
