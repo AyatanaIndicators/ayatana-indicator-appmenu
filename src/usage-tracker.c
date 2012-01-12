@@ -47,6 +47,7 @@ static void usage_tracker_dispose    (GObject *object);
 static void usage_tracker_finalize   (GObject *object);
 static gboolean settings_schema_exists (const gchar * schema);
 static void configure_db             (UsageTracker * self);
+static void usage_setting_changed    (GSettings * settings, const gchar * key, gpointer user_data);
 static void build_db                 (UsageTracker * self);
 static gboolean drop_entries         (gpointer user_data);
 static void check_app_init (UsageTracker * self, const gchar * application);
@@ -78,6 +79,7 @@ usage_tracker_init (UsageTracker *self)
 
 	if (settings_schema_exists("com.canonical.indicator.appmenu.hud")) {
 		self->priv->settings = g_settings_new("com.canonical.indicator.appmenu.hud");
+		g_signal_connect(self->priv->settings, "changed::store-usage-data", G_CALLBACK(usage_setting_changed), self);
 	}
 
 	configure_db(self);
@@ -146,6 +148,18 @@ settings_schema_exists (const gchar * schema)
 	}
 
 	return FALSE;
+}
+
+/* Checking if the setting for tracking the usage data has changed
+   value.  We'll rebuild the DB */
+static void
+usage_setting_changed (GSettings * settings, const gchar * key, gpointer user_data)
+{
+	g_return_if_fail(IS_USAGE_TRACKER(user_data));
+	UsageTracker * self = USAGE_TRACKER(user_data);
+
+	configure_db(self);
+	return;
 }
 
 /* Configure which database we should be using */
