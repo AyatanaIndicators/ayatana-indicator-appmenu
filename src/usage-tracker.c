@@ -169,6 +169,10 @@ configure_db (UsageTracker * self)
 		usage_data = g_settings_get_boolean(self->priv->settings, "store-usage-data");
 	}
 
+	if (g_getenv("HUD_NO_STORE_USAGE_DATA") != NULL) {
+		usage_data = FALSE;
+	}
+
 	if (usage_data) {
 		g_debug("Storing usage data on filesystem");
 	}
