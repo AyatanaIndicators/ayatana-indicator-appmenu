@@ -10,7 +10,11 @@ dbus_services_DATA = com.canonical.hud.service
 %.service: %.service.in
 	sed -e "s|\@libexecdir\@|$(libexecdir)|" $< > $@
 
-EXTRA_DIST = com.canonical.hud.service.in
+EXTRA_DIST = \
+	$(dbus_services_DATA:.service=.service.in) \
+	$(gsettings_SCHEMAS)
 
-CLEANFILES = com.canonical.hud.service
+CLEANFILES = \
+	$(dbus_services_DATA) \
+	$(gsettings_SCHEMAS:.xml=.valid)
 

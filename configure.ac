@@ -238,7 +238,6 @@ scripts/Makefile
 data/Makefile
 tools/Makefile
 po/Makefile.in
-data/Makefile
 tests/Makefile
 docs/Makefile
 docs/man/Makefile
