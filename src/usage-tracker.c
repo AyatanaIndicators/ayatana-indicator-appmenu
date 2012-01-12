@@ -170,29 +170,49 @@ configure_db (UsageTracker * self)
 	}
 
 	if (usage_data) {
-		g_debug("Collecting usage data");
+		g_debug("Storing usage data on filesystem");
 	}
 
 	/* Setting up the new database */
-	const gchar * basecachedir = g_getenv("HUD_CACHE_DIR");
-	if (basecachedir == NULL) {
-		basecachedir = g_get_user_cache_dir();
-	}
+	gboolean db_exists = FALSE;
 
-	gchar * cachedir = g_build_filename(basecachedir, "indicator-appmenu", NULL);
-	if (!g_file_test(cachedir, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR)) {
-		g_mkdir(cachedir, 1 << 6 | 1 << 7 | 1 << 8); // 700
-	}
-	g_free(cachedir);
+	if (usage_data) {
+		/* If we're storing the usage data we need to figure out
+		   how to do it on disk */
 
-	self->priv->cachefile = g_build_filename(basecachedir, "indicator-appmenu", "hud-usage-log.sqlite", NULL);
-	gboolean db_exists = g_file_test(self->priv->cachefile, G_FILE_TEST_EXISTS);
-	int open_status = sqlite3_open(self->priv->cachefile, &self->priv->db); 
+		const gchar * basecachedir = g_getenv("HUD_CACHE_DIR");
+		if (basecachedir == NULL) {
+			basecachedir = g_get_user_cache_dir();
+		}
 
-	if (open_status != SQLITE_OK) {
-		g_warning("Error building LRU DB");
-		sqlite3_close(self->priv->db);
-		self->priv->db = NULL;
+		gchar * cachedir = g_build_filename(basecachedir, "indicator-appmenu", NULL);
+		if (!g_file_test(cachedir, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR)) {
+			g_mkdir(cachedir, 1 << 6 | 1 << 7 | 1 << 8); // 700
+		}
+		g_free(cachedir);
+
+		self->priv->cachefile = g_build_filename(basecachedir, "indicator-appmenu", "hud-usage-log.sqlite", NULL);
+		db_exists = g_file_test(self->priv->cachefile, G_FILE_TEST_EXISTS);
+		int open_status = sqlite3_open(self->priv->cachefile, &self->priv->db); 
+
+		if (open_status != SQLITE_OK) {
+			g_warning("Error building LRU DB");
+			sqlite3_close(self->priv->db);
+			self->priv->db = NULL;
+		}
+	} else {
+		/* If we're not storing it, let's make an in memory database
+		   so that we can use the app-info, and get better, but we don't
+		   give anyone that data. */
+		self->priv->cachefile = g_strdup(":memory:");
+
+		int open_status = sqlite3_open(self->priv->cachefile, &self->priv->db); 
+
+		if (open_status != SQLITE_OK) {
+			g_warning("Error building LRU DB");
+			sqlite3_close(self->priv->db);
+			self->priv->db = NULL;
+		}
 	}
 
 	if (self->priv->db != NULL && !db_exists) {
