@@ -26,6 +26,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <glib.h>
 #include <glib/gstdio.h>
+#include <gio/gio.h>
 #include <sqlite3.h>
 #include "usage-tracker.h"
 #include "load-app-info.h"
@@ -34,6 +35,7 @@ struct _UsageTrackerPrivate {
 	gchar * cachefile;
 	sqlite3 * db;
 	guint drop_timer;
+	GSettings * settings;
 };
 
 #define USAGE_TRACKER_GET_PRIVATE(o) \
@@ -43,6 +45,9 @@ static void usage_tracker_class_init (UsageTrackerClass *klass);
 static void usage_tracker_init       (UsageTracker *self);
 static void usage_tracker_dispose    (GObject *object);
 static void usage_tracker_finalize   (GObject *object);
+static gboolean settings_schema_exists (const gchar * schema);
+static void configure_db             (UsageTracker * self);
+static void usage_setting_changed    (GSettings * settings, const gchar * key, gpointer user_data);
 static void build_db                 (UsageTracker * self);
 static gboolean drop_entries         (gpointer user_data);
 static void check_app_init (UsageTracker * self, const gchar * application);
@@ -70,33 +75,15 @@ usage_tracker_init (UsageTracker *self)
 	self->priv->cachefile = NULL;
 	self->priv->db = NULL;
 	self->priv->drop_timer = 0;
+	self->priv->settings = NULL;
 
-	const gchar * basecachedir = g_getenv("HUD_CACHE_DIR");
-	if (basecachedir == NULL) {
-		basecachedir = g_get_user_cache_dir();
+	if (settings_schema_exists("com.canonical.indicator.appmenu.hud")) {
+		self->priv->settings = g_settings_new("com.canonical.indicator.appmenu.hud");
+		g_signal_connect(self->priv->settings, "changed::store-usage-data", G_CALLBACK(usage_setting_changed), self);
 	}
 
-	gchar * cachedir = g_build_filename(basecachedir, "indicator-appmenu", NULL);
-	if (!g_file_test(cachedir, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR)) {
-		g_mkdir(cachedir, 1 << 6 | 1 << 7 | 1 << 8); // 700
-	}
-	g_free(cachedir);
+	configure_db(self);
 
-	self->priv->cachefile = g_build_filename(basecachedir, "indicator-appmenu", "hud-usage-log.sqlite", NULL);
-	gboolean db_exists = g_file_test(self->priv->cachefile, G_FILE_TEST_EXISTS);
-	int open_status = sqlite3_open(self->priv->cachefile, &self->priv->db); 
-
-	if (open_status != SQLITE_OK) {
-		g_warning("Error building LRU DB");
-		sqlite3_close(self->priv->db);
-		self->priv->db = NULL;
-	}
-
-	if (self->priv->db != NULL && !db_exists) {
-		build_db(self);
-	}
-
-	drop_entries(self);
 	/* Drop entries daily if we run for a really long time */
 	self->priv->drop_timer = g_timeout_add_seconds(24 * 60 * 60, drop_entries, self);
 	
@@ -116,6 +103,11 @@ usage_tracker_dispose (GObject *object)
 	if (self->priv->drop_timer != 0) {
 		g_source_remove(self->priv->drop_timer);
 		self->priv->drop_timer = 0;
+	}
+
+	if (self->priv->settings != NULL) {
+		g_object_unref(self->priv->settings);
+		self->priv->settings = NULL;
 	}
 
 	G_OBJECT_CLASS (usage_tracker_parent_class)->dispose (object);
@@ -142,6 +134,115 @@ usage_tracker_new (void)
 	return g_object_new(USAGE_TRACKER_TYPE, NULL);
 }
 
+/* Check to see if a schema exists */
+static gboolean
+settings_schema_exists (const gchar * schema)
+{
+	const gchar * const * schemas = g_settings_list_schemas();
+	int i;
+
+	for (i = 0; schemas[i] != NULL; i++) {
+		if (g_strcmp0(schemas[i], schema) == 0) {
+			return TRUE;
+		}
+	}
+
+	return FALSE;
+}
+
+/* Checking if the setting for tracking the usage data has changed
+   value.  We'll rebuild the DB */
+static void
+usage_setting_changed (GSettings * settings, const gchar * key, gpointer user_data)
+{
+	g_return_if_fail(IS_USAGE_TRACKER(user_data));
+	UsageTracker * self = USAGE_TRACKER(user_data);
+
+	configure_db(self);
+	return;
+}
+
+/* Configure which database we should be using */
+static void
+configure_db (UsageTracker * self)
+{
+	/* Removing the previous database */
+	if (self->priv->db != NULL) {
+		sqlite3_close(self->priv->db);
+		self->priv->db = NULL;
+	}
+
+	if (self->priv->cachefile != NULL) {
+		g_free(self->priv->cachefile);
+		self->priv->cachefile = NULL;
+	}
+	
+	/* Determine where his database should be built */
+	gboolean usage_data = TRUE;
+	if (self->priv->settings != NULL) {
+		usage_data = g_settings_get_boolean(self->priv->settings, "store-usage-data");
+	}
+
+	if (g_getenv("HUD_NO_STORE_USAGE_DATA") != NULL) {
+		usage_data = FALSE;
+	}
+
+	if (usage_data) {
+		g_debug("Storing usage data on filesystem");
+	}
+
+	/* Setting up the new database */
+	gboolean db_exists = FALSE;
+
+	if (usage_data) {
+		/* If we're storing the usage data we need to figure out
+		   how to do it on disk */
+
+		const gchar * basecachedir = g_getenv("HUD_CACHE_DIR");
+		if (basecachedir == NULL) {
+			basecachedir = g_get_user_cache_dir();
+		}
+
+		gchar * cachedir = g_build_filename(basecachedir, "indicator-appmenu", NULL);
+		if (!g_file_test(cachedir, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR)) {
+			g_mkdir(cachedir, 1 << 6 | 1 << 7 | 1 << 8); // 700
+		}
+		g_free(cachedir);
+
+		self->priv->cachefile = g_build_filename(basecachedir, "indicator-appmenu", "hud-usage-log.sqlite", NULL);
+		db_exists = g_file_test(self->priv->cachefile, G_FILE_TEST_EXISTS);
+		int open_status = sqlite3_open(self->priv->cachefile, &self->priv->db); 
+
+		if (open_status != SQLITE_OK) {
+			g_warning("Error building LRU DB");
+			sqlite3_close(self->priv->db);
+			self->priv->db = NULL;
+		}
+	} else {
+		/* If we're not storing it, let's make an in memory database
+		   so that we can use the app-info, and get better, but we don't
+		   give anyone that data. */
+		self->priv->cachefile = g_strdup(":memory:");
+
+		int open_status = sqlite3_open(self->priv->cachefile, &self->priv->db); 
+
+		if (open_status != SQLITE_OK) {
+			g_warning("Error building LRU DB");
+			sqlite3_close(self->priv->db);
+			self->priv->db = NULL;
+		}
+	}
+
+	if (self->priv->db != NULL && !db_exists) {
+		build_db(self);
+	}
+
+	drop_entries(self);
+
+	return;
+}
+
+/* Build the database */
 static void
 build_db (UsageTracker * self)
 {
@@ -219,11 +320,17 @@ usage_tracker_get_usage (UsageTracker * self, const gchar * application, const g
 	return count;
 }
 
+/* Drop the entries from the database that have expired as they are
+   over 30 days old */
 static gboolean
 drop_entries (gpointer user_data)
 {
 	g_return_val_if_fail(IS_USAGE_TRACKER(user_data), FALSE);
 	UsageTracker * self = USAGE_TRACKER(user_data);
+
+	if (self->priv->db == NULL) {
+		return TRUE;
+	}
 
 	const gchar * statement = "delete from usage where timestamp < date('now', 'utc', '-30 days');";
 	// g_debug("Executing: %s", statement);
