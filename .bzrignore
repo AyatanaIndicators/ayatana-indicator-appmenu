@@ -23,3 +23,4 @@ tools/.deps
 tools/.libs
 src/application-menu-renderer-client.h
 src/application-menu-renderer-server.h
+data/com.canonical.indicator.appmenu.gschema.valid
