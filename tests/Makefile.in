@@ -233,12 +233,14 @@ GCOVR = @GCOVR@
 GENHTML = @GENHTML@
 GETTEXT_MACRO_VERSION = @GETTEXT_MACRO_VERSION@
 GETTEXT_PACKAGE = @GETTEXT_PACKAGE@
+GLIB_COMPILE_SCHEMAS = @GLIB_COMPILE_SCHEMAS@
 GLIB_GENMARSHAL = @GLIB_GENMARSHAL@
 GLIB_MKENUMS = @GLIB_MKENUMS@
 GMSGFMT = @GMSGFMT@
 GMSGFMT_015 = @GMSGFMT_015@
 GNOMELOCALEDIR = @GNOMELOCALEDIR@
 GREP = @GREP@
+GSETTINGS_DISABLE_SCHEMAS_COMPILE = @GSETTINGS_DISABLE_SCHEMAS_COMPILE@
 GTKDOC_CHECK = @GTKDOC_CHECK@
 GTKDOC_DEPS_CFLAGS = @GTKDOC_DEPS_CFLAGS@
 GTKDOC_DEPS_LIBS = @GTKDOC_DEPS_LIBS@
@@ -338,6 +340,7 @@ datarootdir = @datarootdir@
 docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
+gsettingsschemadir = @gsettingsschemadir@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
@@ -372,10 +375,10 @@ top_srcdir = @top_srcdir@
 #########################
 DISTCLEANFILES = $(DISTANCE_XML_REPORT) $(USAGE_DB_SIMPLE_XML_REPORT) \
 	$(USAGE_DB_OLD_XML_REPORT) $(USAGE_TESTAPP_XML_REPORT) \
-	$(TESTS)
-EXTRA_DIST = test-usage-db-simple.sql test-usage-db-old.sql \
-	test-usage-db-ancient.sql test-usage-dump-entries.sql \
-	test-create-db.sql \
+	$(USAGE_OFF_XML_REPORT) $(TESTS)
+EXTRA_DIST = run-xvfb.sh test-usage-db-simple.sql \
+	test-usage-db-old.sql test-usage-db-ancient.sql \
+	test-usage-dump-entries.sql test-create-db.sql \
 	good-app-info/testapp100.desktop.hud-app-info \
 	good-app-info/testapp.desktop.hud-app-info \
 	bad-app-info/dual-headers.hud-app-info \
@@ -408,6 +411,10 @@ EXTRA_DIST = test-usage-db-simple.sql test-usage-db-old.sql \
 # Test Usage DB Testapp
 #######################
 
+######################
+# Test Usage DB Off
+######################
+
 #########################
 # Test Indicator Tracker
 #########################
@@ -425,14 +432,16 @@ EXTRA_DIST = test-usage-db-simple.sql test-usage-db-old.sql \
 #########################
 TESTS = test-distance-test test-usage-db-simple-test \
 	test-usage-db-old-test test-usage-db-ancient-test \
-	test-usage-db-testapp-test test-indicator-tracker-test \
-	test-bad-app-info-dual-header test-bad-app-info-item-no-count \
-	test-bad-app-info-item-no-name test-bad-app-info-menu-no-name \
+	test-usage-db-testapp-test test-usage-db-off-test \
+	test-indicator-tracker-test test-bad-app-info-dual-header \
+	test-bad-app-info-item-no-count test-bad-app-info-item-no-name \
+	test-bad-app-info-menu-no-name \
 	test-bad-app-info-missing-desktop \
 	test-bad-app-info-missing-menus \
 	test-bad-app-info-multiple-menus \
 	test-good-app-info-tons-of-entries test-app-indicator-test
 DBUS_RUNNER = dbus-test-runner
+XVFB_RUN = ". $(srcdir)/run-xvfb.sh"
 DISTANCE_XML_REPORT = test-distance.xml
 test_distance_SOURCES = \
 	test-distance.c
@@ -501,6 +510,7 @@ test_usage_db_testapp_CFLAGS = \
 test_usage_db_testapp_LDADD = \
 	$(HUD_LIBS)
 
+USAGE_OFF_XML_REPORT = $(abs_builddir)/test-usage-db-off.xml
 test_indicator_tracker_SOURCES = \
 	test-indicator-tracker.c
 
@@ -1225,6 +1235,19 @@ test-usage-db-testapp-test: test-usage-db-testapp good-app-info/testapp.desktop.
 	@echo gtester --verbose -k -o $(USAGE_TESTAPP_XML_REPORT) $(abs_builddir)/test-usage-db-testapp >> $@
 	@echo cd .. >> $@
 	@echo rm -rf test-usage-db-testapp.dir.\* >> $@
+	@chmod +x $@
+
+test-usage-db-off-test: test-usage-db-testapp good-app-info/testapp.desktop.hud-app-info good-app-info/testapp100.desktop.hud-app-info Makefile.am
+	@echo "#!/bin/bash -e" > $@
+	@echo cd \`mktemp -d $(abs_builddir)/test-usage-db-off.dir.XXXXXX\` >> $@
+	@echo mkdir -p indicator-appmenu >> $@
+	@echo export HUD_CACHE_DIR=\`pwd\` >> $@
+	@echo export HUD_APP_INFO_DIR=$(abs_srcdir)/good-app-info >> $@
+	@echo export HUD_NO_STORE_USAGE_DATA=1 >> $@
+	@echo gtester --verbose -k -o $(USAGE_OFF_XML_REPORT) $(abs_builddir)/test-usage-db-testapp >> $@
+	@echo test \! -e indicator-appmenu/hud-usage-log.sqlite >> $@
+	@echo cd .. >> $@
+	@echo rm -rf test-usage-db-off.dir.\* >> $@
 	@chmod +x $@
 
 test-indicator-tracker-test: test-indicator-tracker test-indicator-tracker-owner Makefile.am

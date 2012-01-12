@@ -1,3 +1,11 @@
+indicator-appmenu (0.3.2+hud4-0ubuntu1~ppa1) UNRELEASED; urgency=low
+
+  * New upstream release.
+    * Setting to not save usage data
+    * Fixes XML error
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 12 Jan 2012 18:31:39 +0100
+
 indicator-appmenu (0.3.2+hud3-0ubuntu1~ppa4) precise; urgency=low
 
   * debian/control: Adding xvfb
