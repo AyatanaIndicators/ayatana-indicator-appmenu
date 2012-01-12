@@ -26,6 +26,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <glib.h>
 #include <glib/gstdio.h>
+#include <gio/gio.h>
 #include <sqlite3.h>
 #include "usage-tracker.h"
 #include "load-app-info.h"
@@ -34,6 +35,7 @@ struct _UsageTrackerPrivate {
 	gchar * cachefile;
 	sqlite3 * db;
 	guint drop_timer;
+	GSettings * settings;
 };
 
 #define USAGE_TRACKER_GET_PRIVATE(o) \
@@ -43,6 +45,7 @@ static void usage_tracker_class_init (UsageTrackerClass *klass);
 static void usage_tracker_init       (UsageTracker *self);
 static void usage_tracker_dispose    (GObject *object);
 static void usage_tracker_finalize   (GObject *object);
+static gboolean settings_schema_exists (const gchar * schema);
 static void configure_db             (UsageTracker * self);
 static void build_db                 (UsageTracker * self);
 static gboolean drop_entries         (gpointer user_data);
@@ -71,6 +74,11 @@ usage_tracker_init (UsageTracker *self)
 	self->priv->cachefile = NULL;
 	self->priv->db = NULL;
 	self->priv->drop_timer = 0;
+	self->priv->settings = NULL;
+
+	if (settings_schema_exists("com.canonical.indicator.appmenu.hud")) {
+		self->priv->settings = g_settings_new("com.canonical.indicator.appmenu.hud");
+	}
 
 	configure_db(self);
 
@@ -95,6 +103,11 @@ usage_tracker_dispose (GObject *object)
 		self->priv->drop_timer = 0;
 	}
 
+	if (self->priv->settings != NULL) {
+		g_object_unref(self->priv->settings);
+		self->priv->settings = NULL;
+	}
+
 	G_OBJECT_CLASS (usage_tracker_parent_class)->dispose (object);
 	return;
 }
@@ -117,6 +130,22 @@ UsageTracker *
 usage_tracker_new (void)
 {
 	return g_object_new(USAGE_TRACKER_TYPE, NULL);
+}
+
+/* Check to see if a schema exists */
+static gboolean
+settings_schema_exists (const gchar * schema)
+{
+	const gchar * const * schemas = g_settings_list_schemas();
+	int i;
+
+	for (i = 0; schemas[i] != NULL; i++) {
+		if (g_strcmp0(schemas[i], schema) == 0) {
+			return TRUE;
+		}
+	}
+
+	return FALSE;
 }
 
 /* Configure which database we should be using */
