@@ -25,6 +25,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define DUMP_MATRIX 1
 #include "distance.h"
 #include "distance.c"
+#include "utils.c"
 
 /* Ensure the base calculation works */
 static void

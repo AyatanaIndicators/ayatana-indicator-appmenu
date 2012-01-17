@@ -1,5 +1,5 @@
 /*
-Test function to ensure we auto-clear the old databse
+Small functions that don't really have their own place
 
 Copyright 2011 Canonical Ltd.
 
@@ -19,20 +19,17 @@ You should have received a copy of the GNU General Public License along
 with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#ifndef __UTILS_H__
+#define __UTILS_H__
+
 #include <glib.h>
-#include <glib-object.h>
+#include <gio/gio.h>
 
-#include "load-app-info.h"
-#include "load-app-info.c"
-#include "usage-tracker.h"
-#include "usage-tracker.c"
-#include "utils.c"
+G_BEGIN_DECLS
 
-gint
-main (gint argc, gchar * argv[])
-{
-	g_type_init();
-	UsageTracker * tracker = usage_tracker_new();
-	g_object_unref(tracker);
-	return 0;
-}
+gboolean settings_schema_exists (const gchar * schema);
+guint get_settings_uint (GSettings * settings, const gchar * setting_name, guint fallback);
+
+G_END_DECLS
+
+#endif /* __UTILS_H__ */
