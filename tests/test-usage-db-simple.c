@@ -26,6 +26,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "load-app-info.c"
 #include "usage-tracker.h"
 #include "usage-tracker.c"
+#include "utils.c"
 
 /* Ensure the base object works */
 static void
