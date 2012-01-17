@@ -625,6 +625,7 @@ dbusmenu_collector_found_new (DbusmenuClient * client, DbusmenuMenuitem * item, 
 		int str;
 		for (str = 0; usedstrings[str] != NULL; str++) {
 			if (usedstrings[str][0] == '\0') continue; // No NULL strings
+			if (usedstrings[str][0] == '&')  continue; // Not a useful match and it violates markup rules
 			gchar * nounder = remove_underline(usedstrings[str]);
 			GStrv split = g_strsplit(found->display_string, nounder, -1);
 			gchar * bold = g_strconcat("<b>", nounder, "</b>", NULL);
