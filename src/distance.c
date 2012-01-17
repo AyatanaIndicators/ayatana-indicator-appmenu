@@ -23,6 +23,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <glib/gprintf.h>
 #include <glib-object.h>
 #include <glib/gi18n.h>
+#include <gio/gio.h>
 
 #include "distance.h"
 
@@ -37,9 +38,30 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 /* Checks to see if we can get the setting, and if we can use that,
    otherwise use the fallback value we have here */
 static guint
-get_settings_value (gchar * setting_name, guint fallback)
+get_settings_value (const gchar * setting_name, guint fallback)
 {
-	return fallback;
+	static gboolean first = TRUE;
+	static GSettings * settings = NULL;
+
+	if (first) {
+		first = FALSE;
+
+		const gchar * const * schemas = g_settings_list_schemas();
+		int i;
+
+		for (i = 0; schemas[i] != NULL; i++) {
+			if (g_strcmp0(schemas[i], "com.canonical.indicator.appmenu.hud.search") == 0) {
+				settings = g_settings_new("com.canonical.indicator.appmenu.hud.search");
+				break;
+			}
+		}
+	}
+
+	if (settings != NULL) {
+		return g_settings_get_uint(settings, setting_name);
+	} else {
+		return fallback;
+	}
 }
 
 static gboolean
