@@ -30,6 +30,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "hud-search.h"
 #include "dbusmenu-collector.h"
 #include "usage-tracker.h"
+#include "utils.h"
 
 struct _HudSearchPrivate {
 	BamfMatcher * matcher;
@@ -42,6 +43,8 @@ struct _HudSearchPrivate {
 	UsageTracker * usage;
 
 	GDBusProxy * appmenu;
+
+	GSettings * search_settings;
 };
 
 #define HUD_SEARCH_GET_PRIVATE(o) \
@@ -83,6 +86,12 @@ hud_search_init (HudSearch *self)
 	self->priv->collector = NULL;
 	self->priv->usage = NULL;
 	self->priv->appmenu = NULL;
+	self->priv->search_settings = NULL;
+
+	/* Settings */
+	if (settings_schema_exists("com.canonical.indicator.appmenu.hud.search")) {
+		self->priv->search_settings = g_settings_new("com.canonical.indicator.appmenu.hud.search");
+	}
 
 	/* BAMF */
 	self->priv->matcher = bamf_matcher_get_default();
@@ -116,6 +125,11 @@ static void
 hud_search_dispose (GObject *object)
 {
 	HudSearch * self = HUD_SEARCH(object);
+
+	if (self->priv->search_settings != NULL) {
+		g_object_unref(self->priv->search_settings);
+		self->priv->search_settings = NULL;
+	}
 
 	if (self->priv->window_changed_sig != 0) {
 		g_signal_handler_disconnect(self->priv->matcher, self->priv->window_changed_sig);
@@ -238,7 +252,7 @@ search_and_sort (HudSearch * search, const gchar * searchstr, GArray * usagedata
 		usage.found = (DbusmenuCollectorFound *)found->data;
 		usage.count = 0;
 
-		if (dbusmenu_collector_found_get_distance(usage.found) > 30) {
+		if (dbusmenu_collector_found_get_distance(usage.found) > get_settings_uint(search->priv->search_settings, "max-distance", 30)) {
 			break;
 		}
 
