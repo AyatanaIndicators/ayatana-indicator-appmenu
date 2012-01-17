@@ -26,42 +26,32 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <gio/gio.h>
 
 #include "distance.h"
+#include "utils.h"
 
-#define ADD_PENALTY         get_settings_value("add-penalty",        10)
-#define PRE_ADD_PENALTY     get_settings_value("add-penalty-pre",    1)
-#define DROP_PENALTY        get_settings_value("drop-penalty",       10)
-#define END_DROP_PENALTY    get_settings_value("drop-penalty-end",   10)
-#define TRANSPOSE_PENALTY   get_settings_value("transpose-penalty",  10)
-#define SWAP_PENALTY        get_settings_value("swap-penalty",       10)
-#define SWAP_CASE_PENALTY   get_settings_value("swap-penalty-case",  1)
+#define ADD_PENALTY         get_settings_uint(get_settings(), "add-penalty",        10)
+#define PRE_ADD_PENALTY     get_settings_uint(get_settings(), "add-penalty-pre",    1)
+#define DROP_PENALTY        get_settings_uint(get_settings(), "drop-penalty",       10)
+#define END_DROP_PENALTY    get_settings_uint(get_settings(), "drop-penalty-end",   10)
+#define TRANSPOSE_PENALTY   get_settings_uint(get_settings(), "transpose-penalty",  10)
+#define SWAP_PENALTY        get_settings_uint(get_settings(), "swap-penalty",       10)
+#define SWAP_CASE_PENALTY   get_settings_uint(get_settings(), "swap-penalty-case",  1)
 
 /* Checks to see if we can get the setting, and if we can use that,
    otherwise use the fallback value we have here */
-static guint
-get_settings_value (const gchar * setting_name, guint fallback)
+static GSettings *
+get_settings (void)
 {
 	static gboolean first = TRUE;
 	static GSettings * settings = NULL;
 
 	if (first) {
 		first = FALSE;
-
-		const gchar * const * schemas = g_settings_list_schemas();
-		int i;
-
-		for (i = 0; schemas[i] != NULL; i++) {
-			if (g_strcmp0(schemas[i], "com.canonical.indicator.appmenu.hud.search") == 0) {
-				settings = g_settings_new("com.canonical.indicator.appmenu.hud.search");
-				break;
-			}
+		if (settings_schema_exists("com.canonical.indicator.appmenu.hud.search")) {
+			settings = g_settings_new("com.canonical.indicator.appmenu.hud.search");
 		}
 	}
-
-	if (settings != NULL) {
-		return g_settings_get_uint(settings, setting_name);
-	} else {
-		return fallback;
-	}
+	
+	return settings;
 }
 
 static gboolean

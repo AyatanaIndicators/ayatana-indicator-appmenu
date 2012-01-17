@@ -23,9 +23,12 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define __UTILS_H__
 
 #include <glib.h>
+#include <gio/gio.h>
 
 G_BEGIN_DECLS
 
+gboolean settings_schema_exists (const gchar * schema);
+guint get_settings_uint (GSettings * settings, const gchar * setting_name, guint fallback);
 
 G_END_DECLS
 
