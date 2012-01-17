@@ -34,6 +34,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "distance.h"
 #include "indicator-tracker.h"
 #include "shared-values.h"
+#include "utils.h"
 
 #define GENERIC_ICON   "dbusmenu-lens-panel"
 
@@ -107,6 +108,10 @@ dbusmenu_collector_init (DbusmenuCollector *self)
 	self->priv->hash = NULL;
 	self->priv->tracker = NULL;
 	self->priv->search_settings = NULL;
+
+	if (settings_schema_exists("com.canonical.indicator.appmenu.hud.search")) {
+		self->priv->search_settings = g_settings_new("com.canonical.indicator.appmenu.hud.search");
+	}
 
 	self->priv->hash = g_hash_table_new_full(menu_hash_func, menu_equal_func,
 	                                         menu_key_destroy, g_object_unref /* DbusmenuClient */);
@@ -502,7 +507,7 @@ dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_add
 			GList * iitem = iitems;
 			while (iitem != NULL) {
 				DbusmenuCollectorFound * found = (DbusmenuCollectorFound *)iitem->data;
-				found->distance = found->distance + (found->distance / 2);
+				found->distance = found->distance + ((found->distance * get_settings_uint(collector->priv->search_settings, "indicator-penalty",50)) / 100);
 				iitem = g_list_next(iitem);
 			}
 
