@@ -1,7 +1,8 @@
 
 gsettings_in_files = \
     com.canonical.indicator.appmenu.gschema.xml.in \
-    com.canonical.indicator.appmenu.hud.gschema.xml.in
+    com.canonical.indicator.appmenu.hud.gschema.xml.in \
+    com.canonical.indicator.appmenu.hud.search.gschema.xml.in
 
 gsettings_SCHEMAS = \
 	$(gsettings_in_files:.xml.in=.xml)
