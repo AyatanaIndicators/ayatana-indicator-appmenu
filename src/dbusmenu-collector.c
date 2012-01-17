@@ -44,6 +44,7 @@ struct _DbusmenuCollectorPrivate {
 	guint signal;
 	GHashTable * hash;
 	IndicatorTracker * tracker;
+	GSettings * search_settings;
 };
 
 struct _DbusmenuCollectorFound {
@@ -105,6 +106,7 @@ dbusmenu_collector_init (DbusmenuCollector *self)
 	self->priv->signal = 0;
 	self->priv->hash = NULL;
 	self->priv->tracker = NULL;
+	self->priv->search_settings = NULL;
 
 	self->priv->hash = g_hash_table_new_full(menu_hash_func, menu_equal_func,
 	                                         menu_key_destroy, g_object_unref /* DbusmenuClient */);
@@ -157,6 +159,11 @@ dbusmenu_collector_dispose (GObject *object)
 	if (collector->priv->tracker != NULL) {
 		g_object_unref(collector->priv->tracker);
 		collector->priv->tracker = NULL;
+	}
+
+	if (collector->priv->search_settings != NULL) {
+		g_object_unref(collector->priv->search_settings);
+		collector->priv->search_settings = NULL;
 	}
 
 	G_OBJECT_CLASS (dbusmenu_collector_parent_class)->dispose (object);
