@@ -32,7 +32,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "dbusmenu-collector.h"
 #include "distance.h"
-#include "indicator-tracker.h"
 #include "shared-values.h"
 #include "utils.h"
 
@@ -44,7 +43,6 @@ struct _DbusmenuCollectorPrivate {
 	GDBusConnection * bus;
 	guint signal;
 	GHashTable * hash;
-	IndicatorTracker * tracker;
 	GSettings * search_settings;
 };
 
@@ -106,7 +104,6 @@ dbusmenu_collector_init (DbusmenuCollector *self)
 	self->priv->bus = NULL;
 	self->priv->signal = 0;
 	self->priv->hash = NULL;
-	self->priv->tracker = NULL;
 	self->priv->search_settings = NULL;
 
 	if (settings_schema_exists("com.canonical.indicator.appmenu.hud.search")) {
@@ -141,8 +138,6 @@ dbusmenu_collector_init (DbusmenuCollector *self)
 		g_error_free(error);
 	}
 
-	self->priv->tracker = indicator_tracker_new();
-
 	return;
 }
 
@@ -159,11 +154,6 @@ dbusmenu_collector_dispose (GObject *object)
 	if (collector->priv->hash != NULL) {
 		g_hash_table_destroy(collector->priv->hash);
 		collector->priv->hash = NULL;
-	}
-
-	if (collector->priv->tracker != NULL) {
-		g_object_unref(collector->priv->tracker);
-		collector->priv->tracker = NULL;
 	}
 
 	if (collector->priv->search_settings != NULL) {
@@ -467,57 +457,23 @@ just_do_it (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar 
 	return results;
 }
 
-static gint
-dbusmenu_collector_found_sort (gconstpointer a, gconstpointer b)
-{
-	DbusmenuCollectorFound * founda;
-	DbusmenuCollectorFound * foundb;
-
-	founda = (DbusmenuCollectorFound *)a;
-	foundb = (DbusmenuCollectorFound *)b;
-
-	return dbusmenu_collector_found_get_distance(founda) - dbusmenu_collector_found_get_distance(foundb);
-}
-
 GList *
-dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, const gchar * search)
+dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, const gchar * prefix, const gchar * search)
 {
 	GList * items = NULL;
+	GStrv prefixarray = NULL;
+	gchar * localprefixarray[2];
+
+	if (prefix != NULL) {
+		prefixarray = localprefixarray;
+
+		prefixarray[0] = (gchar *)prefix;
+		prefixarray[1] = NULL;
+	}
 
 	if (dbus_addr != NULL && dbus_path != NULL) {
-		items = just_do_it(collector, dbus_addr, dbus_path, search, NULL, NULL, NULL);
+		items = just_do_it(collector, dbus_addr, dbus_path, search, NULL, NULL, prefixarray);
 	}
-
-	/* This is where we'll do the indicators if we're not
-	   looking at the null search.  In that case we'll let
-	   the client take over. */
-	if (search != NULL && search[0] != '\0') {
-		GList * indicators = indicator_tracker_get_indicators(collector->priv->tracker);
-		GList * lindicator = NULL;
-		for (lindicator = indicators; lindicator != NULL; lindicator = g_list_next(lindicator)) {
-			IndicatorTrackerIndicator * indicator = (IndicatorTrackerIndicator *)lindicator->data;
-
-			gchar * array[2];
-			array[0] = indicator->prefix;
-			array[1] = NULL;
-
-			GList * iitems = just_do_it(collector, indicator->dbus_name, indicator->dbus_object, search, NULL, indicator->name, array);
-
-			/* Increase indicator's distance by 50% */
-			GList * iitem = iitems;
-			while (iitem != NULL) {
-				DbusmenuCollectorFound * found = (DbusmenuCollectorFound *)iitem->data;
-				found->distance = found->distance + ((found->distance * get_settings_uint(collector->priv->search_settings, "indicator-penalty",50)) / 100);
-				iitem = g_list_next(iitem);
-			}
-
-			items = g_list_concat(items, iitems);
-		}
-
-		g_list_free(indicators);
-	}
-
-	items = g_list_sort(items, dbusmenu_collector_found_sort);
 
 	return items;
 }
@@ -561,6 +517,14 @@ dbusmenu_collector_found_get_distance (DbusmenuCollectorFound * found)
 {
 	g_return_val_if_fail(found != NULL, G_MAXUINT);
 	return found->distance;
+}
+
+void
+dbusmenu_collector_found_set_distance (DbusmenuCollectorFound * found, guint distance)
+{
+	g_return_if_fail(found != NULL);
+	found->distance = distance;
+	return;
 }
 
 const gchar *

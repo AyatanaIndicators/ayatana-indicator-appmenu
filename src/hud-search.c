@@ -29,6 +29,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include "hud-search.h"
 #include "dbusmenu-collector.h"
+#include "indicator-tracker.h"
 #include "usage-tracker.h"
 #include "utils.h"
 
@@ -45,6 +46,8 @@ struct _HudSearchPrivate {
 	GDBusProxy * appmenu;
 
 	GSettings * search_settings;
+
+	IndicatorTracker * tracker;
 };
 
 #define HUD_SEARCH_GET_PRIVATE(o) \
@@ -87,11 +90,15 @@ hud_search_init (HudSearch *self)
 	self->priv->usage = NULL;
 	self->priv->appmenu = NULL;
 	self->priv->search_settings = NULL;
+	self->priv->tracker = NULL;
 
 	/* Settings */
 	if (settings_schema_exists("com.canonical.indicator.appmenu.hud.search")) {
 		self->priv->search_settings = g_settings_new("com.canonical.indicator.appmenu.hud.search");
 	}
+
+	/* Indicator Tracker */
+	self->priv->tracker = indicator_tracker_new();
 
 	/* BAMF */
 	self->priv->matcher = bamf_matcher_get_default();
@@ -129,6 +136,11 @@ hud_search_dispose (GObject *object)
 	if (self->priv->search_settings != NULL) {
 		g_object_unref(self->priv->search_settings);
 		self->priv->search_settings = NULL;
+	}
+
+	if (self->priv->tracker != NULL) {
+		g_object_unref(self->priv->tracker);
+		self->priv->tracker = NULL;
 	}
 
 	if (self->priv->window_changed_sig != 0) {
@@ -272,15 +284,43 @@ search_and_sort (HudSearch * search, const gchar * searchstr, GArray * usagedata
 	guint count = 0;
 
 	get_current_window_address(search, &address, &path);
-	found_list = dbusmenu_collector_search(search->priv->collector, address, path, searchstr);
+	found_list = dbusmenu_collector_search(search->priv->collector, address, path, NULL, searchstr);
 
 	g_free(address);
 	g_free(path);
 
 	/* Copy the found list into the array */
 	found_list_to_usage_array(search, found_list, usagedata);
+	*foundlist = g_list_concat(*foundlist, found_list);
 
-	/* TODO: Add indicators */
+	/* Add items from the indicators */
+	if (search->priv->tracker != NULL) {
+		GList * indicators = indicator_tracker_get_indicators(search->priv->tracker);
+		GList * lindicator = NULL;
+
+		for (lindicator = indicators; lindicator != NULL; lindicator = g_list_next(lindicator)) {
+			IndicatorTrackerIndicator * indicator = (IndicatorTrackerIndicator *)lindicator->data;
+
+			/* Search the menu items of the indicator */
+			found_list = dbusmenu_collector_search(search->priv->collector, indicator->dbus_name, indicator->dbus_object, indicator->prefix, searchstr);
+
+			/* Increase distance */
+			GList * founditem = found_list;
+			while (founditem != NULL) {
+				DbusmenuCollectorFound * found = (DbusmenuCollectorFound *)founditem->data;
+				guint distance = dbusmenu_collector_found_get_distance(found);
+				distance = distance + ((distance * get_settings_uint(search->priv->search_settings, "indicator-penalty",50)) / 100);
+				dbusmenu_collector_found_set_distance(found, distance);
+				founditem = g_list_next(founditem);
+			}
+
+			found_list_to_usage_array(search, found_list, usagedata);
+			
+			*foundlist = g_list_concat(*foundlist, found_list);
+		}
+
+		g_list_free(indicators);
+	}
 
 	/* Sort the list */
 	g_array_sort(usagedata, distance_sort);
@@ -332,7 +372,7 @@ search_and_sort (HudSearch * search, const gchar * searchstr, GArray * usagedata
 
 	/* Sort based on agregate */
 	g_array_sort(usagedata, usage_sort);
-	*foundlist = found_list;
+
 	return;
 }
 
