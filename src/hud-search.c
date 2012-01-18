@@ -215,6 +215,7 @@ struct _usage_wrapper_t {
 	gfloat percent_distance;
 };
 
+/* Sort the usage data based on the percentages */
 static gint
 usage_sort (gconstpointer a, gconstpointer b)
 {
@@ -228,25 +229,24 @@ usage_sort (gconstpointer a, gconstpointer b)
 	return (gint)difference;
 }
 
-static void
-search_and_sort (HudSearch * search, const gchar * searchstr, GArray * usagedata, GList ** foundlist)
+/* Sort the array based on the distance in the found object */
+static gint
+distance_sort (gconstpointer a, gconstpointer b)
 {
-	gchar * address = NULL;
-	gchar * path = NULL;
-	GList * found_list = NULL;
-	guint count = 0;
+	usage_wrapper_t * wa = (usage_wrapper_t *)a;
+	usage_wrapper_t * wb = (usage_wrapper_t *)b;
+
+	return dbusmenu_collector_found_get_distance(wa->found) - dbusmenu_collector_found_get_distance(wb->found);
+}
+
+/* Take the found list and put it into the usage array so that
+   we can start to work with it. */
+static void
+found_list_to_usage_array (HudSearch * search, GList * found_list, GArray * usagedata)
+{
 	GList * found = NULL;
-
-	get_current_window_address(search, &address, &path);
-	found_list = dbusmenu_collector_search(search->priv->collector, address, path, searchstr);
-
-	g_free(address);
-	g_free(path);
-
-	count = 0;
 	found = found_list;
-	guint overall_usage = 0;
-	guint overall_distance = 0;
+
 	while (found != NULL) {
 		usage_wrapper_t usage;
 		usage.found = (DbusmenuCollectorFound *)found->data;
@@ -256,29 +256,68 @@ search_and_sort (HudSearch * search, const gchar * searchstr, GArray * usagedata
 			break;
 		}
 
+		g_array_append_val(usagedata, usage);
+		found = g_list_next(found);
+	}
+
+	return;
+}
+
+static void
+search_and_sort (HudSearch * search, const gchar * searchstr, GArray * usagedata, GList ** foundlist)
+{
+	gchar * address = NULL;
+	gchar * path = NULL;
+	GList * found_list = NULL;
+	guint count = 0;
+
+	get_current_window_address(search, &address, &path);
+	found_list = dbusmenu_collector_search(search->priv->collector, address, path, searchstr);
+
+	g_free(address);
+	g_free(path);
+
+	/* Copy the found list into the array */
+	found_list_to_usage_array(search, found_list, usagedata);
+
+	/* TODO: Add indicators */
+
+	/* Sort the list */
+	g_array_sort(usagedata, distance_sort);
+
+	/* Drop all but the first few */
+	if (usagedata->len > 15) {
+		usagedata = g_array_remove_range(usagedata, 15, usagedata->len - 15);
+	}
+
+	/* Get usage data */
+	for (count = 0; count < usagedata->len; count++) {
+		usage_wrapper_t * usage = &g_array_index(usagedata, usage_wrapper_t, count);
+
 		const gchar * desktopfile = NULL;
 
-		desktopfile = dbusmenu_collector_found_get_indicator(usage.found);
+		desktopfile = dbusmenu_collector_found_get_indicator(usage->found);
 
 		if (desktopfile == NULL && search->priv->active_app != NULL) {
 			desktopfile = bamf_application_get_desktop_file(search->priv->active_app);
 		}
 
 		if (desktopfile != NULL) {
-			usage.count = usage_tracker_get_usage(search->priv->usage, desktopfile, dbusmenu_collector_found_get_db(usage.found));
-		}
-
-		overall_usage += usage.count;
-		overall_distance += dbusmenu_collector_found_get_distance(usage.found);
-
-		g_array_append_val(usagedata, usage);
-		found = g_list_next(found);
-		count++;
-		if (count >= 15) {
-			break;
+			usage->count = usage_tracker_get_usage(search->priv->usage, desktopfile, dbusmenu_collector_found_get_db(usage->found));
 		}
 	}
 
+	/* Calculate overall */
+	guint overall_usage = 0;
+	guint overall_distance = 0;
+	for (count = 0; count < usagedata->len; count++) {
+		usage_wrapper_t * usage = &g_array_index(usagedata, usage_wrapper_t, count);
+		overall_usage += usage->count;
+		overall_distance += dbusmenu_collector_found_get_distance(usage->found);
+	}
+
+
+	/* Build percentages */
 	for (count = 0; count < usagedata->len; count++) {
 		usage_wrapper_t * usage = &g_array_index(usagedata, usage_wrapper_t, count);
 
@@ -291,6 +330,7 @@ search_and_sort (HudSearch * search, const gchar * searchstr, GArray * usagedata
 		usage->percent_distance = (gfloat)dbusmenu_collector_found_get_distance(usage->found)/(gfloat)overall_distance;
 	}
 
+	/* Sort based on agregate */
 	g_array_sort(usagedata, usage_sort);
 	*foundlist = found_list;
 	return;
