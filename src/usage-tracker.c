@@ -262,7 +262,7 @@ usage_tracker_mark_usage (UsageTracker * self, const gchar * application, const 
 	                           statement,
 	                           NULL, NULL, &failstring);
 	if (exec_status != SQLITE_OK) {
-		g_warning("Unable to insert into table: %s", failstring);
+		g_warning("Unable to insert into table: '%s'  statement: '%s'", failstring, statement);
 	}
 
 	g_free(statement);
@@ -297,7 +297,7 @@ usage_tracker_get_usage (UsageTracker * self, const gchar * application, const g
 	                           statement,
 	                           count_cb, &count, &failstring);
 	if (exec_status != SQLITE_OK) {
-		g_warning("Unable to insert into table: %s", failstring);
+		g_warning("Unable to get count from table: '%s'  statement: '%s'", failstring, statement);
 	}
 
 	g_free(statement);
@@ -343,7 +343,7 @@ check_app_init (UsageTracker * self, const gchar * application)
 	                           statement,
 	                           count_cb, &count, &failstring);
 	if (exec_status != SQLITE_OK) {
-		g_warning("Unable to insert into table: %s", failstring);
+		g_warning("Unable to get app count from table: '%s'  statement: '%s'", failstring, statement);
 	}
 
 	g_free(statement);
