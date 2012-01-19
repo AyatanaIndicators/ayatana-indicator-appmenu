@@ -39,7 +39,6 @@ struct _UsageTrackerPrivate {
 	GSettings * settings;
 
 	/* SQL Statements */
-	sqlite3_stmt * create_db;
 	sqlite3_stmt * insert_entry;
 	sqlite3_stmt * entry_count;
 	sqlite3_stmt * delete_aged;
@@ -94,7 +93,6 @@ usage_tracker_init (UsageTracker *self)
 	self->priv->drop_timer = 0;
 	self->priv->settings = NULL;
 
-	self->priv->create_db = NULL;
 	self->priv->insert_entry = NULL;
 	self->priv->entry_count = NULL;
 	self->priv->delete_aged = NULL;
@@ -153,11 +151,6 @@ usage_tracker_finalize (GObject *object)
 static void
 cleanup_db (UsageTracker * self)
 {
-	if (self->priv->create_db != NULL) {
-		sqlite3_finalize(self->priv->create_db);
-		self->priv->create_db = NULL;
-	}
-
 	if (self->priv->insert_entry != NULL) {
 		sqlite3_finalize(self->priv->insert_entry);
 		self->priv->insert_entry = NULL;
@@ -292,25 +285,12 @@ prepare_statements (UsageTracker * self)
 	}
 
 	/* These should never happen, but let's just check to make sure */
-	g_return_if_fail(self->priv->create_db == NULL);
 	g_return_if_fail(self->priv->insert_entry == NULL);
 	g_return_if_fail(self->priv->entry_count == NULL);
 	g_return_if_fail(self->priv->delete_aged == NULL);
 	g_return_if_fail(self->priv->application_count == NULL);
 
 	int prepare_status = SQLITE_OK;
-
-	/* Create Statement */
-	prepare_status = sqlite3_prepare_v2(self->priv->db,
-	                                    "create table usage (application text, entry text, timestamp datetime);",
-	                                    -1, /* length */
-	                                    &(self->priv->create_db),
-	                                    NULL); /* unused stmt */
-
-	if (prepare_status != SQLITE_OK) {
-		g_warning("Unable to prepare create statement");
-		self->priv->create_db = NULL;
-	}
 
 	/* Insert Statement */
 	prepare_status = sqlite3_prepare_v2(self->priv->db,
