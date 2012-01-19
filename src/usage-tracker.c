@@ -37,7 +37,22 @@ struct _UsageTrackerPrivate {
 	sqlite3 * db;
 	guint drop_timer;
 	GSettings * settings;
+
+	/* SQL Statements */
+	sqlite3_stmt * create_db;
+	sqlite3_stmt * insert_entry;
+	sqlite3_stmt * entry_count;
+	sqlite3_stmt * delete_aged;
+	sqlite3_stmt * application_count;
 };
+
+typedef enum {
+	SQL_VAR_APPLICATION,
+	SQL_VAR_ENTRY
+} sql_variables;
+
+#define SQL_VARS_APPLICATION  ("\"" # SQL_VAR_APPLICATION # "\"")
+#define SQL_VARS_ENTRY  ("\"" # SQL_VAR_ENTRY # "\"")
 
 #define USAGE_TRACKER_GET_PRIVATE(o) \
 (G_TYPE_INSTANCE_GET_PRIVATE ((o), USAGE_TRACKER_TYPE, UsageTrackerPrivate))
@@ -77,6 +92,12 @@ usage_tracker_init (UsageTracker *self)
 	self->priv->drop_timer = 0;
 	self->priv->settings = NULL;
 
+	self->priv->create_db = NULL;
+	self->priv->insert_entry = NULL;
+	self->priv->entry_count = NULL;
+	self->priv->delete_aged = NULL;
+	self->priv->application_count = NULL;
+
 	if (settings_schema_exists("com.canonical.indicator.appmenu.hud")) {
 		self->priv->settings = g_settings_new("com.canonical.indicator.appmenu.hud");
 		g_signal_connect(self->priv->settings, "changed::store-usage-data", G_CALLBACK(usage_setting_changed), self);
@@ -94,6 +115,31 @@ static void
 usage_tracker_dispose (GObject *object)
 {
 	UsageTracker * self = USAGE_TRACKER(object);
+
+	if (self->priv->create_db != NULL) {
+		sqlite3_finalize(self->priv->create_db);
+		self->priv->create_db = NULL;
+	}
+
+	if (self->priv->insert_entry != NULL) {
+		sqlite3_finalize(self->priv->insert_entry);
+		self->priv->insert_entry = NULL;
+	}
+
+	if (self->priv->entry_count != NULL) {
+		sqlite3_finalize(self->priv->entry_count);
+		self->priv->entry_count = NULL;
+	}
+
+	if (self->priv->delete_aged != NULL) {
+		sqlite3_finalize(self->priv->delete_aged);
+		self->priv->delete_aged = NULL;
+	}
+
+	if (self->priv->application_count != NULL) {
+		sqlite3_finalize(self->priv->application_count);
+		self->priv->application_count = NULL;
+	}
 
 	if (self->priv->db != NULL) {
 		sqlite3_close(self->priv->db);
