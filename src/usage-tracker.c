@@ -404,20 +404,20 @@ usage_tracker_get_usage (UsageTracker * self, const gchar * application, const g
 	g_return_val_if_fail(IS_USAGE_TRACKER(self), 0);
 	check_app_init(self, application);
 
-	gchar * statement = g_strdup_printf("select count(*) from usage where application = '%s' and entry = '%s' and timestamp > date('now', 'utc', '-30 days');", application, entry); // TODO: Add timestamp
-	// g_debug("Executing: %s", statement);
+	sqlite3_bind_text(self->priv->entry_count, SQL_VAR_APPLICATION, application, -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(self->priv->entry_count, SQL_VAR_ENTRY, entry, -1, SQLITE_TRANSIENT);
 
-	int exec_status = SQLITE_OK;
-	gchar * failstring = NULL;
-	guint count;
-	exec_status = sqlite3_exec(self->priv->db,
-	                           statement,
-	                           count_cb, &count, &failstring);
-	if (exec_status != SQLITE_OK) {
-		g_warning("Unable to insert into table: %s", failstring);
+	int exec_status = SQLITE_ROW;
+	guint count = 0;
+
+	while ((exec_status = sqlite3_step(self->priv->entry_count)) == SQLITE_ROW) {
+		count = sqlite3_column_int(self->priv->entry_count, 0);
 	}
 
-	g_free(statement);
+	if (exec_status != SQLITE_DONE) {
+		g_warning("Unknown status from executing entry_count: %d", exec_status);
+	}
+
 	return count;
 }
 
