@@ -61,6 +61,7 @@ static void usage_tracker_class_init (UsageTrackerClass *klass);
 static void usage_tracker_init       (UsageTracker *self);
 static void usage_tracker_dispose    (GObject *object);
 static void usage_tracker_finalize   (GObject *object);
+static void cleanup_db               (UsageTracker * self);
 static void configure_db             (UsageTracker * self);
 static void usage_setting_changed    (GSettings * settings, const gchar * key, gpointer user_data);
 static void build_db                 (UsageTracker * self);
@@ -116,6 +117,41 @@ usage_tracker_dispose (GObject *object)
 {
 	UsageTracker * self = USAGE_TRACKER(object);
 
+	cleanup_db(self);
+
+	if (self->priv->drop_timer != 0) {
+		g_source_remove(self->priv->drop_timer);
+		self->priv->drop_timer = 0;
+	}
+
+	if (self->priv->settings != NULL) {
+		g_object_unref(self->priv->settings);
+		self->priv->settings = NULL;
+	}
+
+	G_OBJECT_CLASS (usage_tracker_parent_class)->dispose (object);
+	return;
+}
+
+static void
+usage_tracker_finalize (GObject *object)
+{
+	UsageTracker * self = USAGE_TRACKER(object);
+
+	if (self->priv->cachefile != NULL) {
+		g_free(self->priv->cachefile);
+		self->priv->cachefile = NULL;
+	}
+
+	G_OBJECT_CLASS (usage_tracker_parent_class)->finalize (object);
+	return;
+}
+
+/* Small function to make sure we get all the DB components cleaned
+   up in the spaces we need them */
+static void
+cleanup_db (UsageTracker * self)
+{
 	if (self->priv->create_db != NULL) {
 		sqlite3_finalize(self->priv->create_db);
 		self->priv->create_db = NULL;
@@ -146,31 +182,6 @@ usage_tracker_dispose (GObject *object)
 		self->priv->db = NULL;
 	}
 
-	if (self->priv->drop_timer != 0) {
-		g_source_remove(self->priv->drop_timer);
-		self->priv->drop_timer = 0;
-	}
-
-	if (self->priv->settings != NULL) {
-		g_object_unref(self->priv->settings);
-		self->priv->settings = NULL;
-	}
-
-	G_OBJECT_CLASS (usage_tracker_parent_class)->dispose (object);
-	return;
-}
-
-static void
-usage_tracker_finalize (GObject *object)
-{
-	UsageTracker * self = USAGE_TRACKER(object);
-
-	if (self->priv->cachefile != NULL) {
-		g_free(self->priv->cachefile);
-		self->priv->cachefile = NULL;
-	}
-
-	G_OBJECT_CLASS (usage_tracker_parent_class)->finalize (object);
 	return;
 }
 
@@ -197,10 +208,7 @@ static void
 configure_db (UsageTracker * self)
 {
 	/* Removing the previous database */
-	if (self->priv->db != NULL) {
-		sqlite3_close(self->priv->db);
-		self->priv->db = NULL;
-	}
+	cleanup_db(self);
 
 	if (self->priv->cachefile != NULL) {
 		g_free(self->priv->cachefile);
