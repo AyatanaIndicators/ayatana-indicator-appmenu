@@ -370,32 +370,18 @@ usage_tracker_mark_usage (UsageTracker * self, const gchar * application, const 
 	g_return_if_fail(IS_USAGE_TRACKER(self));
 	check_app_init(self, application);
 
-	gchar * statement = g_strdup_printf("insert into usage (application, entry, timestamp) values ('%s', '%s', date('now'));", application, entry);
-	// g_debug("Executing: %s", statement);
+	sqlite3_bind_text(self->priv->entry_count, SQL_VAR_APPLICATION, application, -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(self->priv->entry_count, SQL_VAR_ENTRY, entry, -1, SQLITE_TRANSIENT);
 
-	int exec_status = SQLITE_OK;
-	gchar * failstring = NULL;
-	exec_status = sqlite3_exec(self->priv->db,
-	                           statement,
-	                           NULL, NULL, &failstring);
-	if (exec_status != SQLITE_OK) {
-		g_warning("Unable to insert into table: %s", failstring);
+	int exec_status = SQLITE_ROW;
+	while ((exec_status = sqlite3_step(self->priv->insert_entry)) == SQLITE_ROW) {
 	}
 
-	g_free(statement);
+	if (exec_status != SQLITE_DONE) {
+		g_warning("Unknown status from executing insert_entry: %d", exec_status);
+	}
+
 	return;
-}
-
-static int
-count_cb (void * user_data, int columns, char ** values, char ** names)
-{
-	g_return_val_if_fail(columns == 1, -1);
-
-	guint * count = (guint *)user_data;
-
-	*count = g_ascii_strtoull(values[0], NULL, 10);
-
-	return SQLITE_OK;
 }
 
 guint
@@ -433,16 +419,12 @@ drop_entries (gpointer user_data)
 		return TRUE;
 	}
 
-	const gchar * statement = "delete from usage where timestamp < date('now', 'utc', '-30 days');";
-	// g_debug("Executing: %s", statement);
+	int exec_status = SQLITE_ROW;
+	while ((exec_status = sqlite3_step(self->priv->delete_aged)) == SQLITE_ROW) {
+	}
 
-	int exec_status = SQLITE_OK;
-	gchar * failstring = NULL;
-	exec_status = sqlite3_exec(self->priv->db,
-	                           statement,
-	                           NULL, NULL, &failstring);
-	if (exec_status != SQLITE_OK) {
-		g_warning("Unable to drop entries from table: %s", failstring);
+	if (exec_status != SQLITE_DONE) {
+		g_warning("Unknown status from executing delete_aged: %d", exec_status);
 	}
 
 	return TRUE;
@@ -451,19 +433,18 @@ drop_entries (gpointer user_data)
 static void
 check_app_init (UsageTracker * self, const gchar * application)
 {
-	gchar * statement = g_strdup_printf("select count(*) from usage where application = '%s';", application);
+	sqlite3_bind_text(self->priv->entry_count, SQL_VAR_APPLICATION, application, -1, SQLITE_TRANSIENT);
 
-	int exec_status = SQLITE_OK;
-	gchar * failstring = NULL;
+	int exec_status = SQLITE_ROW;
 	guint count = 0;
-	exec_status = sqlite3_exec(self->priv->db,
-	                           statement,
-	                           count_cb, &count, &failstring);
-	if (exec_status != SQLITE_OK) {
-		g_warning("Unable to insert into table: %s", failstring);
+
+	while ((exec_status = sqlite3_step(self->priv->application_count)) == SQLITE_ROW) {
+		count = sqlite3_column_int(self->priv->entry_count, 0);
 	}
 
-	g_free(statement);
+	if (exec_status != SQLITE_DONE) {
+		g_warning("Unknown status from executing application_count: %d", exec_status);
+	}
 
 	if (count > 0) {
 		return;
