@@ -47,12 +47,12 @@ struct _UsageTrackerPrivate {
 };
 
 typedef enum {
-	SQL_VAR_APPLICATION,
-	SQL_VAR_ENTRY
+	SQL_VAR_APPLICATION = 1,
+	SQL_VAR_ENTRY = 2
 } sql_variables;
 
-#define SQL_VARS_APPLICATION  ("\"" # SQL_VAR_APPLICATION # "\"")
-#define SQL_VARS_ENTRY  ("\"" # SQL_VAR_ENTRY # "\"")
+#define SQL_VARS_APPLICATION  "1"
+#define SQL_VARS_ENTRY        "2"
 
 #define USAGE_TRACKER_GET_PRIVATE(o) \
 (G_TYPE_INSTANCE_GET_PRIVATE ((o), USAGE_TRACKER_TYPE, UsageTrackerPrivate))
@@ -63,6 +63,7 @@ static void usage_tracker_dispose    (GObject *object);
 static void usage_tracker_finalize   (GObject *object);
 static void cleanup_db               (UsageTracker * self);
 static void configure_db             (UsageTracker * self);
+static void prepare_statements       (UsageTracker * self);
 static void usage_setting_changed    (GSettings * settings, const gchar * key, gpointer user_data);
 static void build_db                 (UsageTracker * self);
 static gboolean drop_entries         (gpointer user_data);
@@ -271,11 +272,93 @@ configure_db (UsageTracker * self)
 		}
 	}
 
+	prepare_statements(self);
+
 	if (self->priv->db != NULL && !db_exists) {
 		build_db(self);
 	}
 
 	drop_entries(self);
+
+	return;
+}
+
+/* Build all the prepared statments */
+static void
+prepare_statements (UsageTracker * self)
+{
+	if (self->priv->db == NULL) {
+		return;
+	}
+
+	/* These should never happen, but let's just check to make sure */
+	g_return_if_fail(self->priv->create_db == NULL);
+	g_return_if_fail(self->priv->insert_entry == NULL);
+	g_return_if_fail(self->priv->entry_count == NULL);
+	g_return_if_fail(self->priv->delete_aged == NULL);
+	g_return_if_fail(self->priv->application_count == NULL);
+
+	int prepare_status = SQLITE_OK;
+
+	/* Create Statement */
+	prepare_status = sqlite3_prepare_v2(self->priv->db,
+	                                    "create table usage (application text, entry text, timestamp datetime);",
+	                                    -1, /* length */
+	                                    &(self->priv->create_db),
+	                                    NULL); /* unused stmt */
+
+	if (prepare_status != SQLITE_OK) {
+		g_warning("Unable to prepare create statement");
+		self->priv->create_db = NULL;
+	}
+
+	/* Insert Statement */
+	prepare_status = sqlite3_prepare_v2(self->priv->db,
+	                                    "insert into usage (application, entry, timestamp) values (?" SQL_VARS_APPLICATION ", ?" SQL_VARS_ENTRY ", date('now', 'utc'));",
+	                                    -1, /* length */
+	                                    &(self->priv->insert_entry),
+	                                    NULL); /* unused stmt */
+
+	if (prepare_status != SQLITE_OK) {
+		g_warning("Unable to prepare insert entry statement");
+		self->priv->insert_entry = NULL;
+	}
+
+	/* Entry Count Statement */
+	prepare_status = sqlite3_prepare_v2(self->priv->db,
+	                                    "select count(*) from usage where application = ?" SQL_VARS_APPLICATION " and entry = ?" SQL_VARS_ENTRY " and timestamp > date('now', 'utc', '-30 days');",
+	                                    -1, /* length */
+	                                    &(self->priv->entry_count),
+	                                    NULL); /* unused stmt */
+
+	if (prepare_status != SQLITE_OK) {
+		g_warning("Unable to prepare entry count statement");
+		self->priv->entry_count = NULL;
+	}
+
+	/* Delete Aged Statement */
+	prepare_status = sqlite3_prepare_v2(self->priv->db,
+	                                    "delete from usage where timestamp < date('now', 'utc', '-30 days');",
+	                                    -1, /* length */
+	                                    &(self->priv->delete_aged),
+	                                    NULL); /* unused stmt */
+
+	if (prepare_status != SQLITE_OK) {
+		g_warning("Unable to prepare delete aged statement");
+		self->priv->delete_aged = NULL;
+	}
+
+	/* Application Count Statement */
+	prepare_status = sqlite3_prepare_v2(self->priv->db,
+	                                    "select count(*) from usage where application = '" SQL_VARS_APPLICATION "';",
+	                                    -1, /* length */
+	                                    &(self->priv->application_count),
+	                                    NULL); /* unused stmt */
+
+	if (prepare_status != SQLITE_OK) {
+		g_warning("Unable to prepare application count statement");
+		self->priv->application_count = NULL;
+	}
 
 	return;
 }
