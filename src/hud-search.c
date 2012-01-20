@@ -433,7 +433,11 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 
 	/* This should ignore most of the windows involved in Unity */
 	const gchar * name = bamf_view_get_name(newview);
-	if (g_strcmp0(name, "DNDCollectionWindow") == 0) {
+	if (g_strcmp0(name, "DNDCollectionWindow") == 0
+	    || g_strcmp0(name, "launcher") == 0
+	    || g_strcmp0(name, "dash") == 0
+	    || g_strcmp0(name, "panel") == 0
+	    || g_strcmp0(name, "hud") == 0) {
 		return;
 	}
 
