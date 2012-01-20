@@ -265,11 +265,11 @@ configure_db (UsageTracker * self)
 		}
 	}
 
-	prepare_statements(self);
-
 	if (self->priv->db != NULL && !db_exists) {
 		build_db(self);
 	}
+
+	prepare_statements(self);
 
 	drop_entries(self);
 
