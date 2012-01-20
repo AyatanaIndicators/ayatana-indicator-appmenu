@@ -275,14 +275,18 @@ found_list_to_usage_array (HudSearch * search, GList * found_list, GArray * usag
 	return;
 }
 
+/* Looks through the menus of the currently focused application
+   for the search string */
 static void
-search_and_sort (HudSearch * search, const gchar * searchstr, GArray * usagedata, GList ** foundlist)
+search_current_app (HudSearch * search, const gchar * searchstr, GArray * usagedata, GList ** foundlist)
 {
-	const gchar * desktop_file = NULL;
+	if (search->priv->active_app == NULL) {
+		return;
+	}
+
 	gchar * address = NULL;
 	gchar * path = NULL;
 	GList * found_list = NULL;
-	guint count = 0;
 
 	get_current_window_address(search, &address, &path);
 	found_list = dbusmenu_collector_search(search->priv->collector, address, path, NULL, searchstr);
@@ -291,9 +295,7 @@ search_and_sort (HudSearch * search, const gchar * searchstr, GArray * usagedata
 	g_free(path);
 
 	/* Set the name for the application */
-	if (desktop_file == NULL && search->priv->active_app != NULL) {
-		desktop_file = bamf_application_get_desktop_file(search->priv->active_app);
-	}
+	const gchar * desktop_file = bamf_application_get_desktop_file(search->priv->active_app);
 
 	if (desktop_file != NULL) {
 		GList * founditem = found_list;
@@ -309,40 +311,65 @@ search_and_sort (HudSearch * search, const gchar * searchstr, GArray * usagedata
 	found_list_to_usage_array(search, found_list, usagedata);
 	*foundlist = g_list_concat(*foundlist, found_list);
 
-	/* Add items from the indicators */
-	if (search->priv->tracker != NULL) {
-		GList * indicators = indicator_tracker_get_indicators(search->priv->tracker);
-		GList * lindicator = NULL;
+	return;
+}
 
-		for (lindicator = indicators; lindicator != NULL; lindicator = g_list_next(lindicator)) {
-			IndicatorTrackerIndicator * indicator = (IndicatorTrackerIndicator *)lindicator->data;
+/* Gets each indicator from the tracker and then looks at it's menus
+   with the search string.  It also penalizes the entries by a configurable
+   value compared to what they'd be normally. */
+static void
+search_indicators (HudSearch * search, const gchar * searchstr, GArray * usagedata, GList ** foundlist)
+{
+	if (search->priv->tracker == NULL) {
+		return;
+	}
 
-			/* Search the menu items of the indicator */
-			found_list = dbusmenu_collector_search(search->priv->collector, indicator->dbus_name, indicator->dbus_object, indicator->prefix, searchstr);
+	GList * indicators = indicator_tracker_get_indicators(search->priv->tracker);
+	GList * lindicator = NULL;
 
-			/* Increase distance */
-			GList * founditem = found_list;
-			while (founditem != NULL) {
-				DbusmenuCollectorFound * found = (DbusmenuCollectorFound *)founditem->data;
+	for (lindicator = indicators; lindicator != NULL; lindicator = g_list_next(lindicator)) {
+		IndicatorTrackerIndicator * indicator = (IndicatorTrackerIndicator *)lindicator->data;
 
-				/* Distance */
-				guint distance = dbusmenu_collector_found_get_distance(found);
-				distance = distance + ((distance * get_settings_uint(search->priv->search_settings, "indicator-penalty", 50)) / 100);
-				dbusmenu_collector_found_set_distance(found, distance);
+		/* Search the menu items of the indicator */
+		GList * found_list = dbusmenu_collector_search(search->priv->collector, indicator->dbus_name, indicator->dbus_object, indicator->prefix, searchstr);
 
-				/* Names */
-				dbusmenu_collector_found_set_indicator(found, indicator->name);
+		/* Increase distance */
+		GList * founditem = found_list;
+		while (founditem != NULL) {
+			DbusmenuCollectorFound * found = (DbusmenuCollectorFound *)founditem->data;
 
-				founditem = g_list_next(founditem);
-			}
+			/* Distance */
+			guint distance = dbusmenu_collector_found_get_distance(found);
+			distance = distance + ((distance * get_settings_uint(search->priv->search_settings, "indicator-penalty", 50)) / 100);
+			dbusmenu_collector_found_set_distance(found, distance);
 
-			found_list_to_usage_array(search, found_list, usagedata);
-			
-			*foundlist = g_list_concat(*foundlist, found_list);
+			/* Names */
+			dbusmenu_collector_found_set_indicator(found, indicator->name);
+
+			founditem = g_list_next(founditem);
 		}
 
-		g_list_free(indicators);
+		found_list_to_usage_array(search, found_list, usagedata);
+		
+		*foundlist = g_list_concat(*foundlist, found_list);
 	}
+
+	g_list_free(indicators);
+
+	return;
+}
+
+/* Grabs all the menus items, sorts them, then looks up usage data on
+   the top entries and sorts them again.  Lastly, we have our top
+   entries. */
+static void
+search_and_sort (HudSearch * search, const gchar * searchstr, GArray * usagedata, GList ** foundlist)
+{
+	/* Get all the entries from the current app and the indicators
+	   and put them into the array.  We keep the found list as it
+	   tracks the memory as well. */
+	search_current_app(search, searchstr, usagedata, foundlist);
+	search_indicators(search, searchstr, usagedata, foundlist);
 
 	/* Sort the list */
 	g_array_sort(usagedata, distance_sort);
@@ -353,6 +380,7 @@ search_and_sort (HudSearch * search, const gchar * searchstr, GArray * usagedata
 	}
 
 	/* Get usage data */
+	int count;
 	for (count = 0; count < usagedata->len; count++) {
 		usage_wrapper_t * usage = &g_array_index(usagedata, usage_wrapper_t, count);
 
@@ -390,7 +418,7 @@ search_and_sort (HudSearch * search, const gchar * searchstr, GArray * usagedata
 		usage->percent_distance = (gfloat)dbusmenu_collector_found_get_distance(usage->found)/(gfloat)overall_distance;
 	}
 
-	/* Sort based on agregate */
+	/* Sort based on aggregate */
 	g_array_sort(usagedata, usage_sort);
 
 	return;
