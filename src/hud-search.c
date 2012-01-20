@@ -59,7 +59,7 @@ static void hud_search_dispose    (GObject *object);
 static void hud_search_finalize   (GObject *object);
 
 static void active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * newview, gpointer user_data);
-HudSearchSuggest * hud_search_suggest_new (const gchar * app, const gchar * display, const gchar * db, const gchar * icon, const gchar * dbus_address, const gchar * dbus_path, gint dbus_id);
+HudSearchSuggest * hud_search_suggest_new (const gchar * app, const gchar * app_icon, const gchar * display, const gchar * db, const gchar * icon, const gchar * dbus_address, const gchar * dbus_path, gint dbus_id);
 
 G_DEFINE_TYPE (HudSearch, hud_search, G_TYPE_OBJECT);
 
@@ -478,6 +478,7 @@ hud_search_suggestions (HudSearch * search, const gchar * searchstr, gchar ** de
 		}
 
 		HudSearchSuggest * suggest = hud_search_suggest_new(desktopfile,
+		                                                    "",
 		                                                    dbusmenu_collector_found_get_display(usage->found),
 		                                                    dbusmenu_collector_found_get_db(usage->found),
 		                                                    "none",
@@ -573,17 +574,19 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 
 struct _HudSearchSuggest {
 	gchar * display;
-	gchar * icon;
+	gchar * app_icon;
+	gchar * item_icon;
 	GVariant * key;
 };
 
 HudSearchSuggest *
-hud_search_suggest_new (const gchar * app, const gchar * display, const gchar * db, const gchar * icon, const gchar * dbus_address, const gchar * dbus_path, gint dbus_id)
+hud_search_suggest_new (const gchar * app, const gchar * app_icon, const gchar * display, const gchar * db, const gchar * item_icon, const gchar * dbus_address, const gchar * dbus_path, gint dbus_id)
 {
 	HudSearchSuggest * suggest = g_new0(HudSearchSuggest, 1);
 
 	suggest->display = g_strdup(display);
-	suggest->icon = g_strdup(icon);
+	suggest->app_icon = g_strdup(app_icon);
+	suggest->item_icon = g_strdup(item_icon);
 
 	GVariantBuilder builder;
 	g_variant_builder_init(&builder, G_VARIANT_TYPE_TUPLE);
@@ -600,9 +603,15 @@ hud_search_suggest_new (const gchar * app, const gchar * display, const gchar * 
 }
 
 const gchar *
-hud_search_suggest_get_icon (HudSearchSuggest * suggest)
+hud_search_suggest_get_app_icon (HudSearchSuggest * suggest)
 {
-	return suggest->icon;
+	return suggest->app_icon;
+}
+
+const gchar *
+hud_search_suggest_get_item_icon (HudSearchSuggest * suggest)
+{
+	return suggest->item_icon;
 }
 
 const gchar *
@@ -621,7 +630,8 @@ void
 hud_search_suggest_free (HudSearchSuggest * suggest)
 {
 	g_free(suggest->display);
-	g_free(suggest->icon);
+	g_free(suggest->app_icon);
+	g_free(suggest->item_icon);
 	g_variant_unref(suggest->key);
 	g_free(suggest);
 	return;

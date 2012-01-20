@@ -292,8 +292,8 @@ get_suggestions (HudDbus * self, const gchar * query)
 			GVariantBuilder tuple;
 			g_variant_builder_init(&tuple, G_VARIANT_TYPE_TUPLE);
 			g_variant_builder_add_value(&tuple, g_variant_new_string(hud_search_suggest_get_display(suggest)));
-			g_variant_builder_add_value(&tuple, g_variant_new_string(icon));
-			g_variant_builder_add_value(&tuple, g_variant_new_string(hud_search_suggest_get_icon(suggest)));
+			g_variant_builder_add_value(&tuple, g_variant_new_string(hud_search_suggest_get_app_icon(suggest)));
+			g_variant_builder_add_value(&tuple, g_variant_new_string(hud_search_suggest_get_item_icon(suggest)));
 			g_variant_builder_add_value(&tuple, g_variant_new_string("")); /* complete text */
 			g_variant_builder_add_value(&tuple, g_variant_new_string("")); /* accell */
 			g_variant_builder_add_value(&tuple, hud_search_suggest_get_key(suggest));
