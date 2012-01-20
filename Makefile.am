@@ -1,5 +1,7 @@
 
-SUBDIRS = src
+SUBDIRS = \
+	src \
+	data
 
 if BUILD_TESTS
 SUBDIRS += \
