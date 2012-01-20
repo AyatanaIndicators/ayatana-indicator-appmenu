@@ -330,7 +330,7 @@ prepare_statements (UsageTracker * self)
 
 	/* Application Count Statement */
 	prepare_status = sqlite3_prepare_v2(self->priv->db,
-	                                    "select count(*) from usage where application = '" SQL_VARS_APPLICATION "';",
+	                                    "select count(*) from usage where application = ?" SQL_VARS_APPLICATION ";",
 	                                    -1, /* length */
 	                                    &(self->priv->application_count),
 	                                    NULL); /* unused stmt */
