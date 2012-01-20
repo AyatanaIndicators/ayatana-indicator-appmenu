@@ -572,6 +572,11 @@ app_proxy_new_indicator (IndicatorTracker * self, gint position, const gchar * i
 		normal_name: NULL
 	};
 
+	if (indicator.system.prefix == NULL || indicator.system.prefix[0] == '\0') {
+		g_free(indicator.system.prefix);
+		indicator.system.prefix = g_strdup(_("Unknown Indicator"));
+	}
+
 	g_array_insert_val(self->priv->app_indicators, position, indicator);
 
 	return;
