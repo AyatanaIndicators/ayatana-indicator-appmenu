@@ -300,7 +300,7 @@ prepare_statements (UsageTracker * self)
 	                                    NULL); /* unused stmt */
 
 	if (prepare_status != SQLITE_OK) {
-		g_warning("Unable to prepare insert entry statement");
+		g_warning("Unable to prepare insert entry statement: %s", sqlite3_errmsg(self->priv->db));
 		self->priv->insert_entry = NULL;
 	}
 
@@ -312,7 +312,7 @@ prepare_statements (UsageTracker * self)
 	                                    NULL); /* unused stmt */
 
 	if (prepare_status != SQLITE_OK) {
-		g_warning("Unable to prepare entry count statement");
+		g_warning("Unable to prepare entry count statement: %s", sqlite3_errmsg(self->priv->db));
 		self->priv->entry_count = NULL;
 	}
 
@@ -324,7 +324,7 @@ prepare_statements (UsageTracker * self)
 	                                    NULL); /* unused stmt */
 
 	if (prepare_status != SQLITE_OK) {
-		g_warning("Unable to prepare delete aged statement");
+		g_warning("Unable to prepare delete aged statement: %s", sqlite3_errmsg(self->priv->db));
 		self->priv->delete_aged = NULL;
 	}
 
@@ -336,7 +336,7 @@ prepare_statements (UsageTracker * self)
 	                                    NULL); /* unused stmt */
 
 	if (prepare_status != SQLITE_OK) {
-		g_warning("Unable to prepare application count statement");
+		g_warning("Unable to prepare application count statement: %s", sqlite3_errmsg(self->priv->db));
 		self->priv->application_count = NULL;
 	}
 
