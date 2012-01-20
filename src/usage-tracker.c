@@ -370,8 +370,8 @@ usage_tracker_mark_usage (UsageTracker * self, const gchar * application, const 
 	g_return_if_fail(IS_USAGE_TRACKER(self));
 	check_app_init(self, application);
 
-	sqlite3_bind_text(self->priv->entry_count, SQL_VAR_APPLICATION, application, -1, SQLITE_TRANSIENT);
-	sqlite3_bind_text(self->priv->entry_count, SQL_VAR_ENTRY, entry, -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(self->priv->insert_entry, SQL_VAR_APPLICATION, application, -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(self->priv->insert_entry, SQL_VAR_ENTRY, entry, -1, SQLITE_TRANSIENT);
 
 	int exec_status = SQLITE_ROW;
 	while ((exec_status = sqlite3_step(self->priv->insert_entry)) == SQLITE_ROW) {
