@@ -61,7 +61,7 @@ test-usage-db-simple-test: test-usage-db-simple test-usage-db-simple.sql Makefil
 	@echo mkdir -p indicator-appmenu >> $@
 	@echo cat $(abs_srcdir)/test-usage-db-simple.sql \| sqlite3 indicator-appmenu/hud-usage-log.sqlite >> $@
 	@echo export HUD_CACHE_DIR=\`pwd\` >> $@
-	@echo gtester --verbose -k -o $(USAGE_DB_SIMPLE_XML_REPORT) $(abs_builddir)/test-usage-db-simple >> $@
+	@echo gtester --verbose -k -o $(abs_builddir)/$(USAGE_DB_SIMPLE_XML_REPORT) $(abs_builddir)/test-usage-db-simple >> $@
 	@echo cd .. >> $@
 	@echo rm -rf test-usage-db-simple.dir.\* >> $@
 	@chmod +x $@
@@ -100,7 +100,7 @@ test-usage-db-old-test: test-usage-db-old test-usage-db-old.sql Makefile.am
 	@echo mkdir -p indicator-appmenu >> $@
 	@echo cat $(abs_srcdir)/test-usage-db-old.sql \| sqlite3 indicator-appmenu/hud-usage-log.sqlite >> $@
 	@echo export HUD_CACHE_DIR=\`pwd\` >> $@
-	@echo gtester --verbose -k -o $(USAGE_DB_SIMPLE_XML_REPORT) $(abs_builddir)/test-usage-db-old >> $@
+	@echo gtester --verbose -k -o $(abs_builddir)/$(USAGE_DB_SIMPLE_XML_REPORT) $(abs_builddir)/test-usage-db-old >> $@
 	@echo cd .. >> $@
 	@echo rm -rf test-usage-db-old.dir.\* >> $@
 	@chmod +x $@
@@ -173,7 +173,7 @@ TESTS += \
 check_PROGRAMS += \
 	test-usage-db-testapp
 
-USAGE_TESTAPP_XML_REPORT = $(abs_builddir)/test-usage-db-testapp.xml
+USAGE_TESTAPP_XML_REPORT = test-usage-db-testapp.xml
 
 test-usage-db-testapp-test: test-usage-db-testapp good-app-info/testapp.desktop.hud-app-info good-app-info/testapp100.desktop.hud-app-info test-create-db.sql Makefile.am
 	@echo "#!/bin/bash -e" > $@
@@ -182,7 +182,7 @@ test-usage-db-testapp-test: test-usage-db-testapp good-app-info/testapp.desktop.
 	@echo cat $(abs_srcdir)/test-create-db.sql \| sqlite3 indicator-appmenu/hud-usage-log.sqlite >> $@
 	@echo export HUD_CACHE_DIR=\`pwd\` >> $@
 	@echo export HUD_APP_INFO_DIR=$(abs_srcdir)/good-app-info >> $@
-	@echo gtester --verbose -k -o $(USAGE_TESTAPP_XML_REPORT) $(abs_builddir)/test-usage-db-testapp >> $@
+	@echo gtester --verbose -k -o $(abs_builddir)/$(USAGE_TESTAPP_XML_REPORT) $(abs_builddir)/test-usage-db-testapp >> $@
 	@echo cd .. >> $@
 	@echo rm -rf test-usage-db-testapp.dir.\* >> $@
 	@chmod +x $@
@@ -223,7 +223,7 @@ test-usage-db-off-test: test-usage-db-testapp good-app-info/testapp.desktop.hud-
 	@echo export HUD_CACHE_DIR=\`pwd\` >> $@
 	@echo export HUD_APP_INFO_DIR=$(abs_srcdir)/good-app-info >> $@
 	@echo export HUD_NO_STORE_USAGE_DATA=1 >> $@
-	@echo gtester --verbose -k -o $(USAGE_OFF_XML_REPORT) $(abs_builddir)/test-usage-db-testapp >> $@
+	@echo gtester --verbose -k -o $(abs_buildir)/$(USAGE_OFF_XML_REPORT) $(abs_builddir)/test-usage-db-testapp >> $@
 	@echo test \! -e indicator-appmenu/hud-usage-log.sqlite >> $@
 	@echo cd .. >> $@
 	@echo rm -rf test-usage-db-off.dir.\* >> $@
