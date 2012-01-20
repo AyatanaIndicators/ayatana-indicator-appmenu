@@ -433,13 +433,13 @@ drop_entries (gpointer user_data)
 static void
 check_app_init (UsageTracker * self, const gchar * application)
 {
-	sqlite3_bind_text(self->priv->entry_count, SQL_VAR_APPLICATION, application, -1, SQLITE_TRANSIENT);
+	sqlite3_bind_text(self->priv->application_count, SQL_VAR_APPLICATION, application, -1, SQLITE_TRANSIENT);
 
 	int exec_status = SQLITE_ROW;
 	guint count = 0;
 
 	while ((exec_status = sqlite3_step(self->priv->application_count)) == SQLITE_ROW) {
-		count = sqlite3_column_int(self->priv->entry_count, 0);
+		count = sqlite3_column_int(self->priv->application_count, 0);
 	}
 
 	if (exec_status != SQLITE_DONE) {
