@@ -647,6 +647,15 @@ dbusmenu_collector_found_get_indicator (DbusmenuCollectorFound * found)
 	return found->indicator;
 }
 
+void
+dbusmenu_collector_found_set_indicator (DbusmenuCollectorFound * found, const gchar * indicator)
+{
+	g_return_if_fail(found != NULL);
+	g_free(found->indicator);
+	found->indicator = g_strdup(indicator);
+	return;
+}
+
 const gchar *
 dbusmenu_collector_found_get_dbus_addr (DbusmenuCollectorFound * found)
 {

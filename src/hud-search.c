@@ -308,9 +308,15 @@ search_and_sort (HudSearch * search, const gchar * searchstr, GArray * usagedata
 			GList * founditem = found_list;
 			while (founditem != NULL) {
 				DbusmenuCollectorFound * found = (DbusmenuCollectorFound *)founditem->data;
+
+				/* Distance */
 				guint distance = dbusmenu_collector_found_get_distance(found);
-				distance = distance + ((distance * get_settings_uint(search->priv->search_settings, "indicator-penalty",50)) / 100);
+				distance = distance + ((distance * get_settings_uint(search->priv->search_settings, "indicator-penalty", 50)) / 100);
 				dbusmenu_collector_found_set_distance(found, distance);
+
+				/* Names */
+				dbusmenu_collector_found_set_indicator(found, indicator->name);
+
 				founditem = g_list_next(founditem);
 			}
 

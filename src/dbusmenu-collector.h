@@ -62,6 +62,7 @@ const gchar * dbusmenu_collector_found_get_db (DbusmenuCollectorFound * found);
 void dbusmenu_collector_found_free (DbusmenuCollectorFound * found);
 void dbusmenu_collector_found_list_free (GList * found_list);
 const gchar *  dbusmenu_collector_found_get_indicator (DbusmenuCollectorFound * found);
+void dbusmenu_collector_found_set_indicator (DbusmenuCollectorFound * found, const gchar * indicator);
 const gchar * dbusmenu_collector_found_get_dbus_addr (DbusmenuCollectorFound * found);
 const gchar * dbusmenu_collector_found_get_dbus_path (DbusmenuCollectorFound * found);
 gint dbusmenu_collector_found_get_dbus_id (DbusmenuCollectorFound * found);
