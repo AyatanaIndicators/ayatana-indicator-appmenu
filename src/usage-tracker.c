@@ -370,8 +370,21 @@ usage_tracker_mark_usage (UsageTracker * self, const gchar * application, const 
 	g_return_if_fail(IS_USAGE_TRACKER(self));
 	check_app_init(self, application);
 
-	sqlite3_bind_text(self->priv->insert_entry, SQL_VAR_APPLICATION, application, -1, SQLITE_TRANSIENT);
-	sqlite3_bind_text(self->priv->insert_entry, SQL_VAR_ENTRY, entry, -1, SQLITE_TRANSIENT);
+	sqlite3_reset(self->priv->insert_entry);
+
+	int bind_status = SQLITE_OK;
+
+	bind_status = sqlite3_bind_text(self->priv->insert_entry, SQL_VAR_APPLICATION, application, -1, SQLITE_TRANSIENT);
+	if (bind_status != SQLITE_OK) {
+		g_warning("Unable to bind application info: %s", sqlite3_errmsg(self->priv->db));
+		return;
+	}
+
+	bind_status = sqlite3_bind_text(self->priv->insert_entry, SQL_VAR_ENTRY, entry, -1, SQLITE_TRANSIENT);
+	if (bind_status != SQLITE_OK) {
+		g_warning("Unable to bind entry info: %s", sqlite3_errmsg(self->priv->db));
+		return;
+	}
 
 	int exec_status = SQLITE_ROW;
 	while ((exec_status = sqlite3_step(self->priv->insert_entry)) == SQLITE_ROW) {
@@ -390,8 +403,21 @@ usage_tracker_get_usage (UsageTracker * self, const gchar * application, const g
 	g_return_val_if_fail(IS_USAGE_TRACKER(self), 0);
 	check_app_init(self, application);
 
-	sqlite3_bind_text(self->priv->entry_count, SQL_VAR_APPLICATION, application, -1, SQLITE_TRANSIENT);
-	sqlite3_bind_text(self->priv->entry_count, SQL_VAR_ENTRY, entry, -1, SQLITE_TRANSIENT);
+	sqlite3_reset(self->priv->entry_count);
+
+	int bind_status = SQLITE_OK;
+
+	bind_status = sqlite3_bind_text(self->priv->entry_count, SQL_VAR_APPLICATION, application, -1, SQLITE_TRANSIENT);
+	if (bind_status != SQLITE_OK) {
+		g_warning("Unable to bind application info: %s", sqlite3_errmsg(self->priv->db));
+		return 0;
+	}
+
+	bind_status = sqlite3_bind_text(self->priv->entry_count, SQL_VAR_ENTRY, entry, -1, SQLITE_TRANSIENT);
+	if (bind_status != SQLITE_OK) {
+		g_warning("Unable to bind entry info: %s", sqlite3_errmsg(self->priv->db));
+		return 0;
+	}
 
 	int exec_status = SQLITE_ROW;
 	guint count = 0;
@@ -419,6 +445,8 @@ drop_entries (gpointer user_data)
 		return TRUE;
 	}
 
+	sqlite3_reset(self->priv->delete_aged);
+
 	int exec_status = SQLITE_ROW;
 	while ((exec_status = sqlite3_step(self->priv->delete_aged)) == SQLITE_ROW) {
 	}
@@ -433,7 +461,14 @@ drop_entries (gpointer user_data)
 static void
 check_app_init (UsageTracker * self, const gchar * application)
 {
-	sqlite3_bind_text(self->priv->application_count, SQL_VAR_APPLICATION, application, -1, SQLITE_TRANSIENT);
+	sqlite3_reset(self->priv->application_count);
+
+	int bind_status = SQLITE_OK;
+	bind_status = sqlite3_bind_text(self->priv->application_count, SQL_VAR_APPLICATION, application, -1, SQLITE_TRANSIENT);
+	if (bind_status != SQLITE_OK) {
+		g_warning("Unable to bind application info: %s", sqlite3_errmsg(self->priv->db));
+		return;
+	}
 
 	int exec_status = SQLITE_ROW;
 	guint count = 0;
