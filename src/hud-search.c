@@ -278,6 +278,7 @@ found_list_to_usage_array (HudSearch * search, GList * found_list, GArray * usag
 static void
 search_and_sort (HudSearch * search, const gchar * searchstr, GArray * usagedata, GList ** foundlist)
 {
+	const gchar * desktop_file = NULL;
 	gchar * address = NULL;
 	gchar * path = NULL;
 	GList * found_list = NULL;
@@ -288,6 +289,21 @@ search_and_sort (HudSearch * search, const gchar * searchstr, GArray * usagedata
 
 	g_free(address);
 	g_free(path);
+
+	/* Set the name for the application */
+	if (desktop_file == NULL && search->priv->active_app != NULL) {
+		desktop_file = bamf_application_get_desktop_file(search->priv->active_app);
+	}
+
+	if (desktop_file != NULL) {
+		GList * founditem = found_list;
+		while (founditem != NULL) {
+			DbusmenuCollectorFound * found = (DbusmenuCollectorFound *)founditem->data;
+			dbusmenu_collector_found_set_indicator(found, desktop_file);
+
+			founditem = g_list_next(founditem);
+		}
+	}
 
 	/* Copy the found list into the array */
 	found_list_to_usage_array(search, found_list, usagedata);
@@ -344,12 +360,10 @@ search_and_sort (HudSearch * search, const gchar * searchstr, GArray * usagedata
 
 		desktopfile = dbusmenu_collector_found_get_indicator(usage->found);
 
-		if (desktopfile == NULL && search->priv->active_app != NULL) {
-			desktopfile = bamf_application_get_desktop_file(search->priv->active_app);
-		}
-
 		if (desktopfile != NULL) {
 			usage->count = usage_tracker_get_usage(search->priv->usage, desktopfile, dbusmenu_collector_found_get_db(usage->found));
+		} else {
+			usage->count = 0;
 		}
 	}
 
