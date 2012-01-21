@@ -24,7 +24,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #endif
 
 #include <gio/gio.h>
-#include <gio/gdesktopappinfo.h>
 
 #include "shared-values.h"
 #include "hud.interface.h"
@@ -224,41 +223,6 @@ bus_method (GDBusConnection *connection, const gchar *sender, const gchar *objec
 	return;
 }
 
-/* Take a path to a desktop file and find its icon */
-static gchar *
-desktop2icon (gchar * desktop)
-{
-	g_return_val_if_fail(desktop != NULL, g_strdup(""));
-
-	if (!g_file_test(desktop, G_FILE_TEST_EXISTS)) {
-		return g_strdup("");
-	}
-
-	/* Try to build an app info from the desktop file
-	   path */
-	GDesktopAppInfo * appinfo = g_desktop_app_info_new_from_filename(desktop);
-
-	if (!G_IS_DESKTOP_APP_INFO(appinfo)) {
-		return g_strdup("");
-	}
-
-	/* Get the name out of the icon, note the icon is not
-	   ref'd so it doesn't need to be free'd */
-	gchar * retval = NULL;
-	GIcon * icon = g_app_info_get_icon(G_APP_INFO(appinfo));
-	if (icon != NULL) {
-		retval = g_icon_to_string(icon);
-	} else {
-		retval = g_strdup("");
-	}
-
-	/* Drop the app info */
-	g_object_unref(appinfo);
-	appinfo = NULL;
-
-	return retval;
-}
-
 /* Respond to the GetSuggestions command from DBus by looking
    in our HUD search object for suggestions from that query */
 static GVariant *
@@ -268,9 +232,6 @@ get_suggestions (HudDbus * self, const gchar * query)
 	gchar * desktop = NULL;
 	gchar * target = NULL;
 	GList * suggestions = hud_search_suggestions(self->priv->search, query, &desktop, &target);
-
-	gchar * icon = NULL;
-	icon = desktop2icon(desktop);
 
 	/* Build into into a variant */
 	GVariantBuilder ret;
@@ -309,9 +270,6 @@ get_suggestions (HudDbus * self, const gchar * query)
 		   a null array to make the DBus interface happy */
 		g_variant_builder_add_value(&ret, g_variant_new_array(G_VARIANT_TYPE("(sssssv)"), NULL, 0));
 	}
-
-	/* Free the remaining icon */
-	g_free(icon);
 
 	/* Clean up the list */
 	g_list_free_full(suggestions, (GDestroyNotify)hud_search_suggest_free);
