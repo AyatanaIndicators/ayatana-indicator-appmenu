@@ -54,6 +54,8 @@ struct _DbusmenuCollectorFound {
 	gchar * display_string;
 	gchar * db_string;
 
+	gchar * app_icon;
+
 	guint distance;
 	DbusmenuMenuitem * item;
 	gchar * indicator;
@@ -564,6 +566,7 @@ dbusmenu_collector_found_new (DbusmenuClient * client, DbusmenuMenuitem * item, 
 	found->distance = distance;
 	found->item = item;
 	found->indicator = NULL;
+	found->app_icon = NULL;
 
 	found->display_string = NULL;
 	if (strings != NULL) {
@@ -634,6 +637,7 @@ dbusmenu_collector_found_free (DbusmenuCollectorFound * found)
 	g_free(found->display_string);
 	g_free(found->db_string);
 	g_free(found->indicator);
+	g_free(found->app_icon);
 	g_object_unref(found->item);
 	g_free(found);
 	return;
@@ -675,4 +679,19 @@ dbusmenu_collector_found_get_dbus_id (DbusmenuCollectorFound * found)
 {
 	g_return_val_if_fail(found != NULL, -1);
 	return found->dbus_id;
+}
+
+const gchar *
+dbusmenu_collector_found_get_app_icon (DbusmenuCollectorFound * found)
+{
+	g_return_val_if_fail(found != NULL, NULL);
+	return found->app_icon;
+}
+
+void
+dbusmenu_collector_found_set_app_icon (DbusmenuCollectorFound * found, const gchar * app_icon)
+{
+	g_return_if_fail(found != NULL);
+	g_free(found->app_icon);
+	found->app_icon= g_strdup(app_icon);
 }

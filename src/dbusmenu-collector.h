@@ -66,6 +66,8 @@ void dbusmenu_collector_found_set_indicator (DbusmenuCollectorFound * found, con
 const gchar * dbusmenu_collector_found_get_dbus_addr (DbusmenuCollectorFound * found);
 const gchar * dbusmenu_collector_found_get_dbus_path (DbusmenuCollectorFound * found);
 gint dbusmenu_collector_found_get_dbus_id (DbusmenuCollectorFound * found);
+const gchar * dbusmenu_collector_found_get_app_icon (DbusmenuCollectorFound * found);
+void dbusmenu_collector_found_set_app_icon (DbusmenuCollectorFound * found, const gchar * app_icon);
 
 G_END_DECLS
 
