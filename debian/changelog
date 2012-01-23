@@ -5,8 +5,10 @@ indicator-appmenu (0.3.2+hud5-0ubuntu1~ppa1) UNRELEASED; urgency=low
     * i18n fixes
     * Using prepared SQL statements
     * Ignoring more things that BAMF calls Unity
+  * Upstream Merge
+    * Make it so the test suite doesn't need X or DBus
 
- -- Ted Gould <ted@ubuntu.com>  Mon, 23 Jan 2012 15:56:28 -0600
+ -- Ted Gould <ted@ubuntu.com>  Mon, 23 Jan 2012 16:39:20 -0600
 
 indicator-appmenu (0.3.2+hud4-0ubuntu1~ppa1) precise; urgency=low
 
