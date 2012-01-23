@@ -257,16 +257,18 @@ gchar *
 remove_underline (const gchar * input)
 {
 	const gchar * in = input;
-	gchar * output = g_new0(gchar, g_utf8_strlen(input, -1) + 1);
+	gchar * output = g_strdup(input);
 	gchar * out = output;
 
 	while (in[0] != '\0') {
-		if (in[0] == '_') {
-			in++;
+		if (g_utf8_get_char(in) == '_') {
+			in = g_utf8_next_char(in);
 		} else {
-			out[0] = in[0];
-			in++;
-			out++;
+			g_utf8_strncpy(out, in, 1);
+			/* TODO: Don't copy a character at a time.  Do a bulk copy at the
+			   points we need it */
+			in = g_utf8_next_char(in);
+			out = g_utf8_next_char(out);
 		}
 	}
 
