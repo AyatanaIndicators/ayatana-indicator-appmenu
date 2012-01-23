@@ -57,7 +57,8 @@ main (gint argc, gchar * argv[])
 	for (indicator_pntr = indicators; indicator_pntr != NULL; indicator_pntr = g_list_next(indicator_pntr)) {
 		IndicatorTrackerIndicator * indicator = (IndicatorTrackerIndicator *)indicator_pntr->data;
 
-		if (g_strcmp0(indicator->dbus_object, "/org/ayatana/NotificationItem/example_simple_client/Menu") == 0) {
+		if (g_strcmp0(indicator->dbus_object, "/org/ayatana/NotificationItem/example_simple_client/Menu") == 0 &&
+				g_strcmp0(indicator->icon, "indicator-messages") == 0) {
 			found_appindicator = TRUE;
 			continue;
 		}
