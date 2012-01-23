@@ -344,7 +344,7 @@ search_current_app (HudSearch * search, const gchar * searchstr, GArray * usaged
 			dbusmenu_collector_found_set_indicator(found, desktop_file);
 
 			/* Icon */
-			/* TODO: */
+			dbusmenu_collector_found_set_app_icon(found, icon);
 
 			founditem = g_list_next(founditem);
 		}
@@ -390,6 +390,9 @@ search_indicators (HudSearch * search, const gchar * searchstr, GArray * usageda
 
 			/* Names */
 			dbusmenu_collector_found_set_indicator(found, indicator->name);
+
+			/* Icon */
+			dbusmenu_collector_found_set_app_icon(found, indicator->icon);
 
 			founditem = g_list_next(founditem);
 		}
@@ -523,7 +526,7 @@ hud_search_suggestions (HudSearch * search, const gchar * searchstr, gchar ** de
 		}
 
 		HudSearchSuggest * suggest = hud_search_suggest_new(desktopfile,
-		                                                    "",
+		                                                    dbusmenu_collector_found_get_app_icon(usage->found),
 		                                                    dbusmenu_collector_found_get_display(usage->found),
 		                                                    dbusmenu_collector_found_get_db(usage->found),
 		                                                    "none",
