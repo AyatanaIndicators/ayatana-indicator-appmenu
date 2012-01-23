@@ -100,7 +100,9 @@ hud_service_SOURCES = \
 	load-app-info.h \
 	load-app-info.c \
 	usage-tracker.h \
-	usage-tracker.c
+	usage-tracker.c \
+	utils.h \
+	utils.c
 
 hud_service_CFLAGS = \
 	$(HUD_CFLAGS) \

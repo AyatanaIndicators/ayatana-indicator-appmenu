@@ -54,7 +54,8 @@ HudSearch * hud_search_new (void);
 GList * hud_search_suggestions (HudSearch * search, const gchar * searchstr, gchar ** desktop, gchar ** target);
 void hud_search_execute (HudSearch * search, GVariant * key, guint timestamp);
 
-const gchar * hud_search_suggest_get_icon (HudSearchSuggest * suggest);
+const gchar * hud_search_suggest_get_app_icon (HudSearchSuggest * suggest);
+const gchar * hud_search_suggest_get_item_icon (HudSearchSuggest * suggest);
 const gchar * hud_search_suggest_get_display (HudSearchSuggest * suggest);
 GVariant * hud_search_suggest_get_key (HudSearchSuggest * suggest);
 void hud_search_suggest_free (HudSearchSuggest * suggest);

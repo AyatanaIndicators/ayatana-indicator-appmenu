@@ -147,7 +147,8 @@ am_hud_service_OBJECTS = hud_service-dbusmenu-collector.$(OBJEXT) \
 	hud_service-hud.interface.$(OBJEXT) \
 	hud_service-indicator-tracker.$(OBJEXT) \
 	hud_service-load-app-info.$(OBJEXT) \
-	hud_service-usage-tracker.$(OBJEXT)
+	hud_service-usage-tracker.$(OBJEXT) \
+	hud_service-utils.$(OBJEXT)
 hud_service_OBJECTS = $(am_hud_service_OBJECTS)
 hud_service_LDADD = $(LDADD)
 hud_service_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
@@ -456,7 +457,9 @@ hud_service_SOURCES = \
 	load-app-info.h \
 	load-app-info.c \
 	usage-tracker.h \
-	usage-tracker.c
+	usage-tracker.c \
+	utils.h \
+	utils.c
 
 hud_service_CFLAGS = \
 	$(HUD_CFLAGS) \
@@ -741,6 +744,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_service-indicator-tracker.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_service-load-app-info.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_service-usage-tracker.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_service-utils.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_verify_app_info-hud-verify-app-info.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_verify_app_info-load-app-info.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libappmenu_la-gdk-get-func.Plo@am__quote@
@@ -1048,6 +1052,22 @@ hud_service-usage-tracker.obj: usage-tracker.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='usage-tracker.c' object='hud_service-usage-tracker.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -c -o hud_service-usage-tracker.obj `if test -f 'usage-tracker.c'; then $(CYGPATH_W) 'usage-tracker.c'; else $(CYGPATH_W) '$(srcdir)/usage-tracker.c'; fi`
+
+hud_service-utils.o: utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -MT hud_service-utils.o -MD -MP -MF $(DEPDIR)/hud_service-utils.Tpo -c -o hud_service-utils.o `test -f 'utils.c' || echo '$(srcdir)/'`utils.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_service-utils.Tpo $(DEPDIR)/hud_service-utils.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='utils.c' object='hud_service-utils.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -c -o hud_service-utils.o `test -f 'utils.c' || echo '$(srcdir)/'`utils.c
+
+hud_service-utils.obj: utils.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -MT hud_service-utils.obj -MD -MP -MF $(DEPDIR)/hud_service-utils.Tpo -c -o hud_service-utils.obj `if test -f 'utils.c'; then $(CYGPATH_W) 'utils.c'; else $(CYGPATH_W) '$(srcdir)/utils.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_service-utils.Tpo $(DEPDIR)/hud_service-utils.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='utils.c' object='hud_service-utils.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -c -o hud_service-utils.obj `if test -f 'utils.c'; then $(CYGPATH_W) 'utils.c'; else $(CYGPATH_W) '$(srcdir)/utils.c'; fi`
 
 hud_verify_app_info-load-app-info.o: load-app-info.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_verify_app_info_CFLAGS) $(CFLAGS) -MT hud_verify_app_info-load-app-info.o -MD -MP -MF $(DEPDIR)/hud_verify_app_info-load-app-info.Tpo -c -o hud_verify_app_info-load-app-info.o `test -f 'load-app-info.c' || echo '$(srcdir)/'`load-app-info.c
