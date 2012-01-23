@@ -26,9 +26,11 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <libbamf/bamf-matcher.h>
 #include <gio/gio.h>
+#include <gio/gdesktopappinfo.h>
 
 #include "hud-search.h"
 #include "dbusmenu-collector.h"
+#include "indicator-tracker.h"
 #include "usage-tracker.h"
 #include "utils.h"
 
@@ -45,6 +47,8 @@ struct _HudSearchPrivate {
 	GDBusProxy * appmenu;
 
 	GSettings * search_settings;
+
+	IndicatorTracker * tracker;
 };
 
 #define HUD_SEARCH_GET_PRIVATE(o) \
@@ -56,7 +60,7 @@ static void hud_search_dispose    (GObject *object);
 static void hud_search_finalize   (GObject *object);
 
 static void active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * newview, gpointer user_data);
-HudSearchSuggest * hud_search_suggest_new (const gchar * app, const gchar * display, const gchar * db, const gchar * icon, const gchar * dbus_address, const gchar * dbus_path, gint dbus_id);
+HudSearchSuggest * hud_search_suggest_new (const gchar * app, const gchar * app_icon, const gchar * display, const gchar * db, const gchar * icon, const gchar * dbus_address, const gchar * dbus_path, gint dbus_id);
 
 G_DEFINE_TYPE (HudSearch, hud_search, G_TYPE_OBJECT);
 
@@ -87,11 +91,15 @@ hud_search_init (HudSearch *self)
 	self->priv->usage = NULL;
 	self->priv->appmenu = NULL;
 	self->priv->search_settings = NULL;
+	self->priv->tracker = NULL;
 
 	/* Settings */
 	if (settings_schema_exists("com.canonical.indicator.appmenu.hud.search")) {
 		self->priv->search_settings = g_settings_new("com.canonical.indicator.appmenu.hud.search");
 	}
+
+	/* Indicator Tracker */
+	self->priv->tracker = indicator_tracker_new();
 
 	/* BAMF */
 	self->priv->matcher = bamf_matcher_get_default();
@@ -129,6 +137,11 @@ hud_search_dispose (GObject *object)
 	if (self->priv->search_settings != NULL) {
 		g_object_unref(self->priv->search_settings);
 		self->priv->search_settings = NULL;
+	}
+
+	if (self->priv->tracker != NULL) {
+		g_object_unref(self->priv->tracker);
+		self->priv->tracker = NULL;
 	}
 
 	if (self->priv->window_changed_sig != 0) {
@@ -215,6 +228,7 @@ struct _usage_wrapper_t {
 	gfloat percent_distance;
 };
 
+/* Sort the usage data based on the percentages */
 static gint
 usage_sort (gconstpointer a, gconstpointer b)
 {
@@ -228,25 +242,24 @@ usage_sort (gconstpointer a, gconstpointer b)
 	return (gint)difference;
 }
 
-static void
-search_and_sort (HudSearch * search, const gchar * searchstr, GArray * usagedata, GList ** foundlist)
+/* Sort the array based on the distance in the found object */
+static gint
+distance_sort (gconstpointer a, gconstpointer b)
 {
-	gchar * address = NULL;
-	gchar * path = NULL;
-	GList * found_list = NULL;
-	guint count = 0;
+	usage_wrapper_t * wa = (usage_wrapper_t *)a;
+	usage_wrapper_t * wb = (usage_wrapper_t *)b;
+
+	return dbusmenu_collector_found_get_distance(wa->found) - dbusmenu_collector_found_get_distance(wb->found);
+}
+
+/* Take the found list and put it into the usage array so that
+   we can start to work with it. */
+static void
+found_list_to_usage_array (HudSearch * search, GList * found_list, GArray * usagedata)
+{
 	GList * found = NULL;
-
-	get_current_window_address(search, &address, &path);
-	found_list = dbusmenu_collector_search(search->priv->collector, address, path, searchstr);
-
-	g_free(address);
-	g_free(path);
-
-	count = 0;
 	found = found_list;
-	guint overall_usage = 0;
-	guint overall_distance = 0;
+
 	while (found != NULL) {
 		usage_wrapper_t usage;
 		usage.found = (DbusmenuCollectorFound *)found->data;
@@ -256,29 +269,191 @@ search_and_sort (HudSearch * search, const gchar * searchstr, GArray * usagedata
 			break;
 		}
 
-		const gchar * desktopfile = NULL;
-
-		desktopfile = dbusmenu_collector_found_get_indicator(usage.found);
-
-		if (desktopfile == NULL && search->priv->active_app != NULL) {
-			desktopfile = bamf_application_get_desktop_file(search->priv->active_app);
-		}
-
-		if (desktopfile != NULL) {
-			usage.count = usage_tracker_get_usage(search->priv->usage, desktopfile, dbusmenu_collector_found_get_db(usage.found));
-		}
-
-		overall_usage += usage.count;
-		overall_distance += dbusmenu_collector_found_get_distance(usage.found);
-
 		g_array_append_val(usagedata, usage);
 		found = g_list_next(found);
-		count++;
-		if (count >= 15) {
-			break;
+	}
+
+	return;
+}
+
+/* Take a path to a desktop file and find its icon */
+static gchar *
+desktop2icon (const gchar * desktop)
+{
+	g_return_val_if_fail(desktop != NULL, g_strdup(""));
+
+	if (!g_file_test(desktop, G_FILE_TEST_EXISTS)) {
+		return g_strdup("");
+	}
+
+	/* Try to build an app info from the desktop file
+	   path */
+	GDesktopAppInfo * appinfo = g_desktop_app_info_new_from_filename(desktop);
+
+	if (!G_IS_DESKTOP_APP_INFO(appinfo)) {
+		return g_strdup("");
+	}
+
+	/* Get the name out of the icon, note the icon is not
+	   ref'd so it doesn't need to be free'd */
+	gchar * retval = NULL;
+	GIcon * icon = g_app_info_get_icon(G_APP_INFO(appinfo));
+	if (icon != NULL) {
+		retval = g_icon_to_string(icon);
+	} else {
+		retval = g_strdup("");
+	}
+
+	/* Drop the app info */
+	g_object_unref(appinfo);
+	appinfo = NULL;
+
+	return retval;
+}
+
+/* Looks through the menus of the currently focused application
+   for the search string */
+static void
+search_current_app (HudSearch * search, const gchar * searchstr, GArray * usagedata, GList ** foundlist)
+{
+	if (search->priv->active_app == NULL) {
+		return;
+	}
+
+	gchar * address = NULL;
+	gchar * path = NULL;
+	GList * found_list = NULL;
+
+	get_current_window_address(search, &address, &path);
+	found_list = dbusmenu_collector_search(search->priv->collector, address, path, NULL, searchstr);
+
+	g_free(address);
+	g_free(path);
+
+	/* Set the name for the application */
+	const gchar * desktop_file = bamf_application_get_desktop_file(search->priv->active_app);
+
+	if (desktop_file != NULL) {
+		GList * founditem = found_list;
+		gchar * icon = desktop2icon(desktop_file);
+
+		while (founditem != NULL) {
+			DbusmenuCollectorFound * found = (DbusmenuCollectorFound *)founditem->data;
+
+			/* Indicator */
+			dbusmenu_collector_found_set_indicator(found, desktop_file);
+
+			/* Icon */
+			dbusmenu_collector_found_set_app_icon(found, icon);
+
+			founditem = g_list_next(founditem);
+		}
+
+		g_free(icon);
+	}
+
+	/* Copy the found list into the array */
+	found_list_to_usage_array(search, found_list, usagedata);
+	*foundlist = g_list_concat(*foundlist, found_list);
+
+	return;
+}
+
+/* Gets each indicator from the tracker and then looks at it's menus
+   with the search string.  It also penalizes the entries by a configurable
+   value compared to what they'd be normally. */
+static void
+search_indicators (HudSearch * search, const gchar * searchstr, GArray * usagedata, GList ** foundlist)
+{
+	if (search->priv->tracker == NULL) {
+		return;
+	}
+
+	GList * indicators = indicator_tracker_get_indicators(search->priv->tracker);
+	GList * lindicator = NULL;
+
+	for (lindicator = indicators; lindicator != NULL; lindicator = g_list_next(lindicator)) {
+		IndicatorTrackerIndicator * indicator = (IndicatorTrackerIndicator *)lindicator->data;
+
+		/* Search the menu items of the indicator */
+		GList * found_list = dbusmenu_collector_search(search->priv->collector, indicator->dbus_name, indicator->dbus_object, indicator->prefix, searchstr);
+
+		/* Increase distance */
+		GList * founditem = found_list;
+		while (founditem != NULL) {
+			DbusmenuCollectorFound * found = (DbusmenuCollectorFound *)founditem->data;
+
+			/* Distance */
+			guint distance = dbusmenu_collector_found_get_distance(found);
+			distance = distance + ((distance * get_settings_uint(search->priv->search_settings, "indicator-penalty", 50)) / 100);
+			dbusmenu_collector_found_set_distance(found, distance);
+
+			/* Names */
+			dbusmenu_collector_found_set_indicator(found, indicator->name);
+
+			/* Icon */
+			dbusmenu_collector_found_set_app_icon(found, indicator->icon);
+
+			founditem = g_list_next(founditem);
+		}
+
+		found_list_to_usage_array(search, found_list, usagedata);
+		
+		*foundlist = g_list_concat(*foundlist, found_list);
+	}
+
+	g_list_free(indicators);
+
+	return;
+}
+
+/* Grabs all the menus items, sorts them, then looks up usage data on
+   the top entries and sorts them again.  Lastly, we have our top
+   entries. */
+static void
+search_and_sort (HudSearch * search, const gchar * searchstr, GArray * usagedata, GList ** foundlist)
+{
+	/* Get all the entries from the current app and the indicators
+	   and put them into the array.  We keep the found list as it
+	   tracks the memory as well. */
+	search_current_app(search, searchstr, usagedata, foundlist);
+	search_indicators(search, searchstr, usagedata, foundlist);
+
+	/* Sort the list */
+	g_array_sort(usagedata, distance_sort);
+
+	/* Drop all but the first few */
+	if (usagedata->len > 15) {
+		usagedata = g_array_remove_range(usagedata, 15, usagedata->len - 15);
+	}
+
+	/* Get usage data */
+	int count;
+	for (count = 0; count < usagedata->len; count++) {
+		usage_wrapper_t * usage = &g_array_index(usagedata, usage_wrapper_t, count);
+
+		const gchar * desktopfile = NULL;
+
+		desktopfile = dbusmenu_collector_found_get_indicator(usage->found);
+
+		if (desktopfile != NULL) {
+			usage->count = usage_tracker_get_usage(search->priv->usage, desktopfile, dbusmenu_collector_found_get_db(usage->found));
+		} else {
+			usage->count = 0;
 		}
 	}
 
+	/* Calculate overall */
+	guint overall_usage = 0;
+	guint overall_distance = 0;
+	for (count = 0; count < usagedata->len; count++) {
+		usage_wrapper_t * usage = &g_array_index(usagedata, usage_wrapper_t, count);
+		overall_usage += usage->count;
+		overall_distance += dbusmenu_collector_found_get_distance(usage->found);
+	}
+
+
+	/* Build percentages */
 	for (count = 0; count < usagedata->len; count++) {
 		usage_wrapper_t * usage = &g_array_index(usagedata, usage_wrapper_t, count);
 
@@ -291,8 +466,9 @@ search_and_sort (HudSearch * search, const gchar * searchstr, GArray * usagedata
 		usage->percent_distance = (gfloat)dbusmenu_collector_found_get_distance(usage->found)/(gfloat)overall_distance;
 	}
 
+	/* Sort based on aggregate */
 	g_array_sort(usagedata, usage_sort);
-	*foundlist = found_list;
+
 	return;
 }
 
@@ -350,6 +526,7 @@ hud_search_suggestions (HudSearch * search, const gchar * searchstr, gchar ** de
 		}
 
 		HudSearchSuggest * suggest = hud_search_suggest_new(desktopfile,
+		                                                    dbusmenu_collector_found_get_app_icon(usage->found),
 		                                                    dbusmenu_collector_found_get_display(usage->found),
 		                                                    dbusmenu_collector_found_get_db(usage->found),
 		                                                    "none",
@@ -449,17 +626,19 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 
 struct _HudSearchSuggest {
 	gchar * display;
-	gchar * icon;
+	gchar * app_icon;
+	gchar * item_icon;
 	GVariant * key;
 };
 
 HudSearchSuggest *
-hud_search_suggest_new (const gchar * app, const gchar * display, const gchar * db, const gchar * icon, const gchar * dbus_address, const gchar * dbus_path, gint dbus_id)
+hud_search_suggest_new (const gchar * app, const gchar * app_icon, const gchar * display, const gchar * db, const gchar * item_icon, const gchar * dbus_address, const gchar * dbus_path, gint dbus_id)
 {
 	HudSearchSuggest * suggest = g_new0(HudSearchSuggest, 1);
 
 	suggest->display = g_strdup(display);
-	suggest->icon = g_strdup(icon);
+	suggest->app_icon = g_strdup(app_icon);
+	suggest->item_icon = g_strdup(item_icon);
 
 	GVariantBuilder builder;
 	g_variant_builder_init(&builder, G_VARIANT_TYPE_TUPLE);
@@ -476,9 +655,15 @@ hud_search_suggest_new (const gchar * app, const gchar * display, const gchar * 
 }
 
 const gchar *
-hud_search_suggest_get_icon (HudSearchSuggest * suggest)
+hud_search_suggest_get_app_icon (HudSearchSuggest * suggest)
 {
-	return suggest->icon;
+	return suggest->app_icon;
+}
+
+const gchar *
+hud_search_suggest_get_item_icon (HudSearchSuggest * suggest)
+{
+	return suggest->item_icon;
 }
 
 const gchar *
@@ -497,7 +682,8 @@ void
 hud_search_suggest_free (HudSearchSuggest * suggest)
 {
 	g_free(suggest->display);
-	g_free(suggest->icon);
+	g_free(suggest->app_icon);
+	g_free(suggest->item_icon);
 	g_variant_unref(suggest->key);
 	g_free(suggest);
 	return;

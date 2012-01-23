@@ -118,6 +118,25 @@ test_distance_print_issues (void)
 	return;
 }
 
+/* A variety of strings that should have predictable results */
+static void
+test_distance_variety (void)
+{
+	GStrv teststrings[4];
+	gchar * teststrings0[] = {"Date", "House Cleaning", NULL}; teststrings[0] = teststrings0;
+	gchar * teststrings1[] = {"File", "Close Window", NULL}; teststrings[1] = teststrings1;
+	gchar * teststrings2[] = {"Edit", "Keyboard Shortcuts...", NULL}; teststrings[2] = teststrings2;
+	gchar * teststrings3[] = {"Network", "VPN Configuration", "Configure VPN...", NULL}; teststrings[3] = teststrings3;
+
+	test_set(teststrings, 4, "House", 0);
+	test_set(teststrings, 4, "House C", 0);
+	test_set(teststrings, 4, "House Cle", 0);
+	test_set(teststrings, 4, "House Clean", 0);
+	test_set(teststrings, 4, "Clean House", 0);
+
+	return;
+}
+
 /* Check to make sure the returned hits are not dups and the
    proper number */
 static void
@@ -144,6 +163,7 @@ test_distance_suite (void)
 	g_test_add_func ("/hud/distance/missspelll",    test_distance_missspelll);
 	g_test_add_func ("/hud/distance/print_issues",  test_distance_print_issues);
 	g_test_add_func ("/hud/distance/duplicates",    test_distance_dups);
+	g_test_add_func ("/hud/distance/variety",       test_distance_variety);
 	return;
 }
 

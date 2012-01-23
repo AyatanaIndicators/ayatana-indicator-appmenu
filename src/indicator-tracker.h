@@ -55,6 +55,7 @@ struct _IndicatorTrackerIndicator {
 	gchar * dbus_name_wellknown;
 	gchar * dbus_object;
 	gchar * prefix;
+	gchar * icon;
 };
 
 GType indicator_tracker_get_type (void);

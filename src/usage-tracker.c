@@ -500,7 +500,9 @@ check_app_init (UsageTracker * self, const gchar * application)
 	gchar * app_info = g_build_filename(app_info_path, app_info_filename, NULL);
 
 	if (!load_app_info(app_info, self->priv->db)) {
-		g_warning("Unable to load application information for application '%s' at path '%s'", application, app_info);
+		if (g_file_test(app_info, G_FILE_TEST_EXISTS)) {
+			g_warning("Unable to load application information for application '%s' at path '%s'", application, app_info);
+		}
 	}
 
 	g_free(app_info);

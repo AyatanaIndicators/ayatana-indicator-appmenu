@@ -35,14 +35,15 @@ struct _SystemIndicator {
 	gchar * dbus_menu_path;
 	gchar * indicator_name;
 	gchar * user_visible_name;
+	gchar * icon;
 };
 
 SystemIndicator system_indicators[] = {
-	{dbus_name: "com.canonical.indicator.datetime", dbus_menu_path: "/com/canonical/indicator/datetime/menu", indicator_name: "indicator-datetime",       user_visible_name: N_("Date") },
-	{dbus_name: "com.canonical.indicator.session",  dbus_menu_path: "/com/canonical/indicator/session/menu",  indicator_name: "indicator-session-device", user_visible_name: N_("Device") },
-	{dbus_name: "com.canonical.indicator.session",  dbus_menu_path: "/com/canonical/indicator/users/menu",    indicator_name: "indicator-session-user",   user_visible_name: N_("Users") },
-	{dbus_name: "com.canonical.indicators.sound",   dbus_menu_path: "/com/canonical/indicators/sound/menu",   indicator_name: "indicator-sound",          user_visible_name: N_("Sound") },
-	{dbus_name: "com.canonical.indicator.messages", dbus_menu_path: "/com/canonical/indicator/messages/menu", indicator_name: "indicator-messages",       user_visible_name: N_("Messages") }
+	{dbus_name: "com.canonical.indicator.datetime", dbus_menu_path: "/com/canonical/indicator/datetime/menu", indicator_name: "indicator-datetime",       user_visible_name: N_("Date"),      icon: "office-calendar"},
+	{dbus_name: "com.canonical.indicator.session",  dbus_menu_path: "/com/canonical/indicator/session/menu",  indicator_name: "indicator-session-device", user_visible_name: N_("Device"),    icon: "system-devices-panel"},
+	{dbus_name: "com.canonical.indicator.session",  dbus_menu_path: "/com/canonical/indicator/users/menu",    indicator_name: "indicator-session-user",   user_visible_name: N_("Users"),     icon: "avatar-default"},
+	{dbus_name: "com.canonical.indicators.sound",   dbus_menu_path: "/com/canonical/indicators/sound/menu",   indicator_name: "indicator-sound",          user_visible_name: N_("Sound"),     icon: "audio-volume-high-panel"},
+	{dbus_name: "com.canonical.indicator.messages", dbus_menu_path: "/com/canonical/indicator/messages/menu", indicator_name: "indicator-messages",       user_visible_name: N_("Messages"),  icon: "indicator-messages"}
 };
 
 typedef struct _AppIndicator AppIndicator;
@@ -287,7 +288,8 @@ system_watch_appeared (GDBusConnection * connection, const gchar * name, const g
 			dbus_name: g_strdup(name_owner),
 			dbus_name_wellknown: g_strdup(sys_indicator->dbus_name),
 			dbus_object: g_strdup(sys_indicator->dbus_menu_path),
-			prefix: g_strdup(_(sys_indicator->user_visible_name))
+			prefix: g_strdup(_(sys_indicator->user_visible_name)),
+			icon: g_strdup(sys_indicator->icon)
 		};
 
 		g_array_append_val(self->priv->indicators, final_indicator);
@@ -565,12 +567,18 @@ app_proxy_new_indicator (IndicatorTracker * self, gint position, const gchar * i
 			dbus_name: g_strdup(dbusaddress),
 			dbus_name_wellknown: NULL,
 			dbus_object: g_strdup(dbusobject),
-			prefix: g_strdup(accessibledesc)
+			prefix: g_strdup(accessibledesc),
+			icon: g_strdup(iconname)
 		},
 		alert: FALSE,
 		alert_name: NULL,
 		normal_name: NULL
 	};
+
+	if (indicator.system.prefix == NULL || indicator.system.prefix[0] == '\0') {
+		g_free(indicator.system.prefix);
+		indicator.system.prefix = g_strdup(_("Unknown Indicator"));
+	}
 
 	g_array_insert_val(self->priv->app_indicators, position, indicator);
 
