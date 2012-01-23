@@ -264,7 +264,7 @@ remove_underline (const gchar * input)
 		if (g_utf8_get_char(in) == '_') {
 			in = g_utf8_next_char(in);
 		} else {
-			out[0] = g_utf8_get_char(in);
+			g_utf8_strncpy(out, in, 1);
 			in = g_utf8_next_char(in);
 			out = g_utf8_next_char(out);
 		}
