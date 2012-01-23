@@ -257,16 +257,16 @@ gchar *
 remove_underline (const gchar * input)
 {
 	const gchar * in = input;
-	gchar * output = g_new0(gchar, g_utf8_strlen(input, -1) + 1);
+	gchar * output = g_strdup(input);
 	gchar * out = output;
 
 	while (in[0] != '\0') {
-		if (in[0] == '_') {
-			in++;
+		if (g_utf8_get_char(in) == '_') {
+			in = g_utf8_next_char(in);
 		} else {
-			out[0] = in[0];
-			in++;
-			out++;
+			out[0] = g_utf8_get_char(in);
+			in = g_utf8_next_char(in);
+			out = g_utf8_next_char(out);
 		}
 	}
 
