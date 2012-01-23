@@ -265,6 +265,8 @@ remove_underline (const gchar * input)
 			in = g_utf8_next_char(in);
 		} else {
 			g_utf8_strncpy(out, in, 1);
+			/* TODO: Don't copy a character at a time.  Do a bulk copy at the
+			   points we need it */
 			in = g_utf8_next_char(in);
 			out = g_utf8_next_char(out);
 		}
