@@ -1,4 +1,4 @@
-indicator-appmenu (0.3.2+hud5-0ubuntu1~ppa1) UNRELEASED; urgency=low
+indicator-appmenu (0.3.2+hud5-0ubuntu1~ppa1) precise; urgency=low
 
   * New upstream release.
     * Icon depending on selection
@@ -8,7 +8,7 @@ indicator-appmenu (0.3.2+hud5-0ubuntu1~ppa1) UNRELEASED; urgency=low
   * Upstream Merge
     * Make it so the test suite doesn't need X or DBus
 
- -- Ted Gould <ted@ubuntu.com>  Mon, 23 Jan 2012 16:39:20 -0600
+ -- Ted Gould <ted@ubuntu.com>  Mon, 23 Jan 2012 16:42:10 -0600
 
 indicator-appmenu (0.3.2+hud4-0ubuntu1~ppa1) precise; urgency=low
 
