@@ -23,16 +23,36 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <glib/gprintf.h>
 #include <glib-object.h>
 #include <glib/gi18n.h>
+#include <gio/gio.h>
 
 #include "distance.h"
+#include "utils.h"
 
-#define ADD_PENALTY 10
-#define PRE_ADD_PENALTY 1
-#define DROP_PENALTY 10
-#define END_DROP_PENALTY 10
-#define TRANSPOSE_PENALTY 10
-#define DELETE_PENALTY 10
-#define SWAP_PENALTY 10
+#define ADD_PENALTY         get_settings_uint(get_settings(), "add-penalty",        10)
+#define PRE_ADD_PENALTY     get_settings_uint(get_settings(), "add-penalty-pre",    1)
+#define DROP_PENALTY        get_settings_uint(get_settings(), "drop-penalty",       10)
+#define END_DROP_PENALTY    get_settings_uint(get_settings(), "drop-penalty-end",   10)
+#define TRANSPOSE_PENALTY   get_settings_uint(get_settings(), "transpose-penalty",  10)
+#define SWAP_PENALTY        get_settings_uint(get_settings(), "swap-penalty",       10)
+#define SWAP_CASE_PENALTY   get_settings_uint(get_settings(), "swap-penalty-case",  1)
+
+/* Checks to see if we can get the setting, and if we can use that,
+   otherwise use the fallback value we have here */
+static GSettings *
+get_settings (void)
+{
+	static gboolean first = TRUE;
+	static GSettings * settings = NULL;
+
+	if (first) {
+		first = FALSE;
+		if (settings_schema_exists("com.canonical.indicator.appmenu.hud.search")) {
+			settings = g_settings_new("com.canonical.indicator.appmenu.hud.search");
+		}
+	}
+	
+	return settings;
+}
 
 static gboolean
 ignore_character (gchar inchar)
@@ -62,7 +82,7 @@ swap_cost (gchar a, gchar b)
 	if (ignore_character(a) || ignore_character(b))
 		return 0;
 	if (g_unichar_toupper(a) == g_unichar_toupper(b))
-		return SWAP_PENALTY / 10; /* Some penalty, but close */
+		return SWAP_CASE_PENALTY; /* Some penalty, but close */
 	return SWAP_PENALTY;
 }
 

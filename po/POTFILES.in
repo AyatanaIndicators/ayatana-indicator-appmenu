@@ -1,3 +1,6 @@
+data/com.canonical.indicator.appmenu.gschema.xml.in
+data/com.canonical.indicator.appmenu.hud.gschema.xml.in
+data/com.canonical.indicator.appmenu.hud.search.gschema.xml.in
 src/hud-service.c
 src/indicator-tracker.c
 src/hud-dbus.c

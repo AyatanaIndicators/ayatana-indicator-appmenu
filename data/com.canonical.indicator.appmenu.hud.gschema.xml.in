@@ -2,13 +2,13 @@
 	<schema id="com.canonical.indicator.appmenu.hud" path="/com/canonical/indicator/appmenu/hud/" gettext-domain="indicator-appmenu">
 		<key name="store-usage-data" type="b">
 			<default>true</default>
-			<summary>Whether to store usage data</summary>
-			<description>
+			<_summary>Whether to store usage data</_summary>
+			<_description>
 			  When the HUD executes operations it stores the execution in
 			  order to make the future results better.  Some users could choose
 			  to not want this data to be stored.  If that is the case they
 			  should disable this property.
-			</description>
+			</_description>
 		</key>
 	</schema>
 </schemalist>

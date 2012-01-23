@@ -52,18 +52,22 @@ struct _DbusmenuCollector {
 
 GType dbusmenu_collector_get_type (void);
 DbusmenuCollector * dbusmenu_collector_new (void);
-GList * dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, const gchar * search);
+GList * dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, const gchar * prefix, const gchar * search);
 void dbusmenu_collector_execute (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, gint id, guint timestamp);
 
 guint dbusmenu_collector_found_get_distance (DbusmenuCollectorFound * found);
+void dbusmenu_collector_found_set_distance (DbusmenuCollectorFound * found, guint distance);
 const gchar * dbusmenu_collector_found_get_display (DbusmenuCollectorFound * found);
 const gchar * dbusmenu_collector_found_get_db (DbusmenuCollectorFound * found);
 void dbusmenu_collector_found_free (DbusmenuCollectorFound * found);
 void dbusmenu_collector_found_list_free (GList * found_list);
 const gchar *  dbusmenu_collector_found_get_indicator (DbusmenuCollectorFound * found);
+void dbusmenu_collector_found_set_indicator (DbusmenuCollectorFound * found, const gchar * indicator);
 const gchar * dbusmenu_collector_found_get_dbus_addr (DbusmenuCollectorFound * found);
 const gchar * dbusmenu_collector_found_get_dbus_path (DbusmenuCollectorFound * found);
 gint dbusmenu_collector_found_get_dbus_id (DbusmenuCollectorFound * found);
+const gchar * dbusmenu_collector_found_get_app_icon (DbusmenuCollectorFound * found);
+void dbusmenu_collector_found_set_app_icon (DbusmenuCollectorFound * found, const gchar * app_icon);
 
 G_END_DECLS
 
