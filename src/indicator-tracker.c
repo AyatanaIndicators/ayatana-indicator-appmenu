@@ -288,7 +288,8 @@ system_watch_appeared (GDBusConnection * connection, const gchar * name, const g
 			dbus_name: g_strdup(name_owner),
 			dbus_name_wellknown: g_strdup(sys_indicator->dbus_name),
 			dbus_object: g_strdup(sys_indicator->dbus_menu_path),
-			prefix: g_strdup(_(sys_indicator->user_visible_name))
+			prefix: g_strdup(_(sys_indicator->user_visible_name)),
+			icon: g_strdup(sys_indicator->icon)
 		};
 
 		g_array_append_val(self->priv->indicators, final_indicator);
@@ -566,7 +567,8 @@ app_proxy_new_indicator (IndicatorTracker * self, gint position, const gchar * i
 			dbus_name: g_strdup(dbusaddress),
 			dbus_name_wellknown: NULL,
 			dbus_object: g_strdup(dbusobject),
-			prefix: g_strdup(accessibledesc)
+			prefix: g_strdup(accessibledesc),
+			icon: g_strdup(iconname)
 		},
 		alert: FALSE,
 		alert_name: NULL,
