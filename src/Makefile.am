@@ -177,7 +177,8 @@ hud_verify_app_info_LDFLAGS = \
 ####################
 
 EXTRA_DIST += \
-	hud.xml
+	hud.xml \
+	create-db.sql
 
 BUILT_SOURCES += \
 	hud.interface.c \
