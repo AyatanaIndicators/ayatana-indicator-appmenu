@@ -168,3 +168,4 @@ tests/test_usage_db_simple-test-usage-db-simple.gcda
 tests/test_usage_db_simple-test-usage-db-simple.gcno
 tests/test_usage_db_testapp-test-usage-db-testapp.gcda
 tests/test_usage_db_testapp-test-usage-db-testapp.gcno
+create-db.c
