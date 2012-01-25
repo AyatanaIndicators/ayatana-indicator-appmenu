@@ -1,4 +1,4 @@
 
 #include <glib.h>
 
-const gchar * create_db;
+extern const gchar * create_db;
