@@ -1,8 +1,8 @@
-indicator-appmenu (0.3.2+hud5-0ubuntu1~ppa2) UNRELEASED; urgency=low
+indicator-appmenu (0.3.2+hud5-0ubuntu1~ppa2) precise; urgency=low
 
   * debian/control: Add a dep in tools on sqlite3 (LP: #921274)
 
- -- Ted Gould <ted@ubuntu.com>  Tue, 24 Jan 2012 22:53:14 -0600
+ -- Ted Gould <ted@ubuntu.com>  Tue, 24 Jan 2012 23:09:56 -0600
 
 indicator-appmenu (0.3.2+hud5-0ubuntu1~ppa1) precise; urgency=low
 
