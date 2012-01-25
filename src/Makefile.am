@@ -173,6 +173,8 @@ hud_dump_application_LDFLAGS = \
 #######################
 
 hud_verify_app_info_SOURCES = \
+	create-db.h \
+	create-db.c \
 	load-app-info.h \
 	load-app-info.c \
 	hud-verify-app-info.c
