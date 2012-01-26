@@ -54,8 +54,6 @@ struct _HudSearchPrivate {
 #define HUD_SEARCH_GET_PRIVATE(o) \
 (G_TYPE_INSTANCE_GET_PRIVATE ((o), HUD_SEARCH_TYPE, HudSearchPrivate))
 
-static void hud_search_class_init (HudSearchClass *klass);
-static void hud_search_init       (HudSearch *self);
 static void hud_search_dispose    (GObject *object);
 static void hud_search_finalize   (GObject *object);
 
@@ -87,6 +85,7 @@ hud_search_init (HudSearch *self)
 	self->priv->matcher = NULL;
 	self->priv->window_changed_sig = 0;
 	self->priv->active_xid = 0;
+	self->priv->active_app = NULL;
 	self->priv->collector = NULL;
 	self->priv->usage = NULL;
 	self->priv->appmenu = NULL;
@@ -134,40 +133,18 @@ hud_search_dispose (GObject *object)
 {
 	HudSearch * self = HUD_SEARCH(object);
 
-	if (self->priv->search_settings != NULL) {
-		g_object_unref(self->priv->search_settings);
-		self->priv->search_settings = NULL;
-	}
-
-	if (self->priv->tracker != NULL) {
-		g_object_unref(self->priv->tracker);
-		self->priv->tracker = NULL;
-	}
+	g_clear_object(&self->priv->search_settings);
+	g_clear_object(&self->priv->tracker);
 
 	if (self->priv->window_changed_sig != 0) {
 		g_signal_handler_disconnect(self->priv->matcher, self->priv->window_changed_sig);
 		self->priv->window_changed_sig = 0;
 	}
 
-	if (self->priv->matcher != NULL) {
-		g_object_unref(self->priv->matcher);
-		self->priv->matcher = NULL;
-	}
-
-	if (self->priv->collector != NULL) {
-		g_object_unref(self->priv->collector);
-		self->priv->collector = NULL;
-	}
-
-	if (self->priv->usage != NULL) {
-		g_object_unref(self->priv->usage);
-		self->priv->usage = NULL;
-	}
-
-	if (self->priv->appmenu != NULL) {
-		g_object_unref(self->priv->appmenu);
-		self->priv->appmenu = NULL;
-	}
+	g_clear_object(&self->priv->matcher);
+	g_clear_object(&self->priv->collector);
+	g_clear_object(&self->priv->usage);
+	g_clear_object(&self->priv->appmenu);
 
 	G_OBJECT_CLASS (hud_search_parent_class)->dispose (object);
 	return;
@@ -184,7 +161,7 @@ hud_search_finalize (GObject *object)
 HudSearch *
 hud_search_new (void)
 {
-	HudSearch * ret = HUD_SEARCH(g_object_new(HUD_SEARCH_TYPE, NULL));
+	HudSearch * ret = g_object_new(HUD_SEARCH_TYPE, NULL);
 	return ret;
 }
 
@@ -257,6 +234,8 @@ distance_sort (gconstpointer a, gconstpointer b)
 static void
 found_list_to_usage_array (HudSearch * search, GList * found_list, GArray * usagedata)
 {
+	guint max_distance = get_settings_uint(search->priv->search_settings, "max-distance", 30);
+
 	GList * found = NULL;
 	found = found_list;
 
@@ -265,8 +244,8 @@ found_list_to_usage_array (HudSearch * search, GList * found_list, GArray * usag
 		usage.found = (DbusmenuCollectorFound *)found->data;
 		usage.count = 0;
 
-		if (dbusmenu_collector_found_get_distance(usage.found) > get_settings_uint(search->priv->search_settings, "max-distance", 30)) {
-			break;
+		if (dbusmenu_collector_found_get_distance(usage.found) > max_distance) {
+			continue;
 		}
 
 		g_array_append_val(usagedata, usage);
@@ -278,11 +257,12 @@ found_list_to_usage_array (HudSearch * search, GList * found_list, GArray * usag
 
 /* Take a path to a desktop file and find its icon */
 static gchar *
-desktop2icon (const gchar * desktop)
+desktop_to_icon (const gchar * desktop)
 {
 	g_return_val_if_fail(desktop != NULL, g_strdup(""));
 
 	if (!g_file_test(desktop, G_FILE_TEST_EXISTS)) {
+		g_warning("Unable to find desktop file '%s'", desktop);
 		return g_strdup("");
 	}
 
@@ -291,6 +271,7 @@ desktop2icon (const gchar * desktop)
 	GDesktopAppInfo * appinfo = g_desktop_app_info_new_from_filename(desktop);
 
 	if (!G_IS_DESKTOP_APP_INFO(appinfo)) {
+		g_warning("Unable to parse desktop file '%s'", desktop);
 		return g_strdup("");
 	}
 
@@ -325,17 +306,23 @@ search_current_app (HudSearch * search, const gchar * searchstr, GArray * usaged
 	GList * found_list = NULL;
 
 	get_current_window_address(search, &address, &path);
-	found_list = dbusmenu_collector_search(search->priv->collector, address, path, NULL, searchstr);
+
+	if (address != NULL && path != NULL) {
+		found_list = dbusmenu_collector_search(search->priv->collector, address, path, NULL, searchstr);
+	}
 
 	g_free(address);
 	g_free(path);
 
 	/* Set the name for the application */
-	const gchar * desktop_file = bamf_application_get_desktop_file(search->priv->active_app);
+	const gchar * desktop_file = NULL;
+	if (search->priv->active_app != NULL) {
+		desktop_file = bamf_application_get_desktop_file(search->priv->active_app);
+	}
 
 	if (desktop_file != NULL) {
 		GList * founditem = found_list;
-		gchar * icon = desktop2icon(desktop_file);
+		gchar * icon = desktop_to_icon(desktop_file);
 
 		while (founditem != NULL) {
 			DbusmenuCollectorFound * found = (DbusmenuCollectorFound *)founditem->data;
@@ -369,6 +356,7 @@ search_indicators (HudSearch * search, const gchar * searchstr, GArray * usageda
 		return;
 	}
 
+	guint indicator_penalty = get_settings_uint(search->priv->search_settings, "indicator-penalty", 50);
 	GList * indicators = indicator_tracker_get_indicators(search->priv->tracker);
 	GList * lindicator = NULL;
 
@@ -385,7 +373,7 @@ search_indicators (HudSearch * search, const gchar * searchstr, GArray * usageda
 
 			/* Distance */
 			guint distance = dbusmenu_collector_found_get_distance(found);
-			distance = distance + ((distance * get_settings_uint(search->priv->search_settings, "indicator-penalty", 50)) / 100);
+			distance = distance + ((distance * indicator_penalty) / 100);
 			dbusmenu_collector_found_set_distance(found, distance);
 
 			/* Names */
@@ -535,8 +523,10 @@ hud_search_suggestions (HudSearch * search, const gchar * searchstr, gchar ** de
 		                                                    dbusmenu_collector_found_get_dbus_id(usage->found)
 		                                                    );
 
-		retval = g_list_append(retval, suggest);
+		retval = g_list_prepend(retval, suggest);
 	}
+
+	retval = g_list_reverse(retval);
 
 	/* Free the interim arrays of data */
 	g_array_free(usagedata, TRUE);
@@ -550,23 +540,35 @@ hud_search_execute (HudSearch * search, GVariant * key, guint timestamp)
 {
 	g_return_if_fail(IS_HUD_SEARCH(search));
 	gchar * app = NULL;
-	gchar * display = NULL;
+	gchar * dbstring = NULL;
 	gchar * address = NULL;
 	gchar * path = NULL;
 	gint id = 0;
-	GVariant * unwrapped_key = g_variant_get_variant(key);
+	GVariant * unwrapped_key = NULL;
 
-	g_variant_get(unwrapped_key, "(sssoi)", &app, &display, &address, &path, &id);
+	if (g_variant_is_of_type(key, G_VARIANT_TYPE_VARIANT)) {
+		unwrapped_key = g_variant_get_variant(key);
+	} else {
+		g_warning("Invalid key type; unable to execute");
+	}
 
-	dbusmenu_collector_execute(search->priv->collector, address, path, id, timestamp);
-	usage_tracker_mark_usage(search->priv->usage, app, display);
+	if (unwrapped_key != NULL) {
+		g_variant_get(unwrapped_key, "(sssoi)", &app, &dbstring, &address, &path, &id);
+	}
+
+	if (app != NULL && dbstring != NULL && address != NULL && path != NULL && id != 0) {
+		dbusmenu_collector_execute(search->priv->collector, address, path, id, timestamp);
+		usage_tracker_mark_usage(search->priv->usage, app, dbstring);
+	}
 
 	g_free(address);
 	g_free(path);
 	g_free(app);
-	g_free(display);
+	g_free(dbstring);
 
-	g_variant_unref(unwrapped_key);
+	if (unwrapped_key != NULL) {
+		g_variant_unref(unwrapped_key);
+	}
 
 	return;
 }
