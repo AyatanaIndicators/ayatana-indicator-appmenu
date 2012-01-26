@@ -356,6 +356,7 @@ search_indicators (HudSearch * search, const gchar * searchstr, GArray * usageda
 		return;
 	}
 
+	guint indicator_penalty = get_settings_uint(search->priv->search_settings, "indicator-penalty", 50);
 	GList * indicators = indicator_tracker_get_indicators(search->priv->tracker);
 	GList * lindicator = NULL;
 
@@ -372,7 +373,7 @@ search_indicators (HudSearch * search, const gchar * searchstr, GArray * usageda
 
 			/* Distance */
 			guint distance = dbusmenu_collector_found_get_distance(found);
-			distance = distance + ((distance * get_settings_uint(search->priv->search_settings, "indicator-penalty", 50)) / 100);
+			distance = distance + ((distance * indicator_penalty) / 100);
 			dbusmenu_collector_found_set_distance(found, distance);
 
 			/* Names */
