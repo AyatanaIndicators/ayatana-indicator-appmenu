@@ -243,7 +243,7 @@ found_list_to_usage_array (HudSearch * search, GList * found_list, GArray * usag
 		usage.count = 0;
 
 		if (dbusmenu_collector_found_get_distance(usage.found) > get_settings_uint(search->priv->search_settings, "max-distance", 30)) {
-			break;
+			continue;
 		}
 
 		g_array_append_val(usagedata, usage);
