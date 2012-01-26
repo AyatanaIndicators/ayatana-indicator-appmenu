@@ -544,19 +544,31 @@ hud_search_execute (HudSearch * search, GVariant * key, guint timestamp)
 	gchar * address = NULL;
 	gchar * path = NULL;
 	gint id = 0;
-	GVariant * unwrapped_key = g_variant_get_variant(key);
+	GVariant * unwrapped_key = NULL;
 
-	g_variant_get(unwrapped_key, "(sssoi)", &app, &display, &address, &path, &id);
+	if (g_variant_is_of_type(key, G_VARIANT_TYPE_VARIANT)) {
+		unwrapped_key = g_variant_get_variant(key);
+	} else {
+		g_warning("Invalid key type; unable to execute");
+	}
 
-	dbusmenu_collector_execute(search->priv->collector, address, path, id, timestamp);
-	usage_tracker_mark_usage(search->priv->usage, app, display);
+	if (unwrapped_key != NULL) {
+		g_variant_get(unwrapped_key, "(sssoi)", &app, &display, &address, &path, &id);
+	}
+
+	if (app != NULL && display != NULL && address != NULL && path != NULL && id != 0) {
+		dbusmenu_collector_execute(search->priv->collector, address, path, id, timestamp);
+		usage_tracker_mark_usage(search->priv->usage, app, display);
+	}
 
 	g_free(address);
 	g_free(path);
 	g_free(app);
 	g_free(display);
 
-	g_variant_unref(unwrapped_key);
+	if (unwrapped_key != NULL) {
+		g_variant_unref(unwrapped_key);
+	}
 
 	return;
 }
