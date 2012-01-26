@@ -234,6 +234,8 @@ distance_sort (gconstpointer a, gconstpointer b)
 static void
 found_list_to_usage_array (HudSearch * search, GList * found_list, GArray * usagedata)
 {
+	guint max_distance = get_settings_uint(search->priv->search_settings, "max-distance", 30);
+
 	GList * found = NULL;
 	found = found_list;
 
@@ -242,7 +244,7 @@ found_list_to_usage_array (HudSearch * search, GList * found_list, GArray * usag
 		usage.found = (DbusmenuCollectorFound *)found->data;
 		usage.count = 0;
 
-		if (dbusmenu_collector_found_get_distance(usage.found) > get_settings_uint(search->priv->search_settings, "max-distance", 30)) {
+		if (dbusmenu_collector_found_get_distance(usage.found) > max_distance) {
 			continue;
 		}
 
