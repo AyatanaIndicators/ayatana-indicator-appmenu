@@ -1,3 +1,11 @@
+indicator-appmenu (0.3.2-0ubuntu3) precise; urgency=low
+
+  * src/indicator-appmenu.c
+    - set menu visibility, fixes the disappearing menus with libindicator 
+      >= 0.4.90
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Thu, 26 Jan 2012 00:20:24 -0500
+
 indicator-appmenu (0.3.2-0ubuntu2) precise; urgency=low
 
   * no change rebuild for libindicator7
