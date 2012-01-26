@@ -54,8 +54,6 @@ struct _HudSearchPrivate {
 #define HUD_SEARCH_GET_PRIVATE(o) \
 (G_TYPE_INSTANCE_GET_PRIVATE ((o), HUD_SEARCH_TYPE, HudSearchPrivate))
 
-static void hud_search_class_init (HudSearchClass *klass);
-static void hud_search_init       (HudSearch *self);
 static void hud_search_dispose    (GObject *object);
 static void hud_search_finalize   (GObject *object);
 
