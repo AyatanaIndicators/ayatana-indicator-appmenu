@@ -85,6 +85,7 @@ hud_search_init (HudSearch *self)
 	self->priv->matcher = NULL;
 	self->priv->window_changed_sig = 0;
 	self->priv->active_xid = 0;
+	self->priv->active_app = NULL;
 	self->priv->collector = NULL;
 	self->priv->usage = NULL;
 	self->priv->appmenu = NULL;
