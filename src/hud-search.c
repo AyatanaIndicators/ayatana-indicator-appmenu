@@ -306,13 +306,19 @@ search_current_app (HudSearch * search, const gchar * searchstr, GArray * usaged
 	GList * found_list = NULL;
 
 	get_current_window_address(search, &address, &path);
-	found_list = dbusmenu_collector_search(search->priv->collector, address, path, NULL, searchstr);
+
+	if (address != NULL && path != NULL) {
+		found_list = dbusmenu_collector_search(search->priv->collector, address, path, NULL, searchstr);
+	}
 
 	g_free(address);
 	g_free(path);
 
 	/* Set the name for the application */
-	const gchar * desktop_file = bamf_application_get_desktop_file(search->priv->active_app);
+	const gchar * desktop_file = NULL;
+	if (search->priv->active_app != NULL) {
+		desktop_file = bamf_application_get_desktop_file(search->priv->active_app);
+	}
 
 	if (desktop_file != NULL) {
 		GList * founditem = found_list;
