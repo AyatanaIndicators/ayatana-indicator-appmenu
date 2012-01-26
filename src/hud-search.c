@@ -161,7 +161,7 @@ hud_search_finalize (GObject *object)
 HudSearch *
 hud_search_new (void)
 {
-	HudSearch * ret = HUD_SEARCH(g_object_new(HUD_SEARCH_TYPE, NULL));
+	HudSearch * ret = g_object_new(HUD_SEARCH_TYPE, NULL);
 	return ret;
 }
 
