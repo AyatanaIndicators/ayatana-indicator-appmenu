@@ -1,9 +1,9 @@
-indicator-appmenu (0.3.2+hud5-0ubuntu1~ppa4) UNRELEASED; urgency=low
+indicator-appmenu (0.3.2+hud5-0ubuntu1~ppa4) precise; urgency=low
 
   * Upstream Merge
     * Fixing infinite loop on null list
 
- -- Ted Gould <ted@ubuntu.com>  Thu, 26 Jan 2012 11:04:24 -0600
+ -- Ted Gould <ted@ubuntu.com>  Thu, 26 Jan 2012 11:06:40 -0600
 
 indicator-appmenu (0.3.2+hud5-0ubuntu1~ppa3) precise; urgency=low
 
