@@ -2,8 +2,9 @@ indicator-appmenu (0.3.2+hud5-0ubuntu1~ppa3) UNRELEASED; urgency=low
 
   * Upstream Merge
     * Update to current trunk
+    * Hot fix for disappearing menus with new libindicator
 
- -- Ted Gould <ted@ubuntu.com>  Thu, 26 Jan 2012 10:48:18 -0600
+ -- Ted Gould <ted@ubuntu.com>  Thu, 26 Jan 2012 10:49:36 -0600
 
 indicator-appmenu (0.3.2+hud5-0ubuntu1~ppa2) precise; urgency=low
 
