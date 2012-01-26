@@ -20,54 +20,54 @@ You should have received a copy of the GNU General Public License along
 with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef __DBUSMENU_COLLECTOR_H__
-#define __DBUSMENU_COLLECTOR_H__
+#ifndef __MENUITEM_COLLECTOR_H__
+#define __MENUITEM_COLLECTOR_H__
 
 #include <glib.h>
 #include <glib-object.h>
 
 G_BEGIN_DECLS
 
-#define DBUSMENU_COLLECTOR_TYPE            (dbusmenu_collector_get_type ())
-#define DBUSMENU_COLLECTOR(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), DBUSMENU_COLLECTOR_TYPE, DbusmenuCollector))
-#define DBUSMENU_COLLECTOR_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), DBUSMENU_COLLECTOR_TYPE, DbusmenuCollectorClass))
-#define IS_DBUSMENU_COLLECTOR(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), DBUSMENU_COLLECTOR_TYPE))
-#define IS_DBUSMENU_COLLECTOR_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), DBUSMENU_COLLECTOR_TYPE))
-#define DBUSMENU_COLLECTOR_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), DBUSMENU_COLLECTOR_TYPE, DbusmenuCollectorClass))
+#define MENUITEM_COLLECTOR_TYPE            (menuitem_collector_get_type ())
+#define MENUITEM_COLLECTOR(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), MENUITEM_COLLECTOR_TYPE, MenuitemCollector))
+#define MENUITEM_COLLECTOR_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), MENUITEM_COLLECTOR_TYPE, MenuitemCollectorClass))
+#define IS_MENUITEM_COLLECTOR(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), MENUITEM_COLLECTOR_TYPE))
+#define IS_MENUITEM_COLLECTOR_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass), MENUITEM_COLLECTOR_TYPE))
+#define MENUITEM_COLLECTOR_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj), MENUITEM_COLLECTOR_TYPE, MenuitemCollectorClass))
 
-typedef struct _DbusmenuCollector          DbusmenuCollector;
-typedef struct _DbusmenuCollectorClass     DbusmenuCollectorClass;
-typedef struct _DbusmenuCollectorPrivate   DbusmenuCollectorPrivate;
-typedef struct _DbusmenuCollectorFound     DbusmenuCollectorFound;
+typedef struct _MenuitemCollector          MenuitemCollector;
+typedef struct _MenuitemCollectorClass     MenuitemCollectorClass;
+typedef struct _MenuitemCollectorPrivate   MenuitemCollectorPrivate;
+typedef struct _MenuitemCollectorFound     MenuitemCollectorFound;
 
-struct _DbusmenuCollectorClass {
+struct _MenuitemCollectorClass {
 	GObjectClass parent_class;
 };
 
-struct _DbusmenuCollector {
+struct _MenuitemCollector {
 	GObject parent;
 
-	DbusmenuCollectorPrivate * priv;
+	MenuitemCollectorPrivate * priv;
 };
 
-GType dbusmenu_collector_get_type (void);
-DbusmenuCollector * dbusmenu_collector_new (void);
-GList * dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, const gchar * prefix, const gchar * search);
-void dbusmenu_collector_execute (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, gint id, guint timestamp);
+GType menuitem_collector_get_type (void);
+MenuitemCollector * menuitem_collector_new (void);
+GList * menuitem_collector_search (MenuitemCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, const gchar * prefix, const gchar * search);
+void menuitem_collector_execute (MenuitemCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, gint id, guint timestamp);
 
-guint dbusmenu_collector_found_get_distance (DbusmenuCollectorFound * found);
-void dbusmenu_collector_found_set_distance (DbusmenuCollectorFound * found, guint distance);
-const gchar * dbusmenu_collector_found_get_display (DbusmenuCollectorFound * found);
-const gchar * dbusmenu_collector_found_get_db (DbusmenuCollectorFound * found);
-void dbusmenu_collector_found_free (DbusmenuCollectorFound * found);
-void dbusmenu_collector_found_list_free (GList * found_list);
-const gchar *  dbusmenu_collector_found_get_indicator (DbusmenuCollectorFound * found);
-void dbusmenu_collector_found_set_indicator (DbusmenuCollectorFound * found, const gchar * indicator);
-const gchar * dbusmenu_collector_found_get_dbus_addr (DbusmenuCollectorFound * found);
-const gchar * dbusmenu_collector_found_get_dbus_path (DbusmenuCollectorFound * found);
-gint dbusmenu_collector_found_get_dbus_id (DbusmenuCollectorFound * found);
-const gchar * dbusmenu_collector_found_get_app_icon (DbusmenuCollectorFound * found);
-void dbusmenu_collector_found_set_app_icon (DbusmenuCollectorFound * found, const gchar * app_icon);
+guint menuitem_collector_found_get_distance (MenuitemCollectorFound * found);
+void menuitem_collector_found_set_distance (MenuitemCollectorFound * found, guint distance);
+const gchar * menuitem_collector_found_get_display (MenuitemCollectorFound * found);
+const gchar * menuitem_collector_found_get_db (MenuitemCollectorFound * found);
+void menuitem_collector_found_free (MenuitemCollectorFound * found);
+void menuitem_collector_found_list_free (GList * found_list);
+const gchar *  menuitem_collector_found_get_indicator (MenuitemCollectorFound * found);
+void menuitem_collector_found_set_indicator (MenuitemCollectorFound * found, const gchar * indicator);
+const gchar * menuitem_collector_found_get_dbus_addr (MenuitemCollectorFound * found);
+const gchar * menuitem_collector_found_get_dbus_path (MenuitemCollectorFound * found);
+gint menuitem_collector_found_get_dbus_id (MenuitemCollectorFound * found);
+const gchar * menuitem_collector_found_get_app_icon (MenuitemCollectorFound * found);
+void menuitem_collector_found_set_app_icon (MenuitemCollectorFound * found, const gchar * app_icon);
 
 G_END_DECLS
 
