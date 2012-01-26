@@ -133,40 +133,18 @@ hud_search_dispose (GObject *object)
 {
 	HudSearch * self = HUD_SEARCH(object);
 
-	if (self->priv->search_settings != NULL) {
-		g_object_unref(self->priv->search_settings);
-		self->priv->search_settings = NULL;
-	}
-
-	if (self->priv->tracker != NULL) {
-		g_object_unref(self->priv->tracker);
-		self->priv->tracker = NULL;
-	}
+	g_clear_object(&self->priv->search_settings);
+	g_clear_object(&self->priv->tracker);
 
 	if (self->priv->window_changed_sig != 0) {
 		g_signal_handler_disconnect(self->priv->matcher, self->priv->window_changed_sig);
 		self->priv->window_changed_sig = 0;
 	}
 
-	if (self->priv->matcher != NULL) {
-		g_object_unref(self->priv->matcher);
-		self->priv->matcher = NULL;
-	}
-
-	if (self->priv->collector != NULL) {
-		g_object_unref(self->priv->collector);
-		self->priv->collector = NULL;
-	}
-
-	if (self->priv->usage != NULL) {
-		g_object_unref(self->priv->usage);
-		self->priv->usage = NULL;
-	}
-
-	if (self->priv->appmenu != NULL) {
-		g_object_unref(self->priv->appmenu);
-		self->priv->appmenu = NULL;
-	}
+	g_clear_object(&self->priv->matcher);
+	g_clear_object(&self->priv->collector);
+	g_clear_object(&self->priv->usage);
+	g_clear_object(&self->priv->appmenu);
 
 	G_OBJECT_CLASS (hud_search_parent_class)->dispose (object);
 	return;
