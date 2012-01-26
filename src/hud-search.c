@@ -262,6 +262,7 @@ desktop2icon (const gchar * desktop)
 	g_return_val_if_fail(desktop != NULL, g_strdup(""));
 
 	if (!g_file_test(desktop, G_FILE_TEST_EXISTS)) {
+		g_warning("Unable to find desktop file '%s'", desktop);
 		return g_strdup("");
 	}
 
@@ -270,6 +271,7 @@ desktop2icon (const gchar * desktop)
 	GDesktopAppInfo * appinfo = g_desktop_app_info_new_from_filename(desktop);
 
 	if (!G_IS_DESKTOP_APP_INFO(appinfo)) {
+		g_warning("Unable to parse desktop file '%s'", desktop);
 		return g_strdup("");
 	}
 
