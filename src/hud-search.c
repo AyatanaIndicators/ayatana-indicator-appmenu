@@ -540,7 +540,7 @@ hud_search_execute (HudSearch * search, GVariant * key, guint timestamp)
 {
 	g_return_if_fail(IS_HUD_SEARCH(search));
 	gchar * app = NULL;
-	gchar * display = NULL;
+	gchar * dbstring = NULL;
 	gchar * address = NULL;
 	gchar * path = NULL;
 	gint id = 0;
@@ -553,18 +553,18 @@ hud_search_execute (HudSearch * search, GVariant * key, guint timestamp)
 	}
 
 	if (unwrapped_key != NULL) {
-		g_variant_get(unwrapped_key, "(sssoi)", &app, &display, &address, &path, &id);
+		g_variant_get(unwrapped_key, "(sssoi)", &app, &dbstring, &address, &path, &id);
 	}
 
-	if (app != NULL && display != NULL && address != NULL && path != NULL && id != 0) {
+	if (app != NULL && dbstring != NULL && address != NULL && path != NULL && id != 0) {
 		dbusmenu_collector_execute(search->priv->collector, address, path, id, timestamp);
-		usage_tracker_mark_usage(search->priv->usage, app, display);
+		usage_tracker_mark_usage(search->priv->usage, app, dbstring);
 	}
 
 	g_free(address);
 	g_free(path);
 	g_free(app);
-	g_free(display);
+	g_free(dbstring);
 
 	if (unwrapped_key != NULL) {
 		g_variant_unref(unwrapped_key);
