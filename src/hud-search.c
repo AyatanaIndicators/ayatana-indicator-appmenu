@@ -237,9 +237,8 @@ found_list_to_usage_array (HudSearch * search, GList * found_list, GArray * usag
 	guint max_distance = get_settings_uint(search->priv->search_settings, "max-distance", 30);
 
 	GList * found = NULL;
-	found = found_list;
 
-	while (found != NULL) {
+	for (found = found_list; found != NULL; found = g_list_next(found)) {
 		usage_wrapper_t usage;
 		usage.found = (DbusmenuCollectorFound *)found->data;
 		usage.count = 0;
@@ -249,7 +248,6 @@ found_list_to_usage_array (HudSearch * search, GList * found_list, GArray * usag
 		}
 
 		g_array_append_val(usagedata, usage);
-		found = g_list_next(found);
 	}
 
 	return;
