@@ -523,8 +523,10 @@ hud_search_suggestions (HudSearch * search, const gchar * searchstr, gchar ** de
 		                                                    dbusmenu_collector_found_get_dbus_id(usage->found)
 		                                                    );
 
-		retval = g_list_append(retval, suggest);
+		retval = g_list_prepend(retval, suggest);
 	}
+
+	retval = g_list_reverse(retval);
 
 	/* Free the interim arrays of data */
 	g_array_free(usagedata, TRUE);
