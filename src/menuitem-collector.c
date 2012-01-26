@@ -30,7 +30,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 #include <libdbusmenu-glib/client.h>
 
-#include "dbusmenu-collector.h"
+#include "menuitem-collector.h"
 #include "distance.h"
 #include "shared-values.h"
 #include "utils.h"

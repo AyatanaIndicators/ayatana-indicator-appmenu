@@ -29,7 +29,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <gio/gdesktopappinfo.h>
 
 #include "hud-search.h"
-#include "dbusmenu-collector.h"
+#include "menuitem-collector.h"
 #include "indicator-tracker.h"
 #include "usage-tracker.h"
 #include "utils.h"

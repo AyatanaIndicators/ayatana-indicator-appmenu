@@ -4,7 +4,7 @@ data/com.canonical.indicator.appmenu.hud.search.gschema.xml.in
 src/hud-service.c
 src/indicator-tracker.c
 src/hud-dbus.c
-src/dbusmenu-collector.c
+src/menuitem-collector.c
 src/usage-tracker.c
 src/hud.interface.c
 src/hud-search.c
