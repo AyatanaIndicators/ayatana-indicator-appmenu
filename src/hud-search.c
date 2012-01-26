@@ -257,7 +257,7 @@ found_list_to_usage_array (HudSearch * search, GList * found_list, GArray * usag
 
 /* Take a path to a desktop file and find its icon */
 static gchar *
-desktop2icon (const gchar * desktop)
+desktop_to_icon (const gchar * desktop)
 {
 	g_return_val_if_fail(desktop != NULL, g_strdup(""));
 
@@ -316,7 +316,7 @@ search_current_app (HudSearch * search, const gchar * searchstr, GArray * usaged
 
 	if (desktop_file != NULL) {
 		GList * founditem = found_list;
-		gchar * icon = desktop2icon(desktop_file);
+		gchar * icon = desktop_to_icon(desktop_file);
 
 		while (founditem != NULL) {
 			DbusmenuCollectorFound * found = (DbusmenuCollectorFound *)founditem->data;
