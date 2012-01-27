@@ -247,23 +247,17 @@ menu_key_destroy (gpointer key)
 static gchar *
 remove_underline (const gchar * input)
 {
-	const gchar * in = input;
-	gchar * output = g_strdup(input);
-	gchar * out = output;
+	const gunichar underline = g_utf8_get_char("_");
+	GString * output = g_string_sized_new (strlen(input)+1);
 
-	while (in[0] != '\0') {
-		if (g_utf8_get_char(in) == '_') {
-			in = g_utf8_next_char(in);
-		} else {
-			g_utf8_strncpy(out, in, 1);
-			/* TODO: Don't copy a character at a time.  Do a bulk copy at the
-			   points we need it */
-			in = g_utf8_next_char(in);
-			out = g_utf8_next_char(out);
-		}
+	const gchar * begin = input;
+	const gchar * end;
+	while ((end = g_utf8_strchr (begin, -1, underline))) {
+		g_string_append_len (output, begin, end-begin);
+		begin = g_utf8_next_char (end);
 	}
-
-	return output;
+	g_string_append (output, begin);
+	return g_string_free (output, FALSE);
 }
 
 static GStrv
