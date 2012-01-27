@@ -73,8 +73,6 @@ struct _search_item_t {
 	guint distance;
 };
 
-static void dbusmenu_collector_class_init (DbusmenuCollectorClass *klass);
-static void dbusmenu_collector_init       (DbusmenuCollector *self);
 static void dbusmenu_collector_dispose    (GObject *object);
 static void dbusmenu_collector_finalize   (GObject *object);
 static void update_layout_cb (GDBusConnection * connection, const gchar * sender, const gchar * path, const gchar * interface, const gchar * signal, GVariant * params, gpointer user_data);

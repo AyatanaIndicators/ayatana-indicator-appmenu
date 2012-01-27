@@ -56,8 +56,6 @@ typedef enum {
 #define USAGE_TRACKER_GET_PRIVATE(o) \
 (G_TYPE_INSTANCE_GET_PRIVATE ((o), USAGE_TRACKER_TYPE, UsageTrackerPrivate))
 
-static void usage_tracker_class_init (UsageTrackerClass *klass);
-static void usage_tracker_init       (UsageTracker *self);
 static void usage_tracker_dispose    (GObject *object);
 static void usage_tracker_finalize   (GObject *object);
 static void cleanup_db               (UsageTracker * self);

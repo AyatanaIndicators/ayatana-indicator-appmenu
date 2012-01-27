@@ -71,8 +71,6 @@ struct _IndicatorTrackerPrivate {
 #define INDICATOR_TRACKER_GET_PRIVATE(o) \
 (G_TYPE_INSTANCE_GET_PRIVATE ((o), INDICATOR_TRACKER_TYPE, IndicatorTrackerPrivate))
 
-static void indicator_tracker_class_init (IndicatorTrackerClass *klass);
-static void indicator_tracker_init       (IndicatorTracker *self);
 static void indicator_tracker_dispose    (GObject *object);
 static void indicator_tracker_finalize   (GObject *object);
 static void system_watch_appeared        (GDBusConnection * connection, const gchar * name, const gchar * name_owner, gpointer user_data);
