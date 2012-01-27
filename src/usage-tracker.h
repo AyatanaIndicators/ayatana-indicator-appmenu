@@ -23,7 +23,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __USAGE_TRACKER_H__
 #define __USAGE_TRACKER_H__
 
-#include <glib.h>
 #include <glib-object.h>
 
 G_BEGIN_DECLS

@@ -20,9 +20,8 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <unistd.h>
-#include <glib.h>
-#include <glib/gstdio.h>
 #include <glib-object.h>
+#include <glib/gstdio.h>
 #include "load-app-info.h"
 
 static void

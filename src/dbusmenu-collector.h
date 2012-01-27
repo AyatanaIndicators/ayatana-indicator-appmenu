@@ -23,7 +23,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __DBUSMENU_COLLECTOR_H__
 #define __DBUSMENU_COLLECTOR_H__
 
-#include <glib.h>
 #include <glib-object.h>
 
 G_BEGIN_DECLS
