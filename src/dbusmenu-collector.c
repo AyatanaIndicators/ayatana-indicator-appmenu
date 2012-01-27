@@ -347,7 +347,7 @@ menuitem_to_tokens (DbusmenuMenuitem * item, GStrv label_prefix)
 }
 
 static GList *
-tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GList * results, GStrv label_prefix, DbusmenuClient * client, const gchar * indicator_name)
+tokens_to_children (DbusmenuCollector * collector, DbusmenuMenuitem * rootitem, const gchar * search, GList * results, GStrv label_prefix, DbusmenuClient * client, const gchar * indicator_name)
 {
 	if (search == NULL) {
 		return results;
@@ -391,7 +391,7 @@ tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GList * r
 	for (child = children; child != NULL; child = g_list_next(child)) {
 		DbusmenuMenuitem * item = DBUSMENU_MENUITEM(child->data);
 
-		results = tokens_to_children(item, search, results, newstr, client, indicator_name);
+		results = tokens_to_children(collector, item, search, results, newstr, client, indicator_name);
 	}
 
 	g_strfreev(newstr);
@@ -424,7 +424,7 @@ process_client (DbusmenuCollector * collector, DbusmenuClient * client, const gc
 		return results;
 	}
 
-	results = tokens_to_children(dbusmenu_client_get_root(client), search, results, prefix, client, indicator_name);
+	results = tokens_to_children(collector, dbusmenu_client_get_root(client), search, results, prefix, client, indicator_name);
 	return results;
 }
 
