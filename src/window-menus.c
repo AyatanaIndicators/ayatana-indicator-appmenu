@@ -78,8 +78,6 @@ static guint signals[LAST_SIGNAL] = { 0 };
 
 /* Prototypes */
 
-static void window_menus_class_init (WindowMenusClass *klass);
-static void window_menus_init       (WindowMenus *self);
 static void window_menus_dispose    (GObject *object);
 static void root_changed            (DbusmenuClient * client, DbusmenuMenuitem * new_root, gpointer user_data);
 static void event_status            (DbusmenuClient * client, DbusmenuMenuitem * mi, gchar * event, GVariant * evdata, guint timestamp, GError * error, gpointer user_data);

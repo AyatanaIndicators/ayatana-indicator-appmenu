@@ -139,12 +139,8 @@ struct _IndicatorAppmenuDebug {
 /**********************
   Prototypes
  **********************/
-static void indicator_appmenu_class_init                             (IndicatorAppmenuClass *klass);
-static void indicator_appmenu_init                                   (IndicatorAppmenu *self);
 static void indicator_appmenu_dispose                                (GObject *object);
 static void indicator_appmenu_finalize                               (GObject *object);
-static void indicator_appmenu_debug_class_init                       (IndicatorAppmenuDebugClass *klass);
-static void indicator_appmenu_debug_init                             (IndicatorAppmenuDebug *self);
 static void indicator_appmenu_debug_dispose                          (GObject *object);
 static void build_window_menus                                       (IndicatorAppmenu * iapp);
 static GList * get_entries                                           (IndicatorObject * io);

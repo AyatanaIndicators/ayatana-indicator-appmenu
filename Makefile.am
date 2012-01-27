@@ -1,13 +1,19 @@
+ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 
 SUBDIRS = \
+	data \
+	po \
 	src \
-	data
+	docs
 
 if BUILD_TESTS
 SUBDIRS += \
 	scripts \
+	tests \
 	tools
 endif
+
+tests: src
 
 DISTCHECK_CONFIGURE_FLAGS = --enable-localinstall --enable-deprecations
 

@@ -22,7 +22,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __WINDOW_MENUS_H__
 #define __WINDOW_MENUS_H__
 
-#include <glib.h>
 #include <glib-object.h>
 #include <libindicator/indicator-object.h>
 #include <libdbusmenu-glib/client.h>
