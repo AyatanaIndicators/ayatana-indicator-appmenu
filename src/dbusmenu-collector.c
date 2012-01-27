@@ -358,6 +358,9 @@ tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GList * r
 	/* We can only evaluate these properties if we know the type */
 	if (!dbusmenu_menuitem_property_exist(rootitem, DBUSMENU_MENUITEM_PROP_TYPE) ||
 			g_strcmp0(dbusmenu_menuitem_property_get(rootitem, DBUSMENU_MENUITEM_PROP_TYPE), DBUSMENU_CLIENT_TYPES_DEFAULT) == 0) {
+		/* Skip the items that are disabled or not visible as they wouldn't
+		   be usable in the application so we don't want to show them and
+		   act like they're usable in the HUD either */
 		if (!dbusmenu_menuitem_property_get_bool(rootitem, DBUSMENU_MENUITEM_PROP_ENABLED)) {
 			return results;
 		}
@@ -460,6 +463,20 @@ just_do_it (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar 
 	return results;
 }
 
+/**
+	dbusmenu_collector_search:
+	@collector: The #DbusmenuCollector object
+	@dbus_addr: Address on DBus for the menus to search
+	@dbus_path: Path the to object we should search
+	@prefix: Possible a string prefix for the name in the app
+	@search: Search string being used
+
+	Searches through a set of menus that should be collected in this
+	object.  Returns any reasonable matches from the set of menus.
+
+	Return Value: (element-type DbusmenuCollectorFound) (transfer full):
+		List of entries that match as #DbusmenueCollectorFound objects
+*/
 GList *
 dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, const gchar * prefix, const gchar * search)
 {
