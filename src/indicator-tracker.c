@@ -2,7 +2,7 @@
 Tracks the various indicators to know when they come on and off
 the bus for searching their menus.
 
-Copyright 2011 Canonical Ltd.
+Copyright 2011-2012 Canonical Ltd.
 
 Authors:
     Ted Gould <ted@canonical.com>
