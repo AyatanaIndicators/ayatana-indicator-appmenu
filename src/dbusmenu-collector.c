@@ -374,7 +374,7 @@ tokens_to_children (DbusmenuCollector * collector, DbusmenuMenuitem * rootitem, 
 	if (!dbusmenu_menuitem_get_root(rootitem) && newstr != NULL) {
 		GStrv used_strings = NULL;
 		guint distance = calculate_distance(search, newstr, &used_strings);
-		if (distance < G_MAXUINT) {
+		if (distance < get_settings_uint(collector->priv->search_settings, "max-distance", 30)) {
 			// g_debug("Distance %d for '%s' in \"'%s'\" using \"'%s'\"", distance, search, g_strjoinv("' '", newstr), g_strjoinv("' '", used_strings));
 			results = g_list_prepend(results, dbusmenu_collector_found_new(client, rootitem, newstr, distance, used_strings, indicator_name));
 		}
