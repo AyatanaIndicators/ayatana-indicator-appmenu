@@ -19,9 +19,8 @@ You should have received a copy of the GNU General Public License along
 with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#include <glib.h>
-#include <glib/gprintf.h>
 #include <glib-object.h>
+#include <glib/gprintf.h>
 #include <glib/gi18n.h>
 #include <gio/gio.h>
 

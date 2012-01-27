@@ -2,7 +2,7 @@
 Tracks the various indicators to know when they come on and off
 the bus for searching their menus.
 
-Copyright 2011 Canonical Ltd.
+Copyright 2011-2012 Canonical Ltd.
 
 Authors:
     Ted Gould <ted@canonical.com>
@@ -42,7 +42,9 @@ SystemIndicator system_indicators[] = {
 	{dbus_name: "com.canonical.indicator.datetime", dbus_menu_path: "/com/canonical/indicator/datetime/menu", indicator_name: "indicator-datetime",       user_visible_name: N_("Date"),      icon: "office-calendar"},
 	{dbus_name: "com.canonical.indicator.session",  dbus_menu_path: "/com/canonical/indicator/session/menu",  indicator_name: "indicator-session-device", user_visible_name: N_("Device"),    icon: "system-devices-panel"},
 	{dbus_name: "com.canonical.indicator.session",  dbus_menu_path: "/com/canonical/indicator/users/menu",    indicator_name: "indicator-session-user",   user_visible_name: N_("Users"),     icon: "avatar-default"},
+	/* TODO: Delete this after everyone has the new version */
 	{dbus_name: "com.canonical.indicators.sound",   dbus_menu_path: "/com/canonical/indicators/sound/menu",   indicator_name: "indicator-sound",          user_visible_name: N_("Sound"),     icon: "audio-volume-high-panel"},
+	{dbus_name: "com.canonical.indicator.sound",    dbus_menu_path: "/com/canonical/indicator/sound/menu",    indicator_name: "indicator-sound",          user_visible_name: N_("Sound"),     icon: "audio-volume-high-panel"},
 	{dbus_name: "com.canonical.indicator.messages", dbus_menu_path: "/com/canonical/indicator/messages/menu", indicator_name: "indicator-messages",       user_visible_name: N_("Messages"),  icon: "indicator-messages"}
 };
 
@@ -69,8 +71,6 @@ struct _IndicatorTrackerPrivate {
 #define INDICATOR_TRACKER_GET_PRIVATE(o) \
 (G_TYPE_INSTANCE_GET_PRIVATE ((o), INDICATOR_TRACKER_TYPE, IndicatorTrackerPrivate))
 
-static void indicator_tracker_class_init (IndicatorTrackerClass *klass);
-static void indicator_tracker_init       (IndicatorTracker *self);
 static void indicator_tracker_dispose    (GObject *object);
 static void indicator_tracker_finalize   (GObject *object);
 static void system_watch_appeared        (GDBusConnection * connection, const gchar * name, const gchar * name_owner, gpointer user_data);
@@ -161,10 +161,7 @@ indicator_tracker_dispose (GObject *object)
 		self->priv->app_proxy_cancel = NULL;
 	}
 
-	if (self->priv->app_proxy != NULL) {
-		g_object_unref(self->priv->app_proxy);
-		self->priv->app_proxy = NULL;
-	}
+	g_clear_object(&self->priv->app_proxy);
 
 	G_OBJECT_CLASS (indicator_tracker_parent_class)->dispose (object);
 	return;
@@ -532,7 +529,7 @@ app_proxy_signal (GDBusProxy *proxy, gchar * sender_name, gchar * signal_name, G
 		}
 	} else if (g_strcmp0(signal_name, "ApplicationIconChanged") == 0) {
 		gchar * iconname = NULL;
-		guint position;
+		guint position = 0;
 		gchar * accessibledesc = NULL;
 
 		g_variant_get(parameters, "(iss)",
@@ -590,6 +587,7 @@ static gboolean
 app_proxy_remove_indicator(IndicatorTracker * self, gint position)
 {
 	if (position >= self->priv->app_indicators->len) {
+		g_warning("Application removed for position outside of array");
 		return FALSE;
 	}
 

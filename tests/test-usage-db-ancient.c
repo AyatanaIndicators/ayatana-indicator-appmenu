@@ -27,6 +27,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "usage-tracker.h"
 #include "usage-tracker.c"
 #include "utils.c"
+#include "create-db.c"
 
 gint
 main (gint argc, gchar * argv[])

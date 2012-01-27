@@ -20,10 +20,10 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
 #include <unistd.h>
-#include <glib.h>
-#include <glib/gstdio.h>
 #include <glib-object.h>
+#include <glib/gstdio.h>
 #include "load-app-info.h"
+#include "create-db.h"
 
 static void
 build_db (sqlite3 * db)
@@ -32,7 +32,7 @@ build_db (sqlite3 * db)
 	int exec_status = SQLITE_OK;
 	gchar * failstring = NULL;
 	exec_status = sqlite3_exec(db,
-	                           "create table usage (application text, entry text, timestamp datetime);",
+	                           create_db,
 	                           NULL, NULL, &failstring);
 	if (exec_status != SQLITE_OK) {
 		g_warning("Unable to create table: %s", failstring);

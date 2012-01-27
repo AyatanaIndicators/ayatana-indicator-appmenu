@@ -181,11 +181,11 @@ check_PROGRAMS += \
 
 USAGE_TESTAPP_XML_REPORT = test-usage-db-testapp.xml
 
-test-usage-db-testapp-test: test-usage-db-testapp good-app-info/testapp.desktop.hud-app-info good-app-info/testapp100.desktop.hud-app-info test-create-db.sql Makefile.am
+test-usage-db-testapp-test: test-usage-db-testapp good-app-info/testapp.desktop.hud-app-info good-app-info/testapp100.desktop.hud-app-info $(top_srcdir)/src/create-db.sql Makefile.am
 	@echo "#!/bin/bash -e" > $@
 	@echo cd \`mktemp -d $(abs_builddir)/test-usage-db-testapp.dir.XXXXXX\` >> $@
 	@echo mkdir -p indicator-appmenu >> $@
-	@echo cat $(abs_srcdir)/test-create-db.sql \| sqlite3 indicator-appmenu/hud-usage-log.sqlite >> $@
+	@echo cat $(abs_top_srcdir)/src/create-db.sql \| sqlite3 indicator-appmenu/hud-usage-log.sqlite >> $@
 	@echo export HUD_CACHE_DIR=\`pwd\` >> $@
 	@echo export HUD_APP_INFO_DIR=$(abs_srcdir)/good-app-info >> $@
 	@echo export GSETTINGS_BACKEND=memory >> $@
@@ -209,7 +209,6 @@ test_usage_db_testapp_LDADD = \
 	$(HUD_LIBS)
 
 EXTRA_DIST += \
-	test-create-db.sql \
 	good-app-info/testapp100.desktop.hud-app-info \
 	good-app-info/testapp.desktop.hud-app-info
 
