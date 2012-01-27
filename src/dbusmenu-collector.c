@@ -458,6 +458,8 @@ just_do_it (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar 
 GList *
 dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, const gchar * prefix, const gchar * search)
 {
+	g_return_val_if_fail(IS_DBUSMENU_COLLECTOR(collector), NULL);
+
 	GList * items = NULL;
 	GStrv prefixarray = NULL;
 	gchar * localprefixarray[2];
