@@ -118,15 +118,8 @@ usage_tracker_dispose (GObject *object)
 
 	cleanup_db(self);
 
-	if (self->priv->drop_timer != 0) {
-		g_source_remove(self->priv->drop_timer);
-		self->priv->drop_timer = 0;
-	}
-
-	if (self->priv->settings != NULL) {
-		g_object_unref(self->priv->settings);
-		self->priv->settings = NULL;
-	}
+	g_clear_object(&self->priv->drop_timer);
+	g_clear_object(&self->priv->settings);
 
 	G_OBJECT_CLASS (usage_tracker_parent_class)->dispose (object);
 	return;
