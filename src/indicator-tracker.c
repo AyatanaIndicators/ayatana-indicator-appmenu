@@ -590,6 +590,7 @@ static gboolean
 app_proxy_remove_indicator(IndicatorTracker * self, gint position)
 {
 	if (position >= self->priv->app_indicators->len) {
+		g_warning("Application removed for position outside of array");
 		return FALSE;
 	}
 
