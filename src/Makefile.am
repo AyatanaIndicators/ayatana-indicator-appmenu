@@ -83,8 +83,8 @@ BUILT_SOURCES += \
 hud_service_SOURCES = \
 	create-db.h \
 	create-db.c \
-	dbusmenu-collector.h \
-	dbusmenu-collector.c \
+	menuitem-collector.h \
+	menuitem-collector.c \
 	distance.h \
 	distance.c \
 	dump-app-info.h \

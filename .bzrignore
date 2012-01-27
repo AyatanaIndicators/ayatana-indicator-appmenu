@@ -125,7 +125,7 @@ coveragereport
 src/hud_cli-hud-cli.gcno
 src/hud_dump_application-dump-app-info.gcno
 src/hud_dump_application-hud-dump-application.gcno
-src/hud_service-dbusmenu-collector.gcno
+src/hud_service-menuitem-collector.gcno
 src/hud_service-distance.gcno
 src/hud_service-dump-app-info.gcno
 src/hud_service-hud-dbus.gcno
@@ -169,3 +169,4 @@ tests/test_usage_db_simple-test-usage-db-simple.gcno
 tests/test_usage_db_testapp-test-usage-db-testapp.gcda
 tests/test_usage_db_testapp-test-usage-db-testapp.gcno
 create-db.c
+po/indicator-appmenu.pot
