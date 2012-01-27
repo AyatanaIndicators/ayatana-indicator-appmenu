@@ -81,7 +81,7 @@ static void update_layout_cb (GDBusConnection * connection, const gchar * sender
 static guint menu_hash_func (gconstpointer key);
 static gboolean menu_equal_func (gconstpointer a, gconstpointer b);
 static void menu_key_destroy (gpointer key);
-static DbusmenuCollectorFound * dbusmenu_collector_found_new (DbusmenuClient * client, DbusmenuMenuitem * item, GStrv strings, guint distance, GStrv usedstrings, const gchar * indicator_name);
+static DbusmenuCollectorFound * dbusmenu_collector_found_new (DbusmenuClient * client, DbusmenuMenuitem * item, GStrv strings, guint distance, GStrv usedstrings);
 
 G_DEFINE_TYPE (DbusmenuCollector, dbusmenu_collector, G_TYPE_OBJECT);
 
@@ -340,7 +340,7 @@ menuitem_to_tokens (DbusmenuMenuitem * item, GStrv label_prefix)
 }
 
 static GList *
-tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GList * results, GStrv label_prefix, DbusmenuClient * client, const gchar * indicator_name)
+tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GList * results, GStrv label_prefix, DbusmenuClient * client)
 {
 	if (search == NULL) {
 		return results;
@@ -369,7 +369,7 @@ tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GList * r
 		guint distance = calculate_distance(search, newstr, &used_strings);
 		if (distance < G_MAXUINT) {
 			// g_debug("Distance %d for '%s' in \"'%s'\" using \"'%s'\"", distance, search, g_strjoinv("' '", newstr), g_strjoinv("' '", used_strings));
-			results = g_list_prepend(results, dbusmenu_collector_found_new(client, rootitem, newstr, distance, used_strings, indicator_name));
+			results = g_list_prepend(results, dbusmenu_collector_found_new(client, rootitem, newstr, distance, used_strings));
 		}
 		g_strfreev(used_strings);
 	}
@@ -384,7 +384,7 @@ tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GList * r
 	for (child = children; child != NULL; child = g_list_next(child)) {
 		DbusmenuMenuitem * item = DBUSMENU_MENUITEM(child->data);
 
-		results = tokens_to_children(item, search, results, newstr, client, indicator_name);
+		results = tokens_to_children(item, search, results, newstr, client);
 	}
 
 	g_strfreev(newstr);
@@ -392,7 +392,7 @@ tokens_to_children (DbusmenuMenuitem * rootitem, const gchar * search, GList * r
 }
 
 static GList *
-process_client (DbusmenuCollector * collector, DbusmenuClient * client, const gchar * search, GList * results, const gchar * indicator_name, GStrv prefix)
+process_client (DbusmenuCollector * collector, DbusmenuClient * client, const gchar * search, GList * results, GStrv prefix)
 {
 	/* Handle the case where there are no search terms */
 	if (search == NULL || search[0] == '\0') {
@@ -411,13 +411,13 @@ process_client (DbusmenuCollector * collector, DbusmenuClient * client, const gc
 			array[0] = label;
 			array[1] = NULL;
 
-			results = g_list_prepend(results, dbusmenu_collector_found_new(client, item, (GStrv)array, calculate_distance(NULL, (GStrv)array, NULL), NULL, indicator_name));
+			results = g_list_prepend(results, dbusmenu_collector_found_new(client, item, (GStrv)array, calculate_distance(NULL, (GStrv)array, NULL), NULL));
 		}
 
 		return results;
 	}
 
-	results = tokens_to_children(dbusmenu_client_get_root(client), search, results, prefix, client, indicator_name);
+	results = tokens_to_children(dbusmenu_client_get_root(client), search, results, prefix, client);
 	return results;
 }
 
@@ -432,8 +432,9 @@ hash_print (gpointer key, gpointer value, gpointer user_data)
 }
 
 static GList *
-just_do_it (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, const gchar * search, GList * results, const gchar * indicator_name, GStrv prefix)
+just_do_it (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar * dbus_path, const gchar * search, GStrv prefix)
 {
+	GList * results = NULL;
 	g_return_val_if_fail(IS_DBUSMENU_COLLECTOR(collector), results);
 
 	menu_key_t search_key = {
@@ -443,7 +444,7 @@ just_do_it (DbusmenuCollector * collector, const gchar * dbus_addr, const gchar 
 
 	gpointer found = g_hash_table_lookup(collector->priv->hash, &search_key);
 	if (found != NULL) {
-		results = process_client(collector, DBUSMENU_CLIENT(found), search, results, indicator_name, prefix);
+		results = process_client(collector, DBUSMENU_CLIENT(found), search, results, prefix);
 	} else {
 		g_warning("Unable to find menu '%s' on '%s' with hash '%u'", dbus_path, dbus_addr, menu_hash_func(&search_key));
 
@@ -469,7 +470,7 @@ dbusmenu_collector_search (DbusmenuCollector * collector, const gchar * dbus_add
 	}
 
 	if (dbus_addr != NULL && dbus_path != NULL) {
-		items = just_do_it(collector, dbus_addr, dbus_path, search, NULL, NULL, prefixarray);
+		items = just_do_it(collector, dbus_addr, dbus_path, search, prefixarray);
 	}
 
 	return items;
@@ -546,7 +547,7 @@ dbusmenu_collector_found_list_free (GList * found_list)
 }
 
 static DbusmenuCollectorFound *
-dbusmenu_collector_found_new (DbusmenuClient * client, DbusmenuMenuitem * item, GStrv strings, guint distance, GStrv usedstrings, const gchar * indicator_name)
+dbusmenu_collector_found_new (DbusmenuClient * client, DbusmenuMenuitem * item, GStrv strings, guint distance, GStrv usedstrings)
 {
 	// g_debug("New Found: '%s', %d, '%s'", string, distance, indicator_name);
 	DbusmenuCollectorFound * found = g_new0(DbusmenuCollectorFound, 1);
@@ -612,10 +613,6 @@ dbusmenu_collector_found_new (DbusmenuClient * client, DbusmenuMenuitem * item, 
 			g_free(bold);
 			g_free(nounder);
 		}
-	}
-
-	if (indicator_name != NULL) {
-		found->indicator = g_strdup(indicator_name);
 	}
 
 	g_object_ref(G_OBJECT(item));
