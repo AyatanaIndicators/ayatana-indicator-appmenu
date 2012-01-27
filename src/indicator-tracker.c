@@ -161,10 +161,7 @@ indicator_tracker_dispose (GObject *object)
 		self->priv->app_proxy_cancel = NULL;
 	}
 
-	if (self->priv->app_proxy != NULL) {
-		g_object_unref(self->priv->app_proxy);
-		self->priv->app_proxy = NULL;
-	}
+	g_clear_object(&self->priv->app_proxy);
 
 	G_OBJECT_CLASS (indicator_tracker_parent_class)->dispose (object);
 	return;
