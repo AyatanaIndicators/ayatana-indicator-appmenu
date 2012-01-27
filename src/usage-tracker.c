@@ -359,8 +359,6 @@ build_db (UsageTracker * self)
 		g_warning("Unable to create table: %s", failstring);
 	}
 
-	/* Import data from the system */
-
 	return;
 }
 
