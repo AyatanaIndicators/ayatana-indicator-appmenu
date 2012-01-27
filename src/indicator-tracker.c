@@ -532,7 +532,7 @@ app_proxy_signal (GDBusProxy *proxy, gchar * sender_name, gchar * signal_name, G
 		}
 	} else if (g_strcmp0(signal_name, "ApplicationIconChanged") == 0) {
 		gchar * iconname = NULL;
-		guint position;
+		guint position = 0;
 		gchar * accessibledesc = NULL;
 
 		g_variant_get(parameters, "(iss)",
