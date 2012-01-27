@@ -368,6 +368,8 @@ void
 usage_tracker_mark_usage (UsageTracker * self, const gchar * application, const gchar * entry)
 {
 	g_return_if_fail(IS_USAGE_TRACKER(self));
+	g_return_if_fail(self->priv->db != NULL);
+
 	check_app_init(self, application);
 
 	sqlite3_reset(self->priv->insert_entry);
@@ -401,6 +403,8 @@ guint
 usage_tracker_get_usage (UsageTracker * self, const gchar * application, const gchar * entry)
 {
 	g_return_val_if_fail(IS_USAGE_TRACKER(self), 0);
+	g_return_val_if_fail(self->priv->db != NULL, 0);
+
 	check_app_init(self, application);
 
 	sqlite3_reset(self->priv->entry_count);
