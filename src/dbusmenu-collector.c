@@ -153,15 +153,14 @@ dbusmenu_collector_dispose (GObject *object)
 		collector->priv->signal = 0;
 	}
 
+	g_clear_object(&collector->priv->bus);
+
 	if (collector->priv->hash != NULL) {
 		g_hash_table_destroy(collector->priv->hash);
 		collector->priv->hash = NULL;
 	}
 
-	if (collector->priv->search_settings != NULL) {
-		g_object_unref(collector->priv->search_settings);
-		collector->priv->search_settings = NULL;
-	}
+	g_clear_object(&collector->priv->search_settings);
 
 	G_OBJECT_CLASS (dbusmenu_collector_parent_class)->dispose (object);
 	return;
