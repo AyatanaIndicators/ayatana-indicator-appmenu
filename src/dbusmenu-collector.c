@@ -194,7 +194,7 @@ update_layout_cb (GDBusConnection * connection, const gchar * sender, const gcha
 
 	gpointer found = g_hash_table_lookup(collector->priv->hash, &search_key);
 	if (found == NULL) {
-		/* Build one becasue we don't have it */
+		/* Build one because we don't have it */
 		menu_key_t * built_key = g_new0(menu_key_t, 1);
 		built_key->sender = g_strdup(sender);
 		built_key->path = g_strdup(path);
