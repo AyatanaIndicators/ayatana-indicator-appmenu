@@ -81,6 +81,8 @@ BUILT_SOURCES += \
 ####################
 
 hud_service_SOURCES = \
+	create-db.h \
+	create-db.c \
 	dbusmenu-collector.h \
 	dbusmenu-collector.c \
 	distance.h \
@@ -111,6 +113,16 @@ hud_service_CFLAGS = \
 	-Wall -Werror
 hud_service_LDFLAGS = \
 	$(HUD_LIBS)
+
+create-db.c: create-db.sql
+	echo "#include \"create-db.h\"" > $@
+	echo -n "const gchar * create_db = \"" >> $@
+	cat $< | xargs printf "%s " >> $@
+	echo -n "\";" >> $@
+
+CLEANFILES += \
+	create-db.c
+
 
 ####################
 # HUD CLI
@@ -161,6 +173,8 @@ hud_dump_application_LDFLAGS = \
 #######################
 
 hud_verify_app_info_SOURCES = \
+	create-db.h \
+	create-db.c \
 	load-app-info.h \
 	load-app-info.c \
 	hud-verify-app-info.c
@@ -177,7 +191,8 @@ hud_verify_app_info_LDFLAGS = \
 ####################
 
 EXTRA_DIST += \
-	hud.xml
+	hud.xml \
+	create-db.sql
 
 BUILT_SOURCES += \
 	hud.interface.c \

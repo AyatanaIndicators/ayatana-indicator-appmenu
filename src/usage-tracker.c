@@ -31,6 +31,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "usage-tracker.h"
 #include "load-app-info.h"
 #include "utils.h"
+#include "create-db.h"
 
 struct _UsageTrackerPrivate {
 	gchar * cachefile;
@@ -344,7 +345,7 @@ build_db (UsageTracker * self)
 	int exec_status = SQLITE_OK;
 	gchar * failstring = NULL;
 	exec_status = sqlite3_exec(self->priv->db,
-	                           "create table usage (application text, entry text, timestamp datetime);",
+	                           create_db,
 	                           NULL, NULL, &failstring);
 	if (exec_status != SQLITE_OK) {
 		g_warning("Unable to create table: %s", failstring);
