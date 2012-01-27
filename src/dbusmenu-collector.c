@@ -244,7 +244,7 @@ menu_key_destroy (gpointer key)
 	return;
 }
 
-gchar *
+static gchar *
 remove_underline (const gchar * input)
 {
 	const gchar * in = input;
