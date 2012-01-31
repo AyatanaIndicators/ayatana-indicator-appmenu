@@ -150,8 +150,9 @@ static void build_window_menus                                       (IndicatorA
 static GList * get_entries                                           (IndicatorObject * io);
 static guint get_location                                            (IndicatorObject * io,
                                                                       IndicatorObjectEntry * entry);
-static void entry_activate                                           (IndicatorObject * io,
+static void entry_activate_window                                    (IndicatorObject * io,
                                                                       IndicatorObjectEntry * entry,
+                                                                      guint windowid,
                                                                       guint timestamp);
 static void switch_default_app                                       (IndicatorAppmenu * iapp,
                                                                       WindowMenus * newdef,
@@ -260,7 +261,7 @@ indicator_appmenu_class_init (IndicatorAppmenuClass *klass)
 
 	ioclass->get_entries = get_entries;
 	ioclass->get_location = get_location;
-	ioclass->entry_activate = entry_activate;
+	ioclass->entry_activate_window = entry_activate_window;
 
 	/* Setting up the DBus interfaces */
 	if (node_info == NULL) {
@@ -986,7 +987,7 @@ get_location (IndicatorObject * io, IndicatorObjectEntry * entry)
 
 /* Responds to a menuitem being activated on the panel. */
 static void
-entry_activate (IndicatorObject * io, IndicatorObjectEntry * entry, guint timestamp)
+entry_activate_window (IndicatorObject * io, IndicatorObjectEntry * entry, guint windowid, guint timestamp)
 {
 	IndicatorAppmenu * iapp = INDICATOR_APPMENU(io);
 
