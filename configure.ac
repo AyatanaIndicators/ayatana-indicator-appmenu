@@ -1,24 +1,29 @@
+AC_INIT([indicator-appmenu],
+        [0.3.2+hud5],
+        [http://bugs.launchpad.net/indicator-appmenu],
+        [indicator-appmenu],
+        [http://launchpad.net/indicator-appmenu])
 
-AC_INIT(indicator-appmenu, 0.3.2, ted@canonical.com)
 AC_COPYRIGHT([Copyright 2010 Canonical])
 
 AC_PREREQ(2.53)
 
 AM_CONFIG_HEADER(config.h)
-AM_INIT_AUTOMAKE(indicator-appmenu, 0.3.2)
-
-AM_MAINTAINER_MODE
-
-AC_ISC_POSIX
-AC_PROG_CC
-AM_PROG_CC_C_O
-AC_STDC_HEADERS
-AC_PROG_LIBTOOL
-
-AC_SUBST(VERSION)
+AC_CONFIG_SRCDIR([configure.ac])
 AC_CONFIG_MACRO_DIR([m4])
 
-m4_ifdef([AM_SILENT_RULES],[AM_SILENT_RULES([yes])])
+AM_INIT_AUTOMAKE([1.11 -Wall foreign subdir-objects])
+AM_MAINTAINER_MODE([enable])
+
+AM_SILENT_RULES([yes])
+
+# Check for programs
+AC_PROG_CC
+AM_PROG_CC_C_O
+
+# Initialize libtool
+LT_PREREQ([2.2.6])
+LT_INIT
 
 AC_PATH_PROG([GLIB_MKENUMS], [glib-mkenums])
 AC_PATH_PROG([GLIB_GENMARSHAL], [glib-genmarshal])
@@ -41,6 +46,11 @@ AS_IF([test "x$enable_deprecations" = xno],
 GTK_DOC_CHECK([1.9])
 AC_CONFIG_MACRO_DIR(m4)
 
+###########################
+# GLib GSettings
+###########################
+
+GLIB_GSETTINGS
 
 ###########################
 # Dependencies
@@ -80,17 +90,70 @@ AC_SUBST(INDICATOR_CFLAGS)
 AC_SUBST(INDICATOR_LIBS)
 
 ###########################
+# Dependencies
+###########################
+
+DBUSMENU_GLIB_REQUIRED_VERSION=0.4.0
+BAMF_REQUIRED_VERSION=0.2.53
+SQLITE_REQUIRED_VERSION=0.0
+
+PKG_CHECK_MODULES([HUD],[
+		dbusmenu-glib-0.4 >= $DBUSMENU_GLIB_REQUIRED_VERSION
+		libbamf3 >= $BAMF_REQUIRED_VERSION
+		sqlite3 >= $SQLITE_REQUIRED_VERSION
+])
+
+###########################
+# CLI Dependencies
+###########################
+
+AC_CHECK_HEADER("readline/readline.h",
+	[has_readline_h="yes"])
+AC_CHECK_HEADER("readline/history.h",
+	[has_history_h="yes"])
+AC_CHECK_HEADER("curses.h",
+	[has_curses_h="yes"])
+
+AM_CONDITIONAL([BUILD_CLI], [test "x$has_readline_h" == "xyes" && test "x$has_history_h" == "xyes" && test "x$has_curses_h" == "xyes"]),
+
+###########################
 # Test Dependencies
 ###########################
 
 DBUSMENU_JSONLOADER_REQUIRED_VERSION=0.3.3
+LIBAPPINDICATOR_REQUIRED_VERSION=0.0.0
 
-PKG_CHECK_MODULES(INDICATORTEST,
-                  dbusmenu-jsonloader-0.4 >= $DBUSMENU_JSONLOADER_REQUIRED_VERSION
-                 )
+AC_ARG_ENABLE([tests],
+	AC_HELP_STRING([--disable-tests], [Disable test scripts and tools]),,
+	[enable_tests=auto])
+
+if test x"$enable_tests" != x"no" ; then
+   PKG_CHECK_MODULES(INDICATORTEST,
+                     dbusmenu-jsonloader-0.4 >= $DBUSMENU_JSONLOADER_REQUIRED_VERSION
+                     appindicator3-0.1 >= $LIBAPPINDICATOR_REQUIRED_VERSION,
+                     [have_dbusmenu_jsonloader=yes],
+                     [have_dbusmenu_jsonloader=no]
+                    )
+   if test x${enable_tests} = xyes && test x${have_dbusmenu_jsonloader} = xno; then
+     AC_MSG_ERROR([Test scripts and tools configured but dbusmenu-jsonloader not found])
+   fi
+else
+   have_dbusmenu-jsonloader=no
+fi
+AM_CONDITIONAL(BUILD_TESTS, test x${have_dbusmenu_jsonloader} = xyes)
 
 AC_SUBST(INDICATORTEST_CFLAGS)
 AC_SUBST(INDICATORTEST_LIBS)
+
+###########################
+# gcov coverage reporting
+###########################
+
+m4_include([m4/gcov.m4])
+AC_TDD_GCOV
+AC_SUBST(COVERAGE_CFLAGS)
+AC_SUBST(COVERAGE_CXXFLAGS)
+AC_SUBST(COVERAGE_LDFLAGS)
 
 ###########################
 # XSLT Processor
@@ -133,6 +196,37 @@ else
 fi
 AC_SUBST(DBUSSERVICEDIR)
 
+##############################
+# Custom Junk
+##############################
+
+AC_DEFUN([AC_DEFINE_PATH], [
+	test "x$prefix" = xNONE && prefix="$ac_default_prefix"
+	test "x$exec_prefix" = xNONE && exec_prefix='${prefix}'
+	ac_define_path=`eval echo [$]$2`
+	ac_define_path=`eval echo [$]ac_define_path`
+	$1="$ac_define_path"
+	AC_SUBST($1)
+	ifelse($3, ,
+		AC_DEFINE_UNQUOTED($1, "$ac_define_path"),
+		AC_DEFINE_UNQUOTED($1, "$ac_define_path", $3))
+])
+
+###########################
+# Internationalization
+###########################
+
+GETTEXT_PACKAGE=indicator-appmenu
+
+IT_PROG_INTLTOOL([0.41.0])
+
+AM_GNU_GETTEXT([external])
+AM_GNU_GETTEXT_VERSION([0.17])
+
+AC_SUBST(GETTEXT_PACKAGE)
+AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE", [Define to the gettext package name.])
+AC_DEFINE_PATH(GNOMELOCALEDIR, "${datadir}/locale", [locale directory])
+
 ###########################
 # Files
 ###########################
@@ -141,7 +235,12 @@ AC_OUTPUT([
 Makefile
 src/Makefile
 scripts/Makefile
+data/Makefile
 tools/Makefile
+po/Makefile.in
+tests/Makefile
+docs/Makefile
+docs/man/Makefile
 ])
 
 ###########################
@@ -154,4 +253,7 @@ App Menu Indicator Configuration:
 
 	Prefix:        $prefix
 	Indicator Dir: $INDICATORDIR
+	gcov:          $use_gcov
+	Local Install: $with_localinstall
+	Test tools:    $have_dbusmenu_jsonloader
 ])
