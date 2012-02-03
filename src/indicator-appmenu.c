@@ -101,8 +101,6 @@ struct _IndicatorAppmenu {
 	GHashTable * desktop_windows;
 	WindowMenus * desktop_menu;
 
-	IndicatorAppmenuDebug * debug;
-
 	GDBusConnection * bus;
 	guint owner_id;
 	guint dbus_registration;
@@ -141,7 +139,6 @@ struct _IndicatorAppmenuDebug {
  **********************/
 static void indicator_appmenu_dispose                                (GObject *object);
 static void indicator_appmenu_finalize                               (GObject *object);
-static void indicator_appmenu_debug_dispose                          (GObject *object);
 static void build_window_menus                                       (IndicatorAppmenu * iapp);
 static GList * get_entries                                           (IndicatorObject * io);
 static guint get_location                                            (IndicatorObject * io,
@@ -198,17 +195,6 @@ static void on_name_acquired                                         (GDBusConne
 static void on_name_lost                                             (GDBusConnection * connection,
                                                                       const gchar * name,
                                                                       gpointer user_data);
-static void dbg_bus_method_call                                      (GDBusConnection * connection,
-                                                                      const gchar * sender,
-                                                                      const gchar * path,
-                                                                      const gchar * interface,
-                                                                      const gchar * method,
-                                                                      GVariant * params,
-                                                                      GDBusMethodInvocation * invocation,
-                                                                      gpointer user_data);
-static void dbg_bus_get_cb                                           (GObject * object,
-                                                                      GAsyncResult * res,
-                                                                      gpointer user_data);
 static void menus_destroyed                                          (GObject * menus,
                                                                       gpointer user_data);
 static void source_unregister                                        (gpointer user_data);
@@ -229,14 +215,6 @@ static GDBusNodeInfo *      node_info = NULL;
 static GDBusInterfaceInfo * interface_info = NULL;
 static GDBusInterfaceVTable interface_table = {
        method_call:    bus_method_call,
-       get_property:   NULL, /* No properties */
-       set_property:   NULL  /* No properties */
-};
-
-static GDBusNodeInfo *      dbg_node_info = NULL;
-static GDBusInterfaceInfo * dbg_interface_info = NULL;
-static GDBusInterfaceVTable dbg_interface_table = {
-       method_call:    dbg_bus_method_call,
        get_property:   NULL, /* No properties */
        set_property:   NULL  /* No properties */
 };
@@ -285,7 +263,6 @@ static void
 indicator_appmenu_init (IndicatorAppmenu *self)
 {
 	self->default_app = NULL;
-	self->debug = NULL;
 	self->apps = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_object_unref);
 	self->matcher = NULL;
 	self->active_window = NULL;
@@ -326,10 +303,6 @@ indicator_appmenu_init (IndicatorAppmenu *self)
 
 	/* Request a name so others can find us */
 	retry_registration(self);
-
-	/* Setup debug interface */
-	self->debug = g_object_new(INDICATOR_APPMENU_DEBUG_TYPE, NULL);
-	self->debug->appmenu = self;
 
 	return;
 }
@@ -461,11 +434,6 @@ indicator_appmenu_dispose (GObject *object)
 		iapp->apps = NULL;
 	}
 
-	if (iapp->debug != NULL) {
-		g_object_unref(iapp->debug);
-		iapp->debug = NULL;
-	}
-
 	if (iapp->desktop_windows != NULL) {
 		g_hash_table_destroy(iapp->desktop_windows);
 		iapp->desktop_windows = NULL;
@@ -497,124 +465,6 @@ indicator_appmenu_finalize (GObject *object)
 	}
 
 	G_OBJECT_CLASS (indicator_appmenu_parent_class)->finalize (object);
-	return;
-}
-
-G_DEFINE_TYPE (IndicatorAppmenuDebug, indicator_appmenu_debug, G_TYPE_OBJECT);
-
-/* One time init */
-static void
-indicator_appmenu_debug_class_init (IndicatorAppmenuDebugClass *klass)
-{
-	GObjectClass *object_class = G_OBJECT_CLASS (klass);
-
-	object_class->dispose = indicator_appmenu_debug_dispose;
-
-	/* Setting up the DBus interfaces */
-	if (dbg_node_info == NULL) {
-		GError * error = NULL;
-
-		dbg_node_info = g_dbus_node_info_new_for_xml(_application_menu_renderer, &error);
-		if (error != NULL) {
-			g_critical("Unable to parse Application Menu Renderer Interface description: %s", error->message);
-			g_error_free(error);
-		}
-	}
-
-	if (dbg_interface_info == NULL) {
-		dbg_interface_info = g_dbus_node_info_lookup_interface(dbg_node_info, DEBUG_IFACE);
-
-		if (dbg_interface_info == NULL) {
-			g_critical("Unable to find interface '" DEBUG_IFACE "'");
-		}
-	}
-
-	return;
-}
-
-/* Per instance Init */
-static void
-indicator_appmenu_debug_init (IndicatorAppmenuDebug *self)
-{
-	self->appmenu = NULL;
-	self->bus_cancel = NULL;
-	self->bus = NULL;
-	self->dbus_registration = 0;
-
-	/* Register this object on DBus */
-	self->bus_cancel = g_cancellable_new();
-	g_bus_get(G_BUS_TYPE_SESSION,
-	          self->bus_cancel,
-	          dbg_bus_get_cb,
-	          self);
-
-	return;
-}
-
-static void
-dbg_bus_get_cb (GObject * object, GAsyncResult * res, gpointer user_data)
-{
-	GError * error = NULL;
-	GDBusConnection * connection = g_bus_get_finish(res, &error);
-
-	if (error != NULL) {
-		g_critical("OMG! Unable to get a connection to DBus: %s", error->message);
-		g_error_free(error);
-		return;
-	}
-
-	IndicatorAppmenuDebug * iappd = (IndicatorAppmenuDebug *)user_data;
-
-	g_warn_if_fail(iappd->bus == NULL);
-	iappd->bus = connection;
-
-	if (iappd->bus_cancel != NULL) {
-		g_object_unref(iappd->bus_cancel);
-		iappd->bus_cancel = NULL;
-	}
-
-	/* Now register our object on our new connection */
-	iappd->dbus_registration = g_dbus_connection_register_object(iappd->bus,
-	                                                             DEBUG_OBJECT,
-	                                                             dbg_interface_info,
-	                                                             &dbg_interface_table,
-	                                                             user_data,
-	                                                             NULL,
-	                                                             &error);
-
-	if (error != NULL) {
-		g_critical("Unable to register the object to DBus: %s", error->message);
-		g_error_free(error);
-		return;
-	}
-
-	return;	
-}
-
-/* Object refs decrement */
-static void
-indicator_appmenu_debug_dispose (GObject *object)
-{
-	IndicatorAppmenuDebug * iappd = INDICATOR_APPMENU_DEBUG(object);
-
-	if (iappd->dbus_registration != 0) {
-		g_dbus_connection_unregister_object(iappd->bus, iappd->dbus_registration);
-		/* Don't care if it fails, there's nothing we can do */
-		iappd->dbus_registration = 0;
-	}
-
-	if (iappd->bus != NULL) {
-		g_object_unref(iappd->bus);
-		iappd->bus = NULL;
-	}
-
-	if (iappd->bus_cancel != NULL) {
-		g_cancellable_cancel(iappd->bus_cancel);
-		g_object_unref(iappd->bus_cancel);
-		iappd->bus_cancel = NULL;
-	}
-
-	G_OBJECT_CLASS (indicator_appmenu_debug_parent_class)->dispose (object);
 	return;
 }
 
@@ -1542,357 +1392,5 @@ error_quark (void)
 	}
 
 	return error_quark;
-}
-
-/* Looks to see if we can find an accel label to steal the
-   closure from */
-static void
-find_closure (GtkWidget * widget, gpointer user_data)
-{
-	GClosure ** closure = (GClosure **)user_data;
-
-	/* If we have one quit */
-	if (*closure != NULL) {
-		return;
-	}
-	
-	/* If we've got a label, steal its */
-	if (GTK_IS_ACCEL_LABEL(widget)) {
-		g_object_get (widget,
-		              "accel-closure", closure,
-		              NULL);
-		return;
-	}
-
-	/* If we've got a container, dig deeper */
-	if (GTK_IS_CONTAINER(widget)) {
-		gtk_container_foreach(GTK_CONTAINER(widget), find_closure, user_data);
-	}
-
-	return;
-}
-
-/* Look at the closures in an accel group and find
-   the one that matches the one we've been passed */
-static gboolean
-find_group_closure (GtkAccelKey * key, GClosure * closure, gpointer user_data)
-{
-	return closure == user_data;
-}
-
-/* Turn the key codes into a string for the JSON output */
-static void
-key2string (GtkAccelKey * key, GArray * strings)
-{
-	gchar * temp = NULL;
-
-	temp = g_strdup(", \"" DBUSMENU_MENUITEM_PROP_SHORTCUT "\": [[");
-	g_array_append_val(strings, temp);
-
-	if (key->accel_mods & GDK_CONTROL_MASK) {
-		temp = g_strdup_printf("\"%s\", ", DBUSMENU_MENUITEM_SHORTCUT_CONTROL);
-		g_array_append_val(strings, temp);
-	}
-	if (key->accel_mods & GDK_MOD1_MASK) {
-		temp = g_strdup_printf("\"%s\", ", DBUSMENU_MENUITEM_SHORTCUT_ALT);
-		g_array_append_val(strings, temp);
-	}
-	if (key->accel_mods & GDK_SHIFT_MASK) {
-		temp = g_strdup_printf("\"%s\", ", DBUSMENU_MENUITEM_SHORTCUT_SHIFT);
-		g_array_append_val(strings, temp);
-	}
-	if (key->accel_mods & GDK_SUPER_MASK) {
-		temp = g_strdup_printf("\"%s\", ", DBUSMENU_MENUITEM_SHORTCUT_SUPER);
-		g_array_append_val(strings, temp);
-	}
-
-	temp = g_strdup_printf("\"%s\"]]", gdk_keyval_name(key->accel_key));
-	g_array_append_val(strings, temp);
-
-	return;
-}
-
-/* Do something for each menu item */
-static void
-menu_iterator (GtkWidget * widget, gpointer user_data)
-{
-	GArray * strings = (GArray *)user_data;
-
-	gchar * temp = g_strdup("{");
-	g_array_append_val(strings, temp);
-
-	/* TODO: We need some sort of useful ID, but for now  we're
-	   just ensuring it's unique. */
-	temp = g_strdup_printf("\"id\": %d", strings->len);
-	g_array_append_val(strings, temp);
-
-	if (GTK_IS_SEPARATOR_MENU_ITEM(widget)) {
-		temp = g_strdup_printf(", \"" DBUSMENU_MENUITEM_PROP_TYPE "\": \"%s\"", DBUSMENU_CLIENT_TYPES_SEPARATOR);
-		g_array_append_val(strings, temp);
-	} else {
-		temp = g_strdup_printf(", \"" DBUSMENU_MENUITEM_PROP_TYPE "\": \"%s\"", DBUSMENU_CLIENT_TYPES_DEFAULT);
-		g_array_append_val(strings, temp);
-	}
-
-	temp = g_strdup_printf(", \"" DBUSMENU_MENUITEM_PROP_ENABLED "\": %s", gtk_widget_get_sensitive(GTK_WIDGET(widget)) ? "true" : "false");
-	g_array_append_val(strings, temp);
-
-	temp = g_strdup_printf(", \"" DBUSMENU_MENUITEM_PROP_VISIBLE "\": %s", gtk_widget_get_visible(GTK_WIDGET(widget)) ? "true" : "false");
-	g_array_append_val(strings, temp);
-
-	const gchar * label = gtk_menu_item_get_label(GTK_MENU_ITEM(widget));
-	if (label != NULL) {
-		temp = g_strdup_printf(", \"" DBUSMENU_MENUITEM_PROP_LABEL "\": \"%s\"", label);
-		g_array_append_val(strings, temp);
-	}
-
-	/* Deal with shortcuts, find the accel closure if we can and then
-	   turn that into a string */
-	GClosure * closure = NULL;
-	find_closure(widget, &closure);
-
-	if (closure != NULL) {
-		GtkAccelGroup * group = gtk_accel_group_from_accel_closure(closure);
-		if (group != NULL) {
-			GtkAccelKey * key = gtk_accel_group_find(group, find_group_closure, closure);
-			if (key != NULL) {
-				key2string(key, strings);
-			}
-		}
-	}
-
-	/* TODO: Handle check/radio items */
-
-	GtkWidget * submenu = gtk_menu_item_get_submenu(GTK_MENU_ITEM(widget));
-	if (submenu != NULL) {
-		temp = g_strdup(", \"" DBUSMENU_MENUITEM_PROP_CHILD_DISPLAY "\": \"" DBUSMENU_MENUITEM_CHILD_DISPLAY_SUBMENU "\"");
-		g_array_append_val(strings, temp);
-
-		temp = g_strdup(", \"submenu\": [ ");
-		g_array_append_val(strings, temp);
-
-		guint old_len = strings->len;
-
-		gtk_container_foreach(GTK_CONTAINER(submenu), menu_iterator, strings);
-
-		if (old_len == strings->len) {
-			temp = g_strdup("]");
-			g_array_append_val(strings, temp);
-		} else {
-			gchar * last_one = g_array_index(strings, gchar *, strings->len - 1);
-			guint lastlen = g_utf8_strlen(last_one, -1);
-
-			if (last_one[lastlen - 1] != ',') {
-				g_warning("Huh, this seems impossible.  Should be a comma at the end.");
-			}
-
-			last_one[lastlen - 1] = ']';
-		}
-	}
-
-	temp = g_strdup("},");
-	g_array_append_val(strings, temp);
-
-	return;
-}
-
-/* Takes an entry and outputs it into the ptrarray */
-static void
-entry2json (IndicatorObjectEntry * entry, GArray * strings)
-{
-	gchar * temp = g_strdup("{");
-	g_array_append_val(strings, temp);
-
-	/* TODO: We need some sort of useful ID, but for now  we're
-	   just ensuring it's unique. */
-	temp = g_strdup_printf("\"id\": %d", strings->len);
-	g_array_append_val(strings, temp);
-
-	if (entry->label != NULL) {
-		temp = g_strdup_printf(", \"" DBUSMENU_MENUITEM_PROP_LABEL "\": \"%s\"", gtk_label_get_label(entry->label));
-		g_array_append_val(strings, temp);
-
-		temp = g_strdup_printf(", \"" DBUSMENU_MENUITEM_PROP_ENABLED "\": %s", gtk_widget_get_sensitive(GTK_WIDGET(entry->label)) ? "true" : "false");
-		g_array_append_val(strings, temp);
-
-		temp = g_strdup_printf(", \"" DBUSMENU_MENUITEM_PROP_VISIBLE "\": %s", gtk_widget_get_visible(GTK_WIDGET(entry->label)) ? "true" : "false");
-		g_array_append_val(strings, temp);
-	}
-
-	if (entry->menu != NULL) {
-		temp = g_strdup(", \"" DBUSMENU_MENUITEM_PROP_CHILD_DISPLAY "\": \"" DBUSMENU_MENUITEM_CHILD_DISPLAY_SUBMENU "\"");
-		g_array_append_val(strings, temp);
-
-		temp = g_strdup(", \"submenu\": [ ");
-		g_array_append_val(strings, temp);
-
-		guint old_len = strings->len;
-
-		gtk_container_foreach(GTK_CONTAINER(entry->menu), menu_iterator, strings);
-
-		if (old_len == strings->len) {
-			temp = g_strdup("]");
-			g_array_append_val(strings, temp);
-		} else {
-			gchar * last_one = g_array_index(strings, gchar *, strings->len - 1);
-			guint lastlen = g_utf8_strlen(last_one, -1);
-
-			if (last_one[lastlen - 1] != ',') {
-				g_warning("Huh, this seems impossible.  Should be a comma at the end.");
-			}
-
-			last_one[lastlen - 1] = ']';
-		}
-	}
-
-
-	temp = g_strdup("},");
-	g_array_append_val(strings, temp);
-
-	return;
-}
-
-/* Grab the location of the dbusmenu of the current menu */
-static GVariant *
-get_current_menu (IndicatorAppmenuDebug * iappd, GError ** error)
-{
-	IndicatorAppmenu * iapp = iappd->appmenu;
-
-	if (iapp->default_app == NULL) {
-		g_set_error_literal(error, error_quark(), ERROR_NO_DEFAULT_APP, "Not currently showing an application");
-		return NULL;
-	}
-
-	return g_variant_new("(so)", window_menus_get_address(iapp->default_app),
-	                     window_menus_get_path(iapp->default_app));
-}
-
-/* Activate menu items through a script given as a parameter */
-static GVariant *
-activate_menu_item (IndicatorAppmenuDebug * iappd, GVariantIter * iter, GError ** error)
-{
-	/* TODO: Do it */
-
-	return g_variant_new("()");
-}
-
-/* Dump a specific window's menus to a JSON file */
-static GVariant *
-dump_menu (IndicatorAppmenuDebug * iappd, guint windowid, GError ** error)
-{
-	IndicatorAppmenu * iapp = iappd->appmenu;
-	WindowMenus * wm = NULL;
-	gchar * jsondata = NULL;
-
-	if (windowid == 0) {
-		wm = iapp->default_app;
-	} else {
-		wm = WINDOW_MENUS(g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid)));
-	}
-
-	if (wm == NULL) {
-		g_set_error_literal(error, error_quark(), ERROR_WINDOW_NOT_FOUND, "Window not found");
-		return NULL;
-	}
-
-	GArray * strings = g_array_new(TRUE, FALSE, sizeof(gchar *));
-	GList * entries = window_menus_get_entries(wm);
-	GList * entry;
-
-	gchar * temp = g_strdup("{");
-	g_array_append_val(strings, temp);
-
-	temp = g_strdup("\"id\": 0");
-	g_array_append_val(strings, temp);
-
-	if (entries != NULL) {
-		temp = g_strdup(", \"" DBUSMENU_MENUITEM_PROP_CHILD_DISPLAY "\": \"" DBUSMENU_MENUITEM_CHILD_DISPLAY_SUBMENU "\"");
-		g_array_append_val(strings, temp);
-
-		temp = g_strdup(", \"submenu\": [");
-		g_array_append_val(strings, temp);
-	}
-
-	guint old_len = strings->len;
-
-	for (entry = entries; entry != NULL; entry = g_list_next(entry)) {
-		entry2json(entry->data, strings);
-	}
-
-	if (entries != NULL) {
-		if (old_len == strings->len) {
-			temp = g_strdup("]");
-			g_array_append_val(strings, temp);
-		} else {
-			gchar * last_one = g_array_index(strings, gchar *, strings->len - 1);
-			guint lastlen = g_utf8_strlen(last_one, -1);
-
-			if (last_one[lastlen - 1] != ',') {
-				g_warning("Huh, this seems impossible.  Should be a comma at the end.");
-			}
-
-			last_one[lastlen - 1] = ']';
-		}
-	}
-
-	g_list_free(entries);
-
-	temp = g_strdup("}");
-	g_array_append_val(strings, temp);
-
-	jsondata = g_strjoinv(NULL, (gchar **)strings->data);
-	g_strfreev((gchar **)strings->data);
-	g_array_free(strings, FALSE);
-
-	GVariant * rv = g_variant_new("(s)", jsondata);
-	g_free(jsondata);
-	return rv;
-}
-
-/* Dump the current menu to a JSON file */
-static GVariant *
-dump_current_menu  (IndicatorAppmenuDebug * iappd, GError ** error)
-{
-	return dump_menu(iappd, 0, error);
-}
-
-/* A method has been called from our dbus inteface.  Figure out what it
-   is and dispatch it. */
-static void
-dbg_bus_method_call (GDBusConnection * connection, const gchar * sender,
-                     const gchar * path, const gchar * interface,
-                     const gchar * method, GVariant * params,
-                     GDBusMethodInvocation * invocation, gpointer user_data)
-{
-	IndicatorAppmenuDebug * iappd = INDICATOR_APPMENU_DEBUG(user_data);
-	GVariant * retval = NULL;
-	GError * error = NULL;
-
-	if (g_strcmp0(method, "GetCurrentMenu") == 0) {
-		retval = get_current_menu(iappd, &error);
-	} else if (g_strcmp0(method, "ActivateMenuItem") == 0) {
-		GVariantIter *iter;
-		g_variant_get(params, "(ai)", &iter);
-		retval = activate_menu_item(iappd, iter, &error);
-		g_variant_iter_free(iter);
-	} else if (g_strcmp0(method, "DumpCurrentMenu") == 0) {
-		retval = dump_current_menu(iappd, &error);
-	} else if (g_strcmp0(method, "DumpMenu") == 0) {
-		guint32 xid;
-		g_variant_get(params, "(u)", &xid);
-		retval = dump_menu(iappd, xid, &error);
-	} else {
-		g_warning("Calling method '%s' on the indicator service and it's unknown", method);
-	}
-
-	if (error != NULL) {
-		g_dbus_method_invocation_return_dbus_error(invocation,
-		                                           "com.canonical.AppMenu.Error",
-		                                           error->message);
-		g_error_free(error);
-	} else {
-		g_dbus_method_invocation_return_value(invocation, retval);
-	}
-	return;
 }
 
