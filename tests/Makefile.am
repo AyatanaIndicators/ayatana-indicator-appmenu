@@ -36,6 +36,7 @@ test_distance_CFLAGS = \
 	$(HUD_CFLAGS) \
 	$(COVERAGE_CFLAGS) \
 	-I$(top_srcdir)/src \
+	-I$(top_builddir)/src \
 	-Wall -Werror
 
 test_distance_LDADD = \
@@ -76,6 +77,7 @@ test_usage_db_simple_CFLAGS = \
 	$(COVERAGE_CFLAGS) \
 	-DDATADIR=\""$(datadir)"\" \
 	-I$(top_srcdir)/src \
+	-I$(top_builddir)/src \
 	-Wall -Werror
 
 test_usage_db_simple_LDADD = \
@@ -117,6 +119,7 @@ test_usage_db_old_CFLAGS = \
 	$(COVERAGE_CFLAGS) \
 	-DDATADIR=\""$(datadir)"\" \
 	-I$(top_srcdir)/src \
+	-I$(top_builddir)/src \
 	-Wall -Werror
 
 test_usage_db_old_LDADD = \
@@ -160,6 +163,7 @@ test_usage_db_ancient_CFLAGS = \
 	$(COVERAGE_CFLAGS) \
 	-DDATADIR=\""$(datadir)"\" \
 	-I$(top_srcdir)/src \
+	-I$(top_builddir)/src \
 	-Wall -Werror
 
 test_usage_db_ancient_LDADD = \
@@ -203,6 +207,7 @@ test_usage_db_testapp_CFLAGS = \
 	$(COVERAGE_CFLAGS) \
 	-DDATADIR=\""$(datadir)"\" \
 	-I$(top_srcdir)/src \
+	-I$(top_builddir)/src \
 	-Wall -Werror
 
 test_usage_db_testapp_LDADD = \
@@ -264,6 +269,7 @@ test_indicator_tracker_CFLAGS = \
 	$(HUD_CFLAGS) \
 	$(COVERAGE_CFLAGS) \
 	-I$(top_srcdir)/src \
+	-I$(top_builddir)/src \
 	-Wall -Werror
 
 test_indicator_tracker_LDADD = \
@@ -347,6 +353,7 @@ test_bad_app_info_CFLAGS = \
 	$(HUD_CFLAGS) \
 	$(COVERAGE_CFLAGS) \
 	-I$(top_srcdir)/src \
+	-I$(top_builddir)/src \
 	-Wall -Werror
 
 test_bad_app_info_LDADD = \
@@ -369,6 +376,7 @@ test_load_app_info_CFLAGS = \
 	$(HUD_CFLAGS) \
 	$(COVERAGE_CFLAGS) \
 	-I$(top_srcdir)/src \
+	-I$(top_builddir)/src \
 	-Wall -Werror
 
 test_load_app_info_LDADD = \
@@ -411,6 +419,7 @@ test_app_indicator_CFLAGS = \
 	$(COVERAGE_CFLAGS) \
 	$(INDICATORTEST_CFLAGS) \
 	-I$(top_srcdir)/src \
+	-I$(top_builddir)/src \
 	-Wall -Werror
 
 test_app_indicator_LDADD = \
@@ -424,6 +433,7 @@ test_app_indicator_tracker_CFLAGS = \
 	$(HUD_CFLAGS) \
 	$(COVERAGE_CFLAGS) \
 	-I$(top_srcdir)/src \
+	-I$(top_builddir)/src \
 	-Wall -Werror
 
 test_app_indicator_tracker_LDADD = \
