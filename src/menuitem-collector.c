@@ -258,35 +258,55 @@ remove_underline (const gchar * input)
 	return g_string_free (output, FALSE);
 }
 
+/* Table of the different properties that we need for the custom
+   types of items that exist in the indicators */
+typedef struct _TypePropStrings TypePropStrings;
+struct _TypePropStrings {
+	gchar * type;
+	gchar * label;
+	gchar * visible;
+	gchar * enabled;
+};
+
+TypePropStrings type_prop_strings[] = {
+	/* NOTE: Assuming default is first in other code */
+	{type: DBUSMENU_CLIENT_TYPES_DEFAULT,                  label: DBUSMENU_MENUITEM_PROP_LABEL,                         visible: DBUSMENU_MENUITEM_PROP_VISIBLE,    enabled: DBUSMENU_MENUITEM_PROP_ENABLED},
+	/* Indicator Messages */
+	{type: "application-item",                             label: "label",                                              visible: DBUSMENU_MENUITEM_PROP_VISIBLE,    enabled: DBUSMENU_MENUITEM_PROP_ENABLED},
+	{type: "indicator-item",                               label: "indicator-label",                                    visible: DBUSMENU_MENUITEM_PROP_VISIBLE,    enabled: DBUSMENU_MENUITEM_PROP_ENABLED},
+	/* Indicator Datetime */
+	{type: "appointment-item",                             label: "appointment-label",                                  visible: DBUSMENU_MENUITEM_PROP_VISIBLE,    enabled: DBUSMENU_MENUITEM_PROP_ENABLED},
+	{type: "timezone-item",                                label: "timezone-name",                                      visible: DBUSMENU_MENUITEM_PROP_VISIBLE,    enabled: DBUSMENU_MENUITEM_PROP_ENABLED},
+	/* Indicator Sound */
+	{type: "x-canonical-sound-menu-player-metadata-type",  label: "x-canonical-sound-menu-player-metadata-player-name", visible: DBUSMENU_MENUITEM_PROP_VISIBLE,    enabled: DBUSMENU_MENUITEM_PROP_ENABLED},
+	{type: "x-canonical-sound-menu-mute-type",             label: "label",                                              visible: DBUSMENU_MENUITEM_PROP_VISIBLE,    enabled: DBUSMENU_MENUITEM_PROP_ENABLED},
+	/* Indicator User */
+	{type: "x-canonical-user-item",                        label: "user-item-name",                                     visible: DBUSMENU_MENUITEM_PROP_VISIBLE,    enabled: DBUSMENU_MENUITEM_PROP_ENABLED},
+	/* FINAL */
+	{type: NULL, label: NULL, visible: NULL, enabled: NULL}
+};
+
 /* Our table of types to label properties so that we can figure
    out what to show to the user */
-const gchar *
-type_to_label_prop (const gchar * type)
+TypePropStrings *
+type_to_prop_strings (const gchar * type)
 {
-	static GHashTable * label_table = NULL;
+	static GHashTable * prop_table = NULL;
 
 	if (type == NULL) {
-		return DBUSMENU_MENUITEM_PROP_LABEL;
+		return &(type_prop_strings[0]);
 	}
 
-	if (label_table == NULL) {
-		label_table = g_hash_table_new(g_str_hash, g_str_equal);
+	if (prop_table == NULL) {
+		prop_table = g_hash_table_new(g_str_hash, g_str_equal);
+		gint i;
 
-		g_hash_table_insert(label_table, DBUSMENU_CLIENT_TYPES_DEFAULT, DBUSMENU_MENUITEM_PROP_LABEL);
-		/* Indicator Messages */
-		g_hash_table_insert(label_table, "application-item", "label");
-		g_hash_table_insert(label_table, "indicator-item", "indicator-label");
-		/* Indicator Datetime */
-		g_hash_table_insert(label_table, "appointment-item", "appointment-label");
-		g_hash_table_insert(label_table, "timezone-item", "timezone-name");
-		/* Indicator Sound */
-		g_hash_table_insert(label_table, "x-canonical-sound-menu-player-metadata-type", "x-canonical-sound-menu-player-metadata-player-name");
-		g_hash_table_insert(label_table, "x-canonical-sound-menu-mute-type", "label");
-		/* Indicator User */
-		g_hash_table_insert(label_table, "x-canonical-user-item", "user-item-name");
+		for (i = 0; type_prop_strings[i].type != NULL; i++) {
+			g_hash_table_insert(prop_table, type_prop_strings[i].type, &(type_prop_strings[i]));
+		}
 	}
 
-	return (const gchar *)g_hash_table_lookup(label_table, type);
+	return (TypePropStrings *)g_hash_table_lookup(prop_table, type);
 }
 
 /* Find the label for a menu item and return its value as a set
@@ -294,20 +314,20 @@ type_to_label_prop (const gchar * type)
 static GStrv
 menuitem_to_tokens (DbusmenuMenuitem * item, GStrv label_prefix)
 {
-	const gchar * label_property = NULL;
+	TypePropStrings * prop_strings = NULL;
 	const gchar * item_type = NULL;
 
 	item_type = dbusmenu_menuitem_property_get(item, DBUSMENU_MENUITEM_PROP_TYPE);
-	label_property = type_to_label_prop(item_type);
+	prop_strings = type_to_prop_strings(item_type);
 
-	if (label_property == NULL) {
+	if (prop_strings == NULL) {
 		return NULL;
 	}
 
 	/* Tokenize */
-	if (label_property != NULL && dbusmenu_menuitem_property_exist(item, label_property)) {
+	if (prop_strings->label != NULL && dbusmenu_menuitem_property_exist(item, prop_strings->label)) {
 		GStrv newstr = NULL;
-		const gchar * label = dbusmenu_menuitem_property_get(item, label_property);
+		const gchar * label = dbusmenu_menuitem_property_get(item, prop_strings->label);
 
 		if (label_prefix != NULL && label_prefix[0] != NULL) {
 			gint i;
