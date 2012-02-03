@@ -40,8 +40,6 @@ struct _HudDbusPrivate {
 #define HUD_DBUS_GET_PRIVATE(o) \
 (G_TYPE_INSTANCE_GET_PRIVATE ((o), HUD_DBUS_TYPE, HudDbusPrivate))
 
-static void hud_dbus_class_init (HudDbusClass *klass);
-static void hud_dbus_init       (HudDbus *self);
 static void hud_dbus_dispose    (GObject *object);
 static void hud_dbus_finalize   (GObject *object);
 

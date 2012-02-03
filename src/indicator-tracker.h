@@ -2,7 +2,7 @@
 Tracks the various indicators to know when they come on and off
 the bus for searching their menus.
 
-Copyright 2011 Canonical Ltd.
+Copyright 2011-2012 Canonical Ltd.
 
 Authors:
     Ted Gould <ted@canonical.com>
@@ -23,7 +23,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __INDICATOR_TRACKER_H__
 #define __INDICATOR_TRACKER_H__
 
-#include <glib.h>
 #include <glib-object.h>
 
 G_BEGIN_DECLS

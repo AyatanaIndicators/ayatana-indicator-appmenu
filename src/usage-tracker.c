@@ -31,6 +31,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "usage-tracker.h"
 #include "load-app-info.h"
 #include "utils.h"
+#include "create-db.h"
 
 struct _UsageTrackerPrivate {
 	gchar * cachefile;
@@ -56,8 +57,6 @@ typedef enum {
 #define USAGE_TRACKER_GET_PRIVATE(o) \
 (G_TYPE_INSTANCE_GET_PRIVATE ((o), USAGE_TRACKER_TYPE, UsageTrackerPrivate))
 
-static void usage_tracker_class_init (UsageTrackerClass *klass);
-static void usage_tracker_init       (UsageTracker *self);
 static void usage_tracker_dispose    (GObject *object);
 static void usage_tracker_finalize   (GObject *object);
 static void cleanup_db               (UsageTracker * self);
@@ -123,10 +122,7 @@ usage_tracker_dispose (GObject *object)
 		self->priv->drop_timer = 0;
 	}
 
-	if (self->priv->settings != NULL) {
-		g_object_unref(self->priv->settings);
-		self->priv->settings = NULL;
-	}
+	g_clear_object(&self->priv->settings);
 
 	G_OBJECT_CLASS (usage_tracker_parent_class)->dispose (object);
 	return;
@@ -353,13 +349,11 @@ build_db (UsageTracker * self)
 	int exec_status = SQLITE_OK;
 	gchar * failstring = NULL;
 	exec_status = sqlite3_exec(self->priv->db,
-	                           "create table usage (application text, entry text, timestamp datetime);",
+	                           create_db,
 	                           NULL, NULL, &failstring);
 	if (exec_status != SQLITE_OK) {
 		g_warning("Unable to create table: %s", failstring);
 	}
-
-	/* Import data from the system */
 
 	return;
 }
@@ -368,6 +362,8 @@ void
 usage_tracker_mark_usage (UsageTracker * self, const gchar * application, const gchar * entry)
 {
 	g_return_if_fail(IS_USAGE_TRACKER(self));
+	g_return_if_fail(self->priv->db != NULL);
+
 	check_app_init(self, application);
 
 	sqlite3_reset(self->priv->insert_entry);
@@ -401,6 +397,8 @@ guint
 usage_tracker_get_usage (UsageTracker * self, const gchar * application, const gchar * entry)
 {
 	g_return_val_if_fail(IS_USAGE_TRACKER(self), 0);
+	g_return_val_if_fail(self->priv->db != NULL, 0);
+
 	check_app_init(self, application);
 
 	sqlite3_reset(self->priv->entry_count);

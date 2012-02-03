@@ -22,7 +22,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __HUD_DBUS_H__
 #define __HUD_DBUS_H__
 
-#include <glib.h>
 #include <glib-object.h>
 
 G_BEGIN_DECLS

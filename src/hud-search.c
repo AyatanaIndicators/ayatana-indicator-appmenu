@@ -29,7 +29,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <gio/gdesktopappinfo.h>
 
 #include "hud-search.h"
-#include "dbusmenu-collector.h"
+#include "menuitem-collector.h"
 #include "indicator-tracker.h"
 #include "usage-tracker.h"
 #include "utils.h"
@@ -41,7 +41,7 @@ struct _HudSearchPrivate {
 	guint32 active_xid;
 	BamfApplication * active_app;
 
-	DbusmenuCollector * collector;
+	MenuitemCollector * collector;
 	UsageTracker * usage;
 
 	GDBusProxy * appmenu;
@@ -111,7 +111,7 @@ hud_search_init (HudSearch *self)
 	}
 
 	/* DBusMenu */
-	self->priv->collector = dbusmenu_collector_new();
+	self->priv->collector = menuitem_collector_new();
 
 	/* Usage Tracker */
 	self->priv->usage = usage_tracker_new();
@@ -199,7 +199,7 @@ get_current_window_address(HudSearch * search, gchar ** address, gchar ** path)
 
 typedef struct _usage_wrapper_t usage_wrapper_t;
 struct _usage_wrapper_t {
-	DbusmenuCollectorFound * found;
+	MenuitemCollectorFound * found;
 	guint count;
 	gfloat percent_usage;
 	gfloat percent_distance;
@@ -226,7 +226,7 @@ distance_sort (gconstpointer a, gconstpointer b)
 	usage_wrapper_t * wa = (usage_wrapper_t *)a;
 	usage_wrapper_t * wb = (usage_wrapper_t *)b;
 
-	return dbusmenu_collector_found_get_distance(wa->found) - dbusmenu_collector_found_get_distance(wb->found);
+	return menuitem_collector_found_get_distance(wa->found) - menuitem_collector_found_get_distance(wb->found);
 }
 
 /* Take the found list and put it into the usage array so that
@@ -240,10 +240,10 @@ found_list_to_usage_array (HudSearch * search, GList * found_list, GArray * usag
 
 	for (found = found_list; found != NULL; found = g_list_next(found)) {
 		usage_wrapper_t usage;
-		usage.found = (DbusmenuCollectorFound *)found->data;
+		usage.found = (MenuitemCollectorFound *)found->data;
 		usage.count = 0;
 
-		if (dbusmenu_collector_found_get_distance(usage.found) > max_distance) {
+		if (menuitem_collector_found_get_distance(usage.found) > max_distance) {
 			continue;
 		}
 
@@ -306,7 +306,7 @@ search_current_app (HudSearch * search, const gchar * searchstr, GArray * usaged
 	get_current_window_address(search, &address, &path);
 
 	if (address != NULL && path != NULL) {
-		found_list = dbusmenu_collector_search(search->priv->collector, address, path, NULL, searchstr);
+		found_list = menuitem_collector_search(search->priv->collector, address, path, NULL, searchstr);
 	}
 
 	g_free(address);
@@ -323,13 +323,13 @@ search_current_app (HudSearch * search, const gchar * searchstr, GArray * usaged
 		gchar * icon = desktop_to_icon(desktop_file);
 
 		while (founditem != NULL) {
-			DbusmenuCollectorFound * found = (DbusmenuCollectorFound *)founditem->data;
+			MenuitemCollectorFound * found = (MenuitemCollectorFound *)founditem->data;
 
 			/* Indicator */
-			dbusmenu_collector_found_set_indicator(found, desktop_file);
+			menuitem_collector_found_set_indicator(found, desktop_file);
 
 			/* Icon */
-			dbusmenu_collector_found_set_app_icon(found, icon);
+			menuitem_collector_found_set_app_icon(found, icon);
 
 			founditem = g_list_next(founditem);
 		}
@@ -362,23 +362,23 @@ search_indicators (HudSearch * search, const gchar * searchstr, GArray * usageda
 		IndicatorTrackerIndicator * indicator = (IndicatorTrackerIndicator *)lindicator->data;
 
 		/* Search the menu items of the indicator */
-		GList * found_list = dbusmenu_collector_search(search->priv->collector, indicator->dbus_name, indicator->dbus_object, indicator->prefix, searchstr);
+		GList * found_list = menuitem_collector_search(search->priv->collector, indicator->dbus_name, indicator->dbus_object, indicator->prefix, searchstr);
 
 		/* Increase distance */
 		GList * founditem = found_list;
 		while (founditem != NULL) {
-			DbusmenuCollectorFound * found = (DbusmenuCollectorFound *)founditem->data;
+			MenuitemCollectorFound * found = (MenuitemCollectorFound *)founditem->data;
 
 			/* Distance */
-			guint distance = dbusmenu_collector_found_get_distance(found);
+			guint distance = menuitem_collector_found_get_distance(found);
 			distance = distance + ((distance * indicator_penalty) / 100);
-			dbusmenu_collector_found_set_distance(found, distance);
+			menuitem_collector_found_set_distance(found, distance);
 
 			/* Names */
-			dbusmenu_collector_found_set_indicator(found, indicator->name);
+			menuitem_collector_found_set_indicator(found, indicator->name);
 
 			/* Icon */
-			dbusmenu_collector_found_set_app_icon(found, indicator->icon);
+			menuitem_collector_found_set_app_icon(found, indicator->icon);
 
 			founditem = g_list_next(founditem);
 		}
@@ -420,10 +420,10 @@ search_and_sort (HudSearch * search, const gchar * searchstr, GArray * usagedata
 
 		const gchar * desktopfile = NULL;
 
-		desktopfile = dbusmenu_collector_found_get_indicator(usage->found);
+		desktopfile = menuitem_collector_found_get_indicator(usage->found);
 
 		if (desktopfile != NULL) {
-			usage->count = usage_tracker_get_usage(search->priv->usage, desktopfile, dbusmenu_collector_found_get_db(usage->found));
+			usage->count = usage_tracker_get_usage(search->priv->usage, desktopfile, menuitem_collector_found_get_db(usage->found));
 		} else {
 			usage->count = 0;
 		}
@@ -435,7 +435,7 @@ search_and_sort (HudSearch * search, const gchar * searchstr, GArray * usagedata
 	for (count = 0; count < usagedata->len; count++) {
 		usage_wrapper_t * usage = &g_array_index(usagedata, usage_wrapper_t, count);
 		overall_usage += usage->count;
-		overall_distance += dbusmenu_collector_found_get_distance(usage->found);
+		overall_distance += menuitem_collector_found_get_distance(usage->found);
 	}
 
 
@@ -449,7 +449,7 @@ search_and_sort (HudSearch * search, const gchar * searchstr, GArray * usagedata
 			usage->percent_usage = 1.0;
 		}
 
-		usage->percent_distance = (gfloat)dbusmenu_collector_found_get_distance(usage->found)/(gfloat)overall_distance;
+		usage->percent_distance = (gfloat)menuitem_collector_found_get_distance(usage->found)/(gfloat)overall_distance;
 	}
 
 	/* Sort based on aggregate */
@@ -506,19 +506,19 @@ hud_search_suggestions (HudSearch * search, const gchar * searchstr, gchar ** de
 	for (count = 0; count < 5 && count < usagedata->len; count++) {
 		usage_wrapper_t * usage = &g_array_index(usagedata, usage_wrapper_t, count);
 
-		const gchar * desktopfile = dbusmenu_collector_found_get_indicator(usage->found);
+		const gchar * desktopfile = menuitem_collector_found_get_indicator(usage->found);
 		if (desktopfile == NULL) {
 			desktopfile = appdesktopfile;
 		}
 
 		HudSearchSuggest * suggest = hud_search_suggest_new(desktopfile,
-		                                                    dbusmenu_collector_found_get_app_icon(usage->found),
-		                                                    dbusmenu_collector_found_get_display(usage->found),
-		                                                    dbusmenu_collector_found_get_db(usage->found),
+		                                                    menuitem_collector_found_get_app_icon(usage->found),
+		                                                    menuitem_collector_found_get_display(usage->found),
+		                                                    menuitem_collector_found_get_db(usage->found),
 		                                                    "none",
-		                                                    dbusmenu_collector_found_get_dbus_addr(usage->found),
-		                                                    dbusmenu_collector_found_get_dbus_path(usage->found),
-		                                                    dbusmenu_collector_found_get_dbus_id(usage->found)
+		                                                    menuitem_collector_found_get_dbus_addr(usage->found),
+		                                                    menuitem_collector_found_get_dbus_path(usage->found),
+		                                                    menuitem_collector_found_get_dbus_id(usage->found)
 		                                                    );
 
 		retval = g_list_prepend(retval, suggest);
@@ -528,7 +528,7 @@ hud_search_suggestions (HudSearch * search, const gchar * searchstr, gchar ** de
 
 	/* Free the interim arrays of data */
 	g_array_free(usagedata, TRUE);
-	dbusmenu_collector_found_list_free(found_list);
+	menuitem_collector_found_list_free(found_list);
 
 	return retval;
 }
@@ -555,7 +555,7 @@ hud_search_execute (HudSearch * search, GVariant * key, guint timestamp)
 	}
 
 	if (app != NULL && dbstring != NULL && address != NULL && path != NULL && id != 0) {
-		dbusmenu_collector_execute(search->priv->collector, address, path, id, timestamp);
+		menuitem_collector_execute(search->priv->collector, address, path, id, timestamp);
 		usage_tracker_mark_usage(search->priv->usage, app, dbstring);
 	}
 
