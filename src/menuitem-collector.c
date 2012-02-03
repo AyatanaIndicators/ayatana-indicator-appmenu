@@ -363,17 +363,19 @@ tokens_to_children (MenuitemCollector * collector, DbusmenuMenuitem * rootitem, 
 		return results;
 	}
 
+	const gchar * item_type = dbusmenu_menuitem_property_get(rootitem, DBUSMENU_MENUITEM_PROP_TYPE);
+	TypePropStrings * prop_strings = type_to_prop_strings(item_type);
+
 	/* We can only evaluate these properties if we know the type */
-	if (!dbusmenu_menuitem_property_exist(rootitem, DBUSMENU_MENUITEM_PROP_TYPE) ||
-			g_strcmp0(dbusmenu_menuitem_property_get(rootitem, DBUSMENU_MENUITEM_PROP_TYPE), DBUSMENU_CLIENT_TYPES_DEFAULT) == 0) {
+	if (prop_strings != NULL) {
 		/* Skip the items that are disabled or not visible as they wouldn't
 		   be usable in the application so we don't want to show them and
 		   act like they're usable in the HUD either */
-		if (!dbusmenu_menuitem_property_get_bool(rootitem, DBUSMENU_MENUITEM_PROP_ENABLED)) {
+		if (!dbusmenu_menuitem_property_get_bool(rootitem, prop_strings->enabled)) {
 			return results;
 		}
 
-		if (!dbusmenu_menuitem_property_get_bool(rootitem, DBUSMENU_MENUITEM_PROP_VISIBLE)) {
+		if (!dbusmenu_menuitem_property_get_bool(rootitem, prop_strings->visible)) {
 			return results;
 		}
 	}
