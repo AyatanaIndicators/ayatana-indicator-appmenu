@@ -1,3 +1,31 @@
+indicator-appmenu (0.3.90~bzr147-0ubuntu1~ppa2) UNRELEASED; urgency=low
+
+  * Merging U. Desktop branch
+  * Cleaning up changelog
+  * debian/control:
+    * Increasing the dep on libindicator version
+    * Add a dep in tools on sqlite3 (LP: #921274)
+    * Adding xvfb
+    * Added autoreconf
+  	* Adding appindicator test build dependencies on the application
+      indicator stuff.
+    * Adding build deps on new libraries for CLI tool
+    * Adding sqlite and dbus-test-runner deps
+  * debian/indicator-appmenu.install:
+    * Adding GSchemas
+    * Grabbing the dbus service too
+    * Adding in the HUD components to the various packages.
+  * debian/indicator-appmenu-tools.install:
+    * Adding man pages
+    * Move tools to /usr/bin
+    * Adding in the HUD components to the various packages.
+  * debian/rules:
+    * Adding in autoreconf.mk
+    * Adding autopoint
+    * Adding make check
+
+ -- Ted Gould <ted@ubuntu.com>  Fri, 03 Feb 2012 08:14:56 -0600
+
 indicator-appmenu (0.3.90~bzr147-0ubuntu1~ppa1) precise; urgency=low
 
   * Upstream Merge
@@ -5,139 +33,6 @@ indicator-appmenu (0.3.90~bzr147-0ubuntu1~ppa1) precise; urgency=low
     * Include build directory for tests
 
  -- Ted Gould <ted@ubuntu.com>  Fri, 03 Feb 2012 08:03:40 -0600
-
-indicator-appmenu (0.3.2+hud5-0ubuntu1~ppa4) precise; urgency=low
-
-  * Upstream Merge
-    * Fixing infinite loop on null list
-
- -- Ted Gould <ted@ubuntu.com>  Thu, 26 Jan 2012 11:06:40 -0600
-
-indicator-appmenu (0.3.2+hud5-0ubuntu1~ppa3) precise; urgency=low
-
-  * Upstream Merge
-    * Update to current trunk
-    * Hot fix for disappearing menus with new libindicator
-    * Various fixes from code review
-  * debian/control: Increasing the dep on libindicator version
-
- -- Ted Gould <ted@ubuntu.com>  Thu, 26 Jan 2012 10:53:52 -0600
-
-indicator-appmenu (0.3.2+hud5-0ubuntu1~ppa2) precise; urgency=low
-
-  * debian/control: Add a dep in tools on sqlite3 (LP: #921274)
-
- -- Ted Gould <ted@ubuntu.com>  Tue, 24 Jan 2012 23:09:56 -0600
-
-indicator-appmenu (0.3.2+hud5-0ubuntu1~ppa1) precise; urgency=low
-
-  * New upstream release.
-    * Icon depending on selection
-    * i18n fixes
-    * Using prepared SQL statements
-    * Ignoring more things that BAMF calls Unity
-  * Upstream Merge
-    * Make it so the test suite doesn't need X or DBus
-
- -- Ted Gould <ted@ubuntu.com>  Mon, 23 Jan 2012 16:42:10 -0600
-
-indicator-appmenu (0.3.2+hud4-0ubuntu1~ppa1) precise; urgency=low
-
-  * New upstream release.
-    * Setting to not save usage data
-    * Fixes XML error
-  * debian/indicator-appmenu.install: Adding GSchemas
-  * debian/indicator-appmenu-tools.install: Adding man pages
-
- -- Ted Gould <ted@ubuntu.com>  Thu, 12 Jan 2012 18:37:02 +0100
-
-indicator-appmenu (0.3.2+hud3-0ubuntu1~ppa4) precise; urgency=low
-
-  * debian/control: Adding xvfb
-
- -- Ted Gould <ted@ubuntu.com>  Thu, 12 Jan 2012 08:49:49 +0100
-
-indicator-appmenu (0.3.2+hud3-0ubuntu1~ppa3) precise; urgency=low
-
-  * debian/control: added autoreconf
-
- -- Ted Gould <ted@ubuntu.com>  Wed, 11 Jan 2012 16:52:43 +0100
-
-indicator-appmenu (0.3.2+hud3-0ubuntu1~ppa2) precise; urgency=low
-
-  * debian/control:
-  	Adding appindicator test build dependencies on the application
-    indicator stuff.
-
- -- Ted Gould <ted@ubuntu.com>  Wed, 11 Jan 2012 16:24:37 +0100
-
-indicator-appmenu (0.3.2+hud3-0ubuntu1~ppa1) precise; urgency=low
-
-  * New upstream release.
-    * Custom menu items
-    * Appindicator support
-    * Man pages
-  * Merge from upstream
-    * Better support of XVFB
-  * debian/rules: Adding in autoreconf.mk
-  * debian/rules: Adding autopoint
-
- -- Ted Gould <ted@ubuntu.com>  Wed, 11 Jan 2012 09:33:41 +0100
-
-indicator-appmenu (0.3.2+hud2-0ubuntu1~ppa2) precise; urgency=low
-
-  * Merge from upstream
-    * Custom menu items
-    * Appindicator support
-    * Man pages
-
- -- Ted Gould <ted@ubuntu.com>  Tue, 10 Jan 2012 22:17:50 +0100
-
-indicator-appmenu (0.3.2+hud2-0ubuntu1~ppa1) oneiric; urgency=low
-
-  * New upstream release.
-    * Adding curses support to CLI client
-    * Adding code coverage testing
-    * Moving tools to bin
-  * debian/control: Adding build deps on new libraries for CLI tool
-  * debina/indicator-appmenu-tools: Move tools to /usr/bin
-
- -- Ted Gould <ted@ubuntu.com>  Thu, 05 Jan 2012 00:10:25 -0600
-
-indicator-appmenu (0.3.2+hud1-0ubuntu1~ppa5) oneiric; urgency=low
-
-  * debian/control: Adding sqlite and dbus-test-runner deps
-  * debian/rules: Adding make check
-
- -- Ted Gould <ted@ubuntu.com>  Mon, 12 Dec 2011 13:31:18 -0600
-
-indicator-appmenu (0.3.2+hud1-0ubuntu1~ppa4) oneiric; urgency=low
-
-  * debian/indicator-appmenu.install: Fixing dbus service path
-
- -- Ted Gould <ted@ubuntu.com>  Mon, 12 Dec 2011 13:19:47 -0600
-
-indicator-appmenu (0.3.2+hud1-0ubuntu1~ppa3) oneiric; urgency=low
-
-  * indicator-appmenu.install: Grabbing the dbus service too
-  * debian/control: Making the packages with HUD components conflict
-    with the legacy hud package.
-
- -- Ted Gould <ted@ubuntu.com>  Sun, 11 Dec 2011 21:48:16 -0600
-
-indicator-appmenu (0.3.2+hud1-0ubuntu1~ppa2) oneiric; urgency=low
-
-  * indicator-appmenu.install, indicator-appmenu-tools.install: Adding
-    in the HUD components to the various packages.
-
- -- Ted Gould <ted@ubuntu.com>  Sun, 11 Dec 2011 21:40:43 -0600
-
-indicator-appmenu (0.3.2+hud1-0ubuntu1~ppa1) oneiric; urgency=low
-
-  * New upstream release.
-    * Adding in HUD service
-
- -- Ted Gould <ted@ubuntu.com>  Sun, 11 Dec 2011 21:28:02 -0600
 
 indicator-appmenu (0.3.2-0ubuntu3) precise; urgency=low
 
