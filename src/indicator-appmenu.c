@@ -1414,20 +1414,25 @@ get_menus (IndicatorAppmenu * iapp, GError ** error)
 		return NULL;
 	}
 
-	GVariantBuilder * builder = g_variant_builder_new (G_VARIANT_TYPE_ARRAY);
+	GVariantBuilder array;
+	g_variant_builder_init (&array, G_VARIANT_TYPE_ARRAY);
 	GList * appkeys = NULL;
 	for (appkeys = g_hash_table_get_keys(iapp->apps); appkeys != NULL; appkeys = g_list_next(appkeys)) {
 		gpointer hash_val = g_hash_table_lookup(iapp->apps, appkeys->data);
 
 		if (hash_val == NULL) { continue; }
 
-		g_variant_builder_add (builder, "(uso)",
-		                       window_menus_get_xid(WINDOW_MENUS(hash_val)),
-		                       window_menus_get_path(WINDOW_MENUS(hash_val)),
-		                       window_menus_get_address(WINDOW_MENUS(hash_val)));
+		GVariantBuilder tuple;
+		g_variant_builder_init(&tuple, G_VARIANT_TYPE_TUPLE);
+		g_variant_builder_add_value(&tuple, g_variant_new_uint32(window_menus_get_xid(WINDOW_MENUS(hash_val))));
+		g_variant_builder_add_value(&tuple, g_variant_new_string(window_menus_get_address(WINDOW_MENUS(hash_val))));
+		g_variant_builder_add_value(&tuple, g_variant_new_object_path(window_menus_get_path(WINDOW_MENUS(hash_val))));
+
+		g_variant_builder_add_value(&array, g_variant_builder_end(&tuple));
 	}
 
-	return g_variant_new("(a(uso))", builder);
+	GVariant * varray = g_variant_builder_end(&array);
+	return g_variant_new_tuple(&varray, 1);
 }
 
 /* A method has been called from our dbus inteface.  Figure out what it
