@@ -10,6 +10,7 @@ current-menu-dump: current-menu-dump.in
 	sed \
 		-e s:@LIBEXECDIR@:$(libexecdir):g \
 		$< > $@
+	chmod +x $@
 
 mock_json_app_SOURCES = \
 	mock-json-app.c
