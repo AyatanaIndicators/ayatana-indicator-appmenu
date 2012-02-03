@@ -1,10 +1,10 @@
-indicator-appmenu (0.3.90~bzr147-0ubuntu1~ppa1) UNRELEASED; urgency=low
+indicator-appmenu (0.3.90~bzr147-0ubuntu1~ppa1) precise; urgency=low
 
   * Upstream Merge
     * Lots of fixes.
     * Include build directory for tests
 
- -- Ted Gould <ted@ubuntu.com>  Fri, 03 Feb 2012 07:54:38 -0600
+ -- Ted Gould <ted@ubuntu.com>  Fri, 03 Feb 2012 08:03:40 -0600
 
 indicator-appmenu (0.3.2+hud5-0ubuntu1~ppa4) precise; urgency=low
 
