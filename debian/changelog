@@ -139,6 +139,27 @@ indicator-appmenu (0.3.2+hud1-0ubuntu1~ppa1) oneiric; urgency=low
 
  -- Ted Gould <ted@ubuntu.com>  Sun, 11 Dec 2011 21:28:02 -0600
 
+indicator-appmenu (0.3.2-0ubuntu3) precise; urgency=low
+
+  * src/indicator-appmenu.c
+    - set menu visibility, fixes the disappearing menus with libindicator 
+      >= 0.4.90
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Thu, 26 Jan 2012 00:20:24 -0500
+
+indicator-appmenu (0.3.2-0ubuntu2) precise; urgency=low
+
+  * no change rebuild for libindicator7
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Wed, 25 Jan 2012 09:51:34 -0500
+
+indicator-appmenu (0.3.2-0ubuntu1) precise; urgency=low
+
+  * New upstream release.
+  * debian/patches/double-ref-of-entry-label.patch: included in the new version
+
+ -- Sebastien Bacher <seb128@ubuntu.com>  Tue, 13 Dec 2011 10:45:03 +0100
+
 indicator-appmenu (0.3.2-0ubuntu1~ppa1) oneiric; urgency=low
 
   * New upstream release.
