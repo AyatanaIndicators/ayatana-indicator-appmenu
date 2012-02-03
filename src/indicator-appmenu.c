@@ -150,6 +150,9 @@ static void build_window_menus                                       (IndicatorA
 static GList * get_entries                                           (IndicatorObject * io);
 static guint get_location                                            (IndicatorObject * io,
                                                                       IndicatorObjectEntry * entry);
+static void entry_activate                                           (IndicatorObject * io,
+                                                                      IndicatorObjectEntry * entry,
+                                                                      guint timestamp);
 static void entry_activate_window                                    (IndicatorObject * io,
                                                                       IndicatorObjectEntry * entry,
                                                                       guint windowid,
@@ -261,6 +264,7 @@ indicator_appmenu_class_init (IndicatorAppmenuClass *klass)
 
 	ioclass->get_entries = get_entries;
 	ioclass->get_location = get_location;
+	ioclass->entry_activate = entry_activate;
 	ioclass->entry_activate_window = entry_activate_window;
 
 	/* Setting up the DBus interfaces */
@@ -983,6 +987,13 @@ get_location (IndicatorObject * io, IndicatorObjectEntry * entry)
 		}
 	}
 	return count;
+}
+
+/* Responds to a menuitem being activated on the panel. */
+static void
+entry_activate (IndicatorObject * io, IndicatorObjectEntry * entry, guint timestamp)
+{
+	return entry_activate_window(io, entry, 0, timestamp);
 }
 
 /* Responds to a menuitem being activated on the panel. */
