@@ -258,60 +258,50 @@ remove_underline (const gchar * input)
 	return g_string_free (output, FALSE);
 }
 
+/* Our table of types to label properties so that we can figure
+   out what to show to the user */
+const gchar *
+type_to_label_prop (const gchar * type)
+{
+	static GHashTable * label_table = NULL;
+
+	if (type == NULL) {
+		return DBUSMENU_MENUITEM_PROP_LABEL;
+	}
+
+	if (label_table == NULL) {
+		label_table = g_hash_table_new(g_str_hash, g_str_equal);
+
+		g_hash_table_insert(label_table, DBUSMENU_CLIENT_TYPES_DEFAULT, DBUSMENU_MENUITEM_PROP_LABEL);
+		/* Indicator Messages */
+		g_hash_table_insert(label_table, "application-item", "label");
+		g_hash_table_insert(label_table, "indicator-item", "indicator-label");
+		/* Indicator Datetime */
+		g_hash_table_insert(label_table, "appointment-item", "appointment-label");
+		g_hash_table_insert(label_table, "timezone-item", "timezone-name");
+		/* Indicator Sound */
+		g_hash_table_insert(label_table, "x-canonical-sound-menu-player-metadata-type", "x-canonical-sound-menu-player-metadata-player-name");
+		g_hash_table_insert(label_table, "x-canonical-sound-menu-mute-type", "label");
+		/* Indicator User */
+		g_hash_table_insert(label_table, "x-canonical-user-item", "user-item-name");
+	}
+
+	return (const gchar *)g_hash_table_lookup(label_table, type);
+}
+
+/* Find the label for a menu item and return its value as a set
+   of tokens that we can search into */
 static GStrv
 menuitem_to_tokens (DbusmenuMenuitem * item, GStrv label_prefix)
 {
 	const gchar * label_property = NULL;
 	const gchar * item_type = NULL;
 
-	if (label_property == NULL && !dbusmenu_menuitem_property_exist(item, DBUSMENU_MENUITEM_PROP_TYPE)) {
-		label_property = DBUSMENU_MENUITEM_PROP_LABEL;
-	}
+	item_type = dbusmenu_menuitem_property_get(item, DBUSMENU_MENUITEM_PROP_TYPE);
+	label_property = type_to_label_prop(item_type);
 
 	if (label_property == NULL) {
-		item_type = dbusmenu_menuitem_property_get(item, DBUSMENU_MENUITEM_PROP_TYPE);
-	}
-
-	if (label_property == NULL && g_strcmp0(item_type, DBUSMENU_CLIENT_TYPES_SEPARATOR) == 0) {
 		return NULL;
-	}
-
-	if (label_property == NULL && g_strcmp0(item_type, DBUSMENU_CLIENT_TYPES_DEFAULT) == 0) {
-		label_property = DBUSMENU_MENUITEM_PROP_LABEL;
-	}
-
-	/* Indicator Messages */
-	if (label_property == NULL && g_strcmp0(item_type, "application-item") == 0) {
-		label_property = "label";
-	}
-
-	if (label_property == NULL && g_strcmp0(item_type, "indicator-item") == 0) {
-		label_property = "indicator-label";
-	}
-
-	/* Indicator Date Time */
-	if (label_property == NULL && g_strcmp0(item_type, "appointment-item") == 0) {
-		label_property = "appointment-label";
-	}
-
-	if (label_property == NULL && g_strcmp0(item_type, "timezone-item") == 0) {
-		label_property = "timezone-name";
-	}
-
-	/* Indicator Sound */
-	if (label_property == NULL && g_strcmp0(item_type, "x-canonical-sound-menu-player-metadata-type") == 0) {
-		label_property = "x-canonical-sound-menu-player-metadata-player-name";
-	}
-
-	if (label_property == NULL && g_strcmp0(item_type, "x-canonical-sound-menu-mute-type") == 0) {
-		label_property = "label";
-	}
-
-	/* NOTE: Need to handle the transport item at some point */
-
-	/* Indicator User */
-	if (label_property == NULL && g_strcmp0(item_type, "x-canonical-user-item") == 0) {
-		label_property = "user-item-name";
 	}
 
 	/* Tokenize */
