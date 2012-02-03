@@ -35,7 +35,7 @@ main (int argv, char * argc[])
 		basecachedir = g_get_user_cache_dir();
 	}
 
-	gchar * cachedir = g_build_filename(basecachedir, "hud", NULL);
+	gchar * cachedir = g_build_filename(basecachedir, "indicator-appmenu", NULL);
 	if (!g_file_test(cachedir, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR)) {
 		g_warning("Cache directory '%s' doesn't exist", cachedir);
 		return 1;

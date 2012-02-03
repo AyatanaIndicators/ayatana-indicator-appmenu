@@ -6,4 +6,6 @@ fi;
 
 FINAL_DIR="$HUD_CACHE_DIR/indicator-appmenu"
 
-sqlite3 $FINAL_DIR/hud-usage-log.sqlite "select distinct application from usage"
+if test -e $FINAL_DIR/hud-usage-log.sqlite; then
+	sqlite3 $FINAL_DIR/hud-usage-log.sqlite "select distinct application from usage"
+fi
