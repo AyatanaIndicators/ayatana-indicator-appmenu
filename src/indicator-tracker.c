@@ -467,7 +467,7 @@ app_proxy_apps_replace (GObject * obj, GAsyncResult * res, gpointer user_data)
 	                           &hint,
 		                       &title)) {
 		/* TODO: No icon name for ID */
-		app_proxy_new_indicator(self, position, iconname, accessibledesc, dbusaddress, dbusobject, iconname);
+		app_proxy_new_indicator(self, position, hint, title, dbusaddress, dbusobject, iconname);
 	}
 
 	g_variant_unref(array);
@@ -504,10 +504,11 @@ app_proxy_signal (GDBusProxy *proxy, gchar * sender_name, gchar * signal_name, G
 		              &label,
 		              &labelguide,
 		              &accessibledesc,
-		              &hint);
+		              &hint,
+		              &title);
 
 		/* TODO: No icon name for ID */
-		app_proxy_new_indicator(self, position, iconname, accessibledesc, dbusaddress, dbusobject, iconname);
+		app_proxy_new_indicator(self, position, hint, title, dbusaddress, dbusobject, iconname);
 
 		g_free(iconname);
 		g_free(dbusaddress);
@@ -558,7 +559,7 @@ app_proxy_signal (GDBusProxy *proxy, gchar * sender_name, gchar * signal_name, G
 
 /* Add a new application indicator to our list */
 static void
-app_proxy_new_indicator (IndicatorTracker * self, gint position, const gchar * id, const gchar * accessibledesc, const gchar * dbusaddress, const gchar * dbusobject, const gchar * iconname)
+app_proxy_new_indicator (IndicatorTracker * self, gint position, const gchar * id, const gchar * title, const gchar * dbusaddress, const gchar * dbusobject, const gchar * iconname)
 {
 	g_debug("New application indicator: %s", dbusobject);
 
@@ -568,7 +569,7 @@ app_proxy_new_indicator (IndicatorTracker * self, gint position, const gchar * i
 			dbus_name: g_strdup(dbusaddress),
 			dbus_name_wellknown: NULL,
 			dbus_object: g_strdup(dbusobject),
-			prefix: g_strdup(accessibledesc),
+			prefix: g_strdup(title),
 			icon: g_strdup(iconname)
 		},
 		alert: FALSE,
@@ -578,7 +579,12 @@ app_proxy_new_indicator (IndicatorTracker * self, gint position, const gchar * i
 
 	if (indicator.system.prefix == NULL || indicator.system.prefix[0] == '\0') {
 		g_free(indicator.system.prefix);
-		indicator.system.prefix = g_strdup(_("Unknown Indicator"));
+		/* TRANSLATORS:  This is used for Application indicators that
+		   are not providing a title string.  The '%s' represents the
+		   unique ID that the app indicator provides, but it is usually
+		   the package name and not generally human readable.  An example
+		   for Network Manager would be 'nm-applet'. */
+		indicator.system.prefix = g_strdup_printf(_("Untitled Indicator (%s)"), id);
 	}
 
 	g_array_insert_val(self->priv->app_indicators, position, indicator);
