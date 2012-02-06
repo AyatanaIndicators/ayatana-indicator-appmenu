@@ -452,9 +452,10 @@ app_proxy_apps_replace (GObject * obj, GAsyncResult * res, gpointer user_data)
 	gchar * labelguide = NULL;
 	gchar * accessibledesc = NULL;
 	gchar * hint = NULL;
+	gchar * title = NULL;
 
 	while (g_variant_iter_loop(&iter, 
-	                           "(sisosssss)",
+	                           "(sisossssss)",
 	                           &iconname,
 	                           &position,
 	                           &dbusaddress,
@@ -463,7 +464,8 @@ app_proxy_apps_replace (GObject * obj, GAsyncResult * res, gpointer user_data)
 	                           &label,
 	                           &labelguide,
 	                           &accessibledesc,
-	                           &hint)) {
+	                           &hint,
+		                       &title)) {
 		/* TODO: No icon name for ID */
 		app_proxy_new_indicator(self, position, iconname, accessibledesc, dbusaddress, dbusobject, iconname);
 	}
@@ -491,8 +493,9 @@ app_proxy_signal (GDBusProxy *proxy, gchar * sender_name, gchar * signal_name, G
 		gchar * labelguide = NULL;
 		gchar * accessibledesc = NULL;
 		gchar * hint = NULL;
+		gchar * title = NULL;
 
-		g_variant_get(parameters, "(sisosssss)",
+		g_variant_get(parameters, "(sisossssss)",
 		              &iconname,
 		              &position,
 		              &dbusaddress,
@@ -514,6 +517,7 @@ app_proxy_signal (GDBusProxy *proxy, gchar * sender_name, gchar * signal_name, G
 		g_free(labelguide);
 		g_free(accessibledesc);
 		g_free(hint);
+		g_free(title);
 	} else if (g_strcmp0(signal_name, "ApplicationRemoved") == 0) {
 		gint position;
 
