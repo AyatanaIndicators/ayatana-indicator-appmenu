@@ -614,7 +614,8 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 	    || g_strcmp0(name, "launcher") == 0
 	    || g_strcmp0(name, "dash") == 0
 	    || g_strcmp0(name, "panel") == 0
-	    || g_strcmp0(name, "hud") == 0) {
+	    || g_strcmp0(name, "hud") == 0
+	    || g_strcmp0(name, "unity-2d-shell") == 0) {
 		return;
 	}
 
