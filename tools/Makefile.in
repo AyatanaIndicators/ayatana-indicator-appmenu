@@ -695,6 +695,7 @@ current-menu-dump: current-menu-dump.in
 	sed \
 		-e s:@LIBEXECDIR@:$(libexecdir):g \
 		$< > $@
+	chmod +x $@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.
 # Otherwise a system limit (for SysV at least) may be exceeded.

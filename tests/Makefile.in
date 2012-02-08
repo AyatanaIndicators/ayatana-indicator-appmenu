@@ -378,7 +378,7 @@ DISTCLEANFILES = $(DISTANCE_XML_REPORT) $(USAGE_DB_SIMPLE_XML_REPORT) \
 	$(USAGE_OFF_XML_REPORT) $(TESTS)
 EXTRA_DIST = run-xvfb.sh test-usage-db-simple.sql \
 	test-usage-db-old.sql test-usage-db-ancient.sql \
-	test-usage-dump-entries.sql test-create-db.sql \
+	test-usage-dump-entries.sql \
 	good-app-info/testapp100.desktop.hud-app-info \
 	good-app-info/testapp.desktop.hud-app-info \
 	bad-app-info/dual-headers.hud-app-info \
@@ -450,6 +450,7 @@ test_distance_CFLAGS = \
 	$(HUD_CFLAGS) \
 	$(COVERAGE_CFLAGS) \
 	-I$(top_srcdir)/src \
+	-I$(top_builddir)/src \
 	-Wall -Werror
 
 test_distance_LDADD = \
@@ -464,6 +465,7 @@ test_usage_db_simple_CFLAGS = \
 	$(COVERAGE_CFLAGS) \
 	-DDATADIR=\""$(datadir)"\" \
 	-I$(top_srcdir)/src \
+	-I$(top_builddir)/src \
 	-Wall -Werror
 
 test_usage_db_simple_LDADD = \
@@ -478,6 +480,7 @@ test_usage_db_old_CFLAGS = \
 	$(COVERAGE_CFLAGS) \
 	-DDATADIR=\""$(datadir)"\" \
 	-I$(top_srcdir)/src \
+	-I$(top_builddir)/src \
 	-Wall -Werror
 
 test_usage_db_old_LDADD = \
@@ -491,6 +494,7 @@ test_usage_db_ancient_CFLAGS = \
 	$(COVERAGE_CFLAGS) \
 	-DDATADIR=\""$(datadir)"\" \
 	-I$(top_srcdir)/src \
+	-I$(top_builddir)/src \
 	-Wall -Werror
 
 test_usage_db_ancient_LDADD = \
@@ -505,6 +509,7 @@ test_usage_db_testapp_CFLAGS = \
 	$(COVERAGE_CFLAGS) \
 	-DDATADIR=\""$(datadir)"\" \
 	-I$(top_srcdir)/src \
+	-I$(top_builddir)/src \
 	-Wall -Werror
 
 test_usage_db_testapp_LDADD = \
@@ -518,6 +523,7 @@ test_indicator_tracker_CFLAGS = \
 	$(HUD_CFLAGS) \
 	$(COVERAGE_CFLAGS) \
 	-I$(top_srcdir)/src \
+	-I$(top_builddir)/src \
 	-Wall -Werror
 
 test_indicator_tracker_LDADD = \
@@ -541,6 +547,7 @@ test_bad_app_info_CFLAGS = \
 	$(HUD_CFLAGS) \
 	$(COVERAGE_CFLAGS) \
 	-I$(top_srcdir)/src \
+	-I$(top_builddir)/src \
 	-Wall -Werror
 
 test_bad_app_info_LDADD = \
@@ -553,6 +560,7 @@ test_load_app_info_CFLAGS = \
 	$(HUD_CFLAGS) \
 	$(COVERAGE_CFLAGS) \
 	-I$(top_srcdir)/src \
+	-I$(top_builddir)/src \
 	-Wall -Werror
 
 test_load_app_info_LDADD = \
@@ -566,6 +574,7 @@ test_app_indicator_CFLAGS = \
 	$(COVERAGE_CFLAGS) \
 	$(INDICATORTEST_CFLAGS) \
 	-I$(top_srcdir)/src \
+	-I$(top_builddir)/src \
 	-Wall -Werror
 
 test_app_indicator_LDADD = \
@@ -579,6 +588,7 @@ test_app_indicator_tracker_CFLAGS = \
 	$(HUD_CFLAGS) \
 	$(COVERAGE_CFLAGS) \
 	-I$(top_srcdir)/src \
+	-I$(top_builddir)/src \
 	-Wall -Werror
 
 test_app_indicator_tracker_LDADD = \
@@ -1194,6 +1204,8 @@ test-usage-db-simple-test: test-usage-db-simple test-usage-db-simple.sql Makefil
 	@echo mkdir -p indicator-appmenu >> $@
 	@echo cat $(abs_srcdir)/test-usage-db-simple.sql \| sqlite3 indicator-appmenu/hud-usage-log.sqlite >> $@
 	@echo export HUD_CACHE_DIR=\`pwd\` >> $@
+	@echo export GSETTINGS_BACKEND=memory >> $@
+	@echo export GSETTINGS_SCHEMA_DIR=\`pwd\` >> $@
 	@echo gtester --verbose -k -o $(abs_builddir)/$(USAGE_DB_SIMPLE_XML_REPORT) $(abs_builddir)/test-usage-db-simple >> $@
 	@echo cd .. >> $@
 	@echo rm -rf test-usage-db-simple.dir.\* >> $@
@@ -1205,6 +1217,8 @@ test-usage-db-old-test: test-usage-db-old test-usage-db-old.sql Makefile.am
 	@echo mkdir -p indicator-appmenu >> $@
 	@echo cat $(abs_srcdir)/test-usage-db-old.sql \| sqlite3 indicator-appmenu/hud-usage-log.sqlite >> $@
 	@echo export HUD_CACHE_DIR=\`pwd\` >> $@
+	@echo export GSETTINGS_BACKEND=memory >> $@
+	@echo export GSETTINGS_SCHEMA_DIR=\`pwd\` >> $@
 	@echo gtester --verbose -k -o $(abs_builddir)/$(USAGE_DB_SIMPLE_XML_REPORT) $(abs_builddir)/test-usage-db-old >> $@
 	@echo cd .. >> $@
 	@echo rm -rf test-usage-db-old.dir.\* >> $@
@@ -1216,6 +1230,8 @@ test-usage-db-ancient-test: test-usage-db-ancient test-usage-db-ancient.sql test
 	@echo mkdir -p indicator-appmenu >> $@
 	@echo cat $(abs_srcdir)/test-usage-db-ancient.sql \| sqlite3 indicator-appmenu/hud-usage-log.sqlite >> $@
 	@echo export HUD_CACHE_DIR=\`pwd\` >> $@
+	@echo export GSETTINGS_BACKEND=memory >> $@
+	@echo export GSETTINGS_SCHEMA_DIR=\`pwd\` >> $@
 	@echo $(abs_builddir)/test-usage-db-ancient >> $@
 	@echo if test \`cat $(abs_srcdir)/test-usage-dump-entries.sql \| sqlite3 indicator-appmenu/hud-usage-log.sqlite \| wc -l\` -gt 0\; then >> $@
 	@echo echo Database has entries >> $@
@@ -1225,13 +1241,15 @@ test-usage-db-ancient-test: test-usage-db-ancient test-usage-db-ancient.sql test
 	@echo rm -rf test-usage-db-ancient.dir.\* >> $@
 	@chmod +x $@
 
-test-usage-db-testapp-test: test-usage-db-testapp good-app-info/testapp.desktop.hud-app-info good-app-info/testapp100.desktop.hud-app-info test-create-db.sql Makefile.am
+test-usage-db-testapp-test: test-usage-db-testapp good-app-info/testapp.desktop.hud-app-info good-app-info/testapp100.desktop.hud-app-info $(top_srcdir)/src/create-db.sql Makefile.am
 	@echo "#!/bin/bash -e" > $@
 	@echo cd \`mktemp -d $(abs_builddir)/test-usage-db-testapp.dir.XXXXXX\` >> $@
 	@echo mkdir -p indicator-appmenu >> $@
-	@echo cat $(abs_srcdir)/test-create-db.sql \| sqlite3 indicator-appmenu/hud-usage-log.sqlite >> $@
+	@echo cat $(abs_top_srcdir)/src/create-db.sql \| sqlite3 indicator-appmenu/hud-usage-log.sqlite >> $@
 	@echo export HUD_CACHE_DIR=\`pwd\` >> $@
 	@echo export HUD_APP_INFO_DIR=$(abs_srcdir)/good-app-info >> $@
+	@echo export GSETTINGS_BACKEND=memory >> $@
+	@echo export GSETTINGS_SCHEMA_DIR=\`pwd\` >> $@
 	@echo gtester --verbose -k -o $(abs_builddir)/$(USAGE_TESTAPP_XML_REPORT) $(abs_builddir)/test-usage-db-testapp >> $@
 	@echo cd .. >> $@
 	@echo rm -rf test-usage-db-testapp.dir.\* >> $@
@@ -1244,6 +1262,8 @@ test-usage-db-off-test: test-usage-db-testapp good-app-info/testapp.desktop.hud-
 	@echo export HUD_CACHE_DIR=\`pwd\` >> $@
 	@echo export HUD_APP_INFO_DIR=$(abs_srcdir)/good-app-info >> $@
 	@echo export HUD_NO_STORE_USAGE_DATA=1 >> $@
+	@echo export GSETTINGS_BACKEND=memory >> $@
+	@echo export GSETTINGS_SCHEMA_DIR=\`pwd\` >> $@
 	@echo gtester --verbose -k -o $(abs_buildir)/$(USAGE_OFF_XML_REPORT) $(abs_builddir)/test-usage-db-testapp >> $@
 	@echo test \! -e indicator-appmenu/hud-usage-log.sqlite >> $@
 	@echo cd .. >> $@

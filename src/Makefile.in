@@ -138,7 +138,8 @@ hud_dump_application_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(hud_dump_application_CFLAGS) $(CFLAGS) \
 	$(hud_dump_application_LDFLAGS) $(LDFLAGS) -o $@
-am_hud_service_OBJECTS = hud_service-dbusmenu-collector.$(OBJEXT) \
+am_hud_service_OBJECTS = hud_service-create-db.$(OBJEXT) \
+	hud_service-menuitem-collector.$(OBJEXT) \
 	hud_service-distance.$(OBJEXT) \
 	hud_service-dump-app-info.$(OBJEXT) \
 	hud_service-hud-service.$(OBJEXT) \
@@ -155,6 +156,7 @@ hud_service_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(hud_service_CFLAGS) \
 	$(CFLAGS) $(hud_service_LDFLAGS) $(LDFLAGS) -o $@
 am_hud_verify_app_info_OBJECTS =  \
+	hud_verify_app_info-create-db.$(OBJEXT) \
 	hud_verify_app_info-load-app-info.$(OBJEXT) \
 	hud_verify_app_info-hud-verify-app-info.$(OBJEXT)
 hud_verify_app_info_OBJECTS = $(am_hud_verify_app_info_OBJECTS)
@@ -370,7 +372,7 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-CLEANFILES = stamp-marshal $(BUILT_SOURCES)
+CLEANFILES = stamp-marshal create-db.c $(BUILT_SOURCES)
 DISTCLEANFILES = $(marshal_h) $(marshal_c)
 BUILT_SOURCES = $(marshal_h) $(marshal_c) \
 	gen-application-menu-renderer.xml.c \
@@ -383,7 +385,8 @@ BUILT_SOURCES = $(marshal_h) $(marshal_c) \
 # HUD DBus Interface
 ####################
 EXTRA_DIST = hud-list-applications $(glib_marshal_list) \
-	$(am__append_2) hud.xml $(DBUS_SPECS) clean-namespaces.xslt
+	$(am__append_2) hud.xml create-db.sql $(DBUS_SPECS) \
+	clean-namespaces.xslt
 bin_SCRIPTS = \
 	hud-list-applications
 
@@ -438,8 +441,10 @@ DBUS_SPECS = \
 # HUD Service
 ####################
 hud_service_SOURCES = \
-	dbusmenu-collector.h \
-	dbusmenu-collector.c \
+	create-db.h \
+	create-db.c \
+	menuitem-collector.h \
+	menuitem-collector.c \
 	distance.h \
 	distance.c \
 	dump-app-info.h \
@@ -511,6 +516,8 @@ hud_dump_application_LDFLAGS = \
 # HUD Verify App Info
 #######################
 hud_verify_app_info_SOURCES = \
+	create-db.h \
+	create-db.c \
 	load-app-info.h \
 	load-app-info.c \
 	hud-verify-app-info.c
@@ -734,7 +741,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_cli-hud.interface.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_dump_application-dump-app-info.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_dump_application-hud-dump-application.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_service-dbusmenu-collector.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_service-create-db.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_service-distance.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_service-dump-app-info.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_service-hud-dbus.Po@am__quote@
@@ -743,8 +750,10 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_service-hud.interface.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_service-indicator-tracker.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_service-load-app-info.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_service-menuitem-collector.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_service-usage-tracker.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_service-utils.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_verify_app_info-create-db.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_verify_app_info-hud-verify-app-info.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_verify_app_info-load-app-info.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libappmenu_la-gdk-get-func.Plo@am__quote@
@@ -893,21 +902,37 @@ hud_dump_application-hud-dump-application.obj: hud-dump-application.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_dump_application_CFLAGS) $(CFLAGS) -c -o hud_dump_application-hud-dump-application.obj `if test -f 'hud-dump-application.c'; then $(CYGPATH_W) 'hud-dump-application.c'; else $(CYGPATH_W) '$(srcdir)/hud-dump-application.c'; fi`
 
-hud_service-dbusmenu-collector.o: dbusmenu-collector.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -MT hud_service-dbusmenu-collector.o -MD -MP -MF $(DEPDIR)/hud_service-dbusmenu-collector.Tpo -c -o hud_service-dbusmenu-collector.o `test -f 'dbusmenu-collector.c' || echo '$(srcdir)/'`dbusmenu-collector.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_service-dbusmenu-collector.Tpo $(DEPDIR)/hud_service-dbusmenu-collector.Po
+hud_service-create-db.o: create-db.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -MT hud_service-create-db.o -MD -MP -MF $(DEPDIR)/hud_service-create-db.Tpo -c -o hud_service-create-db.o `test -f 'create-db.c' || echo '$(srcdir)/'`create-db.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_service-create-db.Tpo $(DEPDIR)/hud_service-create-db.Po
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='dbusmenu-collector.c' object='hud_service-dbusmenu-collector.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='create-db.c' object='hud_service-create-db.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -c -o hud_service-dbusmenu-collector.o `test -f 'dbusmenu-collector.c' || echo '$(srcdir)/'`dbusmenu-collector.c
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -c -o hud_service-create-db.o `test -f 'create-db.c' || echo '$(srcdir)/'`create-db.c
 
-hud_service-dbusmenu-collector.obj: dbusmenu-collector.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -MT hud_service-dbusmenu-collector.obj -MD -MP -MF $(DEPDIR)/hud_service-dbusmenu-collector.Tpo -c -o hud_service-dbusmenu-collector.obj `if test -f 'dbusmenu-collector.c'; then $(CYGPATH_W) 'dbusmenu-collector.c'; else $(CYGPATH_W) '$(srcdir)/dbusmenu-collector.c'; fi`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_service-dbusmenu-collector.Tpo $(DEPDIR)/hud_service-dbusmenu-collector.Po
+hud_service-create-db.obj: create-db.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -MT hud_service-create-db.obj -MD -MP -MF $(DEPDIR)/hud_service-create-db.Tpo -c -o hud_service-create-db.obj `if test -f 'create-db.c'; then $(CYGPATH_W) 'create-db.c'; else $(CYGPATH_W) '$(srcdir)/create-db.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_service-create-db.Tpo $(DEPDIR)/hud_service-create-db.Po
 @am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='dbusmenu-collector.c' object='hud_service-dbusmenu-collector.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='create-db.c' object='hud_service-create-db.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -c -o hud_service-dbusmenu-collector.obj `if test -f 'dbusmenu-collector.c'; then $(CYGPATH_W) 'dbusmenu-collector.c'; else $(CYGPATH_W) '$(srcdir)/dbusmenu-collector.c'; fi`
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -c -o hud_service-create-db.obj `if test -f 'create-db.c'; then $(CYGPATH_W) 'create-db.c'; else $(CYGPATH_W) '$(srcdir)/create-db.c'; fi`
+
+hud_service-menuitem-collector.o: menuitem-collector.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -MT hud_service-menuitem-collector.o -MD -MP -MF $(DEPDIR)/hud_service-menuitem-collector.Tpo -c -o hud_service-menuitem-collector.o `test -f 'menuitem-collector.c' || echo '$(srcdir)/'`menuitem-collector.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_service-menuitem-collector.Tpo $(DEPDIR)/hud_service-menuitem-collector.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='menuitem-collector.c' object='hud_service-menuitem-collector.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -c -o hud_service-menuitem-collector.o `test -f 'menuitem-collector.c' || echo '$(srcdir)/'`menuitem-collector.c
+
+hud_service-menuitem-collector.obj: menuitem-collector.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -MT hud_service-menuitem-collector.obj -MD -MP -MF $(DEPDIR)/hud_service-menuitem-collector.Tpo -c -o hud_service-menuitem-collector.obj `if test -f 'menuitem-collector.c'; then $(CYGPATH_W) 'menuitem-collector.c'; else $(CYGPATH_W) '$(srcdir)/menuitem-collector.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_service-menuitem-collector.Tpo $(DEPDIR)/hud_service-menuitem-collector.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='menuitem-collector.c' object='hud_service-menuitem-collector.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -c -o hud_service-menuitem-collector.obj `if test -f 'menuitem-collector.c'; then $(CYGPATH_W) 'menuitem-collector.c'; else $(CYGPATH_W) '$(srcdir)/menuitem-collector.c'; fi`
 
 hud_service-distance.o: distance.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -MT hud_service-distance.o -MD -MP -MF $(DEPDIR)/hud_service-distance.Tpo -c -o hud_service-distance.o `test -f 'distance.c' || echo '$(srcdir)/'`distance.c
@@ -1068,6 +1093,22 @@ hud_service-utils.obj: utils.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	source='utils.c' object='hud_service-utils.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_service_CFLAGS) $(CFLAGS) -c -o hud_service-utils.obj `if test -f 'utils.c'; then $(CYGPATH_W) 'utils.c'; else $(CYGPATH_W) '$(srcdir)/utils.c'; fi`
+
+hud_verify_app_info-create-db.o: create-db.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_verify_app_info_CFLAGS) $(CFLAGS) -MT hud_verify_app_info-create-db.o -MD -MP -MF $(DEPDIR)/hud_verify_app_info-create-db.Tpo -c -o hud_verify_app_info-create-db.o `test -f 'create-db.c' || echo '$(srcdir)/'`create-db.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_verify_app_info-create-db.Tpo $(DEPDIR)/hud_verify_app_info-create-db.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='create-db.c' object='hud_verify_app_info-create-db.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_verify_app_info_CFLAGS) $(CFLAGS) -c -o hud_verify_app_info-create-db.o `test -f 'create-db.c' || echo '$(srcdir)/'`create-db.c
+
+hud_verify_app_info-create-db.obj: create-db.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_verify_app_info_CFLAGS) $(CFLAGS) -MT hud_verify_app_info-create-db.obj -MD -MP -MF $(DEPDIR)/hud_verify_app_info-create-db.Tpo -c -o hud_verify_app_info-create-db.obj `if test -f 'create-db.c'; then $(CYGPATH_W) 'create-db.c'; else $(CYGPATH_W) '$(srcdir)/create-db.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_verify_app_info-create-db.Tpo $(DEPDIR)/hud_verify_app_info-create-db.Po
+@am__fastdepCC_FALSE@	$(AM_V_CC) @AM_BACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	source='create-db.c' object='hud_verify_app_info-create-db.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_verify_app_info_CFLAGS) $(CFLAGS) -c -o hud_verify_app_info-create-db.obj `if test -f 'create-db.c'; then $(CYGPATH_W) 'create-db.c'; else $(CYGPATH_W) '$(srcdir)/create-db.c'; fi`
 
 hud_verify_app_info-load-app-info.o: load-app-info.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_verify_app_info_CFLAGS) $(CFLAGS) -MT hud_verify_app_info-load-app-info.o -MD -MP -MF $(DEPDIR)/hud_verify_app_info-load-app-info.Tpo -c -o hud_verify_app_info-load-app-info.o `test -f 'load-app-info.c' || echo '$(srcdir)/'`load-app-info.c
@@ -1351,6 +1392,12 @@ gen-%.xml.c: %.xml
 gen-%.xml.h: %.xml
 	@echo "Building $@ from $<"
 	@echo "extern const char * _$(subst -,_,$(subst .,_,$(basename $(notdir $<))));" > $@
+
+create-db.c: create-db.sql
+	echo "#include \"create-db.h\"" > $@
+	echo -n "const gchar * create_db = \"" >> $@
+	cat $< | xargs printf "%s " >> $@
+	echo -n "\";" >> $@
 
 %.interface.h: %.xml
 	echo "extern const char * $(subst -,_,$(subst .,_,$(basename $(notdir $@))));" > $@

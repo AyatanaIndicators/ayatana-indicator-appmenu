@@ -1,5 +1,5 @@
 AC_INIT([indicator-appmenu],
-        [0.3.2+hud5],
+        [0.3.90],
         [http://bugs.launchpad.net/indicator-appmenu],
         [indicator-appmenu],
         [http://launchpad.net/indicator-appmenu])
@@ -59,7 +59,7 @@ GLIB_GSETTINGS
 GTK_REQUIRED_VERSION=2.12
 GTK3_REQUIRED_VERSION=3.0
 GIO_REQUIRED_VERSION=2.26
-INDICATOR_REQUIRED_VERSION=0.3.19
+INDICATOR_REQUIRED_VERSION=0.3.90
 DBUSMENUGTK_REQUIRED_VERSION=0.5.90
 BAMF_REQUIRED_VERSION=0.2.53
 

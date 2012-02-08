@@ -1,3 +1,25 @@
+indicator-appmenu (0.3.90-0ubuntu1~ppa1) UNRELEASED; urgency=low
+
+  * New upstream release.
+    * Make the focusing blacklist an environment variable
+    * Updating to new indicator-application API and using the title
+    * Add a visible/enable property for custom items
+    * Add support for entry_activate_window to switch focus when passed an XID
+    * Supporting what BAMF calls Unity-2d
+    * Include the build directory for tests
+    * Removing debug interfaces we're not using
+    * Don't build a found object if we're already over max
+    * Updating to use DBusmenu 0.5.90
+    * Rename dbusmenu collector to avoid namespace collitions
+    * Use indexes in the database and make the creation easier to modify
+    * Add in the HUD feature
+    * Fixing the libexec path for OpenSuSE
+    * Add a setting for the menu mode
+    * Making the test tools optional
+    * Adding code coverage output
+
+ -- Ted Gould <ted@ubuntu.com>  Wed, 08 Feb 2012 12:40:39 -0600
+
 indicator-appmenu (0.3.90~bzr147-0ubuntu1~ppa2) precise; urgency=low
 
   * Merging U. Desktop branch

@@ -146,6 +146,10 @@ static guint get_location                                            (IndicatorO
 static void entry_activate                                           (IndicatorObject * io,
                                                                       IndicatorObjectEntry * entry,
                                                                       guint timestamp);
+static void entry_activate_window                                    (IndicatorObject * io,
+                                                                      IndicatorObjectEntry * entry,
+                                                                      guint windowid,
+                                                                      guint timestamp);
 static void switch_default_app                                       (IndicatorAppmenu * iapp,
                                                                       WindowMenus * newdef,
                                                                       BamfWindow * active_window);
@@ -235,6 +239,7 @@ indicator_appmenu_class_init (IndicatorAppmenuClass *klass)
 	ioclass->get_entries = get_entries;
 	ioclass->get_location = get_location;
 	ioclass->entry_activate = entry_activate;
+	ioclass->entry_activate_window = entry_activate_window;
 
 	/* Setting up the DBus interfaces */
 	if (node_info == NULL) {
@@ -834,7 +839,40 @@ get_location (IndicatorObject * io, IndicatorObjectEntry * entry)
 static void
 entry_activate (IndicatorObject * io, IndicatorObjectEntry * entry, guint timestamp)
 {
+	return entry_activate_window(io, entry, 0, timestamp);
+}
+
+/* Responds to a menuitem being activated on the panel. */
+static void
+entry_activate_window (IndicatorObject * io, IndicatorObjectEntry * entry, guint windowid, guint timestamp)
+{
 	IndicatorAppmenu * iapp = INDICATOR_APPMENU(io);
+
+	/* We need to force a focus change in this case as we probably
+	   just haven't gotten the signal from BAMF yet */
+	if (windowid != 0) {
+		GList * windows = bamf_matcher_get_windows(iapp->matcher);
+		GList * window;
+		BamfView * newwindow = NULL;
+
+		for (window = windows; window != NULL; window = g_list_next(window)) {
+			if (!BAMF_IS_WINDOW(window->data)) {
+				continue;
+			}
+
+			BamfWindow * testwindow = BAMF_WINDOW(window->data);
+
+			if (windowid == bamf_window_get_xid(testwindow)) {
+				newwindow = BAMF_VIEW(testwindow);
+				break;
+			}
+		}
+		g_list_free(windows);
+
+		if (newwindow != NULL) {
+			active_window_changed(iapp->matcher, BAMF_VIEW(iapp->active_window), newwindow, iapp);
+		}
+	}
 
 	if (iapp->default_app != NULL) {
 		window_menus_entry_activate(iapp->default_app, entry, timestamp);

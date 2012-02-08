@@ -592,13 +592,23 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 		return;
 	}
 
-	/* NOTE: Both of these are debugging tools for now, so we want
-	   to be able to use them effectively to work on the HUD, so we're
-	   going to pretend we didn't switch windows if we switch to one 
-	   of them */
-	if (g_strstr_len(desktop, -1, "termina") != NULL ||
-	        g_strstr_len(desktop, -1, "dfeet") != NULL) {
-		return;
+	/* Looks at the envvar to see if there is a list of items that we shouldn't
+	   view as focus changes so that we can use those tools for debugging */
+	static GStrv debug_list = NULL;
+	if (debug_list == NULL) {
+		const gchar * dbgenv = g_getenv("INDICATOR_APPMENU_DEBUG_APPS");
+		if (dbgenv != NULL) {
+			debug_list = g_strsplit(dbgenv, ";", 0);
+		} else {
+			debug_list = g_new0(gchar *, 1);
+		}
+	}
+
+	gint i;
+	for (i = 0; debug_list[i] != NULL; i++) {
+		if (debug_list[i][0] != '\0' && g_strstr_len(desktop, -1, debug_list[i]) != NULL) {
+			return;
+		}
 	}
 
 	/* Ignore the hud prototype window directly */
@@ -614,7 +624,8 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 	    || g_strcmp0(name, "launcher") == 0
 	    || g_strcmp0(name, "dash") == 0
 	    || g_strcmp0(name, "panel") == 0
-	    || g_strcmp0(name, "hud") == 0) {
+	    || g_strcmp0(name, "hud") == 0
+	    || g_strcmp0(name, "unity-2d-shell") == 0) {
 		return;
 	}
 

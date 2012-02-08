@@ -38,11 +38,12 @@ struct _SystemIndicator {
 	gchar * icon;
 };
 
+/* TODO: Delete extra sound after everyone has the new version */
+
 SystemIndicator system_indicators[] = {
 	{dbus_name: "com.canonical.indicator.datetime", dbus_menu_path: "/com/canonical/indicator/datetime/menu", indicator_name: "indicator-datetime",       user_visible_name: N_("Date"),      icon: "office-calendar"},
 	{dbus_name: "com.canonical.indicator.session",  dbus_menu_path: "/com/canonical/indicator/session/menu",  indicator_name: "indicator-session-device", user_visible_name: N_("Device"),    icon: "system-devices-panel"},
 	{dbus_name: "com.canonical.indicator.session",  dbus_menu_path: "/com/canonical/indicator/users/menu",    indicator_name: "indicator-session-user",   user_visible_name: N_("Users"),     icon: "avatar-default"},
-	/* TODO: Delete this after everyone has the new version */
 	{dbus_name: "com.canonical.indicators.sound",   dbus_menu_path: "/com/canonical/indicators/sound/menu",   indicator_name: "indicator-sound",          user_visible_name: N_("Sound"),     icon: "audio-volume-high-panel"},
 	{dbus_name: "com.canonical.indicator.sound",    dbus_menu_path: "/com/canonical/indicator/sound/menu",    indicator_name: "indicator-sound",          user_visible_name: N_("Sound"),     icon: "audio-volume-high-panel"},
 	{dbus_name: "com.canonical.indicator.messages", dbus_menu_path: "/com/canonical/indicator/messages/menu", indicator_name: "indicator-messages",       user_visible_name: N_("Messages"),  icon: "indicator-messages"}
@@ -452,9 +453,10 @@ app_proxy_apps_replace (GObject * obj, GAsyncResult * res, gpointer user_data)
 	gchar * labelguide = NULL;
 	gchar * accessibledesc = NULL;
 	gchar * hint = NULL;
+	gchar * title = NULL;
 
 	while (g_variant_iter_loop(&iter, 
-	                           "(sisosssss)",
+	                           "(sisossssss)",
 	                           &iconname,
 	                           &position,
 	                           &dbusaddress,
@@ -463,9 +465,9 @@ app_proxy_apps_replace (GObject * obj, GAsyncResult * res, gpointer user_data)
 	                           &label,
 	                           &labelguide,
 	                           &accessibledesc,
-	                           &hint)) {
-		/* TODO: No icon name for ID */
-		app_proxy_new_indicator(self, position, iconname, accessibledesc, dbusaddress, dbusobject, iconname);
+	                           &hint,
+		                       &title)) {
+		app_proxy_new_indicator(self, position, hint, title, dbusaddress, dbusobject, iconname);
 	}
 
 	g_variant_unref(array);
@@ -491,8 +493,9 @@ app_proxy_signal (GDBusProxy *proxy, gchar * sender_name, gchar * signal_name, G
 		gchar * labelguide = NULL;
 		gchar * accessibledesc = NULL;
 		gchar * hint = NULL;
+		gchar * title = NULL;
 
-		g_variant_get(parameters, "(sisosssss)",
+		g_variant_get(parameters, "(sisossssss)",
 		              &iconname,
 		              &position,
 		              &dbusaddress,
@@ -501,10 +504,10 @@ app_proxy_signal (GDBusProxy *proxy, gchar * sender_name, gchar * signal_name, G
 		              &label,
 		              &labelguide,
 		              &accessibledesc,
-		              &hint);
+		              &hint,
+		              &title);
 
-		/* TODO: No icon name for ID */
-		app_proxy_new_indicator(self, position, iconname, accessibledesc, dbusaddress, dbusobject, iconname);
+		app_proxy_new_indicator(self, position, hint, title, dbusaddress, dbusobject, iconname);
 
 		g_free(iconname);
 		g_free(dbusaddress);
@@ -514,6 +517,7 @@ app_proxy_signal (GDBusProxy *proxy, gchar * sender_name, gchar * signal_name, G
 		g_free(labelguide);
 		g_free(accessibledesc);
 		g_free(hint);
+		g_free(title);
 	} else if (g_strcmp0(signal_name, "ApplicationRemoved") == 0) {
 		gint position;
 
@@ -554,7 +558,7 @@ app_proxy_signal (GDBusProxy *proxy, gchar * sender_name, gchar * signal_name, G
 
 /* Add a new application indicator to our list */
 static void
-app_proxy_new_indicator (IndicatorTracker * self, gint position, const gchar * id, const gchar * accessibledesc, const gchar * dbusaddress, const gchar * dbusobject, const gchar * iconname)
+app_proxy_new_indicator (IndicatorTracker * self, gint position, const gchar * id, const gchar * title, const gchar * dbusaddress, const gchar * dbusobject, const gchar * iconname)
 {
 	g_debug("New application indicator: %s", dbusobject);
 
@@ -564,7 +568,7 @@ app_proxy_new_indicator (IndicatorTracker * self, gint position, const gchar * i
 			dbus_name: g_strdup(dbusaddress),
 			dbus_name_wellknown: NULL,
 			dbus_object: g_strdup(dbusobject),
-			prefix: g_strdup(accessibledesc),
+			prefix: g_strdup(title),
 			icon: g_strdup(iconname)
 		},
 		alert: FALSE,
@@ -574,7 +578,12 @@ app_proxy_new_indicator (IndicatorTracker * self, gint position, const gchar * i
 
 	if (indicator.system.prefix == NULL || indicator.system.prefix[0] == '\0') {
 		g_free(indicator.system.prefix);
-		indicator.system.prefix = g_strdup(_("Unknown Indicator"));
+		/* TRANSLATORS:  This is used for Application indicators that
+		   are not providing a title string.  The '%s' represents the
+		   unique ID that the app indicator provides, but it is usually
+		   the package name and not generally human readable.  An example
+		   for Network Manager would be 'nm-applet'. */
+		indicator.system.prefix = g_strdup_printf(_("Untitled Indicator (%s)"), id);
 	}
 
 	g_array_insert_val(self->priv->app_indicators, position, indicator);
