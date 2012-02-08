@@ -1,4 +1,4 @@
-indicator-appmenu (0.3.90-0ubuntu1~ppa1) UNRELEASED; urgency=low
+indicator-appmenu (0.3.90-0ubuntu1~ppa1) precise; urgency=low
 
   * New upstream release.
     * Make the focusing blacklist an environment variable
@@ -42,7 +42,7 @@ indicator-appmenu (0.3.90-0ubuntu1~ppa1) UNRELEASED; urgency=low
     * Adding autopoint
     * Adding make check
 
- -- Ted Gould <ted@ubuntu.com>  Wed, 08 Feb 2012 12:56:30 -0600
+ -- Ted Gould <ted@ubuntu.com>  Wed, 08 Feb 2012 13:09:32 -0600
 
 indicator-appmenu (0.3.2-0ubuntu3) precise; urgency=low
 
