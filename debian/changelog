@@ -27,6 +27,8 @@ indicator-appmenu (0.3.90-0ubuntu1~ppa1) UNRELEASED; urgency=low
     * Adding build deps on new libraries for CLI tool
     * Adding sqlite and dbus-test-runner deps
     * Updating dbusmenu dep to 0.5.90
+    * Ensuring we don't get installed with an indicator-application version
+      less than 0.4.90
   * debian/indicator-appmenu.install:
     * Adding GSchemas
     * Grabbing the dbus service too
@@ -40,7 +42,7 @@ indicator-appmenu (0.3.90-0ubuntu1~ppa1) UNRELEASED; urgency=low
     * Adding autopoint
     * Adding make check
 
- -- Ted Gould <ted@ubuntu.com>  Wed, 08 Feb 2012 12:55:06 -0600
+ -- Ted Gould <ted@ubuntu.com>  Wed, 08 Feb 2012 12:56:30 -0600
 
 indicator-appmenu (0.3.2-0ubuntu3) precise; urgency=low
 

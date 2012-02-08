@@ -38,7 +38,9 @@ Recommends: indicator-applet | indicator-renderer,
             appmenu-gtk,
             appmenu-gtk3,
             appmenu-qt
-Breaks: indicator-applet (<< 0.3.0)
+Breaks: indicator-applet (<< 0.3.0),
+        indicator-application (<< 0.4.90),
+        indicator-application-gtk2 (<< 0.4.90)
 Conflicts: libdbusmenu-glib1 (<< 0.3.7),
            libdbusmenu-gtk1 (<< 0.3.7)
 Description: Indicator for application menus.
@@ -51,7 +53,9 @@ Depends: ${shlibs:Depends},
          ${misc:Depends},
          indicator-appmenu (= ${binary:Version})
 Recommends: indicator-applet | indicator-renderer, appmenu-gtk, appmenu-qt
-Breaks: indicator-applet (<< 0.3.0)
+Breaks: indicator-applet (<< 0.3.0),
+        indicator-application (<< 0.4.90),
+        indicator-application-gtk2 (<< 0.4.90)
 Conflicts: libdbusmenu-glib1 (<< 0.3.7),
            libdbusmenu-gtk1 (<< 0.3.7)
 Replaces: indicator-appmenu (<< 0.2.90)
