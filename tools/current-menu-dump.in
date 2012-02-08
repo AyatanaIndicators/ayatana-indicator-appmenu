@@ -2,16 +2,21 @@
 
 TMPFILE=`mktemp`
 CURMENU="@LIBEXECDIR@/current-menu"
-DBUSDUMP="/usr/lib/libdbusmenu/dbusmenu-dumper"
+if [ -x /usr/lib/libdbusmenu/dbusmenu-dumper ]; then
+  DBUSDUMP="/usr/lib/libdbusmenu/dbusmenu-dumper"
+else
+  DBUSDUMP="/usr/lib/dbusmenu-dumper"
+fi
 
 $CURMENU > $TMPFILE
 
-OBPATH=`grep "object path" $TMPFILE | cut -d " " -f 6 | sed -e s:\"::g`
+OBPATH=`cat $TMPFILE | cut -d " " -f 3 | cut -d "'" -f 2`
+
 
 echo -n "Path: "
 echo $OBPATH
 
-OBADDR=`grep "string" $TMPFILE | cut -d " " -f 5 | sed -e s:\"::g`
+OBADDR=`cat $TMPFILE | cut -d " " -f 1 | cut -d "'" -f 2`
 
 echo -n "Addr: "
 echo $OBADDR
