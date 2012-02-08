@@ -258,66 +258,76 @@ remove_underline (const gchar * input)
 	return g_string_free (output, FALSE);
 }
 
+/* Table of the different properties that we need for the custom
+   types of items that exist in the indicators */
+typedef struct _TypePropStrings TypePropStrings;
+struct _TypePropStrings {
+	gchar * type;
+	gchar * label;
+	gchar * visible;
+	gchar * enabled;
+};
+
+TypePropStrings type_prop_strings[] = {
+	/* NOTE: Assuming default is first in other code */
+	{type: DBUSMENU_CLIENT_TYPES_DEFAULT,                  label: DBUSMENU_MENUITEM_PROP_LABEL,                         visible: DBUSMENU_MENUITEM_PROP_VISIBLE,    enabled: DBUSMENU_MENUITEM_PROP_ENABLED},
+	/* Indicator Messages */
+	{type: "application-item",                             label: "label",                                              visible: DBUSMENU_MENUITEM_PROP_VISIBLE,    enabled: DBUSMENU_MENUITEM_PROP_ENABLED},
+	{type: "indicator-item",                               label: "indicator-label",                                    visible: DBUSMENU_MENUITEM_PROP_VISIBLE,    enabled: DBUSMENU_MENUITEM_PROP_ENABLED},
+	/* Indicator Datetime */
+	{type: "appointment-item",                             label: "appointment-label",                                  visible: DBUSMENU_MENUITEM_PROP_VISIBLE,    enabled: DBUSMENU_MENUITEM_PROP_ENABLED},
+	{type: "timezone-item",                                label: "timezone-name",                                      visible: DBUSMENU_MENUITEM_PROP_VISIBLE,    enabled: DBUSMENU_MENUITEM_PROP_ENABLED},
+	/* Indicator Sound */
+	{type: "x-canonical-sound-menu-player-metadata-type",  label: "x-canonical-sound-menu-player-metadata-player-name", visible: DBUSMENU_MENUITEM_PROP_VISIBLE,    enabled: DBUSMENU_MENUITEM_PROP_ENABLED},
+	{type: "x-canonical-sound-menu-mute-type",             label: "label",                                              visible: DBUSMENU_MENUITEM_PROP_VISIBLE,    enabled: DBUSMENU_MENUITEM_PROP_ENABLED},
+	/* Indicator User */
+	{type: "x-canonical-user-item",                        label: "user-item-name",                                     visible: DBUSMENU_MENUITEM_PROP_VISIBLE,    enabled: DBUSMENU_MENUITEM_PROP_ENABLED},
+	/* FINAL */
+	{type: NULL, label: NULL, visible: NULL, enabled: NULL}
+};
+
+/* Our table of types to label properties so that we can figure
+   out what to show to the user */
+TypePropStrings *
+type_to_prop_strings (const gchar * type)
+{
+	static GHashTable * prop_table = NULL;
+
+	if (type == NULL) {
+		return &(type_prop_strings[0]);
+	}
+
+	if (prop_table == NULL) {
+		prop_table = g_hash_table_new(g_str_hash, g_str_equal);
+		gint i;
+
+		for (i = 0; type_prop_strings[i].type != NULL; i++) {
+			g_hash_table_insert(prop_table, type_prop_strings[i].type, &(type_prop_strings[i]));
+		}
+	}
+
+	return (TypePropStrings *)g_hash_table_lookup(prop_table, type);
+}
+
+/* Find the label for a menu item and return its value as a set
+   of tokens that we can search into */
 static GStrv
 menuitem_to_tokens (DbusmenuMenuitem * item, GStrv label_prefix)
 {
-	const gchar * label_property = NULL;
+	TypePropStrings * prop_strings = NULL;
 	const gchar * item_type = NULL;
 
-	if (label_property == NULL && !dbusmenu_menuitem_property_exist(item, DBUSMENU_MENUITEM_PROP_TYPE)) {
-		label_property = DBUSMENU_MENUITEM_PROP_LABEL;
-	}
+	item_type = dbusmenu_menuitem_property_get(item, DBUSMENU_MENUITEM_PROP_TYPE);
+	prop_strings = type_to_prop_strings(item_type);
 
-	if (label_property == NULL) {
-		item_type = dbusmenu_menuitem_property_get(item, DBUSMENU_MENUITEM_PROP_TYPE);
-	}
-
-	if (label_property == NULL && g_strcmp0(item_type, DBUSMENU_CLIENT_TYPES_SEPARATOR) == 0) {
+	if (prop_strings == NULL) {
 		return NULL;
 	}
 
-	if (label_property == NULL && g_strcmp0(item_type, DBUSMENU_CLIENT_TYPES_DEFAULT) == 0) {
-		label_property = DBUSMENU_MENUITEM_PROP_LABEL;
-	}
-
-	/* Indicator Messages */
-	if (label_property == NULL && g_strcmp0(item_type, "application-item") == 0) {
-		label_property = "label";
-	}
-
-	if (label_property == NULL && g_strcmp0(item_type, "indicator-item") == 0) {
-		label_property = "indicator-label";
-	}
-
-	/* Indicator Date Time */
-	if (label_property == NULL && g_strcmp0(item_type, "appointment-item") == 0) {
-		label_property = "appointment-label";
-	}
-
-	if (label_property == NULL && g_strcmp0(item_type, "timezone-item") == 0) {
-		label_property = "timezone-name";
-	}
-
-	/* Indicator Sound */
-	if (label_property == NULL && g_strcmp0(item_type, "x-canonical-sound-menu-player-metadata-type") == 0) {
-		label_property = "x-canonical-sound-menu-player-metadata-player-name";
-	}
-
-	if (label_property == NULL && g_strcmp0(item_type, "x-canonical-sound-menu-mute-type") == 0) {
-		label_property = "label";
-	}
-
-	/* NOTE: Need to handle the transport item at some point */
-
-	/* Indicator User */
-	if (label_property == NULL && g_strcmp0(item_type, "x-canonical-user-item") == 0) {
-		label_property = "user-item-name";
-	}
-
 	/* Tokenize */
-	if (label_property != NULL && dbusmenu_menuitem_property_exist(item, label_property)) {
+	if (prop_strings->label != NULL && dbusmenu_menuitem_property_exist(item, prop_strings->label)) {
 		GStrv newstr = NULL;
-		const gchar * label = dbusmenu_menuitem_property_get(item, label_property);
+		const gchar * label = dbusmenu_menuitem_property_get(item, prop_strings->label);
 
 		if (label_prefix != NULL && label_prefix[0] != NULL) {
 			gint i;
@@ -353,17 +363,19 @@ tokens_to_children (MenuitemCollector * collector, DbusmenuMenuitem * rootitem, 
 		return results;
 	}
 
+	const gchar * item_type = dbusmenu_menuitem_property_get(rootitem, DBUSMENU_MENUITEM_PROP_TYPE);
+	TypePropStrings * prop_strings = type_to_prop_strings(item_type);
+
 	/* We can only evaluate these properties if we know the type */
-	if (!dbusmenu_menuitem_property_exist(rootitem, DBUSMENU_MENUITEM_PROP_TYPE) ||
-			g_strcmp0(dbusmenu_menuitem_property_get(rootitem, DBUSMENU_MENUITEM_PROP_TYPE), DBUSMENU_CLIENT_TYPES_DEFAULT) == 0) {
+	if (prop_strings != NULL) {
 		/* Skip the items that are disabled or not visible as they wouldn't
 		   be usable in the application so we don't want to show them and
 		   act like they're usable in the HUD either */
-		if (!dbusmenu_menuitem_property_get_bool(rootitem, DBUSMENU_MENUITEM_PROP_ENABLED)) {
+		if (!dbusmenu_menuitem_property_get_bool(rootitem, prop_strings->enabled)) {
 			return results;
 		}
 
-		if (!dbusmenu_menuitem_property_get_bool(rootitem, DBUSMENU_MENUITEM_PROP_VISIBLE)) {
+		if (!dbusmenu_menuitem_property_get_bool(rootitem, prop_strings->visible)) {
 			return results;
 		}
 	}
