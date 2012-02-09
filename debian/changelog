@@ -3,7 +3,7 @@ indicator-appmenu (0.3.90-0ubuntu1~ppa2) precise; urgency=low
   * debian/control: Making the builddep require 0.4.90 of indicator
     application so the test suite builds
 
- -- Ted Gould <ted@ubuntu.com>  Thu, 09 Feb 2012 09:01:10 -0600
+ -- Ted Gould <ted@ubuntu.com>  Thu, 09 Feb 2012 09:04:10 -0600
 
 indicator-appmenu (0.3.90-0ubuntu1~ppa1) precise; urgency=low
 
