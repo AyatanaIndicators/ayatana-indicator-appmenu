@@ -1,5 +1,6 @@
-indicator-appmenu (0.3.90-0ubuntu1) UNRELEASED; urgency=low
+indicator-appmenu (0.3.90-0ubuntu1) precise; urgency=low
 
+  [ Ted Gould ]
   * New upstream release.
     * Make the focusing blacklist an environment variable
     * Updating to new indicator-application API and using the title
@@ -44,7 +45,11 @@ indicator-appmenu (0.3.90-0ubuntu1) UNRELEASED; urgency=low
     * Adding autopoint
     * Adding make check
 
- -- Ted Gould <ted@ubuntu.com>  Wed, 08 Feb 2012 13:09:32 -0600
+  [ Ken VanDine ]
+  * debian/rules
+    * ensure $DISPLAY isn't set, it makes the tests fail in pbuilder
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Thu, 09 Feb 2012 13:13:35 -0500
 
 indicator-appmenu (0.3.2-0ubuntu3) precise; urgency=low
 
