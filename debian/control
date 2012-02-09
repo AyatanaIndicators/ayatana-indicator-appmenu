@@ -24,7 +24,7 @@ Build-Depends: debhelper (>= 5.0),
                libreadline-dev,
                libncurses5-dev,
                libappindicator3-dev,
-               indicator-application,
+               indicator-application (>= 0.4.90),
                xvfb
 Standards-Version: 3.9.2
 Homepage: http://launchpad.net/indicator-appmenu
