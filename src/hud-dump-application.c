@@ -26,7 +26,7 @@ int
 main (int argv, char * argc[])
 {
 	if (argv != 2 && argv != 3) {
-		g_error("Usage: %s <desktop file path> [gettext domain]\n", argc[0]);
+		g_printerr("Usage: %s <desktop file path> [gettext domain]\n", argc[0]);
 		return 1;
 	}
 
