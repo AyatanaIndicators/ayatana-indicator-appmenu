@@ -278,6 +278,7 @@ TypePropStrings type_prop_strings[] = {
 	{type: "appointment-item",                             label: "appointment-label",                                  visible: DBUSMENU_MENUITEM_PROP_VISIBLE,    enabled: DBUSMENU_MENUITEM_PROP_ENABLED},
 	{type: "timezone-item",                                label: "timezone-name",                                      visible: DBUSMENU_MENUITEM_PROP_VISIBLE,    enabled: DBUSMENU_MENUITEM_PROP_ENABLED},
 	/* Indicator Sound */
+	/* x-canonical-sound-menu-player-transport-type */
 	{type: "x-canonical-sound-menu-player-metadata-type",  label: "x-canonical-sound-menu-player-metadata-player-name", visible: DBUSMENU_MENUITEM_PROP_VISIBLE,    enabled: DBUSMENU_MENUITEM_PROP_ENABLED},
 	{type: "x-canonical-sound-menu-mute-type",             label: "label",                                              visible: DBUSMENU_MENUITEM_PROP_VISIBLE,    enabled: DBUSMENU_MENUITEM_PROP_ENABLED},
 	/* Indicator User */
