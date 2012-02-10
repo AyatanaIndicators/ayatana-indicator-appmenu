@@ -371,11 +371,13 @@ tokens_to_children (MenuitemCollector * collector, DbusmenuMenuitem * rootitem, 
 		/* Skip the items that are disabled or not visible as they wouldn't
 		   be usable in the application so we don't want to show them and
 		   act like they're usable in the HUD either */
-		if (!dbusmenu_menuitem_property_get_bool(rootitem, prop_strings->enabled)) {
+		if (dbusmenu_menuitem_property_exist(rootitem, prop_strings->enabled) &&
+				!dbusmenu_menuitem_property_get_bool(rootitem, prop_strings->enabled)) {
 			return results;
 		}
 
-		if (!dbusmenu_menuitem_property_get_bool(rootitem, prop_strings->visible)) {
+		if (dbusmenu_menuitem_property_exist(rootitem, prop_strings->visible) &&
+				!dbusmenu_menuitem_property_get_bool(rootitem, prop_strings->visible)) {
 			return results;
 		}
 	}
