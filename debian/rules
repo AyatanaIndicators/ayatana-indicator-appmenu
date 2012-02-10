@@ -1,6 +1,7 @@
 #!/usr/bin/make -f
 
 export AUTOPOINT = true
+export DISPLAY = 
 
 DEB_BUILDDIR = build
 DEB_MAKE_FLAVORS = gtk2 gtk3
