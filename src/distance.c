@@ -185,7 +185,7 @@ calculate_token_distance (const gchar * needle, const gchar * haystack)
 	int ineedle, ihaystack;
 	gchar * needle_head, * haystack_head;
 	for (needle_head = (gchar *)needle, ineedle = 0;
-			needle[0] != '\0';
+			needle_head[0] != '\0';
 			needle_head = g_utf8_next_char(needle_head), ineedle++) {
 		for (haystack_head = (gchar *)haystack, ihaystack = 0;
 				haystack_head[0] != '\0';
