@@ -79,8 +79,10 @@ ignore_character (gunichar inchar)
 	return FALSE;
 }
 
+/* Figure out how far off we are from a set of characters, basically
+   whether they match or not */
 static guint
-swap_cost (gchar a, gchar b)
+swap_cost (gunichar a, gunichar b)
 {
 	if (a == b)
 		return 0;
