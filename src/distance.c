@@ -53,8 +53,10 @@ get_settings (void)
 	return settings;
 }
 
+/* Checks to see if a character is in the list of characters
+   to be ignored */
 static gboolean
-ignore_character (gchar inchar)
+ignore_character (gunichar inchar)
 {
 	static gchar * ignore = NULL;
 	if (ignore == NULL) {
@@ -64,12 +66,16 @@ ignore_character (gchar inchar)
 		ignore = _(" _->");
 	}
 
-	int i;
-	for (i = 0; i < 4; i++) {
-		if (ignore[i] == inchar) {
+	gchar * head = ignore;
+	while (head != NULL && head[0] != '\0') {
+		gunichar test = g_utf8_get_char(head);
+		if (test == inchar) {
 			return TRUE;
 		}
+
+		head = g_utf8_next_char(head);
 	}
+
 	return FALSE;
 }
 
