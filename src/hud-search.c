@@ -201,8 +201,7 @@ typedef struct _usage_wrapper_t usage_wrapper_t;
 struct _usage_wrapper_t {
 	MenuitemCollectorFound * found;
 	guint count;
-	gfloat percent_usage;
-	gfloat percent_distance;
+	guint final_distance;
 };
 
 /* Sort the usage data based on the percentages */
@@ -212,11 +211,7 @@ usage_sort (gconstpointer a, gconstpointer b)
 	usage_wrapper_t * wa = (usage_wrapper_t *)a;
 	usage_wrapper_t * wb = (usage_wrapper_t *)b;
 
-	gfloat totala = (1.0 - wa->percent_usage) + wa->percent_distance;
-	gfloat totalb = (1.0 - wb->percent_usage) + wb->percent_distance;
-
-	gfloat difference = (totala - totalb) * 100.0;
-	return (gint)difference;
+	return wa->final_distance - wb->final_distance;
 }
 
 /* Sort the array based on the distance in the found object */
@@ -415,6 +410,7 @@ search_and_sort (HudSearch * search, const gchar * searchstr, GArray * usagedata
 
 	/* Get usage data */
 	int count;
+	int max_usage = 0;
 	for (count = 0; count < usagedata->len; count++) {
 		usage_wrapper_t * usage = &g_array_index(usagedata, usage_wrapper_t, count);
 
@@ -427,29 +423,23 @@ search_and_sort (HudSearch * search, const gchar * searchstr, GArray * usagedata
 		} else {
 			usage->count = 0;
 		}
+
+		max_usage = MAX(max_usage, usage->count);
 	}
 
-	/* Calculate overall */
-	guint overall_usage = 0;
-	guint overall_distance = 0;
-	for (count = 0; count < usagedata->len; count++) {
-		usage_wrapper_t * usage = &g_array_index(usagedata, usage_wrapper_t, count);
-		overall_usage += usage->count;
-		overall_distance += menuitem_collector_found_get_distance(usage->found);
+	/* If we're not doing anythign with the usage data, let's just ignore
+	   the rest of this code and use the list we have */
+	if (max_usage == 0) {
+		return;
 	}
 
-
-	/* Build percentages */
+	/* Adjust distances */
 	for (count = 0; count < usagedata->len; count++) {
 		usage_wrapper_t * usage = &g_array_index(usagedata, usage_wrapper_t, count);
+		guint inverse_usage = max_usage - usage->count;
 
-		if (overall_usage != 0) {
-			usage->percent_usage = (gfloat)usage->count/(gfloat)overall_usage;
-		} else {
-			usage->percent_usage = 1.0;
-		}
-
-		usage->percent_distance = (gfloat)menuitem_collector_found_get_distance(usage->found)/(gfloat)overall_distance;
+		guint origdistance = menuitem_collector_found_get_distance(usage->found);
+		usage->final_distance = origdistance + ((origdistance * inverse_usage) / max_usage);
 	}
 
 	/* Sort based on aggregate */
