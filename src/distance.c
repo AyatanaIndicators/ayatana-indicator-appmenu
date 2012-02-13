@@ -176,10 +176,15 @@ calculate_token_distance (const gchar * needle, const gchar * haystack)
 
 	/* Now go through the matrix building up the penalties */
 	int ineedle, ihaystack;
-	for (ineedle = 0; ineedle < len_needle; ineedle++) {
-		for (ihaystack = 0; ihaystack < len_haystack; ihaystack++) {
-			char needle_let = needle[ineedle];
-			char haystack_let = haystack[ihaystack];
+	gchar * needle_head, * haystack_head;
+	for (needle_head = (gchar *)needle, ineedle = 0;
+			needle[0] != '\0';
+			needle_head = g_utf8_next_char(needle_head), ineedle++) {
+		for (haystack_head = (gchar *)haystack, ihaystack = 0;
+				haystack_head[0] != '\0';
+				haystack_head = g_utf8_next_char(haystack_head), ihaystack++) {
+			gunichar needle_let = g_utf8_get_char(needle_head);
+			gunichar haystack_let = g_utf8_get_char(haystack_head);
 
 			guint subst_pen = MATRIX_VAL(ineedle - 1, ihaystack - 1) + swap_cost(needle_let, haystack_let);
 			guint drop_pen = MATRIX_VAL(ineedle - 1, ihaystack);
