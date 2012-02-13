@@ -312,6 +312,25 @@ find_token (guint token_number, GStrv * haystacks, guint num_haystacks)
 	return NULL;
 }
 
+/* Normalize a set of strings so that we can compare them
+   without worry about accents and the such */
+static GStrv
+normalize_gstrv (GStrv inlist)
+{
+	/* The identity property */
+	if (inlist == NULL) return NULL;
+
+	guint length = g_strv_length(inlist);
+	GStrv out = g_new0(gchar *, length + 1);
+	gint i;
+
+	for (i = 0; i < length; i++) {
+		out[i] = g_utf8_normalize(inlist[i], -1, G_NORMALIZE_ALL);
+	}
+
+	return out;
+}
+
 #define SEPARATORS " .->"
 
 guint
@@ -333,12 +352,16 @@ calculate_distance (const gchar * needle, GStrv haystacks, GStrv * matches)
 	guint num_haystack_tokens = 0;
 	GStrv * haystacks_array = g_new0(GStrv, num_haystacks);
 	for (i = 0; i < num_haystacks; i++) {
-		haystacks_array[i] = g_strsplit_set(haystacks[i], SEPARATORS, 0);
+		GStrv split = g_strsplit_set(haystacks[i], SEPARATORS, 0);
+		haystacks_array[i] = normalize_gstrv(split);
+		g_strfreev(split);
 		num_haystack_tokens += g_strv_length(haystacks_array[i]);
 	}
 
 	/* Tokenize our needles the same way */
-	GStrv needle_tokens = g_strsplit_set(needle, SEPARATORS, 0);
+	GStrv needle_split = g_strsplit_set(needle, SEPARATORS, 0);
+	GStrv needle_tokens = normalize_gstrv(needle_split);
+	g_strfreev(needle_split);
 	guint num_needle_tokens = g_strv_length(needle_tokens);
 
 	/* If we can't even find a set that works, let's just cut
