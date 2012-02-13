@@ -560,6 +560,10 @@ app_proxy_signal (GDBusProxy *proxy, gchar * sender_name, gchar * signal_name, G
 static void
 app_proxy_new_indicator (IndicatorTracker * self, gint position, const gchar * id, const gchar * title, const gchar * dbusaddress, const gchar * dbusobject, const gchar * iconname)
 {
+	g_return_if_fail(id != NULL);
+	g_return_if_fail(dbusaddress != NULL);
+	g_return_if_fail(dbusobject != NULL);
+
 	g_debug("New application indicator: %s", dbusobject);
 
 	AppIndicator indicator = {
