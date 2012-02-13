@@ -95,6 +95,9 @@ swap_cost (gunichar a, gunichar b)
 
 #define MATRIX_VAL(needle_loc, haystack_loc) (penalty_matrix[(needle_loc + 1) + (haystack_loc + 1) * (len_needle + 1)])
 
+/* A function to print out the matrix for debugging purposes.  It is
+   mostly used in the test suite, though it could be used else where if
+   needed */
 static void
 dumpmatrix (const gchar * needle, guint len_needle, const gchar * haystack, guint len_haystack, guint * penalty_matrix)
 {
@@ -132,6 +135,10 @@ dumpmatrix (const gchar * needle, guint len_needle, const gchar * haystack, guin
 	return;
 }
 
+/* Looks at two individual tokens, builds a matrix and calculates the
+   distance between them by moving through the matrix.
+   If you believe, you can see the matrix, otherwise it looks just like
+   an array.  */
 static guint
 calculate_token_distance (const gchar * needle, const gchar * haystack)
 {
