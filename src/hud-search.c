@@ -427,7 +427,7 @@ search_and_sort (HudSearch * search, const gchar * searchstr, GArray * usagedata
 		max_usage = MAX(max_usage, usage->count);
 	}
 
-	/* If we're not doing anythign with the usage data, let's just ignore
+	/* If we're not doing anything with the usage data, let's just ignore
 	   the rest of this code and use the list we have */
 	if (max_usage == 0) {
 		return;
