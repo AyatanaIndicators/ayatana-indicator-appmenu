@@ -550,7 +550,7 @@ app_proxy_signal (GDBusProxy *proxy, gchar * sender_name, gchar * signal_name, G
 		guint position = 0;
 		gchar * title = NULL;
 
-		g_variant_get(parameters, "(iss)",
+		g_variant_get(parameters, "(is)",
 		              &position,
 		              &title);
 
