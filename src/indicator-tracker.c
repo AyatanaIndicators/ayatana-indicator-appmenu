@@ -84,7 +84,7 @@ static void app_proxy_signal             (GDBusProxy *proxy, gchar * sender_name
 static void app_proxy_apps_replace       (GObject * obj, GAsyncResult * res, gpointer user_data);
 static void app_proxy_new_indicator      (IndicatorTracker * self, gint position, const gchar * id, const gchar * accessibledesc, const gchar * dbusaddress, const gchar * dbusobject, const gchar * iconname);
 static gboolean app_proxy_remove_indicator (IndicatorTracker * self, gint position);
-static void app_proxy_icon_changed       (IndicatorTracker * self, gint position, const gchar * iconname, const gchar * accessibledesc);
+static void app_proxy_icon_changed       (IndicatorTracker * self, gint position, const gchar * iconname);
 static void app_proxy_title_changed      (IndicatorTracker * self, gint position, const gchar * title);
 
 G_DEFINE_TYPE (IndicatorTracker, indicator_tracker, G_TYPE_OBJECT);
@@ -542,7 +542,7 @@ app_proxy_signal (GDBusProxy *proxy, gchar * sender_name, gchar * signal_name, G
 		              &iconname,
 		              &accessibledesc);
 
-		app_proxy_icon_changed(self, position, iconname, accessibledesc);
+		app_proxy_icon_changed(self, position, iconname);
 
 		g_free(iconname);
 		g_free(accessibledesc);
@@ -628,7 +628,7 @@ app_proxy_remove_indicator(IndicatorTracker * self, gint position)
 
 /* Change the name of the icon */
 static void
-app_proxy_icon_changed (IndicatorTracker * self, gint position, const gchar * iconname, const gchar * accessibledesc)
+app_proxy_icon_changed (IndicatorTracker * self, gint position, const gchar * iconname)
 {
 	if (position >= self->priv->app_indicators->len) {
 		g_warning("Application icon changed for position outside of array");
@@ -637,8 +637,8 @@ app_proxy_icon_changed (IndicatorTracker * self, gint position, const gchar * ic
 
 	AppIndicator * indicator = &g_array_index(self->priv->app_indicators, AppIndicator, position);
 
-	g_free(indicator->system.prefix);
-	indicator->system.prefix = g_strdup(accessibledesc);
+	g_free(indicator->system.icon);
+	indicator->system.icon = g_strdup(iconname);
 
 	return;
 }
