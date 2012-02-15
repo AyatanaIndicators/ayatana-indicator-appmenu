@@ -178,6 +178,7 @@ get_current_window_address(HudSearch * search, gchar ** address, gchar ** path)
 		return;
 	}
 
+	g_debug("Requesting menus for window %d", search->priv->active_xid);
 	GError * error = NULL;
 	GVariant * dbusinfo = g_dbus_proxy_call_sync(search->priv->appmenu,
 	                                             "GetMenuForWindow",
@@ -564,6 +565,7 @@ hud_search_execute (HudSearch * search, GVariant * key, guint timestamp)
 static void
 active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * newview, gpointer user_data)
 {
+	g_debug("Switching windows");
 	HudSearch * self = HUD_SEARCH(user_data);
 
 	if (!BAMF_IS_WINDOW(newview)) { return; }
@@ -579,6 +581,7 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 	/* If BAMF can't match it to an application we probably don't
 	   want to be involved with it anyway. */
 	if (desktop == NULL) {
+		g_debug("\tBlocked: No desktop file");
 		return;
 	}
 
@@ -597,14 +600,18 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 	gint i;
 	for (i = 0; debug_list[i] != NULL; i++) {
 		if (debug_list[i][0] != '\0' && g_strstr_len(desktop, -1, debug_list[i]) != NULL) {
+			g_debug("\tBlocked: Hit debug list item '%s'", debug_list[i]);
 			return;
 		}
 	}
 
 	/* Ignore the hud prototype window directly */
 	const gchar * window_name = bamf_view_get_name(newview);
+	g_debug("\tWindow name: '%s'", window_name);
+
 	if (g_strcmp0(window_name, "Hud Prototype Test") == 0
 	  || g_strcmp0(window_name, "Hud") == 0) {
+		g_debug("\tBlocked: HUD Window Name");
 		return;
 	}
 
@@ -616,11 +623,14 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 	    || g_strcmp0(name, "panel") == 0
 	    || g_strcmp0(name, "hud") == 0
 	    || g_strcmp0(name, "unity-2d-shell") == 0) {
+		g_debug("\tBlocked: Unity Something");
 		return;
 	}
 
 	self->priv->active_xid = bamf_window_get_xid(window);
 	self->priv->active_app = app;
+
+	g_debug("\tXID: %u", self->priv->active_xid);
 
 	return;
 }
