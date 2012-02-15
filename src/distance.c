@@ -64,6 +64,10 @@ ignore_character (gunichar inchar)
 		   mistakes in the comparison functions.  Typically they are gramatical
 		   characters that can be found in menus. */
 		ignore = _(" _->");
+		if (!g_utf8_validate(ignore, -1, NULL)) {
+			g_warning("Translated ignore characters are not valid UTF-8");
+			ignore = "";
+		}
 	}
 
 	gchar * head = ignore;
@@ -351,18 +355,27 @@ calculate_distance (const gchar * needle, GStrv haystacks, GStrv * matches)
 	g_return_val_if_fail(needle != NULL || haystacks != NULL, G_MAXUINT);
 	guint final_distance = G_MAXUINT;
 
-	if (needle == NULL) {
+	if (needle == NULL || !g_utf8_validate(needle, -1, NULL)) {
 		return DROP_PENALTY * g_utf8_strlen(haystacks[0], 1024);
 	}
 	if (haystacks == NULL) {
 		return ADD_PENALTY * g_utf8_strlen(needle, 1024);
 	}
 
-	/* Tokenize all the haystack strings */
+	/* Check to make sure we have valid haystacks */
 	gint i;
 	guint num_haystacks = g_strv_length(haystacks);
+
+	for (i = 0; i < num_haystacks; i++) {
+		if (!g_utf8_validate(haystacks[i], -1, NULL)) {
+			return ADD_PENALTY * g_utf8_strlen(needle, 1024);
+		}
+	}
+
+	/* Tokenize all the haystack strings */
 	guint num_haystack_tokens = 0;
 	GStrv * haystacks_array = g_new0(GStrv, num_haystacks);
+
 	for (i = 0; i < num_haystacks; i++) {
 		GStrv split = g_strsplit_set(haystacks[i], SEPARATORS, 0);
 		haystacks_array[i] = normalize_gstrv(split);
