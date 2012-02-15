@@ -545,6 +545,15 @@ app_proxy_signal (GDBusProxy *proxy, gchar * sender_name, gchar * signal_name, G
 
 		g_free(iconname);
 		g_free(accessibledesc);
+	} else if (g_strcmp0(signal_name, "ApplicationTitleChanged") == 0) {
+		guint position = 0;
+		gchar * title = NULL;
+
+		g_variant_get(parameters, "(iss)",
+		              &position,
+		              &title);
+
+		g_free(title);
 	} else if (g_strcmp0(signal_name, "ApplicationIconThemePathChanged") == 0) {
 		/* Don't care */
 	} else if (g_strcmp0(signal_name, "ApplicationLabelChanged") == 0) {
