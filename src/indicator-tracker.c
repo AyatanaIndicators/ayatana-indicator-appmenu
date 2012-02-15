@@ -656,8 +656,12 @@ app_proxy_title_changed (IndicatorTracker * self, gint position, const gchar * t
 
 	g_debug("AppIndicator '%s' changed title to: '%s'", indicator->system.name, title);
 
-	g_free(indicator->system.prefix);
-	indicator->system.prefix = g_strdup(title);
+	if (title != NULL && title[0] != '\0') {
+		g_free(indicator->system.prefix);
+		indicator->system.prefix = g_strdup(title);
+	} else {
+		g_debug("\tIgnoring, it's NULL");
+	}
 
 	return;
 }
