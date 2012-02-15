@@ -84,7 +84,8 @@ static void app_proxy_signal             (GDBusProxy *proxy, gchar * sender_name
 static void app_proxy_apps_replace       (GObject * obj, GAsyncResult * res, gpointer user_data);
 static void app_proxy_new_indicator      (IndicatorTracker * self, gint position, const gchar * id, const gchar * accessibledesc, const gchar * dbusaddress, const gchar * dbusobject, const gchar * iconname);
 static gboolean app_proxy_remove_indicator (IndicatorTracker * self, gint position);
-static void app_proxy_icon_changed       (IndicatorTracker * self, gint position, const gchar * iconname, const gchar * accessibledesc);
+static void app_proxy_icon_changed       (IndicatorTracker * self, gint position, const gchar * iconname);
+static void app_proxy_title_changed      (IndicatorTracker * self, gint position, const gchar * title);
 
 G_DEFINE_TYPE (IndicatorTracker, indicator_tracker, G_TYPE_OBJECT);
 
@@ -445,7 +446,7 @@ app_proxy_apps_replace (GObject * obj, GAsyncResult * res, gpointer user_data)
 	g_variant_iter_init(&iter, array);
 
 	gchar * iconname = NULL;
-	guint position;
+	guint position = G_MAXUINT;
 	gchar * dbusaddress = NULL;
 	gchar * dbusobject = NULL;
 	gchar * iconpath = NULL;
@@ -485,7 +486,7 @@ app_proxy_signal (GDBusProxy *proxy, gchar * sender_name, gchar * signal_name, G
 
 	if (g_strcmp0(signal_name, "ApplicationAdded") == 0) {
 		gchar * iconname = NULL;
-		guint position;
+		guint position = G_MAXUINT;
 		gchar * dbusaddress = NULL;
 		gchar * dbusobject = NULL;
 		gchar * iconpath = NULL;
@@ -541,10 +542,21 @@ app_proxy_signal (GDBusProxy *proxy, gchar * sender_name, gchar * signal_name, G
 		              &iconname,
 		              &accessibledesc);
 
-		app_proxy_icon_changed(self, position, iconname, accessibledesc);
+		app_proxy_icon_changed(self, position, iconname);
 
 		g_free(iconname);
 		g_free(accessibledesc);
+	} else if (g_strcmp0(signal_name, "ApplicationTitleChanged") == 0) {
+		guint position = 0;
+		gchar * title = NULL;
+
+		g_variant_get(parameters, "(is)",
+		              &position,
+		              &title);
+
+		app_proxy_title_changed(self, position, title);
+
+		g_free(title);
 	} else if (g_strcmp0(signal_name, "ApplicationIconThemePathChanged") == 0) {
 		/* Don't care */
 	} else if (g_strcmp0(signal_name, "ApplicationLabelChanged") == 0) {
@@ -560,6 +572,11 @@ app_proxy_signal (GDBusProxy *proxy, gchar * sender_name, gchar * signal_name, G
 static void
 app_proxy_new_indicator (IndicatorTracker * self, gint position, const gchar * id, const gchar * title, const gchar * dbusaddress, const gchar * dbusobject, const gchar * iconname)
 {
+	g_return_if_fail(position != G_MAXUINT);
+	g_return_if_fail(id != NULL);
+	g_return_if_fail(dbusaddress != NULL);
+	g_return_if_fail(dbusobject != NULL);
+
 	g_debug("New application indicator: %s", dbusobject);
 
 	AppIndicator indicator = {
@@ -611,7 +628,7 @@ app_proxy_remove_indicator(IndicatorTracker * self, gint position)
 
 /* Change the name of the icon */
 static void
-app_proxy_icon_changed (IndicatorTracker * self, gint position, const gchar * iconname, const gchar * accessibledesc)
+app_proxy_icon_changed (IndicatorTracker * self, gint position, const gchar * iconname)
 {
 	if (position >= self->priv->app_indicators->len) {
 		g_warning("Application icon changed for position outside of array");
@@ -620,8 +637,31 @@ app_proxy_icon_changed (IndicatorTracker * self, gint position, const gchar * ic
 
 	AppIndicator * indicator = &g_array_index(self->priv->app_indicators, AppIndicator, position);
 
-	g_free(indicator->system.prefix);
-	indicator->system.prefix = g_strdup(accessibledesc);
+	g_free(indicator->system.icon);
+	indicator->system.icon = g_strdup(iconname);
+
+	return;
+}
+
+/* Change the title of the entry */
+static void
+app_proxy_title_changed (IndicatorTracker * self, gint position, const gchar * title)
+{
+	if (position >= self->priv->app_indicators->len) {
+		g_warning("Application title changed for position outside of array");
+		return;
+	}
+
+	AppIndicator * indicator = &g_array_index(self->priv->app_indicators, AppIndicator, position);
+
+	g_debug("AppIndicator '%s' changed title to: '%s'", indicator->system.name, title);
+
+	if (title != NULL && title[0] != '\0') {
+		g_free(indicator->system.prefix);
+		indicator->system.prefix = g_strdup(title);
+	} else {
+		g_debug("\tIgnoring, it's NULL");
+	}
 
 	return;
 }

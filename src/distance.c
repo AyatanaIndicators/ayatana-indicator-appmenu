@@ -53,8 +53,10 @@ get_settings (void)
 	return settings;
 }
 
+/* Checks to see if a character is in the list of characters
+   to be ignored */
 static gboolean
-ignore_character (gchar inchar)
+ignore_character (gunichar inchar)
 {
 	static gchar * ignore = NULL;
 	if (ignore == NULL) {
@@ -62,19 +64,29 @@ ignore_character (gchar inchar)
 		   mistakes in the comparison functions.  Typically they are gramatical
 		   characters that can be found in menus. */
 		ignore = _(" _->");
-	}
-
-	int i;
-	for (i = 0; i < 4; i++) {
-		if (ignore[i] == inchar) {
-			return TRUE;
+		if (!g_utf8_validate(ignore, -1, NULL)) {
+			g_warning("Translated ignore characters are not valid UTF-8");
+			ignore = "";
 		}
 	}
+
+	gchar * head = ignore;
+	while (head != NULL && head[0] != '\0') {
+		gunichar test = g_utf8_get_char(head);
+		if (test == inchar) {
+			return TRUE;
+		}
+
+		head = g_utf8_next_char(head);
+	}
+
 	return FALSE;
 }
 
+/* Figure out how far off we are from a set of characters, basically
+   whether they match or not */
 static guint
-swap_cost (gchar a, gchar b)
+swap_cost (gunichar a, gunichar b)
 {
 	if (a == b)
 		return 0;
@@ -87,6 +99,9 @@ swap_cost (gchar a, gchar b)
 
 #define MATRIX_VAL(needle_loc, haystack_loc) (penalty_matrix[(needle_loc + 1) + (haystack_loc + 1) * (len_needle + 1)])
 
+/* A function to print out the matrix for debugging purposes.  It is
+   mostly used in the test suite, though it could be used else where if
+   needed */
 static void
 dumpmatrix (const gchar * needle, guint len_needle, const gchar * haystack, guint len_haystack, guint * penalty_matrix)
 {
@@ -124,6 +139,10 @@ dumpmatrix (const gchar * needle, guint len_needle, const gchar * haystack, guin
 	return;
 }
 
+/* Looks at two individual tokens, builds a matrix and calculates the
+   distance between them by moving through the matrix.
+   If you believe, you can see the matrix, otherwise it looks just like
+   an array.  */
 static guint
 calculate_token_distance (const gchar * needle, const gchar * haystack)
 {
@@ -168,10 +187,15 @@ calculate_token_distance (const gchar * needle, const gchar * haystack)
 
 	/* Now go through the matrix building up the penalties */
 	int ineedle, ihaystack;
-	for (ineedle = 0; ineedle < len_needle; ineedle++) {
-		for (ihaystack = 0; ihaystack < len_haystack; ihaystack++) {
-			char needle_let = needle[ineedle];
-			char haystack_let = haystack[ihaystack];
+	gchar * needle_head, * haystack_head;
+	for (needle_head = (gchar *)needle, ineedle = 0;
+			needle_head[0] != '\0';
+			needle_head = g_utf8_next_char(needle_head), ineedle++) {
+		for (haystack_head = (gchar *)haystack, ihaystack = 0;
+				haystack_head[0] != '\0';
+				haystack_head = g_utf8_next_char(haystack_head), ihaystack++) {
+			gunichar needle_let = g_utf8_get_char(needle_head);
+			gunichar haystack_let = g_utf8_get_char(haystack_head);
 
 			guint subst_pen = MATRIX_VAL(ineedle - 1, ihaystack - 1) + swap_cost(needle_let, haystack_let);
 			guint drop_pen = MATRIX_VAL(ineedle - 1, ihaystack);
@@ -304,6 +328,25 @@ find_token (guint token_number, GStrv * haystacks, guint num_haystacks)
 	return NULL;
 }
 
+/* Normalize a set of strings so that we can compare them
+   without worry about accents and the such */
+static GStrv
+normalize_gstrv (GStrv inlist)
+{
+	/* The identity property */
+	if (inlist == NULL) return NULL;
+
+	guint length = g_strv_length(inlist);
+	GStrv out = g_new0(gchar *, length + 1);
+	gint i;
+
+	for (i = 0; i < length; i++) {
+		out[i] = g_utf8_normalize(inlist[i], -1, G_NORMALIZE_ALL);
+	}
+
+	return out;
+}
+
 #define SEPARATORS " .->"
 
 guint
@@ -312,25 +355,38 @@ calculate_distance (const gchar * needle, GStrv haystacks, GStrv * matches)
 	g_return_val_if_fail(needle != NULL || haystacks != NULL, G_MAXUINT);
 	guint final_distance = G_MAXUINT;
 
-	if (needle == NULL) {
+	if (needle == NULL || !g_utf8_validate(needle, -1, NULL)) {
 		return DROP_PENALTY * g_utf8_strlen(haystacks[0], 1024);
 	}
 	if (haystacks == NULL) {
 		return ADD_PENALTY * g_utf8_strlen(needle, 1024);
 	}
 
-	/* Tokenize all the haystack strings */
+	/* Check to make sure we have valid haystacks */
 	gint i;
 	guint num_haystacks = g_strv_length(haystacks);
+
+	for (i = 0; i < num_haystacks; i++) {
+		if (!g_utf8_validate(haystacks[i], -1, NULL)) {
+			return ADD_PENALTY * g_utf8_strlen(needle, 1024);
+		}
+	}
+
+	/* Tokenize all the haystack strings */
 	guint num_haystack_tokens = 0;
 	GStrv * haystacks_array = g_new0(GStrv, num_haystacks);
+
 	for (i = 0; i < num_haystacks; i++) {
-		haystacks_array[i] = g_strsplit_set(haystacks[i], SEPARATORS, 0);
+		GStrv split = g_strsplit_set(haystacks[i], SEPARATORS, 0);
+		haystacks_array[i] = normalize_gstrv(split);
+		g_strfreev(split);
 		num_haystack_tokens += g_strv_length(haystacks_array[i]);
 	}
 
 	/* Tokenize our needles the same way */
-	GStrv needle_tokens = g_strsplit_set(needle, SEPARATORS, 0);
+	GStrv needle_split = g_strsplit_set(needle, SEPARATORS, 0);
+	GStrv needle_tokens = normalize_gstrv(needle_split);
+	g_strfreev(needle_split);
 	guint num_needle_tokens = g_strv_length(needle_tokens);
 
 	/* If we can't even find a set that works, let's just cut

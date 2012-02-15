@@ -137,6 +137,24 @@ test_distance_variety (void)
 	return;
 }
 
+/* A variety of strings that should have predictable results */
+static void
+test_distance_french_pref (void)
+{
+	GStrv teststrings[3];
+	gchar * teststrings0[] = {"Fichier", "aperçu avant impression", NULL}; teststrings[0] = teststrings0;
+	gchar * teststrings1[] = {"Connexion au réseau...", NULL}; teststrings[1] = teststrings1;
+	gchar * teststrings2[] = {"Edition", "préférences", NULL}; teststrings[2] = teststrings2;
+
+	test_set(teststrings, 3, "préférences", 2);
+	test_set(teststrings, 3, "pré", 2);
+	test_set(teststrings, 3, "préf", 2);
+	test_set(teststrings, 3, "préfé", 2);
+	test_set(teststrings, 3, "pref", 2);
+
+	return;
+}
+
 /* Check to make sure the returned hits are not dups and the
    proper number */
 static void
@@ -164,6 +182,7 @@ test_distance_suite (void)
 	g_test_add_func ("/hud/distance/print_issues",  test_distance_print_issues);
 	g_test_add_func ("/hud/distance/duplicates",    test_distance_dups);
 	g_test_add_func ("/hud/distance/variety",       test_distance_variety);
+	g_test_add_func ("/hud/distance/french_pref",   test_distance_french_pref);
 	return;
 }
 
