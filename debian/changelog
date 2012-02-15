@@ -1,3 +1,17 @@
+indicator-appmenu (0.3.91-0ubuntu1~ppa1) UNRELEASED; urgency=low
+
+  * New upstream release.
+    * Fix resize in HUD CLI (LP: #921284)
+    * Remove extranious g_errors (LP: #921288)
+    * Making usage of usage data more fair (LP: #923999)
+    * Ensure property exists before evaluating on it (LP: #930059)
+    * Protect against improperly parsed messages (LP: #931219)
+    * Fix UTF-8 handling in distance algorithms (LP: #930065)
+    * Correct name of dash in blacklist (LP: #932530)
+    * Add support of AppIndicator title changes
+
+ -- Ted Gould <ted@ubuntu.com>  Wed, 15 Feb 2012 10:41:29 -0600
+
 indicator-appmenu (0.3.90-0ubuntu2) precise; urgency=low
 
   * Backport upstream work for better matching of utf8 strings (lp: #930065)
