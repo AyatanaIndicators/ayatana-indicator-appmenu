@@ -445,7 +445,7 @@ app_proxy_apps_replace (GObject * obj, GAsyncResult * res, gpointer user_data)
 	g_variant_iter_init(&iter, array);
 
 	gchar * iconname = NULL;
-	guint position;
+	guint position = G_MAXUINT;
 	gchar * dbusaddress = NULL;
 	gchar * dbusobject = NULL;
 	gchar * iconpath = NULL;
@@ -485,7 +485,7 @@ app_proxy_signal (GDBusProxy *proxy, gchar * sender_name, gchar * signal_name, G
 
 	if (g_strcmp0(signal_name, "ApplicationAdded") == 0) {
 		gchar * iconname = NULL;
-		guint position;
+		guint position = G_MAXUINT;
 		gchar * dbusaddress = NULL;
 		gchar * dbusobject = NULL;
 		gchar * iconpath = NULL;
@@ -560,6 +560,11 @@ app_proxy_signal (GDBusProxy *proxy, gchar * sender_name, gchar * signal_name, G
 static void
 app_proxy_new_indicator (IndicatorTracker * self, gint position, const gchar * id, const gchar * title, const gchar * dbusaddress, const gchar * dbusobject, const gchar * iconname)
 {
+	g_return_if_fail(position != G_MAXUINT);
+	g_return_if_fail(id != NULL);
+	g_return_if_fail(dbusaddress != NULL);
+	g_return_if_fail(dbusobject != NULL);
+
 	g_debug("New application indicator: %s", dbusobject);
 
 	AppIndicator indicator = {
