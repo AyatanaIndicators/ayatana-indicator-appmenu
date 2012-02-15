@@ -64,6 +64,10 @@ ignore_character (gunichar inchar)
 		   mistakes in the comparison functions.  Typically they are gramatical
 		   characters that can be found in menus. */
 		ignore = _(" _->");
+		if (!g_utf8_validate(ignore, -1, NULL)) {
+			g_warning("Translated ignore characters are not valid UTF-8");
+			ignore = "";
+		}
 	}
 
 	gchar * head = ignore;
