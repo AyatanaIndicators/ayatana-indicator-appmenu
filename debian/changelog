@@ -1,4 +1,4 @@
-indicator-appmenu (0.3.91-0ubuntu1~ppa1) UNRELEASED; urgency=low
+indicator-appmenu (0.3.91-0ubuntu1~ppa1) precise; urgency=low
 
   * New upstream release.
     * Fix resize in HUD CLI (LP: #921284)
@@ -10,7 +10,7 @@ indicator-appmenu (0.3.91-0ubuntu1~ppa1) UNRELEASED; urgency=low
     * Correct name of dash in blacklist (LP: #932530)
     * Add support of AppIndicator title changes
 
- -- Ted Gould <ted@ubuntu.com>  Wed, 15 Feb 2012 10:41:29 -0600
+ -- Ted Gould <ted@ubuntu.com>  Wed, 15 Feb 2012 10:47:07 -0600
 
 indicator-appmenu (0.3.90-0ubuntu2) precise; urgency=low
 
