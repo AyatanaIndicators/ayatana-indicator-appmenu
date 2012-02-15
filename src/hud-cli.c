@@ -131,7 +131,7 @@ main (int argc, char *argv[])
 				break;
 			}
 			/* add character to the buffer and terminate string */
-			else{
+			else if ( single_char != KEY_RESIZE ) {
 				if ( pos < 256 -1 ){ // -1 for \0
 					line[pos] = single_char;
 					line[pos+1] = '\0';
@@ -141,6 +141,9 @@ main (int argc, char *argv[])
 				else {
 					
 				}
+			}
+			else{
+				// nothing to do
 			}
 		}
 		endwin();

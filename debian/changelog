@@ -1,3 +1,9 @@
+indicator-appmenu (0.3.90-0ubuntu2) precise; urgency=low
+
+  * Backport upstream work for better matching of utf8 strings (lp: #930065)
+
+ -- Sebastien Bacher <seb128@ubuntu.com>  Tue, 14 Feb 2012 17:58:13 +0100
+
 indicator-appmenu (0.3.90-0ubuntu1) precise; urgency=low
 
   [ Ted Gould ]
