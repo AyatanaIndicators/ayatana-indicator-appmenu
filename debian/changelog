@@ -1,5 +1,10 @@
-indicator-appmenu (0.3.91-0ubuntu1~ppa1) precise; urgency=low
+indicator-appmenu (0.3.91-0ubuntu1) precise; urgency=low
 
+  * debian/control:
+    - drop scrollkeeper build-depends, that source is deprecated and not
+      need to build the indicator
+
+  [ Ted Gould ]
   * New upstream release.
     * Fix resize in HUD CLI (LP: #921284)
     * Remove extranious g_errors (LP: #921288)
@@ -10,7 +15,7 @@ indicator-appmenu (0.3.91-0ubuntu1~ppa1) precise; urgency=low
     * Correct name of dash in blacklist (LP: #932530)
     * Add support of AppIndicator title changes
 
- -- Ted Gould <ted@ubuntu.com>  Wed, 15 Feb 2012 10:47:07 -0600
+ -- Sebastien Bacher <seb128@ubuntu.com>  Wed, 15 Feb 2012 20:58:01 +0100
 
 indicator-appmenu (0.3.90-0ubuntu2) precise; urgency=low
 
