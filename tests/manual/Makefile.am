@@ -1,3 +1,4 @@
 
-EXTRA_DIST = 
+EXTRA_DIST = \
+	appmenu-firefox.txt
 
