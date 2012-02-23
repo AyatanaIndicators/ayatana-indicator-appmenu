@@ -1,0 +1,45 @@
+Test GEdit Menus
+================
+
+These tests show that the GEdit menus are working
+
+Test About Item
+---------------
+
+#. Open Text Editor
+#. Select Help > About
+
+Outcome
+ A small window should appear with the GEdit logo and version in it
+
+Test Syntax Selection
+---------------------
+
+#. Open Text Editor
+#. Type "int foo;" into the editor
+#. Select View > Highlight Mode > Sources > C
+
+Outcome
+ The text 'int' should change color from black
+
+Test Undo/Redo Items
+--------------------
+
+#. Open Text Editor
+#. Type in "foo"
+#. Select Edit > Undo
+#. Select Edit > Redo
+
+Outcome
+ The text "foo" should appear when typed.  Disappear when selecting
+ to undo it.  And then repear when selecting redo.
+
+Test Close Item
+---------------
+
+#. Open Text Editor
+#. Select File > Close
+
+Outcome
+ The window should stay open but the default document tab should be
+ closed.

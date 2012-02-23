@@ -1,0 +1,22 @@
+Test Thunderbird Menus
+======================
+
+These test validate the menus in Thunderbird
+
+Test About Item
+---------------
+
+#. Open Thunderbird
+#. Select Help > About Thunderbird
+
+Outcome
+ A small window should appear with the Thunderbird logo and version in it
+
+Test New Message Item
+---------------------
+
+#. Open Thunderbird
+#. Select Message > New Message
+
+Outcome
+ A small window should appear with the ability to write an e-mail
