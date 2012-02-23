@@ -1,0 +1,34 @@
+Test Evince Menus
+=================
+These tests ensure that the menus are working in Evince
+
+Test About Item
+---------------
+
+#. Open the Document Viewer
+#. Select Help > About
+
+Outcome
+ A small dialog should appear with the Evince logo and the version number
+
+Test Fullscreen Item
+--------------------
+
+#. Open the Document Viewer
+#. Select View > Fullscreen
+
+Outcome
+ The screen should be entirely covered with the Document Viewer application
+
+Test Sidebar Item
+--------------------
+
+#. Open the Document Viewer
+#. Open a PDF file using File > Open
+#. Verify there is a thumbnails pane on the left hand side
+#. Open the View menu
+#. Verify there is a check next to "Side Pane"
+#. Select "Side Pane"
+
+Outcome
+ The thumbnails sidebar on the left hand side of the application should disappear
