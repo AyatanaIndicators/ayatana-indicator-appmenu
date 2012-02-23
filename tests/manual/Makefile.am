@@ -1,4 +1,5 @@
 
 EXTRA_DIST = \
-	appmenu-firefox.txt
+	appmenu-firefox.txt \
+	appmenu-eog.txt
 
