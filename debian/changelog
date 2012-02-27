@@ -1,9 +1,9 @@
-indicator-appmenu (0.3.91-0ubuntu2) UNRELEASED; urgency=low
+indicator-appmenu (0.3.91-0ubuntu2) precise; urgency=low
 
   * Backport r165 to fix a segfault in the hud service which gets quite
     some duplicates (lp: #934429)
 
- -- Sebastien Bacher <seb128@ubuntu.com>  Mon, 27 Feb 2012 12:28:47 +0100
+ -- Sebastien Bacher <seb128@ubuntu.com>  Mon, 27 Feb 2012 12:29:34 +0100
 
 indicator-appmenu (0.3.91-0ubuntu1) precise; urgency=low
 
