@@ -648,6 +648,12 @@ hud_search_suggest_new (const gchar * app, const gchar * app_icon, const gchar *
 {
 	HudSearchSuggest * suggest = g_new0(HudSearchSuggest, 1);
 
+	/* Ensure that the values are at least set to the NULL string for
+	   DBus even if we don't have values for them */
+	if (display == NULL) display = "";
+	if (app_icon == NULL) app_icon = "";
+	if (item_icon == NULL) item_icon = "";
+
 	suggest->display = g_strdup(display);
 	suggest->app_icon = g_strdup(app_icon);
 	suggest->item_icon = g_strdup(item_icon);
