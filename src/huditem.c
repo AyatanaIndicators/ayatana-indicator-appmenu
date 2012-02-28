@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright © 2012 Canonical Ltd.
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -14,11 +14,34 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * Author: Ryan Lortie <desrt@desrt.ca>
- **/
+ */
 
 #include "huditem.h"
 
 #include "usage-tracker.h"
+
+/**
+ * SECTION:huditem
+ * @title: HudItem
+ * @short_description: a user-interesting item that can be activated
+ *
+ * A #HudItem represents a user-interesting action that can be activated
+ * from the Hud user interface.
+ **/
+
+/**
+ * HudItem:
+ *
+ * This is an opaque structure type.
+ **/
+
+/**
+ * HudItemClass:
+ * @parent_class: the #GObjectClass
+ * @activate: virtual function pointer for hud_item_activate()
+ *
+ * This is the class vtable for #HudItem.
+ **/
 
 struct _HudItemPrivate
 {
@@ -60,6 +83,19 @@ hud_item_class_init (HudItemClass *class)
   g_type_class_add_private (class, sizeof (HudItemPrivate));
 }
 
+/**
+ * hud_item_construct:
+ * @g_type: a #GType
+ * @tokens: the search tokens for the item
+ * @desktop_file: the desktop file of the provider of the item
+ *
+ * This is the Vala-style chain-up constructor corresponding to
+ * hud_item_new().  @g_type must be a subtype of #HudItem.
+ *
+ * Only subclasses of #HudItem should call this.
+ *
+ * Returns: a new #HudItem or #HudItem subclass
+ **/
 gpointer
 hud_item_construct (GType          g_type,
                     HudStringList *tokens,
@@ -84,6 +120,15 @@ hud_item_construct (GType          g_type,
   return item;
 }
 
+/**
+ * hud_item_new:
+ * @tokens: the search tokens for the item
+ * @desktop_file: the desktop file of the provider of the item
+ *
+ * Creates a new #HudItem.
+ *
+ * Returns: a new #HudItem
+ **/
 HudItem *
 hud_item_new (HudStringList *tokens,
               const gchar   *desktop_file)
@@ -91,6 +136,17 @@ hud_item_new (HudStringList *tokens,
   return hud_item_construct (HUD_TYPE_ITEM, tokens, desktop_file);
 }
 
+/**
+ * hud_item_activate:
+ * @item: a #HudItem
+ * @platform_data: platform data
+ *
+ * Activates @item.
+ *
+ * @platform_data is platform data in the #GApplication or
+ * #GRemoteActionGroup sense.  It should be a #GVariant with the type
+ * <literal>a{sv}</literal>.
+ **/
 void
 hud_item_activate (HudItem  *item,
                    GVariant *platform_data)
@@ -104,6 +160,18 @@ hud_item_activate (HudItem  *item,
   //item->usage = usage_tracker_get_usage (usage_tracker_get_instance (), item->desktop_file, item->identifier);
 }
 
+/**
+ * hud_item_get_tokens:
+ * @item: a #HudItem
+ *
+ * Gets the tokens that represent the description of @item.
+ *
+ * This is a #HudStringList in reverse order of how the item should
+ * appear in the Hud.  For example, "File > Open" would be represneted
+ * by the list <code>['Open', 'File']</code>.
+ *
+ * Returns: (transfer none): the tokens
+ **/
 HudStringList *
 hud_item_get_tokens (HudItem *item)
 {
@@ -112,18 +180,45 @@ hud_item_get_tokens (HudItem *item)
   return item->priv->tokens;
 }
 
+/**
+ * hud_item_get_item_icon:
+ * @item: a #HudItem
+ *
+ * Gets the icon for the action represented by @item, if one exists.
+ *
+ * Returns: the icon name, or %NULL if there is no icon
+ **/
 const gchar *
 hud_item_get_item_icon (HudItem *item)
 {
   return "";
 }
 
+/**
+ * hud_item_get_app_icon:
+ * @item: a #HudItem
+ *
+ * Gets the icon of the application that @item lies within.
+ *
+ * Returns: the icon name, or %NULL if there is no icon
+ **/
 const gchar *
 hud_item_get_app_icon (HudItem *item)
 {
   return "";
 }
 
+/**
+ * hud_item_get_usage:
+ * @item: a #HudItem
+ *
+ * Gets the use-count of @item.
+ *
+ * This is the number of times the item has been activated in recent
+ * history.
+ *
+ * Returns: the usage count
+ **/
 guint
 hud_item_get_usage (HudItem *item)
 {

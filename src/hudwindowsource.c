@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright © 2012 Canonical Ltd.
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -14,7 +14,7 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * Author: Ryan Lortie <desrt@desrt.ca>
- **/
+ */
 
 #define G_LOG_DOMAIN "hudwindowsource"
 
@@ -50,6 +50,12 @@
  * use the <envar>INDICATOR_APPMENU_DEBUG_APPS</envar> environment
  * variable to specify a list of desktop file names corresponding to
  * applications to ignore windows from (for example, the terminal).
+ **/
+
+/**
+ * HudWindowSource:
+ *
+ * This is an opaque structure type.
  **/
 
 struct _HudWindowSource

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright © 2012 Canonical Ltd.
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -14,7 +14,7 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * Author: Ryan Lortie <desrt@desrt.ca>
- **/
+ */
 
 #ifndef __HUD_QUERY_H__
 #define __HUD_QUERY_H__
@@ -38,11 +38,7 @@ HudQuery *              hud_query_new                                   (HudSour
 
 guint64                 hud_query_get_generation                        (HudQuery    *query);
 
-const gchar *           hud_query_get_target                            (HudQuery    *query);
 GVariant *              hud_query_get_query_key                         (HudQuery    *query);
-
-HudResult *             hud_query_get_result_by_key                     (HudQuery    *query,
-                                                                         GVariant    *key);
 
 HudResult *             hud_query_get_result_by_index                   (HudQuery    *query,
                                                                          guint        i);

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright © 2012 Canonical Ltd.
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -14,7 +14,7 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * Author: Ryan Lortie <desrt@desrt.ca>
- **/
+ */
 
 #ifndef __HUD_SOURCE_H__
 #define __HUD_SOURCE_H__

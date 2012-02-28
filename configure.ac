@@ -241,6 +241,7 @@ po/Makefile.in
 tests/Makefile
 docs/Makefile
 docs/man/Makefile
+docs/devel/Makefile
 ])
 
 ###########################

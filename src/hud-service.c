@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright © 2012 Canonical Ltd.
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -14,7 +14,7 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * Author: Ryan Lortie <desrt@desrt.ca>
- **/
+ */
 
 #include <glib.h>
 #include <gio/gio.h>
@@ -45,7 +45,7 @@ describe_query (HudQuery *query)
   g_variant_builder_init (&builder, G_VARIANT_TYPE ("(sa(sssssv)v)"));
 
   /* Target */
-  g_variant_builder_add (&builder, "s", hud_query_get_target (query));
+  g_variant_builder_add (&builder, "s", "");
 
   /* List of results */
   g_variant_builder_open (&builder, G_VARIANT_TYPE ("a(sssssv)"));

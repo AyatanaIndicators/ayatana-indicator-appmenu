@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright © 2012 Canonical Ltd.
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -14,11 +14,27 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * Author: Ryan Lortie <desrt@desrt.ca>
- **/
+ */
 
 #include "hudresult.h"
 
 #include "distance.h"
+
+/**
+ * SECTION:hudresult
+ * @title: HudResult
+ * @short_description: a search result: a #HudItem plus metadata about
+ *   why it matched
+ *
+ * A #HudResult is a wrapper around a #HudItem plus information about
+ * why (and how closely) it matched a particular search.
+ **/
+
+/**
+ * HudResult:
+ *
+ * This is an opaque structure type.
+ **/
 
 typedef GObjectClass HudResultClass;
 
@@ -86,6 +102,20 @@ hud_result_class_init (HudResultClass *class)
   class->finalize = hud_result_finalize;
 }
 
+/**
+ * hud_result_get_if_matched:
+ * @item: a #HudItem
+ * @search_string: the search string used
+ * @max_distance: the maximum distance allowed
+ *
+ * Creates a #HudResult for @item, only if the resulting unadjusted
+ * distance would be less than or equal to @max_distance.
+ *
+ * This is the same as hud_result_new() except that it will return %NULL
+ * if the distance is too great.
+ *
+ * Returns: a new #HudResult, or %NULL in event of a poor match
+ **/
 HudResult *
 hud_result_get_if_matched (HudItem     *item,
                            const gchar *search_string,
@@ -97,6 +127,15 @@ hud_result_get_if_matched (HudItem     *item,
     return NULL;
 }
 
+/**
+ * hud_result_new:
+ * @item: a #HudItem
+ * @search_string: the search string used
+ *
+ * Creates a #HudResult for @item as search for using @search_string.
+ *
+ * Returns: the new #HudResult
+ **/
 HudResult *
 hud_result_new (HudItem     *item,
                 const gchar *search_string)
@@ -114,6 +153,23 @@ hud_result_new (HudItem     *item,
   return result;
 }
 
+/**
+ * hud_result_get_distance:
+ * @result: a #HudResult
+ * @max_usage: the maximum usage count we consider
+ *
+ * Returns the "adjusted" distance of @result.
+ *
+ * If @max_usage is zero then the returned value is equal to the
+ * distance between the #HudItem used to create the result and the
+ * search string.
+ *
+ * If @max_usage is non-zero then it is taken to be the usage count of
+ * the most-used item in the same query as this result.  The distance is
+ * adjusted for this fact to penalise less-frequently-used item.
+ *
+ * Returns: the adjusted distance
+ **/
 guint
 hud_result_get_distance (HudResult *result,
                          guint      max_usage)
@@ -136,12 +192,29 @@ hud_result_get_distance (HudResult *result,
   return distance;
 }
 
+/**
+ * hud_result_get_item:
+ * @result: a #HudResult
+ *
+ * Gets the #HudItem for @result.
+ *
+ * Returns: (transfer none): a #HudItem
+ **/
 HudItem *
 hud_result_get_item (HudResult *result)
 {
   return result->item;
 }
 
+/**
+ * hud_result_get_html_description:
+ * @result: a #HudResult
+ *
+ * Returns a textual description of @result with the parts of the text
+ * that matched the search string strenghtened (ie: in bold).
+ *
+ * Returns: the description
+ **/
 const gchar *
 hud_result_get_html_description (HudResult *result)
 {

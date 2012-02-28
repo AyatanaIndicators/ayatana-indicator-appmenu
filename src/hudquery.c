@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright © 2012 Canonical Ltd.
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -14,11 +14,38 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * Author: Ryan Lortie <desrt@desrt.ca>
- **/
+ */
 
 #include "hudquery.h"
 
 #include "hudresult.h"
+
+/**
+ * SECTION:hudquery
+ * @title: HudQuery
+ * @short_description: a stateful query against a #HudSource
+ *
+ * #HudQuery is a stateful query for a particular search string against
+ * a given #HudSource.
+ *
+ * The query monitors its source for the "change" signal and re-submits
+ * the query when changes are reported.  The query has its own change
+ * signal that is fired when this happens.
+ *
+ * The query maintains a list of results from the search which are
+ * sorted by relevance and accessible by index.  Contrast this with the
+ * stateless nature of #HudSource.
+ *
+ * The query has a "generation" counter that is bumped each time the
+ * results list changes.  This can be used to guard against stale
+ * index-based references to specific search results.
+ **/
+
+/**
+ * HudQuery:
+ *
+ * This is an opaque structure type.
+ **/
 
 struct _HudQuery
 {
@@ -126,12 +153,39 @@ hud_query_init (HudQuery *query)
 static void
 hud_query_class_init (HudQueryClass *class)
 {
+  /**
+   * HudQuery::changed:
+   * @query: a #HudQuery
+   *
+   * Indicates that the results of @query have changed.
+   *
+   * The generation counter is increased each time this signal fires.
+   * See hud_query_get_generation().
+   **/
   hud_query_changed_signal = g_signal_new ("changed", HUD_TYPE_QUERY, G_SIGNAL_RUN_LAST, 0, NULL,
                                            NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
 
   class->finalize = hud_query_finalize;
 }
 
+/**
+ * hud_query_new:
+ * @source: the #HudSource against which to search
+ * @search_string: the string to search for
+ * @num_results: the maximum number of results to report
+ *
+ * Creates a #HudQuery.
+ *
+ * A #HudQuery is a stateful search for @search_string against a @source.
+ *
+ * Each #HudQuery is assigned a "query key" when it is created.  This
+ * can be used to lookup the hud query later using hud_query_lookup().
+ * Because of this, an internal reference is held on the query and the
+ * query won't be completely freed until you call hud_query_close() on
+ * it in addition to releasing your ref.
+ *
+ * Returns: the new #HudQuery
+ **/
 HudQuery *
 hud_query_new (HudSource   *source,
                const gchar *search_string,
@@ -155,12 +209,19 @@ hud_query_new (HudSource   *source,
   return query;
 }
 
-const gchar *
-hud_query_get_target (HudQuery *query)
-{
-  return "";
-}
-
+/**
+ * hud_query_get_query_key:
+ * @query: a #HudQuery
+ *
+ * Returns the query key for @HudQuery.
+ *
+ * Each #HudQuery has a unique identifying key that is assigned when the
+ * query is created.
+ *
+ * FIXME: This is a lie.
+ *
+ * Returns: (transfer none): the query key for @query
+ **/
 GVariant *
 hud_query_get_query_key (HudQuery *query)
 {
@@ -172,12 +233,32 @@ hud_query_get_query_key (HudQuery *query)
   return query_key;
 }
 
+/**
+ * hud_query_lookup:
+ * @query_key: a query key
+ *
+ * Finds the query that has the given @query_key.
+ *
+ * Returns: (transfer none): the query, or %NULL if no such query exists
+ **/
 HudQuery *
 hud_query_lookup (GVariant *query_key)
 {
   return last_created_query;
 }
 
+/**
+ * hud_query_close:
+ * @query: a #HudQuery
+ *
+ * Closes a #HudQuery.
+ *
+ * This drops the query from the internal list of queries.  Future use
+ * of hud_query_lookup() to find this query will fail.
+ *
+ * You must still release your own reference on @query, if you have one.
+ * This only drops the internal reference.
+ **/
 void
 hud_query_close (HudQuery *query)
 {
@@ -185,18 +266,50 @@ hud_query_close (HudQuery *query)
     g_clear_object (&last_created_query);
 }
 
+/**
+ * hud_query_get_generation:
+ * @query: a #HudQuery
+ *
+ * Gets the current value of the generation counter for query.
+ *
+ * The generation counter is incremented each time the #HudQuery emits a
+ * the ::changed signal.  Its purpose is to guard against stale
+ * index-based references to results of the query.
+ *
+ * Returns: the generation number
+ **/
 guint64
 hud_query_get_generation (HudQuery *query)
 {
   return query->generation;
 }
 
+/**
+ * hud_query_get_n_results:
+ * @query: a #HudQuery
+ *
+ * Gets the number of results in @query.
+ *
+ * Returns: the number of results
+ **/
 guint
 hud_query_get_n_results (HudQuery *query)
 {
   return query->results->len;
 }
 
+/**
+ * hud_query_get_result_by_index:
+ * @query: a #HudQuery
+ * @i: the index of the result
+ *
+ * Gets the @i<!-- -->th result from @query.
+ *
+ * @i must be less than the number of results in the query.  See
+ * hud_query_get_n_results().
+ *
+ * Returns: (transfer none): the #HudResult at position @i
+ **/
 HudResult *
 hud_query_get_result_by_index (HudQuery *query,
                                guint     i)

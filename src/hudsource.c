@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright © 2012 Canonical Ltd.
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -14,7 +14,7 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * Author: Ryan Lortie <desrt@desrt.ca>
- **/
+ */
 
 #define G_LOG_DOMAIN "hudsource"
 
@@ -49,6 +49,20 @@
  * possibly replacing the "change" signal with something capable of
  * expressing more fine-grained changes (eg: a single item was added or
  * removed).
+ **/
+
+/**
+ * HudSource:
+ *
+ * This is an opaque structure type.
+ **/
+
+/**
+ * HudSourceInterface:
+ * @g_iface: the #GTypeInterface
+ * @search: virtual function pointer for hud_source_search()
+ *
+ * This is the interface vtable for #HudSource.
  **/
 
 G_DEFINE_INTERFACE (HudSource, hud_source, G_TYPE_OBJECT)

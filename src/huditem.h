@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright © 2012 Canonical Ltd.
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -14,12 +14,13 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * Author: Ryan Lortie <desrt@desrt.ca>
- **/
+ */
 
 #ifndef __HUD_ITEM_H__
 #define __HUD_ITEM_H__
 
 #include <glib-object.h>
+
 #include "hudstringlist.h"
 
 #define HUD_TYPE_ITEM                                       (hud_item_get_type ())
@@ -47,6 +48,7 @@ struct _HudItemClass
 
 struct _HudItem
 {
+  /*< private >*/
   GObject parent_instance;
 
   HudItemPrivate *priv;

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright © 2012 Canonical Ltd.
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -14,7 +14,7 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * Author: Ryan Lortie <desrt@desrt.ca>
- **/
+ */
 
 #define G_LOG_DOMAIN "hudappmenuregistrar"
 
@@ -48,6 +48,12 @@
  * at the time of the original query, the window will initially be
  * reported as having no menu but a change notification will arrive when
  * the proper information becomes available.
+ **/
+
+/**
+ * HudAppMenuRegistrar:
+ *
+ * This is an opaque structure type.
  **/
 
 #define APPMENU_REGISTRAR_BUS_NAME    "com.canonical.AppMenu.Registrar"

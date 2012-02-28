@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright © 2012 Canonical Ltd.
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -14,7 +14,7 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * Author: Ryan Lortie <desrt@desrt.ca>
- **/
+ */
 
 #define G_LOG_DOMAIN "huddbusmenucollector"
 
@@ -25,6 +25,34 @@
 #include "hudappmenuregistrar.h"
 #include "indicator-tracker.h"
 #include "hudsource.h"
+
+/**
+ * SECTION:huddbusmenucollector
+ * @title: HudDbusmenuCollector
+ * @short_description: a #HudSource that collects #HudItems from
+ *   Dbusmenu
+ *
+ * The #HudDbusmenuCollector collects menu items from a #DbusmenuClient.
+ *
+ * There are two modes of operation.
+ *
+ * In the simple mode, the collector is created with a specified
+ * endpoint using hud_dbusmenu_collector_new_for_endpoint().  A
+ * #DbusmenuClient is constructed using this endpoint and the collector
+ * constructs #HudItems for the contents of the menu found there.  This
+ * mode is intended for use with indicators.
+ *
+ * For menus associated with application windows (ie: menubars), we must
+ * consult the AppMenu registrar in order to discover the endpoint to
+ * use.  This second mode of the collector is used by calling
+ * hud_dbusmenu_collector_new_for_window().
+ **/
+
+/**
+ * HudDbusmenuCollector:
+ *
+ * This is an opaque structure type.
+ **/
 
 struct _HudDbusmenuCollector
 {
@@ -122,6 +150,20 @@ hud_dbusmenu_collector_class_init (HudDbusmenuCollectorClass *class)
   class->finalize = hud_dbusmenu_collector_finalize;
 }
 
+/**
+ * hud_dbusmenu_collector_new_for_endpoint:
+ * @bus_name: a D-Bus bus name
+ * @object_path: an object path at the destination given by @bus_name
+ *
+ * Creates a new #HudDbusmenuCollector for the specified endpoint.
+ *
+ * Internally, a #DbusmenuClient is created for this endpoint.  Searches
+ * are performed against the contents of those menus.
+ *
+ * This call is intended to be used for indicators.
+ *
+ * Returns: a new #HudDbusmenuCollector
+ **/
 HudDbusmenuCollector *
 hud_dbusmenu_collector_new_for_endpoint (const gchar *bus_name,
                                          const gchar *object_path)
@@ -134,6 +176,17 @@ hud_dbusmenu_collector_new_for_endpoint (const gchar *bus_name,
   return collector;
 }
 
+/**
+ * hud_dbusmenu_collector_new_for_window:
+ * @window: a #BamfWindow
+ *
+ * Creates a new #HudDbusmenuCollector for the endpoint indicated by the
+ * #HudAppMenuRegistrar for @window.
+ *
+ * This call is intended to be used for application menus.
+ *
+ * Returns: a new #HudDbusmenuCollector
+ **/
 HudDbusmenuCollector *
 hud_dbusmenu_collector_new_for_window (BamfWindow *window)
 {

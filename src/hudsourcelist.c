@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright © 2012 Canonical Ltd.
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -14,7 +14,7 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * Author: Ryan Lortie <desrt@desrt.ca>
- **/
+ */
 
 #include "hudsourcelist.h"
 
@@ -32,6 +32,12 @@
  *
  * Sources may be added to the list using hud_source_list_add().  It is
  * not possible to remove sources.
+ **/
+
+/**
+ * HudSourceList:
+ *
+ * This is an opaque structure type.
  **/
 
 struct _HudSourceList

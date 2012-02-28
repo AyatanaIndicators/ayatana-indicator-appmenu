@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright © 2012 Canonical Ltd.
  *
  * This program is free software: you can redistribute it and/or modify it
@@ -14,7 +14,7 @@
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
  * Author: Ryan Lortie <desrt@desrt.ca>
- **/
+ */
 
 #include "hudmenumodelcollector.h"
 
@@ -24,6 +24,28 @@
 
 #include <libbamf/libbamf.h>
 #include <gio/gio.h>
+
+/**
+ * SECTION:hudmenumodelcollector
+ * @title: HudMenuModelCollector
+ * @short_description: a #HudSource that collects #HudItems from
+ *   #GMenuModel
+ *
+ * The #HudMenuModelCollector collects menu items from the menus
+ * associated with a window exported from an application using
+ * #GMenuModel.  Activations are performed using #GActionGroup in the
+ * usual way.
+ *
+ * The #GMenuModel is acquired using #GDBusMenuModel according to the
+ * properties set on the #BamfWindow which must be passed to
+ * hud_menu_model_collector_get().
+ **/
+
+/**
+ * HudMenuModelCollector:
+ *
+ * This is an opaque structure type.
+ **/
 
 struct _HudMenuModelCollector
 {
@@ -381,6 +403,15 @@ hud_menu_model_collector_class_init (HudMenuModelCollectorClass *class)
   class->finalize = hud_menu_model_collector_finalize;
 }
 
+/**
+ * hud_menu_model_collector_get:
+ * @window: a #BamfWindow
+ *
+ * If the given @window has #GMenuModel-style menus then returns a
+ * collector for them, otherwise returns %NULL.
+ *
+ * Returns: a #HudMenuModelCollector, or %NULL
+ **/
 HudMenuModelCollector *
 hud_menu_model_collector_get (BamfWindow *window)
 {

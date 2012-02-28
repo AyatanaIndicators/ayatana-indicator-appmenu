@@ -80,7 +80,9 @@ BUILT_SOURCES += \
 # HUD Service
 ####################
 
-hud_service_SOURCES = \
+noinst_LIBRARIES = libhud-service.a
+
+libhud_service_a_SOURCES = \
 	create-db.h \
 	create-db.c \
 	menuitem-collector.h \
@@ -112,7 +114,6 @@ hud_service_SOURCES = \
 	huditem.c		\
 	hudresult.h		\
 	hudresult.c		\
-	hud-service.c		\
 	hud.interface.h \
 	hud.interface.c \
 	indicator-tracker.h \
@@ -124,12 +125,20 @@ hud_service_SOURCES = \
 	utils.h \
 	utils.c
 
+hud_service_SOURCES = hud-service.c
+
+libhud_service_a_CFLAGS = \
+	$(HUD_CFLAGS) \
+	$(COVERAGE_CFLAGS) \
+	-DDATADIR=\""$(datadir)"\" \
+	-Wall -Werror
 hud_service_CFLAGS = \
 	$(HUD_CFLAGS) \
 	$(COVERAGE_CFLAGS) \
 	-DDATADIR=\""$(datadir)"\" \
 	-Wall -Werror
 hud_service_LDFLAGS = \
+	libhud-service.a	\
 	$(HUD_LIBS)
 
 create-db.c: create-db.sql
