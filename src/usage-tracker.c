@@ -510,3 +510,14 @@ check_app_init (UsageTracker * self, const gchar * application)
 
 	return;
 }
+
+UsageTracker *
+usage_tracker_get_instance (void)
+{
+  static UsageTracker *usage_tracker_instance;
+
+  if (usage_tracker_instance == NULL)
+    usage_tracker_instance = usage_tracker_new ();
+
+  return usage_tracker_instance;
+}

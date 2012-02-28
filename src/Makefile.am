@@ -90,11 +90,29 @@ hud_service_SOURCES = \
 	dump-app-info.h \
 	dump-app-info.c \
 	shared-values.h \
-	hud-service.c \
-	hud-dbus.h \
-	hud-dbus.c \
-	hud-search.h \
-	hud-search.c \
+	hudappmenuregistrar.h	\
+	hudappmenuregistrar.c	\
+	huddbusmenucollector.h	\
+	huddbusmenucollector.c	\
+	hudmenumodelcollector.h	\
+	hudmenumodelcollector.c	\
+	hudindicatorsource.h	\
+	hudindicatorsource.c	\
+	hudwindowsource.h	\
+	hudwindowsource.c	\
+	hudsourcelist.h		\
+	hudsourcelist.c		\
+	hudsource.h		\
+	hudsource.c		\
+	hudquery.h		\
+	hudquery.c		\
+	hudstringlist.h		\
+	hudstringlist.c		\
+	huditem.h		\
+	huditem.c		\
+	hudresult.h		\
+	hudresult.c		\
+	hud-service.c		\
 	hud.interface.h \
 	hud.interface.c \
 	indicator-tracker.h \
