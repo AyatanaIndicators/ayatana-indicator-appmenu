@@ -102,6 +102,8 @@ hud_source_search (HudSource   *source,
                    GPtrArray   *results_array,
                    const gchar *search_string)
 {
+  g_debug ("search on %s %p", G_OBJECT_TYPE_NAME (source), source);
+
   HUD_SOURCE_GET_IFACE (source)
     ->search (source, results_array, search_string);
 }

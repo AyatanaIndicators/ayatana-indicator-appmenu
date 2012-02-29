@@ -24,6 +24,7 @@
 
 #include "hudappmenuregistrar.h"
 #include "indicator-tracker.h"
+#include "hudresult.h"
 #include "hudsource.h"
 
 /**
@@ -69,10 +70,42 @@ G_DEFINE_TYPE_WITH_CODE (HudDbusmenuCollector, hud_dbusmenu_collector, G_TYPE_OB
                          G_IMPLEMENT_INTERFACE (HUD_TYPE_SOURCE, hud_dbusmenu_collector_iface_init))
 
 static void
+hud_dbusmenu_collector_collect_item (HudDbusmenuCollector *collector,
+                                     DbusmenuMenuitem     *item,
+                                     GPtrArray            *results_array,
+                                     const gchar          *search_string,
+                                     HudStringList        *prefix)
+{
+  HudStringList *tokens;
+  HudResult *result;
+  HudItem *hitem;
+  GList *child;
+
+  if (dbusmenu_menuitem_property_exist (item, DBUSMENU_MENUITEM_PROP_LABEL))
+    {
+      tokens = hud_string_list_cons (dbusmenu_menuitem_property_get (item, DBUSMENU_MENUITEM_PROP_LABEL), prefix);
+      hitem = hud_item_new (tokens, NULL);
+      if ((result = hud_result_get_if_matched (hitem, search_string, 30)))
+        g_ptr_array_add (results_array, result);
+      g_object_unref (hitem);
+    }
+  else
+    tokens = hud_string_list_ref (prefix);
+
+  for (child = dbusmenu_menuitem_get_children (item); child; child = child->next)
+    hud_dbusmenu_collector_collect_item (collector, child->data, results_array, search_string, tokens);
+
+  hud_string_list_unref (tokens);
+}
+
+static void
 hud_dbusmenu_collector_search (HudSource   *source,
                                GPtrArray   *results_array,
                                const gchar *search_string)
 {
+  HudDbusmenuCollector *collector = HUD_DBUSMENU_COLLECTOR (source);
+
+  hud_dbusmenu_collector_collect_item (collector, dbusmenu_client_get_root (collector->client), results_array, search_string, NULL);
 }
 
 static void
