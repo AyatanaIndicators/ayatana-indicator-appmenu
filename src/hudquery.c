@@ -119,6 +119,8 @@ hud_query_refresh (HudQuery *query)
 
   g_ptr_array_foreach (query->results, hud_query_find_max_usage, &max_usage);
   g_ptr_array_sort_with_data (query->results, hud_query_compare_results, GINT_TO_POINTER (max_usage));
+  if (query->results->len > query->num_results)
+    g_ptr_array_set_size (query->results, query->num_results);
 }
 
 static void
