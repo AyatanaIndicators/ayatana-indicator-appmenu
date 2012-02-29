@@ -137,7 +137,7 @@ hud_service_CFLAGS = \
 	$(COVERAGE_CFLAGS) \
 	-DDATADIR=\""$(datadir)"\" \
 	-Wall -Werror
-hud_service_LDFLAGS = \
+hud_service_LDADD = \
 	libhud-service.a	\
 	$(HUD_LIBS)
 
