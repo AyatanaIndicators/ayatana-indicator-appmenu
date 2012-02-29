@@ -180,3 +180,47 @@ hud_string_list_pretty_print (HudStringList *list)
 
   return g_string_free (string, FALSE);
 }
+
+/**
+ * hud_string_list_cons_label:
+ * @label: (allow-none): a menuitem label
+ * @tail: (allow-none): the tail #HudStringList, possibly %NULL
+ *
+ * Slight "magic" helper function for doing the right thing with
+ * prepending menu labels.
+ *
+ * @label is processed, removing mnemonic prefixes (ie: '_' characters)
+ * and then the function acts, essentially as hud_string_list_cons().
+ *
+ * Returns: (transfer full): a new #HudStringList
+ **/
+HudStringList *
+hud_string_list_cons_label (const gchar   *label,
+                            HudStringList *tail)
+{
+  HudStringList *list;
+  gint i = 0, j = 0;
+  gsize headlen;
+
+  /* For simplicity, over-allocate.  In practice, this will only
+   * ever waste one byte at most (since we will only remove one
+   * underscore).
+   */
+  headlen = strlen (label);
+
+  list = g_malloc (G_STRUCT_OFFSET (HudStringList, head) + headlen + 1);
+  list->tail = hud_string_list_ref (tail);
+  list->ref_count = 1;
+
+  while (label[j])
+    {
+      if (label[j] == '_' && label[j + 1])
+        j++;
+
+      list->head[i++] = label[j++];
+    }
+  g_assert (i <= headlen);
+  list->head[i] = '\0';
+
+  return list;
+}

@@ -32,6 +32,9 @@ HudStringList *         hud_string_list_cons                            (const g
 const gchar *           hud_string_list_get_head                        (HudStringList *list);
 HudStringList *         hud_string_list_get_tail                        (HudStringList *list);
 
+HudStringList *         hud_string_list_cons_label                      (const gchar   *label,
+                                                                         HudStringList *tail);
+
 gchar *                 hud_string_list_pretty_print                    (HudStringList *list);
 
 #endif /* __HUD_STRING_LIST_H__ */

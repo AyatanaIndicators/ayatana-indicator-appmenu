@@ -235,21 +235,7 @@ hud_menu_model_collector_model_changed (GMenuModel *model,
        * Either way, we need to free it at the end of the loop.
        */
       if (g_menu_model_get_item_attribute (model, i, G_MENU_ATTRIBUTE_LABEL, "s", &value))
-        {
-          gint i = 0, j = 0;
-
-          while (value[j])
-            {
-              if (value[j] == '_' && value[j + 1])
-                j++;
-
-              value[i++] = value[j++];
-            }
-          value[i] = '\0';
-
-          tokens = hud_string_list_cons (value, context);
-          g_free (value);
-        }
+        tokens = hud_string_list_cons_label (value, context);
       else
         tokens = hud_string_list_ref (context);
 
