@@ -217,6 +217,36 @@ hud_dbusmenu_collector_child_removed (DbusmenuMenuitem *menuitem,
 }
 
 static void
+hud_dbusmenu_collector_property_changed (DbusmenuMenuitem *menuitem,
+                                         const gchar      *property_name,
+                                         GVariant         *new_value,
+                                         gpointer          user_data)
+{
+  HudDbusmenuCollector *collector = user_data;
+  DbusmenuMenuitem *parent;
+  HudStringList *context;
+  HudItem *item;
+
+  parent = dbusmenu_menuitem_get_parent (menuitem);
+
+  if (parent)
+    {
+      HudItem *parentitem;
+
+      parentitem = g_hash_table_lookup (collector->items, parent);
+      context = hud_item_get_tokens (parentitem);
+    }
+  else
+    context = NULL;
+
+  item = hud_dbusmenu_item_new (context, NULL, menuitem);
+  g_hash_table_remove (collector->items, menuitem);
+  g_hash_table_insert (collector->items, menuitem, item);
+
+  hud_source_changed (HUD_SOURCE (collector));
+}
+
+static void
 hud_dbusmenu_collector_add_item (HudDbusmenuCollector *collector,
                                  HudStringList        *context,
                                  DbusmenuMenuitem     *menuitem)
@@ -227,6 +257,7 @@ hud_dbusmenu_collector_add_item (HudDbusmenuCollector *collector,
   item = hud_dbusmenu_item_new (context, NULL, menuitem);
   context = hud_item_get_tokens (item);
 
+  g_signal_connect (menuitem, "property-changed", G_CALLBACK (hud_dbusmenu_collector_property_changed), collector);
   g_signal_connect (menuitem, "child-added", G_CALLBACK (hud_dbusmenu_collector_child_added), collector);
   g_signal_connect (menuitem, "child-removed", G_CALLBACK (hud_dbusmenu_collector_child_removed), collector);
   g_hash_table_insert (collector->items, menuitem, item);
@@ -243,6 +274,7 @@ hud_dbusmenu_collector_remove_item (HudDbusmenuCollector *collector,
 {
   GList *child;
 
+  g_signal_handlers_disconnect_by_func (menuitem, hud_dbusmenu_collector_property_changed, collector);
   g_signal_handlers_disconnect_by_func (menuitem, hud_dbusmenu_collector_child_added, collector);
   g_signal_handlers_disconnect_by_func (menuitem, hud_dbusmenu_collector_child_removed, collector);
   g_hash_table_remove (collector->items, menuitem);
