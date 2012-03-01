@@ -40,6 +40,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 static GSettings *
 get_settings (void)
 {
+  /*
 	static gboolean first = TRUE;
 	static GSettings * settings = NULL;
 
@@ -51,6 +52,8 @@ get_settings (void)
 	}
 	
 	return settings;
+        */
+  return NULL;
 }
 
 /* Checks to see if a character is in the list of characters
