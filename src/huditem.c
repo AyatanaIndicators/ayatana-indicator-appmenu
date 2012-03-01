@@ -103,14 +103,6 @@ hud_item_construct (GType          g_type,
 {
   HudItem *item;
 
-  g_return_val_if_fail (tokens != NULL, NULL);
-
-  {
-    gchar *pretty = hud_string_list_pretty_print (tokens);
-    g_print ("new item > %s\n", pretty);
-    g_free (pretty);
-  }
-
   item = g_object_new (g_type, NULL);
   item->priv->tokens = hud_string_list_ref (tokens);
   item->priv->desktop_file = g_strdup (desktop_file);

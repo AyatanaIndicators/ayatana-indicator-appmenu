@@ -352,8 +352,6 @@ hud_menu_model_collector_finalize (GObject *object)
 {
   HudMenuModelCollector *collector = HUD_MENU_MODEL_COLLECTOR (object);
 
-  g_print ("free\n");
-
   if (collector->refresh_id)
     g_source_remove (collector->refresh_id);
 
