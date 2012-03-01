@@ -191,6 +191,7 @@ hud_dbusmenu_collector_remove_item (HudDbusmenuCollector *collector,
 static void
 hud_dbusmenu_collector_child_added (DbusmenuMenuitem *menuitem,
                                     DbusmenuMenuitem *child,
+                                    guint             position,
                                     gpointer          user_data)
 {
   HudDbusmenuCollector *collector = user_data;
