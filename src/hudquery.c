@@ -54,6 +54,7 @@ struct _HudQuery
   HudSource *source;
   gchar *search_string;
   gint num_results;
+  guint refresh_id;
 
   guint64 generation;
   GPtrArray *results;
@@ -123,15 +124,27 @@ hud_query_refresh (HudQuery *query)
     g_ptr_array_set_size (query->results, query->num_results);
 }
 
-static void
-hud_query_source_changed (HudSource *source,
-                          gpointer   user_data)
+static gboolean
+hud_query_dispatch_refresh (gpointer user_data)
 {
   HudQuery *query = user_data;
 
   hud_query_refresh (query);
 
   g_signal_emit (query, hud_query_changed_signal, 0);
+
+  query->refresh_id = 0;
+
+  return G_SOURCE_REMOVE;
+}
+static void
+hud_query_source_changed (HudSource *source,
+                          gpointer   user_data)
+{
+  HudQuery *query = user_data;
+
+  if (!query->refresh_id)
+    query->refresh_id = g_idle_add (hud_query_dispatch_refresh, g_object_ref (query));
 }
 
 static void
