@@ -85,8 +85,6 @@ noinst_LIBRARIES = libhud-service.a
 libhud_service_a_SOURCES = \
 	create-db.h \
 	create-db.c \
-	menuitem-collector.h \
-	menuitem-collector.c \
 	distance.h \
 	distance.c \
 	dump-app-info.h \
