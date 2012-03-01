@@ -19,6 +19,7 @@
 #include <glib.h>
 #include <gio/gio.h>
 
+#include "hudappindicatorsource.h"
 #include "hudindicatorsource.h"
 #include "hudwindowsource.h"
 #include "hudsourcelist.h"
@@ -276,6 +277,14 @@ main (int argc, char **argv)
     HudIndicatorSource *source;
 
     source = hud_indicator_source_new ();
+    hud_source_list_add (source_list, HUD_SOURCE (source));
+    g_object_unref (source);
+  }
+
+  {
+    HudAppIndicatorSource *source;
+
+    source = hud_app_indicator_source_new ();
     hud_source_list_add (source_list, HUD_SOURCE (source));
     g_object_unref (source);
   }
