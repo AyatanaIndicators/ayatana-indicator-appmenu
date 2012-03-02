@@ -116,8 +116,6 @@ libhud_service_a_SOURCES = \
 	hudresult.c		\
 	hud.interface.h \
 	hud.interface.c \
-	indicator-tracker.h \
-	indicator-tracker.c \
 	load-app-info.h \
 	load-app-info.c \
 	usage-tracker.h \

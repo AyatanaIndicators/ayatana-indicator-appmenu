@@ -6,6 +6,7 @@ src/distance.c
 src/gdk-get-func.c
 src/gen-application-menu-registrar.xml.c
 src/gen-application-menu-renderer.xml.c
+src/hudappindicatorsource.c
 src/hudappmenuregistrar.c
 src/hud-cli.c
 src/huddbusmenucollector.c
@@ -24,7 +25,6 @@ src/hud-verify-app-info.c
 src/hudwindowsource.c
 src/indicator-appmenu.c
 src/indicator-appmenu-marshal.c
-src/indicator-tracker.c
 src/load-app-info.c
 src/usage-tracker.c
 src/utils.c

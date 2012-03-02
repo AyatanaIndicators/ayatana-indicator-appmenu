@@ -24,7 +24,6 @@
 #include <string.h>
 
 #include "hudappmenuregistrar.h"
-#include "indicator-tracker.h"
 #include "hudresult.h"
 #include "hudsource.h"
 
