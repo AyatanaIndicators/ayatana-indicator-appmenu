@@ -13,13 +13,15 @@
  * You should have received a copy of the GNU General Public License along
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Author: Ryan Lortie <desrt@desrt.ca>
+ * Authors: Ryan Lortie <desrt@desrt.ca>
+ *          Ted Gould <ted@canonical.com>
  */
 
 #define G_LOG_DOMAIN "hudappindicatorsource"
 
 #include "hudappindicatorsource.h"
 
+#include <glib/gi18n.h>
 #include <gio/gio.h>
 
 #include "huddbusmenucollector.h"
@@ -97,18 +99,34 @@ hud_app_indicator_source_add_indicator (HudAppIndicatorSource *source,
   const gchar *dbus_path;
   GSequenceIter *iter;
   gint32 position;
+  gchar *title;
 
   g_variant_get_child (description, 1, "i", &position);
   g_variant_get_child (description, 2, "&s", &dbus_name);
   g_variant_get_child (description, 3, "&o", &dbus_path);
+  g_variant_get_child (description, 5, "s", &title);
 
-  g_debug ("adding appindicator at %d (%s, %s)", position, dbus_name, dbus_path);
+  if (title[0] == '\0')
+    {
+      const gchar *id;
 
-  collector = hud_dbusmenu_collector_new_for_endpoint (dbus_name, dbus_path);
+      g_free (title);
+      /* TRANSLATORS:  This is used for Application indicators that
+         are not providing a title string.  The '%s' represents the
+         unique ID that the app indicator provides, but it is usually
+         the package name and not generally human readable.  An example
+         for Network Manager would be 'nm-applet'. */
+      g_variant_get_child (description, 8, "&s", &id);
+      title = g_strdup_printf(_("Untitled Indicator (%s)"), id);
+    }
+  g_debug ("adding appindicator at %d ('%s', %s, %s)", position, title, dbus_name, dbus_path);
+
+  collector = hud_dbusmenu_collector_new_for_endpoint (title, dbus_name, dbus_path);
   g_signal_connect (collector, "changed", G_CALLBACK (hud_app_indicator_source_collector_changed), source);
 
   iter = g_sequence_get_iter_at_pos (source->indicators, position);
   g_sequence_insert_before (iter, collector);
+  g_free (title);
 }
 
 static void
@@ -169,6 +187,29 @@ hud_app_indicator_source_dbus_signal (GDBusConnection *connection,
       hud_app_indicator_source_remove_indicator (source, parameters);
       hud_source_changed (HUD_SOURCE (source));
     }
+
+  else if (g_str_equal (signal_name, "ApplicationTitleChanged"))
+    {
+      GSequenceIter *iter;
+      const gchar *title;
+      gint32 position;
+
+      if (!g_variant_is_of_type (parameters, G_VARIANT_TYPE ("(is)")))
+        return;
+
+      g_variant_get (parameters, "(i&s)", &position, &title);
+
+      g_debug ("changing title of appindicator at %d to '%s'", position, title);
+
+      iter = g_sequence_get_iter_at_pos (source->indicators, position);
+      if (!g_sequence_iter_is_end (iter))
+        {
+          HudDbusmenuCollector *collector;
+
+          collector = g_sequence_get (iter);
+          hud_dbusmenu_collector_set_prefix (collector, title);
+        }
+    }
 }
 
 static void
@@ -227,11 +268,11 @@ hud_app_indicator_source_name_appeared (GDBusConnection *connection,
 
   g_assert (source->subscription == 0);
   source->subscription = g_dbus_connection_signal_subscribe (connection, name_owner,
-                                                                APP_INDICATOR_SERVICE_IFACE, NULL,
-                                                                APP_INDICATOR_SERVICE_OBJECT_PATH, NULL,
-                                                                G_DBUS_SIGNAL_FLAGS_NONE,
-                                                                hud_app_indicator_source_dbus_signal,
-                                                                source, NULL);
+                                                             APP_INDICATOR_SERVICE_IFACE, NULL,
+                                                             APP_INDICATOR_SERVICE_OBJECT_PATH, NULL,
+                                                             G_DBUS_SIGNAL_FLAGS_NONE,
+                                                             hud_app_indicator_source_dbus_signal,
+                                                             source, NULL);
 
   g_assert (source->cancellable == NULL);
   source->cancellable = g_cancellable_new ();

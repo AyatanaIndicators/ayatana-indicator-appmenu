@@ -150,6 +150,7 @@ struct _HudDbusmenuCollector
 
   DbusmenuClient *client;
   DbusmenuMenuitem *root;
+  HudStringList *prefix;
   GHashTable *items;
   guint xid;
 };
@@ -237,7 +238,7 @@ hud_dbusmenu_collector_property_changed (DbusmenuMenuitem *menuitem,
       context = hud_item_get_tokens (parentitem);
     }
   else
-    context = NULL;
+    context = collector->prefix;
 
   item = hud_dbusmenu_item_new (context, NULL, menuitem);
   g_hash_table_remove (collector->items, menuitem);
@@ -297,7 +298,7 @@ hud_dbusmenu_collector_setup_root (HudDbusmenuCollector *collector,
 
   if (root)
     {
-      hud_dbusmenu_collector_add_item (collector, NULL, root);
+      hud_dbusmenu_collector_add_item (collector, collector->prefix, root);
       collector->root = root;
     }
 }
@@ -356,6 +357,7 @@ hud_dbusmenu_collector_finalize (GObject *object)
     hud_app_menu_registrar_remove_observer (hud_app_menu_registrar_get (), collector->xid,
                                             hud_dbusmenu_collector_registrar_observer_func, collector);
 
+  hud_string_list_unref (collector->prefix);
   g_hash_table_unref (collector->items);
   g_clear_object (&collector->client);
 
@@ -396,12 +398,15 @@ hud_dbusmenu_collector_class_init (HudDbusmenuCollectorClass *class)
  * Returns: a new #HudDbusmenuCollector
  **/
 HudDbusmenuCollector *
-hud_dbusmenu_collector_new_for_endpoint (const gchar *bus_name,
+hud_dbusmenu_collector_new_for_endpoint (const gchar *prefix,
+                                         const gchar *bus_name,
                                          const gchar *object_path)
 {
   HudDbusmenuCollector *collector;
 
   collector = g_object_new (HUD_TYPE_DBUSMENU_COLLECTOR, NULL);
+  if (prefix)
+    collector->prefix = hud_string_list_cons (prefix, NULL);
   hud_dbusmenu_collector_setup_endpoint (collector, bus_name, object_path);
 
   return collector;
@@ -430,4 +435,18 @@ hud_dbusmenu_collector_new_for_window (BamfWindow *window)
                                        hud_dbusmenu_collector_registrar_observer_func, collector);
 
   return collector;
+}
+
+void
+hud_dbusmenu_collector_set_prefix (HudDbusmenuCollector *collector,
+                                   const gchar          *prefix)
+{
+  hud_string_list_unref (collector->prefix);
+  collector->prefix = hud_string_list_cons (prefix, NULL);
+
+  if (collector->root)
+    {
+      hud_dbusmenu_collector_remove_item (collector, collector->root);
+      hud_dbusmenu_collector_add_item (collector, collector->prefix, collector->root);
+    }
 }
