@@ -262,7 +262,7 @@ name_lost_cb (GDBusConnection *connection,
 int
 main (int argc, char **argv)
 {
-  //HudWindowSource *window_source;
+  HudWindowSource *window_source;
   HudSourceList *source_list;
 
   g_type_init ();
@@ -270,8 +270,8 @@ main (int argc, char **argv)
   source_list = hud_source_list_new ();
 
   /* we will eventually pull GtkMenu out of this, so keep it around */
-//  window_source = hud_window_source_new ();
-  //hud_source_list_add (source_list, HUD_SOURCE (window_source));
+  window_source = hud_window_source_new ();
+  hud_source_list_add (source_list, HUD_SOURCE (window_source));
 
   {
     HudIndicatorSource *source;
@@ -296,7 +296,7 @@ main (int argc, char **argv)
   g_main_loop_run (mainloop);
   g_main_loop_unref (mainloop);
 
-  //g_object_unref (window_source);
+  g_object_unref (window_source);
   g_object_unref (source_list);
 
   return 0;
