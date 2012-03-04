@@ -191,6 +191,9 @@ hud_dbusmenu_item_new (HudStringList    *context,
     enabled &= !dbusmenu_menuitem_property_exist (menuitem, DBUSMENU_MENUITEM_PROP_ENABLED) ||
                dbusmenu_menuitem_property_get_bool (menuitem, DBUSMENU_MENUITEM_PROP_ENABLED);
 
+  if (enabled)
+    enabled &= !dbusmenu_menuitem_property_exist (menuitem, DBUSMENU_MENUITEM_PROP_CHILD_DISPLAY);
+
   item = hud_item_construct (hud_dbusmenu_item_get_type (), tokens, desktop_file, enabled);
   item->menuitem = g_object_ref (menuitem);
 
