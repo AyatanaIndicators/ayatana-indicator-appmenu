@@ -233,7 +233,7 @@ hud_dbusmenu_collector_search (HudSource   *source,
     {
       HudResult *result;
 
-      result = hud_result_get_if_matched (item, search_string, 30);
+      result = hud_result_get_if_matched (item, search_string, 0, 30);
       if (result)
         g_ptr_array_add (results_array, result);
     }

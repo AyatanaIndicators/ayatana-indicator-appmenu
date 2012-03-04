@@ -32,10 +32,12 @@ typedef struct _HudResult                                   HudResult;
 GType                   hud_result_get_type                             (void);
 
 HudResult *             hud_result_new                                  (HudItem     *item,
-                                                                         const gchar *search_string);
+                                                                         const gchar *search_string,
+                                                                         guint        penalty);
 
 HudResult *             hud_result_get_if_matched                       (HudItem     *item,
                                                                          const gchar *search_string,
+                                                                         guint        penalty,
                                                                          guint        max_distance);
 
 HudItem *               hud_result_get_item                             (HudResult   *result);

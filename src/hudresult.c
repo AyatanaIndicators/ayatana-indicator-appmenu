@@ -106,6 +106,7 @@ hud_result_class_init (HudResultClass *class)
  * hud_result_get_if_matched:
  * @item: a #HudItem
  * @search_string: the search string used
+ * @penalty: a penalty value
  * @max_distance: the maximum distance allowed
  *
  * Creates a #HudResult for @item, only if the resulting unadjusted
@@ -114,18 +115,25 @@ hud_result_class_init (HudResultClass *class)
  * This is the same as hud_result_new() except that it will return %NULL
  * if the distance is too great.
  *
+ * The penalty value is ignored when checking the maximum distance but
+ * will impact the distance of the created result.  As a result, the
+ * returned #HudResult may have an effective distance greater than
+ * @max_distance.
+ *
  * Returns: a new #HudResult, or %NULL in event of a poor match
  **/
 HudResult *
 hud_result_get_if_matched (HudItem     *item,
                            const gchar *search_string,
+                           guint        penalty,
                            guint        max_distance)
 {
   if (!hud_item_get_enabled (item))
     return NULL;
 
+  /* ignore the penalty in the max-distance calculation */
   if (calculate_distance_from_list (search_string, hud_item_get_tokens (item), NULL) <= max_distance)
-    return hud_result_new (item, search_string);
+    return hud_result_new (item, search_string, penalty);
   else
     return NULL;
 }
@@ -134,14 +142,20 @@ hud_result_get_if_matched (HudItem     *item,
  * hud_result_new:
  * @item: a #HudItem
  * @search_string: the search string used
+ * @penalty: a penalty value
  *
  * Creates a #HudResult for @item as search for using @search_string.
+ *
+ * If @penalty is non-zero then it is used to increase the distance of
+ * the result.  This is used to decrease the ranking of matches from the
+ * indicators.
  *
  * Returns: the new #HudResult
  **/
 HudResult *
 hud_result_new (HudItem     *item,
-                const gchar *search_string)
+                const gchar *search_string,
+                guint        penalty)
 {
   HudResult *result;
 
@@ -152,6 +166,8 @@ hud_result_new (HudItem     *item,
   result->item = g_object_ref (item);
   result->distance = calculate_distance_from_list (search_string, hud_item_get_tokens (item), &result->matched);
   result->description = hud_string_list_pretty_print (hud_item_get_tokens (result->item));
+
+  result->distance += (result->distance * penalty) / 100;
 
   return result;
 }
