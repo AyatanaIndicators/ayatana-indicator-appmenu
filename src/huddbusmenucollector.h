@@ -32,6 +32,7 @@ typedef struct _HudDbusmenuCollector                        HudDbusmenuCollector
 GType                   hud_dbusmenu_collector_get_type                 (void);
 
 HudDbusmenuCollector *  hud_dbusmenu_collector_new_for_endpoint         (const gchar *prefix,
+                                                                         guint        penalty,
                                                                          const gchar *bus_name,
                                                                          const gchar *object_path);
 HudDbusmenuCollector *  hud_dbusmenu_collector_new_for_window           (BamfWindow  *window);

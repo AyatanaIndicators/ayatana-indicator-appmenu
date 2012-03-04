@@ -210,6 +210,7 @@ struct _HudDbusmenuCollector
   DbusmenuMenuitem *root;
   HudStringList *prefix;
   GHashTable *items;
+  guint penalty;
   guint xid;
 };
 
@@ -233,7 +234,7 @@ hud_dbusmenu_collector_search (HudSource   *source,
     {
       HudResult *result;
 
-      result = hud_result_get_if_matched (item, search_string, 0, 30);
+      result = hud_result_get_if_matched (item, search_string, collector->penalty, 30);
       if (result)
         g_ptr_array_add (results_array, result);
     }
@@ -457,6 +458,7 @@ hud_dbusmenu_collector_class_init (HudDbusmenuCollectorClass *class)
  **/
 HudDbusmenuCollector *
 hud_dbusmenu_collector_new_for_endpoint (const gchar *prefix,
+                                         guint        penalty,
                                          const gchar *bus_name,
                                          const gchar *object_path)
 {
@@ -465,6 +467,7 @@ hud_dbusmenu_collector_new_for_endpoint (const gchar *prefix,
   collector = g_object_new (HUD_TYPE_DBUSMENU_COLLECTOR, NULL);
   if (prefix)
     collector->prefix = hud_string_list_cons (prefix, NULL);
+  collector->penalty = penalty;
   hud_dbusmenu_collector_setup_endpoint (collector, bus_name, object_path);
 
   return collector;
