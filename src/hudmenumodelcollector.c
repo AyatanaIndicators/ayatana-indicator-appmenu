@@ -125,7 +125,7 @@ hud_model_item_new (HudStringList      *tokens,
 {
   HudModelItem *item;
 
-  item = hud_item_construct (hud_model_item_get_type (), tokens, desktop_file);
+  item = hud_item_construct (hud_model_item_get_type (), tokens, desktop_file, TRUE);
   item->group = g_object_ref (action_group);
   item->action_name = g_strdup (action_name);
   item->target = target ? g_variant_ref_sink (target) : NULL;

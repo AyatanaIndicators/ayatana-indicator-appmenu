@@ -50,6 +50,7 @@ struct _HudItemPrivate
   gchar *desktop_file;
 
   HudStringList *tokens;
+  gboolean enabled;
   guint usage;
 };
 
@@ -99,13 +100,15 @@ hud_item_class_init (HudItemClass *class)
 gpointer
 hud_item_construct (GType          g_type,
                     HudStringList *tokens,
-                    const gchar   *desktop_file)
+                    const gchar   *desktop_file,
+                    gboolean       enabled)
 {
   HudItem *item;
 
   item = g_object_new (g_type, NULL);
   item->priv->tokens = hud_string_list_ref (tokens);
   item->priv->desktop_file = g_strdup (desktop_file);
+  item->priv->enabled = enabled;
 
   //item->usage = usage_tracker_get_usage (usage_tracker_get_instance (), desktop_file, identifier);
 
@@ -123,9 +126,10 @@ hud_item_construct (GType          g_type,
  **/
 HudItem *
 hud_item_new (HudStringList *tokens,
-              const gchar   *desktop_file)
+              const gchar   *desktop_file,
+              gboolean       enabled)
 {
-  return hud_item_construct (HUD_TYPE_ITEM, tokens, desktop_file);
+  return hud_item_construct (HUD_TYPE_ITEM, tokens, desktop_file, enabled);
 }
 
 /**
@@ -215,4 +219,20 @@ guint
 hud_item_get_usage (HudItem *item)
 {
   return item->priv->usage;
+}
+
+/**
+ * hud_item_get_enabled:
+ * @item: a #HudItem
+ *
+ * Checks if the item is disabled or enabled.
+ *
+ * Disabled items should never appear in search results.
+ *
+ * Returns: if the item is enabled
+ **/
+gboolean
+hud_item_get_enabled (HudItem *item)
+{
+  return item->priv->enabled;
 }

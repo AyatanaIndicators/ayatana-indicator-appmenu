@@ -13,7 +13,8 @@
  * You should have received a copy of the GNU General Public License along
  * with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Author: Ryan Lortie <desrt@desrt.ca>
+ * Authors: Ryan Lortie <desrt@desrt.ca>
+ *          Ted Gould <ted@canonical.com>
  */
 
 #define G_LOG_DOMAIN "huddbusmenucollector"
@@ -117,6 +118,43 @@ hud_dbusmenu_item_class_init (HudDbusmenuItemClass *class)
   class->activate = hud_dbusmenu_item_activate;
 }
 
+static const gchar *
+hud_dbusmenu_item_get_label_property (const gchar *type)
+{
+  static const gchar * const property_table[][2] =
+  {
+    { DBUSMENU_CLIENT_TYPES_DEFAULT,                 DBUSMENU_MENUITEM_PROP_LABEL                         },
+    /* Indicator Messages */
+    { "application-item",                            DBUSMENU_MENUITEM_PROP_LABEL                         },
+    { "indicator-item",                              "indicator-label"                                    },
+    /* Indicator Datetime */
+    { "appointment-item",                            "appointment-label"                                  },
+    { "timezone-item",                               "timezone-name"                                      },
+    /* Indicator Sound */
+    { "x-canonical-sound-menu-player-metadata-type", "x-canonical-sound-menu-player-metadata-player-name" },
+    { "x-canonical-sound-menu-mute-type",            DBUSMENU_MENUITEM_PROP_LABEL                         },
+    /* Indicator User */
+    { "x-canonical-user-item",                       "user-item-name"                                     }
+  };
+  static GHashTable *property_hash;
+
+  if G_UNLIKELY (property_hash == NULL)
+    {
+      gint i;
+
+      property_hash = g_hash_table_new (g_str_hash, g_str_equal);
+
+      for (i = 0; i < G_N_ELEMENTS (property_table); i++)
+        g_hash_table_insert (property_hash, (gpointer) property_table[i][0], (gpointer) property_table[i][1]);
+    }
+
+  if (type == NULL)
+    return DBUSMENU_MENUITEM_PROP_LABEL;
+
+  return g_hash_table_lookup (property_hash, type);
+}
+
+
 static HudItem *
 hud_dbusmenu_item_new (HudStringList    *context,
                        const gchar      *desktop_file,
@@ -124,18 +162,36 @@ hud_dbusmenu_item_new (HudStringList    *context,
 {
   HudStringList *tokens;
   HudDbusmenuItem *item;
+  const gchar *type;
+  const gchar *prop;
+  gboolean enabled;
 
-  if (dbusmenu_menuitem_property_exist (menuitem, DBUSMENU_MENUITEM_PROP_LABEL))
+  type = dbusmenu_menuitem_property_get (menuitem, DBUSMENU_MENUITEM_PROP_TYPE);
+  prop = hud_dbusmenu_item_get_label_property (type);
+
+  if (prop && dbusmenu_menuitem_property_exist (menuitem, prop))
     {
       const gchar *label;
 
-      label = dbusmenu_menuitem_property_get (menuitem, DBUSMENU_MENUITEM_PROP_LABEL);
+      label = dbusmenu_menuitem_property_get (menuitem, prop);
       tokens = hud_string_list_cons_label (label, context);
+      enabled = TRUE;
     }
   else
-    tokens = hud_string_list_ref (context);
+    {
+      tokens = hud_string_list_ref (context);
+      enabled = FALSE;
+    }
 
-  item = hud_item_construct (hud_dbusmenu_item_get_type (), tokens, desktop_file);
+  if (enabled)
+    enabled &= !dbusmenu_menuitem_property_exist (menuitem, DBUSMENU_MENUITEM_PROP_VISIBLE) ||
+               dbusmenu_menuitem_property_get_bool (menuitem, DBUSMENU_MENUITEM_PROP_VISIBLE);
+
+  if (enabled)
+    enabled &= !dbusmenu_menuitem_property_exist (menuitem, DBUSMENU_MENUITEM_PROP_ENABLED) ||
+               dbusmenu_menuitem_property_get_bool (menuitem, DBUSMENU_MENUITEM_PROP_ENABLED);
+
+  item = hud_item_construct (hud_dbusmenu_item_get_type (), tokens, desktop_file, enabled);
   item->menuitem = g_object_ref (menuitem);
 
   hud_string_list_unref (tokens);

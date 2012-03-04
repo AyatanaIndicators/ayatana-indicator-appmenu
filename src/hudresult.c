@@ -121,6 +121,9 @@ hud_result_get_if_matched (HudItem     *item,
                            const gchar *search_string,
                            guint        max_distance)
 {
+  if (!hud_item_get_enabled (item))
+    return NULL;
+
   if (calculate_distance_from_list (search_string, hud_item_get_tokens (item), NULL) <= max_distance)
     return hud_result_new (item, search_string);
   else
