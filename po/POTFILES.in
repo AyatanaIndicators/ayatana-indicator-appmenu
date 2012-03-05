@@ -27,5 +27,4 @@ src/indicator-appmenu.c
 src/indicator-appmenu-marshal.c
 src/load-app-info.c
 src/usage-tracker.c
-src/utils.c
 src/window-menus.c
