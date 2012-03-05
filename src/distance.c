@@ -36,44 +36,12 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define SWAP_PENALTY        hud_settings.swap_penalty
 #define SWAP_CASE_PENALTY   hud_settings.swap_penalty_case
 
-/* Checks to see if a character is in the list of characters
-   to be ignored */
-static gboolean
-ignore_character (gunichar inchar)
-{
-	static gchar * ignore = NULL;
-	if (ignore == NULL) {
-		/* TRANSLATORS: These are chacaters that should not be considered
-		   mistakes in the comparison functions.  Typically they are gramatical
-		   characters that can be found in menus. */
-		ignore = _(" _->");
-		if (!g_utf8_validate(ignore, -1, NULL)) {
-			g_warning("Translated ignore characters are not valid UTF-8");
-			ignore = "";
-		}
-	}
-
-	gchar * head = ignore;
-	while (head != NULL && head[0] != '\0') {
-		gunichar test = g_utf8_get_char(head);
-		if (test == inchar) {
-			return TRUE;
-		}
-
-		head = g_utf8_next_char(head);
-	}
-
-	return FALSE;
-}
-
 /* Figure out how far off we are from a set of characters, basically
    whether they match or not */
 static guint
 swap_cost (gunichar a, gunichar b)
 {
 	if (a == b)
-		return 0;
-	if (ignore_character(a) || ignore_character(b))
 		return 0;
 	if (g_unichar_toupper(a) == g_unichar_toupper(b))
 		return SWAP_CASE_PENALTY; /* Some penalty, but close */
