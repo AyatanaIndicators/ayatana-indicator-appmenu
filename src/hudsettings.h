@@ -21,7 +21,7 @@
 
 #include <glib.h>
 
-struct
+typedef struct
 {
   guint indicator_penalty;
   guint max_distance;
@@ -33,7 +33,9 @@ struct
   guint transpose_penalty;
   guint swap_penalty;
   guint swap_penalty_case;
-} hud_settings;
+} HudSettings;
+
+extern HudSettings hud_settings;
 
 void                    hud_settings_init                               (void);
 

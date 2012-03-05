@@ -22,6 +22,8 @@
 
 #include <gio/gio.h>
 
+HudSettings hud_settings;
+
 static void
 hud_settings_refresh (GSettings *settings)
 {
