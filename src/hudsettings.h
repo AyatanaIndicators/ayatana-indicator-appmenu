@@ -23,6 +23,8 @@
 
 typedef struct
 {
+  gboolean store_usage_data;
+
   guint indicator_penalty;
   guint max_distance;
 

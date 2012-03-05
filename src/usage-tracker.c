@@ -24,19 +24,20 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "config.h"
 #endif
 
+#include "usage-tracker.h"
+
 #include <glib.h>
 #include <glib/gstdio.h>
 #include <gio/gio.h>
 #include <sqlite3.h>
-#include "usage-tracker.h"
 #include "load-app-info.h"
 #include "create-db.h"
+#include "hudsettings.h"
 
 struct _UsageTrackerPrivate {
 	gchar * cachefile;
 	sqlite3 * db;
 	guint drop_timer;
-	GSettings * settings;
 
 	/* SQL Statements */
 	sqlite3_stmt * insert_entry;
@@ -61,7 +62,6 @@ static void usage_tracker_finalize   (GObject *object);
 static void cleanup_db               (UsageTracker * self);
 static void configure_db             (UsageTracker * self);
 static void prepare_statements       (UsageTracker * self);
-static void usage_setting_changed    (GSettings * settings, const gchar * key, gpointer user_data);
 static void build_db                 (UsageTracker * self);
 static gboolean drop_entries         (gpointer user_data);
 static void check_app_init (UsageTracker * self, const gchar * application);
@@ -89,15 +89,11 @@ usage_tracker_init (UsageTracker *self)
 	self->priv->cachefile = NULL;
 	self->priv->db = NULL;
 	self->priv->drop_timer = 0;
-	self->priv->settings = NULL;
 
 	self->priv->insert_entry = NULL;
 	self->priv->entry_count = NULL;
 	self->priv->delete_aged = NULL;
 	self->priv->application_count = NULL;
-
-	self->priv->settings = g_settings_new("com.canonical.indicator.appmenu.hud");
-	g_signal_connect(self->priv->settings, "changed::store-usage-data", G_CALLBACK(usage_setting_changed), self);
 
 	configure_db(self);
 
@@ -118,8 +114,6 @@ usage_tracker_dispose (GObject *object)
 		g_source_remove(self->priv->drop_timer);
 		self->priv->drop_timer = 0;
 	}
-
-	g_clear_object(&self->priv->settings);
 
 	G_OBJECT_CLASS (usage_tracker_parent_class)->dispose (object);
 	return;
@@ -178,18 +172,6 @@ usage_tracker_new (void)
 	return g_object_new(USAGE_TRACKER_TYPE, NULL);
 }
 
-/* Checking if the setting for tracking the usage data has changed
-   value.  We'll rebuild the DB */
-static void
-usage_setting_changed (GSettings * settings, const gchar * key, gpointer user_data)
-{
-	g_return_if_fail(IS_USAGE_TRACKER(user_data));
-	UsageTracker * self = USAGE_TRACKER(user_data);
-
-	configure_db(self);
-	return;
-}
-
 /* Configure which database we should be using */
 static void
 configure_db (UsageTracker * self)
@@ -203,7 +185,7 @@ configure_db (UsageTracker * self)
 	}
 	
 	/* Determine where his database should be built */
-	gboolean usage_data = g_settings_get_boolean(self->priv->settings, "store-usage-data");
+	gboolean usage_data = hud_settings.store_usage_data;
 
 	if (g_getenv("HUD_NO_STORE_USAGE_DATA") != NULL) {
 		usage_data = FALSE;
