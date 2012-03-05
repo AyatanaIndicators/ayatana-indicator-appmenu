@@ -28,6 +28,10 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "usage-tracker.c"
 #include "create-db.c"
 
+HudSettings hud_settings = {
+  .store_usage_data = TRUE
+};
+
 /* Ensure the base object works */
 static void
 test_usage_db_base (void)

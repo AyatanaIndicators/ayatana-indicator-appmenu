@@ -30,6 +30,10 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "shared-values.h"
 #include "create-db.c"
 
+HudSettings hud_settings = {
+  .store_usage_data = TRUE
+};
+
 static void
 test_usage_testapp (void)
 {
