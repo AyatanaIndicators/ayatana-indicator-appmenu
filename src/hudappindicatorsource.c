@@ -105,7 +105,7 @@ hud_app_indicator_source_add_indicator (HudAppIndicatorSource *source,
   g_variant_get_child (description, 1, "i", &position);
   g_variant_get_child (description, 2, "&s", &dbus_name);
   g_variant_get_child (description, 3, "&o", &dbus_path);
-  g_variant_get_child (description, 5, "s", &title);
+  g_variant_get_child (description, 9, "s", &title);
 
   if (title[0] == '\0')
     {
