@@ -18,6 +18,7 @@
 
 #include "hudresult.h"
 
+#include "hudsettings.h"
 #include "distance.h"
 
 /**
@@ -107,32 +108,31 @@ hud_result_class_init (HudResultClass *class)
  * @item: a #HudItem
  * @search_string: the search string used
  * @penalty: a penalty value
- * @max_distance: the maximum distance allowed
  *
  * Creates a #HudResult for @item, only if the resulting unadjusted
- * distance would be less than or equal to @max_distance.
+ * distance would be less than or equal to the maximum distance
+ * specified in the HUD settings.
  *
  * This is the same as hud_result_new() except that it will return %NULL
  * if the distance is too great.
  *
  * The penalty value is ignored when checking the maximum distance but
  * will impact the distance of the created result.  As a result, the
- * returned #HudResult may have an effective distance greater than
- * @max_distance.
+ * returned #HudResult may have an effective distance greater than the
+ * maximum distance.
  *
  * Returns: a new #HudResult, or %NULL in event of a poor match
  **/
 HudResult *
 hud_result_get_if_matched (HudItem     *item,
                            const gchar *search_string,
-                           guint        penalty,
-                           guint        max_distance)
+                           guint        penalty)
 {
   if (!hud_item_get_enabled (item))
     return NULL;
 
   /* ignore the penalty in the max-distance calculation */
-  if (calculate_distance_from_list (search_string, hud_item_get_tokens (item), NULL) <= max_distance)
+  if (calculate_distance_from_list (search_string, hud_item_get_tokens (item), NULL) <= hud_settings.max_distance)
     return hud_result_new (item, search_string, penalty);
   else
     return NULL;

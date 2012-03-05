@@ -90,6 +90,8 @@ libhud_service_a_SOURCES = \
 	dump-app-info.h \
 	dump-app-info.c \
 	shared-values.h \
+	hudsettings.h		\
+	hudsettings.c		\
 	hudappmenuregistrar.h	\
 	hudappmenuregistrar.c	\
 	huddbusmenucollector.h	\

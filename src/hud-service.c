@@ -23,6 +23,7 @@
 #include "hudindicatorsource.h"
 #include "hudwindowsource.h"
 #include "hudsourcelist.h"
+#include "hudsettings.h"
 
 #include "hud.interface.h"
 #include "shared-values.h"
@@ -266,6 +267,8 @@ main (int argc, char **argv)
   HudSourceList *source_list;
 
   g_type_init ();
+
+  hud_settings_init ();
 
   source_list = hud_source_list_new ();
 

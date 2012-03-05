@@ -37,8 +37,7 @@ HudResult *             hud_result_new                                  (HudItem
 
 HudResult *             hud_result_get_if_matched                       (HudItem     *item,
                                                                          const gchar *search_string,
-                                                                         guint        penalty,
-                                                                         guint        max_distance);
+                                                                         guint        penalty);
 
 HudItem *               hud_result_get_item                             (HudResult   *result);
 guint                   hud_result_get_distance                         (HudResult   *result,

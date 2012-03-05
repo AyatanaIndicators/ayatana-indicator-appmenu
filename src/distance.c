@@ -19,42 +19,23 @@ You should have received a copy of the GNU General Public License along
 with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "distance.h"
+
 #include <glib-object.h>
 #include <glib/gprintf.h>
 #include <glib/gi18n.h>
 #include <gio/gio.h>
 
-#include "distance.h"
+#include "hudsettings.h"
 #include "utils.h"
 
-#define ADD_PENALTY         get_settings_uint(get_settings(), "add-penalty",        10)
-#define PRE_ADD_PENALTY     get_settings_uint(get_settings(), "add-penalty-pre",    1)
-#define DROP_PENALTY        get_settings_uint(get_settings(), "drop-penalty",       10)
-#define END_DROP_PENALTY    get_settings_uint(get_settings(), "drop-penalty-end",   10)
-#define TRANSPOSE_PENALTY   get_settings_uint(get_settings(), "transpose-penalty",  10)
-#define SWAP_PENALTY        get_settings_uint(get_settings(), "swap-penalty",       10)
-#define SWAP_CASE_PENALTY   get_settings_uint(get_settings(), "swap-penalty-case",  1)
-
-/* Checks to see if we can get the setting, and if we can use that,
-   otherwise use the fallback value we have here */
-static GSettings *
-get_settings (void)
-{
-  /*
-	static gboolean first = TRUE;
-	static GSettings * settings = NULL;
-
-	if (first) {
-		first = FALSE;
-		if (settings_schema_exists("com.canonical.indicator.appmenu.hud.search")) {
-			settings = g_settings_new("com.canonical.indicator.appmenu.hud.search");
-		}
-	}
-	
-	return settings;
-        */
-  return NULL;
-}
+#define ADD_PENALTY         hud_settings.add_penalty
+#define PRE_ADD_PENALTY     hud_settings.add_penalty_pre
+#define DROP_PENALTY        hud_settings.drop_penalty
+#define END_DROP_PENALTY    hud_settings.drop_penalty_end
+#define TRANSPOSE_PENALTY   hud_settings.transpose_penalty
+#define SWAP_PENALTY        hud_settings.swap_penalty
+#define SWAP_CASE_PENALTY   hud_settings.swap_penalty_case
 
 /* Checks to see if a character is in the list of characters
    to be ignored */
