@@ -30,7 +30,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <sqlite3.h>
 #include "usage-tracker.h"
 #include "load-app-info.h"
-#include "utils.h"
 #include "create-db.h"
 
 struct _UsageTrackerPrivate {
@@ -97,10 +96,8 @@ usage_tracker_init (UsageTracker *self)
 	self->priv->delete_aged = NULL;
 	self->priv->application_count = NULL;
 
-	if (settings_schema_exists("com.canonical.indicator.appmenu.hud")) {
-		self->priv->settings = g_settings_new("com.canonical.indicator.appmenu.hud");
-		g_signal_connect(self->priv->settings, "changed::store-usage-data", G_CALLBACK(usage_setting_changed), self);
-	}
+	self->priv->settings = g_settings_new("com.canonical.indicator.appmenu.hud");
+	g_signal_connect(self->priv->settings, "changed::store-usage-data", G_CALLBACK(usage_setting_changed), self);
 
 	configure_db(self);
 
@@ -206,10 +203,7 @@ configure_db (UsageTracker * self)
 	}
 	
 	/* Determine where his database should be built */
-	gboolean usage_data = TRUE;
-	if (self->priv->settings != NULL) {
-		usage_data = g_settings_get_boolean(self->priv->settings, "store-usage-data");
-	}
+	gboolean usage_data = g_settings_get_boolean(self->priv->settings, "store-usage-data");
 
 	if (g_getenv("HUD_NO_STORE_USAGE_DATA") != NULL) {
 		usage_data = FALSE;

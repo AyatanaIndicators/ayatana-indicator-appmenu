@@ -121,9 +121,7 @@ libhud_service_a_SOURCES = \
 	load-app-info.h \
 	load-app-info.c \
 	usage-tracker.h \
-	usage-tracker.c \
-	utils.h \
-	utils.c
+	usage-tracker.c
 
 hud_service_SOURCES = hud-service.c
 

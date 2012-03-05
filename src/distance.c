@@ -27,7 +27,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <gio/gio.h>
 
 #include "hudsettings.h"
-#include "utils.h"
 
 #define ADD_PENALTY         hud_settings.add_penalty
 #define PRE_ADD_PENALTY     hud_settings.add_penalty_pre
