@@ -28,7 +28,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "usage-tracker.h"
 #include "usage-tracker.c"
 #include "shared-values.h"
-#include "utils.c"
 #include "create-db.c"
 
 static void
