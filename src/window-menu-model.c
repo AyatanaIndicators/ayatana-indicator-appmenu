@@ -55,3 +55,10 @@ window_menu_model_finalize (GObject *object)
 	G_OBJECT_CLASS (window_menu_model_parent_class)->finalize (object);
 	return;
 }
+
+WindowMenuModel *
+window_menu_model_new (BamfWindow * window)
+{
+	WindowMenuModel * menu = g_object_new(WINDOW_MENU_MODEL_TYPE, NULL);
+	return menu;
+}

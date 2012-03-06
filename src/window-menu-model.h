@@ -3,6 +3,7 @@
 
 #include <glib.h>
 #include <glib-object.h>
+#include <libbamf/bamf-window.h>
 #include "window-menu.h"
 
 G_BEGIN_DECLS
@@ -29,6 +30,7 @@ struct _WindowMenuModel {
 };
 
 GType window_menu_model_get_type (void);
+WindowMenuModel * window_menu_model_new (BamfWindow * window);
 
 G_END_DECLS
 
