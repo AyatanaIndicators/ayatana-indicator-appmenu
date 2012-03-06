@@ -60,8 +60,8 @@ ignore_character (gunichar inchar)
 {
 	static gchar * ignore = NULL;
 	if (ignore == NULL) {
-		/* TRANSLATORS: These are chacaters that should not be considered
-		   mistakes in the comparison functions.  Typically they are gramatical
+		/* TRANSLATORS: These are characters that should not be considered
+		   mistakes in the comparison functions.  Typically they are grammatical
 		   characters that can be found in menus. */
 		ignore = _(" _->");
 		if (!g_utf8_validate(ignore, -1, NULL)) {
