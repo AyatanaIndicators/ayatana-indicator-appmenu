@@ -971,8 +971,6 @@ switch_active_window (IndicatorAppmenu * iapp, BamfWindow * active_window)
 static void
 switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * active_window)
 {
-	GList * entry_head, * entries;
-
 	if (iapp->default_app == newdef && iapp->default_app != NULL) {
 		/* We've got an app with menus and it hasn't changed. */
 
@@ -988,25 +986,8 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * 
 		return;
 	}
 
-	entry_head = indicator_object_get_entries(INDICATOR_OBJECT(iapp));
-
-
-	for (entries = entry_head; entries != NULL; entries = g_list_next(entries)) {
-		IndicatorObjectEntry * entry = (IndicatorObjectEntry *)entries->data;
-
-		if (entry->label != NULL) {
-			gtk_widget_hide(GTK_WIDGET(entry->label));
-		}
-
-		if (entry->menu != NULL && gtk_menu_get_attach_widget(entry->menu) != NULL) {
-			gtk_menu_detach(entry->menu);
-		}
-
-		g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_REMOVED_ID, 0, entries->data, TRUE);
-	}
-
-	g_list_free(entry_head);
-
+	/* hide the entries that we're swapping out */
+	indicator_object_set_visible (INDICATOR_OBJECT(iapp), FALSE);
 	
 	/* Disconnect signals */
 	if (iapp->sig_entry_added != 0) {
@@ -1064,34 +1045,10 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenus * newdef, BamfWindow * 
 		                                           iapp);
 	}
 
-	/* Get our new list of entries.  Now we can go ahead and signal
-	   that each of them has been added */
+	/* show the entries that we're swapping in */
+	indicator_object_set_visible (INDICATOR_OBJECT(iapp), TRUE);
 
-	entry_head = indicator_object_get_entries(INDICATOR_OBJECT(iapp));
-
-	for (entries = entry_head; entries != NULL; entries = g_list_next(entries)) {
-		IndicatorObjectEntry * entry = (IndicatorObjectEntry *)entries->data;
-
-		if (iapp->default_app != NULL) {
-			window_menus_entry_restore(iapp->default_app, entry);
-		} else {
-			if (iapp->active_window == NULL) {
-				/* Desktop Menus */
-				window_menus_entry_restore(iapp->desktop_menu, entry);
-			} else {
-				/* Window Menus */
-				if (entry->label != NULL) {
-					gtk_widget_show(GTK_WIDGET(entry->label));
-				}
-			}
-		}
-
-		g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_ADDED_ID, 0, entries->data, TRUE);
-	}
-
-	g_list_free(entry_head);
-
-	/* Set up initial state for new entries if needed */
+		/* Set up initial state for new entries if needed */
 	if (iapp->default_app != NULL &&
             window_menus_get_status (iapp->default_app) != DBUSMENU_STATUS_NORMAL) {
 		window_status_changed (iapp->default_app,
