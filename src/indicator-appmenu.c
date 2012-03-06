@@ -40,6 +40,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "indicator-appmenu-marshal.h"
 #include "window-menu.h"
 #include "window-menu-dbusmenu.h"
+#include "window-menu-model.h"
 #include "dbus-shared.h"
 #include "gdk-get-func.h"
 
@@ -843,6 +844,32 @@ entry_activate (IndicatorObject * io, IndicatorObjectEntry * entry, guint timest
 	return entry_activate_window(io, entry, 0, timestamp);
 }
 
+/* Find the BAMF Window that is associated with that XID.  Unfortunately
+   this requires a bit of searching, don't do it too often */
+static BamfWindow *
+xid_to_bamf_window (IndicatorAppmenu * iapp, guint xid)
+{
+	GList * windows = bamf_matcher_get_windows(iapp->matcher);
+	GList * window;
+	BamfWindow * newwindow = NULL;
+
+	for (window = windows; window != NULL; window = g_list_next(window)) {
+		if (!BAMF_IS_WINDOW(window->data)) {
+			continue;
+		}
+
+		BamfWindow * testwindow = BAMF_WINDOW(window->data);
+
+		if (xid == bamf_window_get_xid(testwindow)) {
+			newwindow = testwindow;
+			break;
+		}
+	}
+	g_list_free(windows);
+
+	return newwindow;
+}
+
 /* Responds to a menuitem being activated on the panel. */
 static void
 entry_activate_window (IndicatorObject * io, IndicatorObjectEntry * entry, guint windowid, guint timestamp)
@@ -852,23 +879,7 @@ entry_activate_window (IndicatorObject * io, IndicatorObjectEntry * entry, guint
 	/* We need to force a focus change in this case as we probably
 	   just haven't gotten the signal from BAMF yet */
 	if (windowid != 0) {
-		GList * windows = bamf_matcher_get_windows(iapp->matcher);
-		GList * window;
-		BamfView * newwindow = NULL;
-
-		for (window = windows; window != NULL; window = g_list_next(window)) {
-			if (!BAMF_IS_WINDOW(window->data)) {
-				continue;
-			}
-
-			BamfWindow * testwindow = BAMF_WINDOW(window->data);
-
-			if (windowid == bamf_window_get_xid(testwindow)) {
-				newwindow = BAMF_VIEW(testwindow);
-				break;
-			}
-		}
-		g_list_free(windows);
+		BamfView * newwindow = BAMF_VIEW(xid_to_bamf_window(iapp, windowid));
 
 		if (newwindow != NULL) {
 			active_window_changed(iapp->matcher, BAMF_VIEW(iapp->active_window), newwindow, iapp);
