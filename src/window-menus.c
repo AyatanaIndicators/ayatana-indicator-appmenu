@@ -72,6 +72,7 @@ static void menu_entry_realized_child_added (DbusmenuMenuitem * parent, Dbusmenu
 static void menu_prop_changed       (DbusmenuMenuitem * item, const gchar * property, GVariant * value, gpointer user_data);
 static void menu_child_realized     (DbusmenuMenuitem * child, gpointer user_data);
 static void props_cb (GObject * object, GAsyncResult * res, gpointer user_data);
+static void window_menus_entry_restore(WindowMenus * wm, IndicatorObjectEntry * entry);
 
 G_DEFINE_TYPE (WindowMenus, window_menus, WINDOW_MENU_TYPE);
 
