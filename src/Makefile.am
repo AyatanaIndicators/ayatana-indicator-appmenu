@@ -31,8 +31,8 @@ libappmenu_la_SOURCES = \
 	indicator-appmenu-marshal.c \
 	window-menu.c \
 	window-menu.h \
-	window-menus.c \
-	window-menus.h \
+	window-menu-dbusmenu.c \
+	window-menu-dbusmenu.h \
 	window-menu-model.c \
 	window-menu-model.h \
 	gen-application-menu-renderer.xml.c \

@@ -172,3 +172,4 @@ create-db.c
 po/indicator-appmenu.pot
 libappmenu_la-window-menu.lo
 libappmenu_la-window-menu-model.lo
+libappmenu_la-window-menu-dbusmenu.lo

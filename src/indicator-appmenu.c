@@ -38,7 +38,8 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "gen-application-menu-registrar.xml.h"
 #include "gen-application-menu-renderer.xml.h"
 #include "indicator-appmenu-marshal.h"
-#include "window-menus.h"
+#include "window-menu.h"
+#include "window-menu-dbusmenu.h"
 #include "dbus-shared.h"
 #include "gdk-get-func.h"
 

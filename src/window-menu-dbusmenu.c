@@ -29,7 +29,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <glib.h>
 #include <gio/gio.h>
 
-#include "window-menus.h"
+#include "window-menu-dbusmenu.h"
 #include "indicator-appmenu-marshal.h"
 
 /* Private parts */
