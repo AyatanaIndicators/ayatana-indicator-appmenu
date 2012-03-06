@@ -72,7 +72,15 @@ static void menu_entry_realized_child_added (DbusmenuMenuitem * parent, Dbusmenu
 static void menu_prop_changed       (DbusmenuMenuitem * item, const gchar * property, GVariant * value, gpointer user_data);
 static void menu_child_realized     (DbusmenuMenuitem * child, gpointer user_data);
 static void props_cb (GObject * object, GAsyncResult * res, gpointer user_data);
-static void window_menus_entry_restore(WindowMenus * wm, IndicatorObjectEntry * entry);
+static GList *          get_entries      (WindowMenu * wm);
+static guint            get_location     (WindowMenu * wm, IndicatorObjectEntry * entry);
+static guint            get_xid          (WindowMenu * wm);
+static gchar *          get_path         (WindowMenu * wm);
+static gchar *          get_address      (WindowMenu * wm);
+static gboolean         get_error_state  (WindowMenu * wm);
+static WindowMenuStatus get_status       (WindowMenu * wm);
+static void             entry_restore    (WindowMenu * wm, IndicatorObjectEntry * entry);
+static void             entry_activate   (WindowMenu * wm, IndicatorObjectEntry * entry, guint timestamp);
 
 G_DEFINE_TYPE (WindowMenus, window_menus, WINDOW_MENU_TYPE);
 
@@ -85,6 +93,17 @@ window_menus_class_init (WindowMenusClass *klass)
 	g_type_class_add_private (klass, sizeof (WindowMenusPrivate));
 
 	object_class->dispose = window_menus_dispose;
+
+	WindowMenuClass * menu_class = WINDOW_MENU_CLASS(klass);
+	menu_class->get_entries = get_entries;
+	menu_class->get_location = get_location;
+	menu_class->get_xid = get_xid;
+	menu_class->get_path = get_path;
+	menu_class->get_address = get_address;
+	menu_class->get_error_state = get_error_state;
+	menu_class->get_status = get_status;
+	menu_class->entry_restore = entry_restore;
+	menu_class->entry_activate = entry_activate;
 
 	return;
 }
@@ -247,7 +266,7 @@ event_status (DbusmenuClient * client, DbusmenuMenuitem * mi, gchar * event, GVa
 
 		for (i = 0; i < priv->entries->len; i++) {
 			IndicatorObjectEntry * entry = g_array_index(priv->entries, IndicatorObjectEntry *, i);
-			window_menus_entry_restore(WINDOW_MENUS(user_data), entry);
+			entry_restore(WINDOW_MENU(user_data), entry);
 		}
 
 		if (priv->retry_timer != 0) {
@@ -333,13 +352,18 @@ status_changed (DbusmenuClient * client, GParamSpec * pspec, gpointer user_data)
 	g_signal_emit_by_name(G_OBJECT(user_data), WINDOW_MENU_SIGNAL_STATUS_CHANGED, dbusmenu_client_get_status (client));
 }
 
-DbusmenuStatus
-window_menus_get_status (WindowMenus * wm)
+WindowMenuStatus dbusmenu_status_table[] = {
+	[DBUSMENU_STATUS_NORMAL] = WINDOW_MENU_STATUS_NORMAL,
+	[DBUSMENU_STATUS_NOTICE] = WINDOW_MENU_STATUS_ACTIVE
+};
+
+static WindowMenuStatus
+get_status (WindowMenu * wm)
 {
 	g_return_val_if_fail(IS_WINDOW_MENUS(wm), DBUSMENU_STATUS_NORMAL);
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
 
-	return dbusmenu_client_get_status (DBUSMENU_CLIENT (priv->client));
+	return dbusmenu_status_table[dbusmenu_client_get_status (DBUSMENU_CLIENT (priv->client))];
 }
 
 /* Build a new window menus object and attach to the signals to build
@@ -429,9 +453,11 @@ out:
 }
 
 /* Get the location of this entry */
-guint
-window_menus_get_location (WindowMenus * wm, IndicatorObjectEntry * entry)
+static guint
+get_location (WindowMenu * wm, IndicatorObjectEntry * entry)
 {
+	g_return_val_if_fail(IS_WINDOW_MENUS(wm), 0);
+
 	if (entry == NULL) {
 		return 0;
 	}
@@ -452,8 +478,8 @@ window_menus_get_location (WindowMenus * wm, IndicatorObjectEntry * entry)
 }
 
 /* Get the entries that we have */
-GList *
-window_menus_get_entries (WindowMenus * wm)
+static GList *
+get_entries (WindowMenu * wm)
 {
 	g_return_val_if_fail(IS_WINDOW_MENUS(wm), NULL);
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
@@ -764,17 +790,19 @@ menu_entry_removed (DbusmenuMenuitem * root, DbusmenuMenuitem * oldentry, gpoint
 }
 
 /* Get the XID of this window */
-guint
-window_menus_get_xid (WindowMenus * wm)
+static guint
+get_xid (WindowMenu * wm)
 {
+	g_return_val_if_fail(IS_WINDOW_MENUS(wm), 0);
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
 	return priv->windowid;
 }
 
 /* Get the path for this object */
-gchar *
-window_menus_get_path (WindowMenus * wm)
+static gchar *
+get_path (WindowMenu * wm)
 {
+	g_return_val_if_fail(IS_WINDOW_MENUS(wm), NULL);
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
 	GValue obj = {0};
 	g_value_init(&obj, G_TYPE_STRING);
@@ -785,9 +813,10 @@ window_menus_get_path (WindowMenus * wm)
 }
 
 /* Get the address of this object */
-gchar *
-window_menus_get_address (WindowMenus * wm)
+static gchar *
+get_address (WindowMenu * wm)
 {
+	g_return_val_if_fail(IS_WINDOW_MENUS(wm), NULL);
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
 	GValue obj = {0};
 	g_value_init(&obj, G_TYPE_STRING);
@@ -798,8 +827,8 @@ window_menus_get_address (WindowMenus * wm)
 }
 
 /* Return whether we're in an error state or not */
-gboolean
-window_menus_get_error_state (WindowMenus * wm)
+static gboolean
+get_error_state (WindowMenu * wm)
 {
 	g_return_val_if_fail(IS_WINDOW_MENUS(wm), TRUE);
 	WindowMenusPrivate * priv = WINDOW_MENUS_GET_PRIVATE(wm);
@@ -809,9 +838,10 @@ window_menus_get_error_state (WindowMenus * wm)
 /* Regain whether we're supposed to be hidden or disabled, we
    want to keep that if that's the case, otherwise bring back
    to the base state */
-void
-window_menus_entry_restore (WindowMenus * wm, IndicatorObjectEntry * entry)
+static void
+entry_restore (WindowMenu * wm, IndicatorObjectEntry * entry)
 {
+	g_return_if_fail(IS_WINDOW_MENUS(wm));
 	WMEntry * wmentry = (WMEntry *)entry;
 
 	if (entry->label != NULL) {
@@ -837,9 +867,10 @@ window_menus_entry_restore (WindowMenus * wm, IndicatorObjectEntry * entry)
 
 /* Signaled when the menu item is activated on the panel so we
    can pass it down the stack. */
-void
-window_menus_entry_activate (WindowMenus * wm, IndicatorObjectEntry * entry, guint timestamp)
+static void
+entry_activate (WindowMenu * wm, IndicatorObjectEntry * entry, guint timestamp)
 {
+	g_return_if_fail(IS_WINDOW_MENUS(wm));
 	WMEntry * wme = (WMEntry *)entry;
 	dbusmenu_menuitem_send_about_to_show(wme->mi, NULL, NULL);
 	return;
