@@ -3,9 +3,26 @@
 #endif
 
 #include "window-menu.h"
+#include "indicator-appmenu-marshal.h"
 
 #define WINDOW_MENU_GET_PRIVATE(o) \
 (G_TYPE_INSTANCE_GET_PRIVATE ((o), WINDOW_MENU_TYPE, WindowMenuPrivate))
+
+/* Signals */
+
+enum {
+	ENTRY_ADDED,
+	ENTRY_REMOVED,
+	ERROR_STATE,
+	STATUS_CHANGED,
+	SHOW_MENU,
+	A11Y_UPDATE,
+	LAST_SIGNAL
+};
+
+static guint signals[LAST_SIGNAL] = { 0 };
+
+/* Prototypes */
 
 static void window_menu_class_init (WindowMenuClass *klass);
 static void window_menu_init       (WindowMenu *self);
@@ -22,12 +39,57 @@ window_menu_class_init (WindowMenuClass *klass)
 	object_class->dispose = window_menu_dispose;
 	object_class->finalize = window_menu_finalize;
 
+	/* Signals */
+	signals[ENTRY_ADDED] =  g_signal_new(WINDOW_MENU_SIGNAL_ENTRY_ADDED,
+	                                      G_TYPE_FROM_CLASS(klass),
+	                                      G_SIGNAL_RUN_LAST,
+	                                      G_STRUCT_OFFSET (WindowMenuClass, entry_added),
+	                                      NULL, NULL,
+	                                      g_cclosure_marshal_VOID__POINTER,
+	                                      G_TYPE_NONE, 1, G_TYPE_POINTER);
+	signals[ENTRY_REMOVED] =  g_signal_new(WINDOW_MENU_SIGNAL_ENTRY_REMOVED,
+	                                      G_TYPE_FROM_CLASS(klass),
+	                                      G_SIGNAL_RUN_LAST,
+	                                      G_STRUCT_OFFSET (WindowMenuClass, entry_removed),
+	                                      NULL, NULL,
+	                                      g_cclosure_marshal_VOID__POINTER,
+	                                      G_TYPE_NONE, 1, G_TYPE_POINTER);
+	signals[ERROR_STATE] =   g_signal_new(WINDOW_MENU_SIGNAL_ERROR_STATE,
+	                                      G_TYPE_FROM_CLASS(klass),
+	                                      G_SIGNAL_RUN_LAST,
+	                                      G_STRUCT_OFFSET (WindowMenuClass, error_state),
+	                                      NULL, NULL,
+	                                      g_cclosure_marshal_VOID__BOOLEAN,
+	                                      G_TYPE_NONE, 1, G_TYPE_BOOLEAN, G_TYPE_NONE);
+	signals[STATUS_CHANGED] = g_signal_new(WINDOW_MENU_SIGNAL_STATUS_CHANGED,
+	                                      G_TYPE_FROM_CLASS(klass),
+	                                      G_SIGNAL_RUN_LAST,
+	                                      G_STRUCT_OFFSET (WindowMenuClass, status_changed),
+	                                      NULL, NULL,
+	                                      g_cclosure_marshal_VOID__INT,
+	                                      G_TYPE_NONE, 1, G_TYPE_INT, G_TYPE_NONE);
+	signals[SHOW_MENU] =     g_signal_new(WINDOW_MENU_SIGNAL_SHOW_MENU,
+	                                      G_TYPE_FROM_CLASS(klass),
+	                                      G_SIGNAL_RUN_LAST,
+	                                      G_STRUCT_OFFSET (WindowMenuClass, show_menu),
+	                                      NULL, NULL,
+	                                      _indicator_appmenu_marshal_VOID__POINTER_UINT,
+	                                      G_TYPE_NONE, 2, G_TYPE_POINTER, G_TYPE_UINT, G_TYPE_NONE);
+	signals[A11Y_UPDATE] =   g_signal_new(WINDOW_MENU_SIGNAL_A11Y_UPDATE,
+	                                      G_TYPE_FROM_CLASS(klass),
+	                                      G_SIGNAL_RUN_LAST,
+	                                      G_STRUCT_OFFSET (WindowMenuClass, a11y_update),
+	                                      NULL, NULL,
+	                                      _indicator_appmenu_marshal_VOID__POINTER,
+	                                      G_TYPE_NONE, 1, G_TYPE_POINTER, G_TYPE_NONE);
+
 	return;
 }
 
 static void
 window_menu_init (WindowMenu *self)
 {
+
 
 	return;
 }
