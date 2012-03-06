@@ -239,6 +239,7 @@ data/Makefile
 tools/Makefile
 po/Makefile.in
 tests/Makefile
+tests/manual/Makefile
 docs/Makefile
 docs/man/Makefile
 docs/devel/Makefile
