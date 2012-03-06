@@ -29,6 +29,8 @@ libappmenu_la_SOURCES = \
 	MwmUtil.h \
 	indicator-appmenu.c \
 	indicator-appmenu-marshal.c \
+	window-menu.c \
+	window-menu.h \
 	window-menus.c \
 	window-menus.h \
 	window-menu-model.c \
