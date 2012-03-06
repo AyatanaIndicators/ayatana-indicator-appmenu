@@ -58,20 +58,6 @@ struct _WMEntry {
 #define WINDOW_MENUS_GET_PRIVATE(o) \
 (G_TYPE_INSTANCE_GET_PRIVATE ((o), WINDOW_MENUS_TYPE, WindowMenusPrivate))
 
-/* Signals */
-
-enum {
-	ENTRY_ADDED,
-	ENTRY_REMOVED,
-	ERROR_STATE,
-	STATUS_CHANGED,
-	SHOW_MENU,
-	A11Y_UPDATE,
-	LAST_SIGNAL
-};
-
-static guint signals[LAST_SIGNAL] = { 0 };
-
 /* Prototypes */
 
 static void window_menus_dispose    (GObject *object);
@@ -98,50 +84,6 @@ window_menus_class_init (WindowMenusClass *klass)
 	g_type_class_add_private (klass, sizeof (WindowMenusPrivate));
 
 	object_class->dispose = window_menus_dispose;
-
-	/* Signals */
-	signals[ENTRY_ADDED] =  g_signal_new(WINDOW_MENUS_SIGNAL_ENTRY_ADDED,
-	                                      G_TYPE_FROM_CLASS(klass),
-	                                      G_SIGNAL_RUN_LAST,
-	                                      G_STRUCT_OFFSET (WindowMenusClass, entry_added),
-	                                      NULL, NULL,
-	                                      g_cclosure_marshal_VOID__POINTER,
-	                                      G_TYPE_NONE, 1, G_TYPE_POINTER);
-	signals[ENTRY_REMOVED] =  g_signal_new(WINDOW_MENUS_SIGNAL_ENTRY_REMOVED,
-	                                      G_TYPE_FROM_CLASS(klass),
-	                                      G_SIGNAL_RUN_LAST,
-	                                      G_STRUCT_OFFSET (WindowMenusClass, entry_removed),
-	                                      NULL, NULL,
-	                                      g_cclosure_marshal_VOID__POINTER,
-	                                      G_TYPE_NONE, 1, G_TYPE_POINTER);
-	signals[ERROR_STATE] =   g_signal_new(WINDOW_MENUS_SIGNAL_ERROR_STATE,
-	                                      G_TYPE_FROM_CLASS(klass),
-	                                      G_SIGNAL_RUN_LAST,
-	                                      G_STRUCT_OFFSET (WindowMenusClass, error_state),
-	                                      NULL, NULL,
-	                                      g_cclosure_marshal_VOID__BOOLEAN,
-	                                      G_TYPE_NONE, 1, G_TYPE_BOOLEAN, G_TYPE_NONE);
-	signals[STATUS_CHANGED] = g_signal_new(WINDOW_MENUS_SIGNAL_STATUS_CHANGED,
-	                                      G_TYPE_FROM_CLASS(klass),
-	                                      G_SIGNAL_RUN_LAST,
-	                                      G_STRUCT_OFFSET (WindowMenusClass, status_changed),
-	                                      NULL, NULL,
-	                                      g_cclosure_marshal_VOID__INT,
-	                                      G_TYPE_NONE, 1, G_TYPE_INT, G_TYPE_NONE);
-	signals[SHOW_MENU] =     g_signal_new(WINDOW_MENUS_SIGNAL_SHOW_MENU,
-	                                      G_TYPE_FROM_CLASS(klass),
-	                                      G_SIGNAL_RUN_LAST,
-	                                      G_STRUCT_OFFSET (WindowMenusClass, show_menu),
-	                                      NULL, NULL,
-	                                      _indicator_appmenu_marshal_VOID__POINTER_UINT,
-	                                      G_TYPE_NONE, 2, G_TYPE_POINTER, G_TYPE_UINT, G_TYPE_NONE);
-	signals[A11Y_UPDATE] =   g_signal_new(WINDOW_MENUS_SIGNAL_A11Y_UPDATE,
-	                                      G_TYPE_FROM_CLASS(klass),
-	                                      G_SIGNAL_RUN_LAST,
-	                                      G_STRUCT_OFFSET (WindowMenusClass, a11y_update),
-	                                      NULL, NULL,
-	                                      _indicator_appmenu_marshal_VOID__POINTER,
-	                                      G_TYPE_NONE, 1, G_TYPE_POINTER, G_TYPE_NONE);
 
 	return;
 }
@@ -208,7 +150,7 @@ free_entries(GObject *object, gboolean should_signal)
 			entry = g_array_index(priv->entries, IndicatorObjectEntry *, 0);
 			g_array_remove_index(priv->entries, 0);
 			if (should_signal) {			
-				g_signal_emit(object, signals[ENTRY_REMOVED], 0, entry, TRUE);
+				g_signal_emit_by_name(object, WINDOW_MENU_SIGNAL_ENTRY_REMOVED, entry, TRUE);
 			}
 			entry_free(entry);
 		}
@@ -300,7 +242,7 @@ event_status (DbusmenuClient * client, DbusmenuMenuitem * mi, gchar * event, GVa
 	if (error == NULL) {
 		g_debug("Error state repaired");
 		priv->error_state = FALSE;
-		g_signal_emit(G_OBJECT(user_data), signals[ERROR_STATE], 0, priv->error_state, TRUE);
+		g_signal_emit_by_name(G_OBJECT(user_data), WINDOW_MENU_SIGNAL_ERROR_STATE, priv->error_state, TRUE);
 
 		for (i = 0; i < priv->entries->len; i++) {
 			IndicatorObjectEntry * entry = g_array_index(priv->entries, IndicatorObjectEntry *, i);
@@ -318,7 +260,7 @@ event_status (DbusmenuClient * client, DbusmenuMenuitem * mi, gchar * event, GVa
 	/* Uhg, means that events are breaking, now we need to
 	   try and handle that case. */
 	priv->error_state = TRUE;
-	g_signal_emit(G_OBJECT(user_data), signals[ERROR_STATE], 0, priv->error_state, TRUE);
+	g_signal_emit_by_name(G_OBJECT(user_data), WINDOW_MENU_SIGNAL_ERROR_STATE, priv->error_state, TRUE);
 
 	for (i = 0; i < priv->entries->len; i++) {
 		IndicatorObjectEntry * entry = g_array_index(priv->entries, IndicatorObjectEntry *, i);
@@ -377,7 +319,7 @@ item_activate (DbusmenuClient * client, DbusmenuMenuitem * item, guint timestamp
 		return;
 	}
 
-	g_signal_emit(G_OBJECT(user_data), signals[SHOW_MENU], 0, entry, timestamp, TRUE);
+	g_signal_emit_by_name(G_OBJECT(user_data), WINDOW_MENU_SIGNAL_SHOW_MENU, entry, timestamp, TRUE);
 
 	return;
 }
@@ -387,7 +329,7 @@ item_activate (DbusmenuClient * client, DbusmenuMenuitem * item, guint timestamp
 static void
 status_changed (DbusmenuClient * client, GParamSpec * pspec, gpointer user_data)
 {
-	g_signal_emit(G_OBJECT(user_data), signals[STATUS_CHANGED], 0, dbusmenu_client_get_status (client));
+	g_signal_emit_by_name(G_OBJECT(user_data), WINDOW_MENU_SIGNAL_STATUS_CHANGED, dbusmenu_client_get_status (client));
 }
 
 DbusmenuStatus
@@ -696,7 +638,7 @@ menu_prop_changed (DbusmenuMenuitem * item, const gchar * property, GVariant * v
 		entry->accessible_desc = g_variant_get_string(value, NULL);
 
 		if (wmentry->wm != NULL) {
-			g_signal_emit(G_OBJECT(wmentry->wm), A11Y_UPDATE, 0, entry, TRUE);
+			g_signal_emit_by_name(G_OBJECT(wmentry->wm), WINDOW_MENU_SIGNAL_A11Y_UPDATE, entry, TRUE);
 		}
 	}
 
@@ -770,7 +712,7 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 
 	g_array_append_val(priv->entries, wmentry);
 
-	g_signal_emit(G_OBJECT(wm), signals[ENTRY_ADDED], 0, entry, TRUE);
+	g_signal_emit_by_name(G_OBJECT(wm), WINDOW_MENU_SIGNAL_ENTRY_ADDED, entry, TRUE);
 
 	g_object_unref(newentry);
 
@@ -807,7 +749,7 @@ menu_entry_removed (DbusmenuMenuitem * root, DbusmenuMenuitem * oldentry, gpoint
 
 	if (entry != NULL) {
 		g_array_remove_index(priv->entries, position);
-		g_signal_emit(G_OBJECT(user_data), signals[ENTRY_REMOVED], 0, entry, TRUE);
+		g_signal_emit_by_name(G_OBJECT(user_data), WINDOW_MENU_SIGNAL_ENTRY_REMOVED, entry, TRUE);
 		entry_free(entry);
 	} else {
 		/* We've been called before menu_child_realized fired,
