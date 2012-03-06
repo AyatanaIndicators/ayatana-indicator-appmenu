@@ -1202,7 +1202,7 @@ register_window (IndicatorAppmenu * iapp, guint windowid, const gchar * objectpa
 	g_hash_table_remove(iapp->destruction_timers, GUINT_TO_POINTER(windowid));
 
 	if (g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid)) == NULL && windowid != 0) {
-		WindowMenu * wm = WINDOW_MENU(window_menus_new(windowid, sender, objectpath));
+		WindowMenu * wm = WINDOW_MENU(window_menu_dbusmenu_new(windowid, sender, objectpath));
 		g_return_val_if_fail(wm != NULL, FALSE);
 
 		g_hash_table_insert(iapp->apps, GUINT_TO_POINTER(windowid), wm);
