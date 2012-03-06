@@ -27,9 +27,9 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 G_BEGIN_DECLS
 
-#define WINDOW_MENUS_TYPE            (window_menu_get_type ())
-#define WINDOW_MENUS(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), WINDOW_MENU_TYPE, WindowMenu))
-#define WINDOW_MENUS_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass), WINDOW_MENU_TYPE, WindowMenuClass))
+#define WINDOW_MENU_TYPE             (window_menu_get_type ())
+#define WINDOW_MENU(obj)             (G_TYPE_CHECK_INSTANCE_CAST ((obj), WINDOW_MENU_TYPE, WindowMenu))
+#define WINDOW_MENU_CLASS(klass)     (G_TYPE_CHECK_CLASS_CAST ((klass), WINDOW_MENU_TYPE, WindowMenuClass))
 #define IS_WINDOW_MENU(obj)          (G_TYPE_CHECK_INSTANCE_TYPE ((obj), WINDOW_MENU_TYPE))
 #define IS_WINDOW_MENU_CLASS(klass)  (G_TYPE_CHECK_CLASS_TYPE ((klass), WINDOW_MENU_TYPE))
 #define WINDOW_MENU_GET_CLASS(obj)   (G_TYPE_INSTANCE_GET_CLASS ((obj), WINDOW_MENU_TYPE, WindowMenuClass))

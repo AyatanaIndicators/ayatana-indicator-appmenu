@@ -25,6 +25,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <glib-object.h>
 #include <libindicator/indicator-object.h>
 #include <libdbusmenu-glib/client.h>
+#include "window-menu.h"
 
 G_BEGIN_DECLS
 
@@ -46,7 +47,7 @@ typedef struct _WindowMenus      WindowMenus;
 typedef struct _WindowMenusClass WindowMenusClass;
 
 struct _WindowMenusClass {
-	GObjectClass parent_class;
+	WindowMenuClass parent_class;
 
 	/* Signals */
 	void (*entry_added)   (WindowMenus * wm, IndicatorObjectEntry * entry, gpointer user_data);
@@ -60,7 +61,7 @@ struct _WindowMenusClass {
 };
 
 struct _WindowMenus {
-	GObject parent;
+	WindowMenu parent;
 };
 
 GType window_menus_get_type (void);

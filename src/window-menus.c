@@ -87,7 +87,7 @@ static void menu_prop_changed       (DbusmenuMenuitem * item, const gchar * prop
 static void menu_child_realized     (DbusmenuMenuitem * child, gpointer user_data);
 static void props_cb (GObject * object, GAsyncResult * res, gpointer user_data);
 
-G_DEFINE_TYPE (WindowMenus, window_menus, G_TYPE_OBJECT);
+G_DEFINE_TYPE (WindowMenus, window_menus, WINDOW_MENU_TYPE);
 
 /* Build the one-time class */
 static void
