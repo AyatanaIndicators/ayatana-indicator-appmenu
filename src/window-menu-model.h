@@ -3,6 +3,7 @@
 
 #include <glib.h>
 #include <glib-object.h>
+#include "window-menu.h"
 
 G_BEGIN_DECLS
 
@@ -18,11 +19,11 @@ typedef struct _WindowMenuModelClass   WindowMenuModelClass;
 typedef struct _WindowMenuModelPrivate WindowMenuModelPrivate;
 
 struct _WindowMenuModelClass {
-	GObjectClass parent_class;
+	WindowMenuClass parent_class;
 };
 
 struct _WindowMenuModel {
-	GObject parent;
+	WindowMenu parent;
 
 	WindowMenuModelPrivate * priv;
 };

@@ -16,7 +16,7 @@ static void window_menu_model_init       (WindowMenuModel *self);
 static void window_menu_model_dispose    (GObject *object);
 static void window_menu_model_finalize   (GObject *object);
 
-G_DEFINE_TYPE (WindowMenuModel, window_menu_model, G_TYPE_OBJECT);
+G_DEFINE_TYPE (WindowMenuModel, window_menu_model, WINDOW_MENU_TYPE);
 
 static void
 window_menu_model_class_init (WindowMenuModelClass *klass)
