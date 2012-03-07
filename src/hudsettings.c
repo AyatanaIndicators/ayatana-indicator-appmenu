@@ -22,6 +22,65 @@
 
 #include <gio/gio.h>
 
+/**
+ * SECTION:hudsettings
+ * @title: HudSettings
+ * @short_description: tunable parameters
+ *
+ * #HudSettings is a structure that contains the value of several
+ * tunable parameters that affect the behaviour of various components of
+ * the HUD.
+ *
+ * This structure exists for two reasons.
+ *
+ * The first reason is that caching these values in local variables
+ * eliminates the need to look them up from #GSettings on each use.
+ * This vastly improves the performance of the matching algorithms (as
+ * many of these values are used quite a lot from within them).
+ *
+ * The second reason is to improve testability.  The testcases are able
+ * to hardcode sane values for the settings without worrying about
+ * changes that the user may have made to their local configuration
+ * (which could otherwise cause spurious test failures).
+ **/
+
+/**
+ * HudSettings:
+ * @store_usage_data: if usage tracking should be performed
+ * @indicator_penalty: the percentage by which to increase the distance
+ *   of indicators when sorting the results list
+ * @max_distance: the maximum distance value we consider as being a
+ *   matching result
+ * @add_penalty: the penalty incurred by a character in the search term
+ *   that does not exist in the item being matched
+ * @add_penalty_pre: the penalty incurred by a character in the search
+ *   term that does not exist in the item being matched when that
+ *   character comes at the beginning of the term
+ * @drop_penalty: the penalty incurred by a character missing from the
+ *   search string as compared to the item being matched
+ * @drop_penalty_end: the penalty incurred by a character missing from
+ *   the search string as compared to the item being matched when the
+ *   character is at the end of the item (ie: the search term is a
+ *   prefix of the item)
+ * @transpose_penalty: the penalty incurred for transposed characters
+ * @swap_penalty: the penalty incurred for the substitution of one
+ *   character for another
+ * @swap_penalty_case: the penalty incurred for the substitution of one
+ *   character for another when the characters differ only in case
+ *
+ * This structure contains the value of several tunable parameters that
+ * affect the behaviour of various components of the HUD.
+ **/
+
+/**
+ * hud_settings:
+ *
+ * The #HudSettings in effect.
+ *
+ * hud_settings_init() can be used to keep these values in sync with
+ * #GSettings.  For testing, it may make sense to set these values
+ * directly.
+ **/
 HudSettings hud_settings;
 
 static void
@@ -57,6 +116,14 @@ hud_search_settings_refresh (GSettings *settings)
            hud_settings.swap_penalty_case);
 }
 
+/**
+ * hud_settings_init:
+ *
+ * Initialises the #HudSettings using #GSettings and keeps it in sync.
+ *
+ * If #GSettings indicates that the settings have changed, they will be
+ * updated.
+ **/
 void
 hud_settings_init (void)
 {

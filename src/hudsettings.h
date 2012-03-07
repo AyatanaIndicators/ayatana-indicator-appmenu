@@ -21,7 +21,9 @@
 
 #include <glib.h>
 
-typedef struct
+typedef struct _HudSettings HudSettings;
+
+struct _HudSettings
 {
   gboolean store_usage_data;
 
@@ -35,7 +37,7 @@ typedef struct
   guint transpose_penalty;
   guint swap_penalty;
   guint swap_penalty_case;
-} HudSettings;
+};
 
 extern HudSettings hud_settings;
 

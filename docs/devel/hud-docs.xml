@@ -10,6 +10,8 @@
     <title>hud-service Hacking Guide</title>
   </bookinfo>
 
+  <xi:include href="hud-overview.xml"/>
+
   <chapter>
     <title>Data Types</title>
     <xi:include href="xml/hudstringlist.xml"/>
@@ -18,8 +20,8 @@
   <chapter>
     <title>Queries, Results, Items</title>
     <xi:include href="xml/huditem.xml"/>
-    <xi:include href="xml/hudquery.xml"/>
     <xi:include href="xml/hudresult.xml"/>
+    <xi:include href="xml/hudquery.xml"/>
   </chapter>
 
   <chapter>
@@ -28,12 +30,14 @@
     <xi:include href="xml/hudsourcelist.xml"/>
     <xi:include href="xml/hudwindowsource.xml"/>
     <xi:include href="xml/hudindicatorsource.xml"/>
+    <xi:include href="xml/hudappindicatorsource.xml"/>
     <xi:include href="xml/huddbusmenucollector.xml"/>
     <xi:include href="xml/hudmenumodelcollector.xml"/>
   </chapter>
 
   <chapter>
     <title>Utility API</title>
+    <xi:include href="xml/hudsettings.xml"/>
     <xi:include href="xml/hudappmenuregistrar.xml"/>
   </chapter>
 

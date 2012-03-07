@@ -37,6 +37,6 @@ HudDbusmenuCollector *  hud_dbusmenu_collector_new_for_endpoint         (const g
                                                                          const gchar *object_path);
 HudDbusmenuCollector *  hud_dbusmenu_collector_new_for_window           (BamfWindow  *window);
 void                    hud_dbusmenu_collector_set_prefix               (HudDbusmenuCollector *collector,
-                                                                         const gchar          *title);
+                                                                         const gchar          *prefix);
 
 #endif /* __HUD_DBUSMENU_COLLECTOR_H__ */

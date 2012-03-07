@@ -444,6 +444,8 @@ hud_dbusmenu_collector_class_init (HudDbusmenuCollectorClass *class)
 
 /**
  * hud_dbusmenu_collector_new_for_endpoint:
+ * @prefix: the title to prefix to all items
+ * @penalty: the penalty to apply to all results
  * @bus_name: a D-Bus bus name
  * @object_path: an object path at the destination given by @bus_name
  *
@@ -453,6 +455,14 @@ hud_dbusmenu_collector_class_init (HudDbusmenuCollectorClass *class)
  * are performed against the contents of those menus.
  *
  * This call is intended to be used for indicators.
+ *
+ * If @prefix is non-%NULL (which, for indicators, it ought to be), then
+ * it is prefixed to every item created by the collector.
+ *
+ * If @penalty is non-zero then all results returned from the collector
+ * have their distance increased by a percentage equal to the penalty.
+ * This allows items from indicators to score lower than they would
+ * otherwise.
  *
  * Returns: a new #HudDbusmenuCollector
  **/
@@ -498,6 +508,16 @@ hud_dbusmenu_collector_new_for_window (BamfWindow *window)
   return collector;
 }
 
+/**
+ * hud_dbusmenu_collector_set_prefix:
+ * @collector: a #HudDbusmenuCollector
+ * @prefix: the new prefix to use
+ *
+ * Changes the prefix applied to all items of the collector.
+ *
+ * This will involve destroying all of the items and recreating them
+ * (since each item's prefix has to be changed).
+ **/
 void
 hud_dbusmenu_collector_set_prefix (HudDbusmenuCollector *collector,
                                    const gchar          *prefix)

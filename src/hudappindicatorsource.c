@@ -29,31 +29,13 @@
 #include "hudsource.h"
 
 /**
- * SECTION:hudappmenusource
+ * SECTION:hudappindicatorsource
  * @title: HudAppIndicatorSource
- * @short_description: client for the com.canonical.AppMenu.Registrar
- *   D-Bus service
+ * @short_description: a #HudSource to search through the application
+ *   indicators
  *
- * The #HudAppIndicatorSource is a singleton object that monitors the
- * com.canonical.AppMenu.Registrar D-Bus service.
- *
- * On instantiation, a D-Bus name watch is setup for the source.
- * When the source is found to exist, a local copy is made of the
- * windows and menus that the source knows about.  Change
- * notifications are also monitored to keep the local cache in sync.
- *
- * After that point, all queries for information from the source are
- * satisfied from the local cache, without blocking.
- *
- * Information is acquired from #HudAppIndicatorSource by using
- * hud_app_indicator_source_add_observer().  This immediately calls a
- * callback with the initial information and makes future calls to the
- * same callback if the information is found to have changed.
- *
- * If the source is offline or the information is not yet available
- * at the time of the original query, the window will initially be
- * reported as having no menu but a change notification will arrive when
- * the proper information becomes available.
+ * #HudAppIndicatorSource searches through the menus of application
+ * indicators.
  **/
 
 /**
@@ -375,6 +357,13 @@ hud_app_indicator_source_class_init (HudAppIndicatorSourceClass *class)
   class->finalize = hud_app_indicator_source_finalize;
 }
 
+/**
+ * hud_app_indicator_source_new:
+ *
+ * Creates a #HudAppIndicatorSource.
+ *
+ * Returns: a new #HudAppIndicatorSource
+ **/
 HudAppIndicatorSource *
 hud_app_indicator_source_new (void)
 {

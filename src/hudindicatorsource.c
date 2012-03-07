@@ -26,6 +26,22 @@
 #include "huddbusmenucollector.h"
 #include "hudsource.h"
 
+/**
+ * SECTION:hudindicatorsource
+ * @title:HudIndicatorSource
+ * @short_description: a #HudSource to search through the menus of
+ *   indicators
+ *
+ * #HudIndicatorSource searches through the menu items of the
+ * indicators.
+ **/
+
+/**
+ * HudIndicatorSource:
+ *
+ * This is an opaque structure type.
+ **/
+
 typedef struct
 {
   const gchar *dbus_name;
@@ -80,23 +96,6 @@ typedef struct
   HudSource *collector;
 } HudIndicatorSourceIndicator;
 
-/**
- * SECTION:hudindicatorsource
- * @title:HudIndicatorSource
- * @short_description: a #HudSource to search through the menus of
- *   indicators
- *
- * @HudIndicatorSource searches through the menu items of the
- * indicators.
- *
- * Actually, that's a lie.  Presently it does nothing at all.
- **/
-
-/**
- * HudIndicatorSource:
- *
- * This is an opaque structure type.
- **/
 struct _HudIndicatorSource
 {
   GObject parent_instance;

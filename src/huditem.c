@@ -89,6 +89,7 @@ hud_item_class_init (HudItemClass *class)
  * @g_type: a #GType
  * @tokens: the search tokens for the item
  * @desktop_file: the desktop file of the provider of the item
+ * @enabled: if the item is enabled
  *
  * This is the Vala-style chain-up constructor corresponding to
  * hud_item_new().  @g_type must be a subtype of #HudItem.
@@ -119,8 +120,12 @@ hud_item_construct (GType          g_type,
  * hud_item_new:
  * @tokens: the search tokens for the item
  * @desktop_file: the desktop file of the provider of the item
+ * @enabled: if the item is enabled
  *
  * Creates a new #HudItem.
+ *
+ * If @enabled is %FALSE then the item will never be in the result of a
+ * search.
  *
  * Returns: a new #HudItem
  **/
