@@ -1,0 +1,54 @@
+Test Firefox Menus
+==================
+These test show that the Firefox menus work in indicator-appmenu
+
+Test About Item
+---------------
+
+#. Start Firefox
+#. Select Help > About Firefox
+
+Outcome
+ A small window should appear with the Firefox logo and version in it
+
+Test Bookmark
+-------------
+
+#. Start Firefox
+#. Navigate to http://ubuntu.com
+#. Select Bookmarks > Bookmark this Page
+
+Outcome
+ A small dialog should appear with the option to bookmark this page
+
+Test Bookmarking
+----------------
+
+#. Start Firefox
+#. Ensure there is no "Homepage | Ubuntu" entry in the Bookmarks menu
+#. Navigate to http://ubuntu.com
+#. Select Bookmarks > Bookmark this Page
+#. Click on "Done" in this dialog
+#. Open the "Bookmarks" menu
+
+Outcome
+ An entry for "Homepage | Ubuntu" should now appear in the Bookmarks menu
+
+Test History
+----------------
+
+#. Start Firefox
+#. Navigate to http://canonical.com
+#. Click on "About Canonical"
+#. Click on "About Ubuntu"
+#. Click on "Enterprise Services"
+#. Click on "Engineering Services"
+#. Click on "Consumer Services"
+#. Click on "Partners"
+#. Open the "History" menu
+
+Outcome
+ The history menu should contain entries, from top to bottom, that are
+ "Partners", "Consumer Services", "Engineering Services", "Enterprise
+ Services", "About Ubuntu", "About Canonical" and "Canonical Homepage".
+ All entries should have the Canonical logo.

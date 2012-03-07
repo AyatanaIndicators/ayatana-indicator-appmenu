@@ -1,0 +1,250 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>HudResult</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.76.1">
+<link rel="home" href="index.html" title="hud-service Hacking Guide">
+<link rel="up" href="ch03.html" title="Queries, Results, Items">
+<link rel="prev" href="HudItem.html" title="HudItem">
+<link rel="next" href="HudQuery.html" title="HudQuery">
+<meta name="generator" content="GTK-Doc V1.18 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="2">
+<tr valign="middle">
+<td><a accesskey="p" href="HudItem.html"><img src="left.png" width="24" height="24" border="0" alt="Prev"></a></td>
+<td><a accesskey="u" href="ch03.html"><img src="up.png" width="24" height="24" border="0" alt="Up"></a></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="24" height="24" border="0" alt="Home"></a></td>
+<th width="100%" align="center">hud-service Hacking Guide</th>
+<td><a accesskey="n" href="HudQuery.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
+</tr>
+<tr><td colspan="5" class="shortcuts">
+<a href="#HudResult.synopsis" class="shortcut">Top</a>
+                   | 
+                  <a href="#HudResult.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#HudResult.object-hierarchy" class="shortcut">Object Hierarchy</a>
+</td></tr>
+</table>
+<div class="refentry">
+<a name="HudResult"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="HudResult.top_of_page"></a>HudResult</span></h2>
+<p>HudResult — a search result: a <a class="link" href="HudItem.html" title="HudItem"><span class="type">HudItem</span></a> plus metadata about
+  why it matched</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="HudResult.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">                    <a class="link" href="HudResult.html#HudResult-struct" title="HudResult">HudResult</a>;
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>               <a class="link" href="HudResult.html#hud-result-get-distance" title="hud_result_get_distance ()">hud_result_get_distance</a>             (<em class="parameter"><code><a class="link" href="HudResult.html" title="HudResult"><span class="type">HudResult</span></a> *result</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> max_usage</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       <a class="link" href="HudResult.html#hud-result-get-html-description" title="hud_result_get_html_description ()">hud_result_get_html_description</a>     (<em class="parameter"><code><a class="link" href="HudResult.html" title="HudResult"><span class="type">HudResult</span></a> *result</code></em>);
+<a class="link" href="HudResult.html" title="HudResult"><span class="returnvalue">HudResult</span></a> *         <a class="link" href="HudResult.html#hud-result-get-if-matched" title="hud_result_get_if_matched ()">hud_result_get_if_matched</a>           (<em class="parameter"><code><a class="link" href="HudItem.html" title="HudItem"><span class="type">HudItem</span></a> *item</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *search_string</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> penalty</code></em>);
+<a class="link" href="HudItem.html" title="HudItem"><span class="returnvalue">HudItem</span></a> *           <a class="link" href="HudResult.html#hud-result-get-item" title="hud_result_get_item ()">hud_result_get_item</a>                 (<em class="parameter"><code><a class="link" href="HudResult.html" title="HudResult"><span class="type">HudResult</span></a> *result</code></em>);
+<a class="link" href="HudResult.html" title="HudResult"><span class="returnvalue">HudResult</span></a> *         <a class="link" href="HudResult.html#hud-result-new" title="hud_result_new ()">hud_result_new</a>                      (<em class="parameter"><code><a class="link" href="HudItem.html" title="HudItem"><span class="type">HudItem</span></a> *item</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *search_string</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> penalty</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="HudResult.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----HudResult
+</pre>
+</div>
+<div class="refsect1">
+<a name="HudResult.description"></a><h2>Description</h2>
+<p>
+A <a class="link" href="HudResult.html" title="HudResult"><span class="type">HudResult</span></a> is a wrapper around a <a class="link" href="HudItem.html" title="HudItem"><span class="type">HudItem</span></a> plus information about
+why (and how closely) it matched a particular search.
+</p>
+</div>
+<div class="refsect1">
+<a name="HudResult.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="HudResult-struct"></a><h3>HudResult</h3>
+<pre class="programlisting">typedef struct _HudResult HudResult;</pre>
+<p>
+This is an opaque structure type.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="hud-result-get-distance"></a><h3>hud_result_get_distance ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>               hud_result_get_distance             (<em class="parameter"><code><a class="link" href="HudResult.html" title="HudResult"><span class="type">HudResult</span></a> *result</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> max_usage</code></em>);</pre>
+<p>
+Returns the "adjusted" distance of <em class="parameter"><code>result</code></em>.
+</p>
+<p>
+If <em class="parameter"><code>max_usage</code></em> is zero then the returned value is equal to the
+distance between the <a class="link" href="HudItem.html" title="HudItem"><span class="type">HudItem</span></a> used to create the result and the
+search string.
+</p>
+<p>
+If <em class="parameter"><code>max_usage</code></em> is non-zero then it is taken to be the usage count of
+the most-used item in the same query as this result.  The distance is
+adjusted for this fact to penalise less-frequently-used item.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>result</code></em> :</span></p></td>
+<td>a <a class="link" href="HudResult.html" title="HudResult"><span class="type">HudResult</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>max_usage</code></em> :</span></p></td>
+<td>the maximum usage count we consider</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the adjusted distance</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="hud-result-get-html-description"></a><h3>hud_result_get_html_description ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       hud_result_get_html_description     (<em class="parameter"><code><a class="link" href="HudResult.html" title="HudResult"><span class="type">HudResult</span></a> *result</code></em>);</pre>
+<p>
+Returns a textual description of <em class="parameter"><code>result</code></em> with the parts of the text
+that matched the search string strenghtened (ie: in bold).
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>result</code></em> :</span></p></td>
+<td>a <a class="link" href="HudResult.html" title="HudResult"><span class="type">HudResult</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the description</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="hud-result-get-if-matched"></a><h3>hud_result_get_if_matched ()</h3>
+<pre class="programlisting"><a class="link" href="HudResult.html" title="HudResult"><span class="returnvalue">HudResult</span></a> *         hud_result_get_if_matched           (<em class="parameter"><code><a class="link" href="HudItem.html" title="HudItem"><span class="type">HudItem</span></a> *item</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *search_string</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> penalty</code></em>);</pre>
+<p>
+Creates a <a class="link" href="HudResult.html" title="HudResult"><span class="type">HudResult</span></a> for <em class="parameter"><code>item</code></em>, only if the resulting unadjusted
+distance would be less than or equal to the maximum distance
+specified in the HUD settings.
+</p>
+<p>
+This is the same as <a class="link" href="HudResult.html#hud-result-new" title="hud_result_new ()"><code class="function">hud_result_new()</code></a> except that it will return <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>
+if the distance is too great.
+</p>
+<p>
+The penalty value is ignored when checking the maximum distance but
+will impact the distance of the created result.  As a result, the
+returned <a class="link" href="HudResult.html" title="HudResult"><span class="type">HudResult</span></a> may have an effective distance greater than the
+maximum distance.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>item</code></em> :</span></p></td>
+<td>a <a class="link" href="HudItem.html" title="HudItem"><span class="type">HudItem</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>search_string</code></em> :</span></p></td>
+<td>the search string used</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>penalty</code></em> :</span></p></td>
+<td>a penalty value</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new <a class="link" href="HudResult.html" title="HudResult"><span class="type">HudResult</span></a>, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> in event of a poor match</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="hud-result-get-item"></a><h3>hud_result_get_item ()</h3>
+<pre class="programlisting"><a class="link" href="HudItem.html" title="HudItem"><span class="returnvalue">HudItem</span></a> *           hud_result_get_item                 (<em class="parameter"><code><a class="link" href="HudResult.html" title="HudResult"><span class="type">HudResult</span></a> *result</code></em>);</pre>
+<p>
+Gets the <a class="link" href="HudItem.html" title="HudItem"><span class="type">HudItem</span></a> for <em class="parameter"><code>result</code></em>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>result</code></em> :</span></p></td>
+<td>a <a class="link" href="HudResult.html" title="HudResult"><span class="type">HudResult</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a <a class="link" href="HudItem.html" title="HudItem"><span class="type">HudItem</span></a>. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="hud-result-new"></a><h3>hud_result_new ()</h3>
+<pre class="programlisting"><a class="link" href="HudResult.html" title="HudResult"><span class="returnvalue">HudResult</span></a> *         hud_result_new                      (<em class="parameter"><code><a class="link" href="HudItem.html" title="HudItem"><span class="type">HudItem</span></a> *item</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *search_string</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> penalty</code></em>);</pre>
+<p>
+Creates a <a class="link" href="HudResult.html" title="HudResult"><span class="type">HudResult</span></a> for <em class="parameter"><code>item</code></em> as search for using <em class="parameter"><code>search_string</code></em>.
+</p>
+<p>
+If <em class="parameter"><code>penalty</code></em> is non-zero then it is used to increase the distance of
+the result.  This is used to decrease the ranking of matches from the
+indicators.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>item</code></em> :</span></p></td>
+<td>a <a class="link" href="HudItem.html" title="HudItem"><span class="type">HudItem</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>search_string</code></em> :</span></p></td>
+<td>the search string used</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>penalty</code></em> :</span></p></td>
+<td>a penalty value</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the new <a class="link" href="HudResult.html" title="HudResult"><span class="type">HudResult</span></a>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.18</div>
+</body>
+</html>

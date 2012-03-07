@@ -1,0 +1,141 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>HudSourceList</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.76.1">
+<link rel="home" href="index.html" title="hud-service Hacking Guide">
+<link rel="up" href="ch04.html" title="Sources">
+<link rel="prev" href="HudSource.html" title="HudSource">
+<link rel="next" href="HudWindowSource.html" title="HudWindowSource">
+<meta name="generator" content="GTK-Doc V1.18 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="2">
+<tr valign="middle">
+<td><a accesskey="p" href="HudSource.html"><img src="left.png" width="24" height="24" border="0" alt="Prev"></a></td>
+<td><a accesskey="u" href="ch04.html"><img src="up.png" width="24" height="24" border="0" alt="Up"></a></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="24" height="24" border="0" alt="Home"></a></td>
+<th width="100%" align="center">hud-service Hacking Guide</th>
+<td><a accesskey="n" href="HudWindowSource.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
+</tr>
+<tr><td colspan="5" class="shortcuts">
+<a href="#HudSourceList.synopsis" class="shortcut">Top</a>
+                   | 
+                  <a href="#HudSourceList.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#HudSourceList.object-hierarchy" class="shortcut">Object Hierarchy</a>
+                   | 
+                  <a href="#HudSourceList.implemented-interfaces" class="shortcut">Implemented Interfaces</a>
+</td></tr>
+</table>
+<div class="refentry">
+<a name="HudSourceList"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="HudSourceList.top_of_page"></a>HudSourceList</span></h2>
+<p>HudSourceList — a list of <a href="HudSource.html"><span class="type">HudSources</span></a> that is itself a <a class="link" href="HudSource.html" title="HudSource"><span class="type">HudSource</span></a></p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="HudSourceList.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">                    <a class="link" href="HudSourceList.html#HudSourceList-struct" title="HudSourceList">HudSourceList</a>;
+<span class="returnvalue">void</span>                <a class="link" href="HudSourceList.html#hud-source-list-add" title="hud_source_list_add ()">hud_source_list_add</a>                 (<em class="parameter"><code><a class="link" href="HudSourceList.html" title="HudSourceList"><span class="type">HudSourceList</span></a> *list</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="HudSource.html" title="HudSource"><span class="type">HudSource</span></a> *source</code></em>);
+<a class="link" href="HudSourceList.html" title="HudSourceList"><span class="returnvalue">HudSourceList</span></a> *     <a class="link" href="HudSourceList.html#hud-source-list-new" title="hud_source_list_new ()">hud_source_list_new</a>                 (<em class="parameter"><code><span class="type">void</span></code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="HudSourceList.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----HudSourceList
+</pre>
+</div>
+<div class="refsect1">
+<a name="HudSourceList.implemented-interfaces"></a><h2>Implemented Interfaces</h2>
+<p>
+HudSourceList implements
+ <a class="link" href="HudSource.html" title="HudSource">HudSource</a>.</p>
+</div>
+<div class="refsect1">
+<a name="HudSourceList.description"></a><h2>Description</h2>
+<p>
+<a class="link" href="HudSourceList.html" title="HudSourceList"><span class="type">HudSourceList</span></a> is a list of <a href="HudSource.html"><span class="type">HudSources</span></a> that functions as a
+<a class="link" href="HudSource.html" title="HudSource"><span class="type">HudSource</span></a> itself.
+</p>
+<p>
+Calls to <a class="link" href="HudSource.html#hud-source-search" title="hud_source_search ()"><code class="function">hud_source_search()</code></a> on the list get turned into searches on
+each source in the list.  If any source in the list emits the
+HudSource::changed signal then the list itself will emit it as well.
+</p>
+<p>
+Sources may be added to the list using <a class="link" href="HudSourceList.html#hud-source-list-add" title="hud_source_list_add ()"><code class="function">hud_source_list_add()</code></a>.  It is
+not possible to remove sources.
+</p>
+</div>
+<div class="refsect1">
+<a name="HudSourceList.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="HudSourceList-struct"></a><h3>HudSourceList</h3>
+<pre class="programlisting">typedef struct _HudSourceList HudSourceList;</pre>
+<p>
+This is an opaque structure type.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="hud-source-list-add"></a><h3>hud_source_list_add ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                hud_source_list_add                 (<em class="parameter"><code><a class="link" href="HudSourceList.html" title="HudSourceList"><span class="type">HudSourceList</span></a> *list</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="HudSource.html" title="HudSource"><span class="type">HudSource</span></a> *source</code></em>);</pre>
+<p>
+Adds <em class="parameter"><code>source</code></em> to <em class="parameter"><code>list</code></em>.
+</p>
+<p>
+Future <a class="link" href="HudSource.html#hud-source-search" title="hud_source_search ()"><code class="function">hud_source_search()</code></a> calls on <em class="parameter"><code>list</code></em> will include results from
+<em class="parameter"><code>source</code></em>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>list</code></em> :</span></p></td>
+<td>a <a class="link" href="HudSourceList.html" title="HudSourceList"><span class="type">HudSourceList</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>source</code></em> :</span></p></td>
+<td>a <a class="link" href="HudSource.html" title="HudSource"><span class="type">HudSource</span></a> to add to the list</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="hud-source-list-new"></a><h3>hud_source_list_new ()</h3>
+<pre class="programlisting"><a class="link" href="HudSourceList.html" title="HudSourceList"><span class="returnvalue">HudSourceList</span></a> *     hud_source_list_new                 (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>
+Creates a <a class="link" href="HudSourceList.html" title="HudSourceList"><span class="type">HudSourceList</span></a>.
+</p>
+<p>
+You should probably add some sources to it using
+<a class="link" href="HudSourceList.html#hud-source-list-add" title="hud_source_list_add ()"><code class="function">hud_source_list_add()</code></a>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody><tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new empty <a class="link" href="HudSourceList.html" title="HudSourceList"><span class="type">HudSourceList</span></a>
+</td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.18</div>
+</body>
+</html>
