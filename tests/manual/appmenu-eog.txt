@@ -1,0 +1,32 @@
+Eye of GNOME Menus
+==================
+These tests ensure that the menus work in Eye of GNOME
+
+Test About Item
+---------------
+
+#. Start Image Viewer
+#. Select Help > About
+
+Outcome
+ A small window should appear with the Image View logo and version in it
+
+Test Toolbar visibility
+-----------------------
+
+#. Start Image Viewer
+#. Open the View menu
+#. Ensure that the Toolbar item is checked
+#. Select the Toolbar item
+
+Outcome
+ The Image Viewer window should be visible without a toolbar
+
+Test Open Dialog
+----------------
+
+#. Start Image Viewer
+#. Select Image > Open
+
+Outcome
+ A new dialog should appear that allows you to select a file to open

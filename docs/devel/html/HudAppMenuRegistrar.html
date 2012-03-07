@@ -1,0 +1,279 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>HudAppMenuRegistrar</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.76.1">
+<link rel="home" href="index.html" title="hud-service Hacking Guide">
+<link rel="up" href="ch05.html" title="Utility API">
+<link rel="prev" href="hud-HudSettings.html" title="HudSettings">
+<link rel="next" href="object-tree.html" title="Object Hierarchy">
+<meta name="generator" content="GTK-Doc V1.18 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="2">
+<tr valign="middle">
+<td><a accesskey="p" href="hud-HudSettings.html"><img src="left.png" width="24" height="24" border="0" alt="Prev"></a></td>
+<td><a accesskey="u" href="ch05.html"><img src="up.png" width="24" height="24" border="0" alt="Up"></a></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="24" height="24" border="0" alt="Home"></a></td>
+<th width="100%" align="center">hud-service Hacking Guide</th>
+<td><a accesskey="n" href="object-tree.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
+</tr>
+<tr><td colspan="5" class="shortcuts">
+<a href="#HudAppMenuRegistrar.synopsis" class="shortcut">Top</a>
+                   | 
+                  <a href="#HudAppMenuRegistrar.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#HudAppMenuRegistrar.object-hierarchy" class="shortcut">Object Hierarchy</a>
+</td></tr>
+</table>
+<div class="refentry">
+<a name="HudAppMenuRegistrar"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="HudAppMenuRegistrar.top_of_page"></a>HudAppMenuRegistrar</span></h2>
+<p>HudAppMenuRegistrar — client for the com.canonical.AppMenu.Registrar
+  D-Bus service</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="HudAppMenuRegistrar.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">                    <a class="link" href="HudAppMenuRegistrar.html#HudAppMenuRegistrar-struct" title="HudAppMenuRegistrar">HudAppMenuRegistrar</a>;
+<span class="returnvalue">void</span>                (<a class="link" href="HudAppMenuRegistrar.html#HudAppMenuRegistrarObserverFunc" title="HudAppMenuRegistrarObserverFunc ()">*HudAppMenuRegistrarObserverFunc</a>)  (<em class="parameter"><code><a class="link" href="HudAppMenuRegistrar.html" title="HudAppMenuRegistrar"><span class="type">HudAppMenuRegistrar</span></a> *registrar</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> xid</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *bus_name</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *object_path</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="HudAppMenuRegistrar.html#hud-app-menu-registrar-add-observer" title="hud_app_menu_registrar_add_observer ()">hud_app_menu_registrar_add_observer</a> (<em class="parameter"><code><a class="link" href="HudAppMenuRegistrar.html" title="HudAppMenuRegistrar"><span class="type">HudAppMenuRegistrar</span></a> *registrar</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> xid</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="HudAppMenuRegistrar.html#HudAppMenuRegistrarObserverFunc" title="HudAppMenuRegistrarObserverFunc ()"><span class="type">HudAppMenuRegistrarObserverFunc</span></a> callback</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);
+<a class="link" href="HudAppMenuRegistrar.html" title="HudAppMenuRegistrar"><span class="returnvalue">HudAppMenuRegistrar</span></a> * <a class="link" href="HudAppMenuRegistrar.html#hud-app-menu-registrar-get" title="hud_app_menu_registrar_get ()">hud_app_menu_registrar_get</a>        (<em class="parameter"><code><span class="type">void</span></code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="HudAppMenuRegistrar.html#hud-app-menu-registrar-remove-observer" title="hud_app_menu_registrar_remove_observer ()">hud_app_menu_registrar_remove_observer</a>
+                                                        (<em class="parameter"><code><a class="link" href="HudAppMenuRegistrar.html" title="HudAppMenuRegistrar"><span class="type">HudAppMenuRegistrar</span></a> *registrar</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> xid</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="HudAppMenuRegistrar.html#HudAppMenuRegistrarObserverFunc" title="HudAppMenuRegistrarObserverFunc ()"><span class="type">HudAppMenuRegistrarObserverFunc</span></a> callback</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="HudAppMenuRegistrar.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----HudAppMenuRegistrar
+</pre>
+</div>
+<div class="refsect1">
+<a name="HudAppMenuRegistrar.description"></a><h2>Description</h2>
+<p>
+The <a class="link" href="HudAppMenuRegistrar.html" title="HudAppMenuRegistrar"><span class="type">HudAppMenuRegistrar</span></a> is a singleton object that monitors the
+com.canonical.AppMenu.Registrar D-Bus service.
+</p>
+<p>
+On instantiation, a D-Bus name watch is setup for the registrar.
+When the registrar is found to exist, a local copy is made of the
+windows and menus that the registrar knows about.  Change
+notifications are also monitored to keep the local cache in sync.
+</p>
+<p>
+After that point, all queries for information from the registrar are
+satisfied from the local cache, without blocking.
+</p>
+<p>
+Information is acquired from <a class="link" href="HudAppMenuRegistrar.html" title="HudAppMenuRegistrar"><span class="type">HudAppMenuRegistrar</span></a> by using
+<a class="link" href="HudAppMenuRegistrar.html#hud-app-menu-registrar-add-observer" title="hud_app_menu_registrar_add_observer ()"><code class="function">hud_app_menu_registrar_add_observer()</code></a>.  This immediately calls a
+callback with the initial information and makes future calls to the
+same callback if the information is found to have changed.
+</p>
+<p>
+If the registrar is offline or the information is not yet available
+at the time of the original query, the window will initially be
+reported as having no menu but a change notification will arrive when
+the proper information becomes available.
+</p>
+</div>
+<div class="refsect1">
+<a name="HudAppMenuRegistrar.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="HudAppMenuRegistrar-struct"></a><h3>HudAppMenuRegistrar</h3>
+<pre class="programlisting">typedef struct _HudAppMenuRegistrar HudAppMenuRegistrar;</pre>
+<p>
+This is an opaque structure type.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="HudAppMenuRegistrarObserverFunc"></a><h3>HudAppMenuRegistrarObserverFunc ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                (*HudAppMenuRegistrarObserverFunc)  (<em class="parameter"><code><a class="link" href="HudAppMenuRegistrar.html" title="HudAppMenuRegistrar"><span class="type">HudAppMenuRegistrar</span></a> *registrar</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> xid</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *bus_name</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *object_path</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>
+Notifies about the initial values for or changes to the bus name and
+object path at which to find the dbusmenu for <em class="parameter"><code>xid</code></em>.
+</p>
+<p>
+You should pass the values of <em class="parameter"><code>bus_name</code></em> and <em class="parameter"><code>object_path</code></em> to
+<a href="/usr/share/gtk-doc/html/libdbusmenu-glib/libdbusmenu-glib-DbusmenuClient.html#dbusmenu-client-new"><code class="function">dbusmenu_client_new()</code></a> to get started.
+</p>
+<p>
+If no menu is available then <em class="parameter"><code>bus_name</code></em> and <em class="parameter"><code>object_path</code></em> will both be
+given as <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>registrar</code></em> :</span></p></td>
+<td>the <a class="link" href="HudAppMenuRegistrar.html" title="HudAppMenuRegistrar"><span class="type">HudAppMenuRegistrar</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>xid</code></em> :</span></p></td>
+<td>the xid that we are notifying about</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>bus_name</code></em> :</span></p></td>
+<td>the bus name for the dbusmenu, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>object_path</code></em> :</span></p></td>
+<td>the object path for the dbusmenu, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
+<td>the data pointer</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="hud-app-menu-registrar-add-observer"></a><h3>hud_app_menu_registrar_add_observer ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                hud_app_menu_registrar_add_observer (<em class="parameter"><code><a class="link" href="HudAppMenuRegistrar.html" title="HudAppMenuRegistrar"><span class="type">HudAppMenuRegistrar</span></a> *registrar</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> xid</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="HudAppMenuRegistrar.html#HudAppMenuRegistrarObserverFunc" title="HudAppMenuRegistrarObserverFunc ()"><span class="type">HudAppMenuRegistrarObserverFunc</span></a> callback</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>
+Begins observing <em class="parameter"><code>xid</code></em>.
+</p>
+<p>
+<em class="parameter"><code>callback</code></em> will be called exactly once before the function returns
+with a set of initial values (the bus name and object path at which
+to find the menu for the window).
+</p>
+<p>
+If the location of the menu for <em class="parameter"><code>xid</code></em> changes (including being created
+or destroyed) then <em class="parameter"><code>callback</code></em> will be called each time an update is
+required.
+</p>
+<p>
+It is possible that the values are not initially known because they
+have not yet been retreived from the registrar or because the
+registrar is not running.  In this case, <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> values will be
+provided initially and <em class="parameter"><code>callback</code></em> will be invoked again when the
+real values are known.
+</p>
+<p>
+Call <a class="link" href="HudAppMenuRegistrar.html#hud-app-menu-registrar-remove-observer" title="hud_app_menu_registrar_remove_observer ()"><code class="function">hud_app_menu_registrar_remove_observer()</code></a> to when you are no
+longer interested in <em class="parameter"><code>xid</code></em>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>registrar</code></em> :</span></p></td>
+<td>the <a class="link" href="HudAppMenuRegistrar.html" title="HudAppMenuRegistrar"><span class="type">HudAppMenuRegistrar</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>xid</code></em> :</span></p></td>
+<td>the xid to begin observing</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>callback</code></em> :</span></p></td>
+<td>a <a class="link" href="HudAppMenuRegistrar.html#HudAppMenuRegistrarObserverFunc" title="HudAppMenuRegistrarObserverFunc ()"><span class="type">HudAppMenuRegistrarObserverFunc</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
+<td>user data for <em class="parameter"><code>callback</code></em>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="hud-app-menu-registrar-get"></a><h3>hud_app_menu_registrar_get ()</h3>
+<pre class="programlisting"><a class="link" href="HudAppMenuRegistrar.html" title="HudAppMenuRegistrar"><span class="returnvalue">HudAppMenuRegistrar</span></a> * hud_app_menu_registrar_get        (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>
+Gets the singleton instance of <a class="link" href="HudAppMenuRegistrar.html" title="HudAppMenuRegistrar"><span class="type">HudAppMenuRegistrar</span></a>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody><tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the instance. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+</td>
+</tr></tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="hud-app-menu-registrar-remove-observer"></a><h3>hud_app_menu_registrar_remove_observer ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                hud_app_menu_registrar_remove_observer
+                                                        (<em class="parameter"><code><a class="link" href="HudAppMenuRegistrar.html" title="HudAppMenuRegistrar"><span class="type">HudAppMenuRegistrar</span></a> *registrar</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> xid</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="HudAppMenuRegistrar.html#HudAppMenuRegistrarObserverFunc" title="HudAppMenuRegistrarObserverFunc ()"><span class="type">HudAppMenuRegistrarObserverFunc</span></a> callback</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a> user_data</code></em>);</pre>
+<p>
+Reverses the effect of a previous call to
+<a class="link" href="HudAppMenuRegistrar.html#hud-app-menu-registrar-add-observer" title="hud_app_menu_registrar_add_observer ()"><code class="function">hud_app_menu_registrar_add_observer()</code></a>.
+</p>
+<p>
+<em class="parameter"><code>callback</code></em> and <em class="parameter"><code>user_data</code></em> must be exactly equal to the values passed
+to that function.
+</p>
+<p>
+One call does not remove all instances of <em class="parameter"><code>callback</code></em> and <em class="parameter"><code>user_data</code></em>.
+You need to call this function the same number of times that you
+called <a class="link" href="HudAppMenuRegistrar.html#hud-app-menu-registrar-add-observer" title="hud_app_menu_registrar_add_observer ()"><code class="function">hud_app_menu_registrar_add_observer()</code></a>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>registrar</code></em> :</span></p></td>
+<td>the <a class="link" href="HudAppMenuRegistrar.html" title="HudAppMenuRegistrar"><span class="type">HudAppMenuRegistrar</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>xid</code></em> :</span></p></td>
+<td>the xid to begin observing</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>callback</code></em> :</span></p></td>
+<td>a <a class="link" href="HudAppMenuRegistrar.html#HudAppMenuRegistrarObserverFunc" title="HudAppMenuRegistrarObserverFunc ()"><span class="type">HudAppMenuRegistrarObserverFunc</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
+<td>user data for <em class="parameter"><code>callback</code></em>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.18</div>
+</body>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>HudSettings</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.76.1">
+<link rel="home" href="index.html" title="hud-service Hacking Guide">
+<link rel="up" href="ch05.html" title="Utility API">
+<link rel="prev" href="ch05.html" title="Utility API">
+<link rel="next" href="HudAppMenuRegistrar.html" title="HudAppMenuRegistrar">
+<meta name="generator" content="GTK-Doc V1.18 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="2">
+<tr valign="middle">
+<td><a accesskey="p" href="ch05.html"><img src="left.png" width="24" height="24" border="0" alt="Prev"></a></td>
+<td><a accesskey="u" href="ch05.html"><img src="up.png" width="24" height="24" border="0" alt="Up"></a></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="24" height="24" border="0" alt="Home"></a></td>
+<th width="100%" align="center">hud-service Hacking Guide</th>
+<td><a accesskey="n" href="HudAppMenuRegistrar.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
+</tr>
+<tr><td colspan="5" class="shortcuts">
+<a href="#hud-HudSettings.synopsis" class="shortcut">Top</a>
+                   | 
+                  <a href="#hud-HudSettings.description" class="shortcut">Description</a>
+</td></tr>
+</table>
+<div class="refentry">
+<a name="hud-HudSettings"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="hud-HudSettings.top_of_page"></a>HudSettings</span></h2>
+<p>HudSettings — tunable parameters</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="hud-HudSettings.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">struct              <a class="link" href="hud-HudSettings.html#HudSettings" title="struct HudSettings">HudSettings</a>;
+extern HudSettings  <a class="link" href="hud-HudSettings.html#hud-settings" title="hud_settings">hud_settings</a>;
+<span class="returnvalue">void</span>                <a class="link" href="hud-HudSettings.html#hud-settings-init" title="hud_settings_init ()">hud_settings_init</a>                   (<em class="parameter"><code><span class="type">void</span></code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="hud-HudSettings.description"></a><h2>Description</h2>
+<p>
+<a class="link" href="hud-HudSettings.html#HudSettings" title="struct HudSettings"><span class="type">HudSettings</span></a> is a structure that contains the value of several
+tunable parameters that affect the behaviour of various components of
+the HUD.
+</p>
+<p>
+This structure exists for two reasons.
+</p>
+<p>
+The first reason is that caching these values in local variables
+eliminates the need to look them up from <a href="http://library.gnome.org/devel/gio/unstable/GSettings.html"><span class="type">GSettings</span></a> on each use.
+This vastly improves the performance of the matching algorithms (as
+many of these values are used quite a lot from within them).
+</p>
+<p>
+The second reason is to improve testability.  The testcases are able
+to hardcode sane values for the settings without worrying about
+changes that the user may have made to their local configuration
+(which could otherwise cause spurious test failures).
+</p>
+</div>
+<div class="refsect1">
+<a name="hud-HudSettings.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="HudSettings"></a><h3>struct HudSettings</h3>
+<pre class="programlisting">struct HudSettings {
+  gboolean store_usage_data;
+
+  guint indicator_penalty;
+  guint max_distance;
+
+  guint add_penalty;
+  guint add_penalty_pre;
+  guint drop_penalty;
+  guint drop_penalty_end;
+  guint transpose_penalty;
+  guint swap_penalty;
+  guint swap_penalty_case;
+};
+</pre>
+<p>
+This structure contains the value of several tunable parameters that
+affect the behaviour of various components of the HUD.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> <em class="structfield"><code><a name="HudSettings.store-usage-data"></a>store_usage_data</code></em>;</span></p></td>
+<td>if usage tracking should be performed</td>
+</tr>
+<tr>
+<td><p><span class="term"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> <em class="structfield"><code><a name="HudSettings.indicator-penalty"></a>indicator_penalty</code></em>;</span></p></td>
+<td>the percentage by which to increase the distance
+of indicators when sorting the results list</td>
+</tr>
+<tr>
+<td><p><span class="term"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> <em class="structfield"><code><a name="HudSettings.max-distance"></a>max_distance</code></em>;</span></p></td>
+<td>the maximum distance value we consider as being a
+matching result</td>
+</tr>
+<tr>
+<td><p><span class="term"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> <em class="structfield"><code><a name="HudSettings.add-penalty"></a>add_penalty</code></em>;</span></p></td>
+<td>the penalty incurred by a character in the search term
+that does not exist in the item being matched</td>
+</tr>
+<tr>
+<td><p><span class="term"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> <em class="structfield"><code><a name="HudSettings.add-penalty-pre"></a>add_penalty_pre</code></em>;</span></p></td>
+<td>the penalty incurred by a character in the search
+term that does not exist in the item being matched when that
+character comes at the beginning of the term</td>
+</tr>
+<tr>
+<td><p><span class="term"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> <em class="structfield"><code><a name="HudSettings.drop-penalty"></a>drop_penalty</code></em>;</span></p></td>
+<td>the penalty incurred by a character missing from the
+search string as compared to the item being matched</td>
+</tr>
+<tr>
+<td><p><span class="term"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> <em class="structfield"><code><a name="HudSettings.drop-penalty-end"></a>drop_penalty_end</code></em>;</span></p></td>
+<td>the penalty incurred by a character missing from
+the search string as compared to the item being matched when the
+character is at the end of the item (ie: the search term is a
+prefix of the item)</td>
+</tr>
+<tr>
+<td><p><span class="term"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> <em class="structfield"><code><a name="HudSettings.transpose-penalty"></a>transpose_penalty</code></em>;</span></p></td>
+<td>the penalty incurred for transposed characters</td>
+</tr>
+<tr>
+<td><p><span class="term"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> <em class="structfield"><code><a name="HudSettings.swap-penalty"></a>swap_penalty</code></em>;</span></p></td>
+<td>the penalty incurred for the substitution of one
+character for another</td>
+</tr>
+<tr>
+<td><p><span class="term"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> <em class="structfield"><code><a name="HudSettings.swap-penalty-case"></a>swap_penalty_case</code></em>;</span></p></td>
+<td>the penalty incurred for the substitution of one
+character for another when the characters differ only in case</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="hud-settings"></a><h3>hud_settings</h3>
+<pre class="programlisting">extern HudSettings hud_settings;
+</pre>
+<p>
+The <a class="link" href="hud-HudSettings.html#HudSettings" title="struct HudSettings"><span class="type">HudSettings</span></a> in effect.
+</p>
+<p>
+<a class="link" href="hud-HudSettings.html#hud-settings-init" title="hud_settings_init ()"><code class="function">hud_settings_init()</code></a> can be used to keep these values in sync with
+<a href="http://library.gnome.org/devel/gio/unstable/GSettings.html"><span class="type">GSettings</span></a>.  For testing, it may make sense to set these values
+directly.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="hud-settings-init"></a><h3>hud_settings_init ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                hud_settings_init                   (<em class="parameter"><code><span class="type">void</span></code></em>);</pre>
+<p>
+Initialises the <a class="link" href="hud-HudSettings.html#HudSettings" title="struct HudSettings"><span class="type">HudSettings</span></a> using <a href="http://library.gnome.org/devel/gio/unstable/GSettings.html"><span class="type">GSettings</span></a> and keeps it in sync.
+</p>
+<p>
+If <a href="http://library.gnome.org/devel/gio/unstable/GSettings.html"><span class="type">GSettings</span></a> indicates that the settings have changed, they will be
+updated.
+</p>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.18</div>
+</body>
+</html>

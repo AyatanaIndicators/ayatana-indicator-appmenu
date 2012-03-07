@@ -1,0 +1,244 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>HudSource</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.76.1">
+<link rel="home" href="index.html" title="hud-service Hacking Guide">
+<link rel="up" href="ch04.html" title="Sources">
+<link rel="prev" href="ch04.html" title="Sources">
+<link rel="next" href="HudSourceList.html" title="HudSourceList">
+<meta name="generator" content="GTK-Doc V1.18 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="2">
+<tr valign="middle">
+<td><a accesskey="p" href="ch04.html"><img src="left.png" width="24" height="24" border="0" alt="Prev"></a></td>
+<td><a accesskey="u" href="ch04.html"><img src="up.png" width="24" height="24" border="0" alt="Up"></a></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="24" height="24" border="0" alt="Home"></a></td>
+<th width="100%" align="center">hud-service Hacking Guide</th>
+<td><a accesskey="n" href="HudSourceList.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
+</tr>
+<tr><td colspan="5" class="shortcuts">
+<a href="#HudSource.synopsis" class="shortcut">Top</a>
+                   | 
+                  <a href="#HudSource.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#HudSource.object-hierarchy" class="shortcut">Object Hierarchy</a>
+                   | 
+                  <a href="#HudSource.prerequisites" class="shortcut">Prerequisites</a>
+                   | 
+                  <a href="#HudSource.implementations" class="shortcut">Known Implementations</a>
+                   | 
+                  <a href="#HudSource.signals" class="shortcut">Signals</a>
+</td></tr>
+</table>
+<div class="refentry">
+<a name="HudSource"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="HudSource.top_of_page"></a>HudSource</span></h2>
+<p>HudSource — a source of <a href="HudResult.html"><span class="type">HudResults</span></a></p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="HudSource.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">                    <a class="link" href="HudSource.html#HudSource-struct" title="HudSource">HudSource</a>;
+struct              <a class="link" href="HudSource.html#HudSourceInterface" title="struct HudSourceInterface">HudSourceInterface</a>;
+<span class="returnvalue">void</span>                <a class="link" href="HudSource.html#hud-source-changed" title="hud_source_changed ()">hud_source_changed</a>                  (<em class="parameter"><code><a class="link" href="HudSource.html" title="HudSource"><span class="type">HudSource</span></a> *source</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="HudSource.html#hud-source-search" title="hud_source_search ()">hud_source_search</a>                   (<em class="parameter"><code><a class="link" href="HudSource.html" title="HudSource"><span class="type">HudSource</span></a> *source</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.html#GPtrArray"><span class="type">GPtrArray</span></a> *results_array</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *search_string</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="HudSource.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  GInterface
+   +----HudSource
+</pre>
+</div>
+<div class="refsect1">
+<a name="HudSource.prerequisites"></a><h2>Prerequisites</h2>
+<p>
+HudSource requires
+ <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>.</p>
+</div>
+<div class="refsect1">
+<a name="HudSource.implementations"></a><h2>Known Implementations</h2>
+<p>
+HudSource is implemented by
+ <a class="link" href="HudAppIndicatorSource.html" title="HudAppIndicatorSource">HudAppIndicatorSource</a>,  <a class="link" href="HudDbusmenuCollector.html" title="HudDbusmenuCollector">HudDbusmenuCollector</a>,  <a class="link" href="HudIndicatorSource.html" title="HudIndicatorSource">HudIndicatorSource</a>,  <a class="link" href="HudMenuModelCollector.html" title="HudMenuModelCollector">HudMenuModelCollector</a>,  <a class="link" href="HudSourceList.html" title="HudSourceList">HudSourceList</a> and  <a class="link" href="HudWindowSource.html" title="HudWindowSource">HudWindowSource</a>.</p>
+</div>
+<div class="refsect1">
+<a name="HudSource.signals"></a><h2>Signals</h2>
+<pre class="synopsis">
+  "<a class="link" href="HudSource.html#HudSource-changed" title='The "changed" signal'>changed</a>"                                        : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS"><code class="literal">Run Last</code></a>
+</pre>
+</div>
+<div class="refsect1">
+<a name="HudSource.description"></a><h2>Description</h2>
+<p>
+A <a class="link" href="HudSource.html" title="HudSource"><span class="type">HudSource</span></a> is a very simple interface with only two APIs.
+</p>
+<p>
+First, a <a class="link" href="HudSource.html" title="HudSource"><span class="type">HudSource</span></a> may be searched, with a string.  The search
+results in a list of <a href="HudResult.html"><span class="type">HudResults</span></a> being returned.  This is
+<a class="link" href="HudSource.html#hud-source-search" title="hud_source_search ()"><code class="function">hud_source_search()</code></a>.
+</p>
+<p>
+Second, a <a class="link" href="HudSource.html" title="HudSource"><span class="type">HudSource</span></a> has a simple "changed" signal that is emitted
+whenever the result of calling <a class="link" href="HudSource.html#hud-source-search" title="hud_source_search ()"><code class="function">hud_source_search()</code></a> may have changed.
+</p>
+<p>
+A <a class="link" href="HudSource.html" title="HudSource"><span class="type">HudSource</span></a> is stateless with respect to active queries.
+</p>
+<p>
+FUTURE DIRECTIONS:
+</p>
+<p>
+<a class="link" href="HudSource.html" title="HudSource"><span class="type">HudSource</span></a> should probably have an API to indicate if there is an
+active query in progress.  There are two reasons for this.  First is
+because the implementations could be more lazy with respect to
+watching for changes.  Second is because dbusmenu has a concept of if
+a menu is being shown or not and some applications may find this
+information to be useful.
+</p>
+<p>
+It may also make sense to handle queries in a more stateful way,
+possibly replacing the "change" signal with something capable of
+expressing more fine-grained changes (eg: a single item was added or
+removed).
+</p>
+</div>
+<div class="refsect1">
+<a name="HudSource.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="HudSource-struct"></a><h3>HudSource</h3>
+<pre class="programlisting">typedef struct _HudSource HudSource;</pre>
+<p>
+This is an opaque structure type.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="HudSourceInterface"></a><h3>struct HudSourceInterface</h3>
+<pre class="programlisting">struct HudSourceInterface {
+  GTypeInterface g_iface;
+
+  void (* search) (HudSource   *source,
+                   GPtrArray   *results_array,
+                   const gchar *search_string);
+};
+</pre>
+<p>
+This is the interface vtable for <a class="link" href="HudSource.html" title="HudSource"><span class="type">HudSource</span></a>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GTypeInterface"><span class="type">GTypeInterface</span></a> <em class="structfield"><code><a name="HudSourceInterface.g-iface"></a>g_iface</code></em>;</span></p></td>
+<td>the <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GTypeInterface"><span class="type">GTypeInterface</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="HudSourceInterface.search"></a>search</code></em> ()</span></p></td>
+<td>virtual function pointer for <a class="link" href="HudSource.html#hud-source-search" title="hud_source_search ()"><code class="function">hud_source_search()</code></a>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="hud-source-changed"></a><h3>hud_source_changed ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                hud_source_changed                  (<em class="parameter"><code><a class="link" href="HudSource.html" title="HudSource"><span class="type">HudSource</span></a> *source</code></em>);</pre>
+<p>
+Signals that <em class="parameter"><code>source</code></em> may have changed (ie: emits the "changed"
+signal).
+</p>
+<p>
+This function should only ever be called by implementations of
+<a class="link" href="HudSource.html" title="HudSource"><span class="type">HudSource</span></a>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>source</code></em> :</span></p></td>
+<td>a <a class="link" href="HudSource.html" title="HudSource"><span class="type">HudSource</span></a>
+</td>
+</tr></tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="hud-source-search"></a><h3>hud_source_search ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                hud_source_search                   (<em class="parameter"><code><a class="link" href="HudSource.html" title="HudSource"><span class="type">HudSource</span></a> *source</code></em>,
+                                                         <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.html#GPtrArray"><span class="type">GPtrArray</span></a> *results_array</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *search_string</code></em>);</pre>
+<p>
+Searches for <a href="HudItem.html"><span class="type">HudItems</span></a> in <em class="parameter"><code>source</code></em> that potentially match
+<em class="parameter"><code>search_string</code></em> and creates <a href="HudResult.html"><span class="type">HudResults</span></a> for them, appending them to
+<em class="parameter"><code>results_array</code></em>.
+</p>
+<p>
+<em class="parameter"><code>source</code></em> will emit a ::changed signal if the results of calling this
+function may have changed, at which point you should call it again.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>source</code></em> :</span></p></td>
+<td>a <a class="link" href="HudSource.html" title="HudSource"><span class="type">HudSource</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>results_array</code></em> :</span></p></td>
+<td>array to append results to. <span class="annotation">[<acronym title="Generics and defining elements of containers and arrays."><span class="acronym">element-type</span></acronym> HudResult]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>search_string</code></em> :</span></p></td>
+<td>the search string</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+<div class="refsect1">
+<a name="HudSource.signal-details"></a><h2>Signal Details</h2>
+<div class="refsect2">
+<a name="HudSource-changed"></a><h3>The <code class="literal">"changed"</code> signal</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                user_function                      (<a class="link" href="HudSource.html" title="HudSource"><span class="type">HudSource</span></a> *source,
+                                                        <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>   user_data)      : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS"><code class="literal">Run Last</code></a></pre>
+<p>
+Indicates that the <a class="link" href="HudSource.html" title="HudSource"><span class="type">HudSource</span></a> may have changed.  After this signal,
+calls to <a class="link" href="HudSource.html#hud-source-search" title="hud_source_search ()"><code class="function">hud_source_search()</code></a> may return different results than they
+did before.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>source</code></em> :</span></p></td>
+<td>a <a class="link" href="HudSource.html" title="HudSource"><span class="type">HudSource</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>user_data</code></em> :</span></p></td>
+<td>user data set when the signal handler was connected.</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.18</div>
+</body>
+</html>

@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE book PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "">
+<book xmlns="http://www.devhelp.net/book" title="hud-service Hacking Guide" link="index.html" author="" name="hud" version="2" language="c">
+  <chapters>
+    <sub name="Overview" link="ch01.html"/>
+    <sub name="Data Types" link="ch02.html">
+      <sub name="HudStringList" link="hud-HudStringList.html"/>
+    </sub>
+    <sub name="Queries, Results, Items" link="ch03.html">
+      <sub name="HudItem" link="HudItem.html"/>
+      <sub name="HudResult" link="HudResult.html"/>
+      <sub name="HudQuery" link="HudQuery.html"/>
+    </sub>
+    <sub name="Sources" link="ch04.html">
+      <sub name="HudSource" link="HudSource.html"/>
+      <sub name="HudSourceList" link="HudSourceList.html"/>
+      <sub name="HudWindowSource" link="HudWindowSource.html"/>
+      <sub name="HudIndicatorSource" link="HudIndicatorSource.html"/>
+      <sub name="HudAppIndicatorSource" link="HudAppIndicatorSource.html"/>
+      <sub name="HudDbusmenuCollector" link="HudDbusmenuCollector.html"/>
+      <sub name="HudMenuModelCollector" link="HudMenuModelCollector.html"/>
+    </sub>
+    <sub name="Utility API" link="ch05.html">
+      <sub name="HudSettings" link="hud-HudSettings.html"/>
+      <sub name="HudAppMenuRegistrar" link="HudAppMenuRegistrar.html"/>
+    </sub>
+    <sub name="Object Hierarchy" link="object-tree.html"/>
+    <sub name="API Index" link="api-index-full.html"/>
+    <sub name="Index of deprecated API" link="deprecated-api-index.html"/>
+    <sub name="Annotation Glossary" link="annotation-glossary.html"/>
+  </chapters>
+  <functions>
+    <keyword type="struct" name="HudStringList" link="hud-HudStringList.html#HudStringList"/>
+    <keyword type="function" name="hud_string_list_cons ()" link="hud-HudStringList.html#hud-string-list-cons"/>
+    <keyword type="function" name="hud_string_list_cons_label ()" link="hud-HudStringList.html#hud-string-list-cons-label"/>
+    <keyword type="function" name="hud_string_list_get_head ()" link="hud-HudStringList.html#hud-string-list-get-head"/>
+    <keyword type="function" name="hud_string_list_get_tail ()" link="hud-HudStringList.html#hud-string-list-get-tail"/>
+    <keyword type="function" name="hud_string_list_pretty_print ()" link="hud-HudStringList.html#hud-string-list-pretty-print"/>
+    <keyword type="function" name="hud_string_list_ref ()" link="hud-HudStringList.html#hud-string-list-ref"/>
+    <keyword type="function" name="hud_string_list_unref ()" link="hud-HudStringList.html#hud-string-list-unref"/>
+    <keyword type="struct" name="HudItem" link="HudItem.html#HudItem-struct"/>
+    <keyword type="struct" name="struct HudItemClass" link="HudItem.html#HudItemClass"/>
+    <keyword type="function" name="hud_item_activate ()" link="HudItem.html#hud-item-activate"/>
+    <keyword type="function" name="hud_item_construct ()" link="HudItem.html#hud-item-construct"/>
+    <keyword type="function" name="hud_item_get_app_icon ()" link="HudItem.html#hud-item-get-app-icon"/>
+    <keyword type="function" name="hud_item_get_enabled ()" link="HudItem.html#hud-item-get-enabled"/>
+    <keyword type="function" name="hud_item_get_item_icon ()" link="HudItem.html#hud-item-get-item-icon"/>
+    <keyword type="function" name="hud_item_get_tokens ()" link="HudItem.html#hud-item-get-tokens"/>
+    <keyword type="function" name="hud_item_get_usage ()" link="HudItem.html#hud-item-get-usage"/>
+    <keyword type="function" name="hud_item_new ()" link="HudItem.html#hud-item-new"/>
+    <keyword type="struct" name="HudResult" link="HudResult.html#HudResult-struct"/>
+    <keyword type="function" name="hud_result_get_distance ()" link="HudResult.html#hud-result-get-distance"/>
+    <keyword type="function" name="hud_result_get_html_description ()" link="HudResult.html#hud-result-get-html-description"/>
+    <keyword type="function" name="hud_result_get_if_matched ()" link="HudResult.html#hud-result-get-if-matched"/>
+    <keyword type="function" name="hud_result_get_item ()" link="HudResult.html#hud-result-get-item"/>
+    <keyword type="function" name="hud_result_new ()" link="HudResult.html#hud-result-new"/>
+    <keyword type="struct" name="HudQuery" link="HudQuery.html#HudQuery-struct"/>
+    <keyword type="function" name="hud_query_close ()" link="HudQuery.html#hud-query-close"/>
+    <keyword type="function" name="hud_query_get_generation ()" link="HudQuery.html#hud-query-get-generation"/>
+    <keyword type="function" name="hud_query_get_n_results ()" link="HudQuery.html#hud-query-get-n-results"/>
+    <keyword type="function" name="hud_query_get_query_key ()" link="HudQuery.html#hud-query-get-query-key"/>
+    <keyword type="function" name="hud_query_get_result_by_index ()" link="HudQuery.html#hud-query-get-result-by-index"/>
+    <keyword type="function" name="hud_query_lookup ()" link="HudQuery.html#hud-query-lookup"/>
+    <keyword type="function" name="hud_query_new ()" link="HudQuery.html#hud-query-new"/>
+    <keyword type="signal" name="The &quot;changed&quot; signal" link="HudQuery.html#HudQuery-changed"/>
+    <keyword type="struct" name="HudSource" link="HudSource.html#HudSource-struct"/>
+    <keyword type="struct" name="struct HudSourceInterface" link="HudSource.html#HudSourceInterface"/>
+    <keyword type="function" name="hud_source_changed ()" link="HudSource.html#hud-source-changed"/>
+    <keyword type="function" name="hud_source_search ()" link="HudSource.html#hud-source-search"/>
+    <keyword type="signal" name="The &quot;changed&quot; signal" link="HudSource.html#HudSource-changed"/>
+    <keyword type="struct" name="HudSourceList" link="HudSourceList.html#HudSourceList-struct"/>
+    <keyword type="function" name="hud_source_list_add ()" link="HudSourceList.html#hud-source-list-add"/>
+    <keyword type="function" name="hud_source_list_new ()" link="HudSourceList.html#hud-source-list-new"/>
+    <keyword type="struct" name="HudWindowSource" link="HudWindowSource.html#HudWindowSource-struct"/>
+    <keyword type="function" name="hud_window_source_new ()" link="HudWindowSource.html#hud-window-source-new"/>
+    <keyword type="struct" name="HudIndicatorSource" link="HudIndicatorSource.html#HudIndicatorSource-struct"/>
+    <keyword type="function" name="hud_indicator_source_new ()" link="HudIndicatorSource.html#hud-indicator-source-new"/>
+    <keyword type="struct" name="HudAppIndicatorSource" link="HudAppIndicatorSource.html#HudAppIndicatorSource-struct"/>
+    <keyword type="function" name="hud_app_indicator_source_new ()" link="HudAppIndicatorSource.html#hud-app-indicator-source-new"/>
+    <keyword type="struct" name="HudDbusmenuCollector" link="HudDbusmenuCollector.html#HudDbusmenuCollector-struct"/>
+    <keyword type="function" name="hud_dbusmenu_collector_new_for_endpoint ()" link="HudDbusmenuCollector.html#hud-dbusmenu-collector-new-for-endpoint"/>
+    <keyword type="function" name="hud_dbusmenu_collector_new_for_window ()" link="HudDbusmenuCollector.html#hud-dbusmenu-collector-new-for-window"/>
+    <keyword type="function" name="hud_dbusmenu_collector_set_prefix ()" link="HudDbusmenuCollector.html#hud-dbusmenu-collector-set-prefix"/>
+    <keyword type="struct" name="HudMenuModelCollector" link="HudMenuModelCollector.html#HudMenuModelCollector-struct"/>
+    <keyword type="function" name="hud_menu_model_collector_get ()" link="HudMenuModelCollector.html#hud-menu-model-collector-get"/>
+    <keyword type="struct" name="struct HudSettings" link="hud-HudSettings.html#HudSettings"/>
+    <keyword type="variable" name="hud_settings" link="hud-HudSettings.html#hud-settings"/>
+    <keyword type="function" name="hud_settings_init ()" link="hud-HudSettings.html#hud-settings-init"/>
+    <keyword type="struct" name="HudAppMenuRegistrar" link="HudAppMenuRegistrar.html#HudAppMenuRegistrar-struct"/>
+    <keyword type="function" name="HudAppMenuRegistrarObserverFunc ()" link="HudAppMenuRegistrar.html#HudAppMenuRegistrarObserverFunc"/>
+    <keyword type="function" name="hud_app_menu_registrar_add_observer ()" link="HudAppMenuRegistrar.html#hud-app-menu-registrar-add-observer"/>
+    <keyword type="function" name="hud_app_menu_registrar_get ()" link="HudAppMenuRegistrar.html#hud-app-menu-registrar-get"/>
+    <keyword type="function" name="hud_app_menu_registrar_remove_observer ()" link="HudAppMenuRegistrar.html#hud-app-menu-registrar-remove-observer"/>
+  </functions>
+</book>

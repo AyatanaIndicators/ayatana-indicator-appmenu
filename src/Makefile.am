@@ -80,38 +80,63 @@ BUILT_SOURCES += \
 # HUD Service
 ####################
 
-hud_service_SOURCES = \
+noinst_LIBRARIES = libhud-service.a
+
+libhud_service_a_SOURCES = \
 	create-db.h \
 	create-db.c \
-	menuitem-collector.h \
-	menuitem-collector.c \
 	distance.h \
 	distance.c \
 	dump-app-info.h \
 	dump-app-info.c \
 	shared-values.h \
-	hud-service.c \
-	hud-dbus.h \
-	hud-dbus.c \
-	hud-search.h \
-	hud-search.c \
+	hudsettings.h		\
+	hudsettings.c		\
+	hudappmenuregistrar.h	\
+	hudappmenuregistrar.c	\
+	huddbusmenucollector.h	\
+	huddbusmenucollector.c	\
+	hudmenumodelcollector.h	\
+	hudmenumodelcollector.c	\
+	hudappindicatorsource.h	\
+	hudappindicatorsource.c	\
+	hudindicatorsource.h	\
+	hudindicatorsource.c	\
+	hudwindowsource.h	\
+	hudwindowsource.c	\
+	hudsourcelist.h		\
+	hudsourcelist.c		\
+	hudsource.h		\
+	hudsource.c		\
+	hudquery.h		\
+	hudquery.c		\
+	hudstringlist.h		\
+	hudstringlist.c		\
+	huditem.h		\
+	huditem.c		\
+	hudresult.h		\
+	hudresult.c		\
 	hud.interface.h \
 	hud.interface.c \
-	indicator-tracker.h \
-	indicator-tracker.c \
 	load-app-info.h \
 	load-app-info.c \
 	usage-tracker.h \
-	usage-tracker.c \
-	utils.h \
-	utils.c
+	usage-tracker.c
 
+hud_service_SOURCES = hud-service.c
+
+libhud_service_a_CFLAGS = \
+	$(HUD_CFLAGS) \
+	$(COVERAGE_CFLAGS) \
+	-DDATADIR=\""$(datadir)"\" \
+	-Wall -Werror
 hud_service_CFLAGS = \
 	$(HUD_CFLAGS) \
 	$(COVERAGE_CFLAGS) \
 	-DDATADIR=\""$(datadir)"\" \
 	-Wall -Werror
-hud_service_LDFLAGS = \
+hud_service_LDADD = \
+	libhud-service.a	\
 	$(HUD_LIBS)
 
 create-db.c: create-db.sql
