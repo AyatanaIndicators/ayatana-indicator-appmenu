@@ -35,10 +35,6 @@
  * The query maintains a list of results from the search which are
  * sorted by relevance and accessible by index.  Contrast this with the
  * stateless nature of #HudSource.
- *
- * The query has a "generation" counter that is bumped each time the
- * results list changes.  This can be used to guard against stale
- * index-based references to specific search results.
  **/
 
 /**
@@ -56,7 +52,6 @@ struct _HudQuery
   gint num_results;
   guint refresh_id;
 
-  guint64 generation;
   GPtrArray *results;
 };
 
@@ -105,7 +100,6 @@ hud_query_refresh (HudQuery *query)
   guint max_usage = 0;
 
   g_ptr_array_set_size (query->results, 0);
-  query->generation++;
 
   if (query->search_string[0] != '\0')
     hud_source_search (query->source, query->results, query->search_string);
@@ -173,9 +167,6 @@ hud_query_class_init (HudQueryClass *class)
    * @query: a #HudQuery
    *
    * Indicates that the results of @query have changed.
-   *
-   * The generation counter is increased each time this signal fires.
-   * See hud_query_get_generation().
    **/
   hud_query_changed_signal = g_signal_new ("changed", HUD_TYPE_QUERY, G_SIGNAL_RUN_LAST, 0, NULL,
                                            NULL, g_cclosure_marshal_VOID__VOID, G_TYPE_NONE, 0);
@@ -279,24 +270,6 @@ hud_query_close (HudQuery *query)
 {
   if (query == last_created_query)
     g_clear_object (&last_created_query);
-}
-
-/**
- * hud_query_get_generation:
- * @query: a #HudQuery
- *
- * Gets the current value of the generation counter for query.
- *
- * The generation counter is incremented each time the #HudQuery emits a
- * the ::changed signal.  Its purpose is to guard against stale
- * index-based references to results of the query.
- *
- * Returns: the generation number
- **/
-guint64
-hud_query_get_generation (HudQuery *query)
-{
-  return query->generation;
 }
 
 /**
