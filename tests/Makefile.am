@@ -249,47 +249,6 @@ test-usage-db-off-test: test-usage-db-testapp good-app-info/testapp.desktop.hud-
 DISTCLEANFILES += $(USAGE_OFF_XML_REPORT)
 
 #########################
-# Test Indicator Tracker
-#########################
-
-TESTS += \
-	test-indicator-tracker-test
-
-check_PROGRAMS += \
-	test-indicator-tracker \
-	test-indicator-tracker-owner
-
-test-indicator-tracker-test: test-indicator-tracker test-indicator-tracker-owner Makefile.am
-	@echo "#!/bin/bash -e" > $@
-	@echo $(XVFB_RUN) >> $@
-	@echo $(DBUS_RUNNER) --task $(builddir)/test-indicator-tracker --task-name Tracker --task $(builddir)/test-indicator-tracker-owner --parameter com.canonical.indicator.messages --task-name Messages --ignore-return --task $(builddir)/test-indicator-tracker-owner --parameter com.canonical.indicators.sound --task-name Sound --ignore-return >> $@
-	@chmod +x $@
-
-test_indicator_tracker_SOURCES = \
-	test-indicator-tracker.c
-
-test_indicator_tracker_CFLAGS = \
-	$(HUD_CFLAGS) \
-	$(COVERAGE_CFLAGS) \
-	-I$(top_srcdir)/src \
-	-I$(top_builddir)/src \
-	-Wall -Werror
-
-test_indicator_tracker_LDADD = \
-	$(HUD_LIBS)
-
-test_indicator_tracker_owner_SOURCES = \
-	test-indicator-tracker-owner.c
-
-test_indicator_tracker_owner_CFLAGS = \
-	$(HUD_CFLAGS) \
-	$(COVERAGE_CFLAGS) \
-	-Wall -Werror
-
-test_indicator_tracker_owner_LDADD = \
-	$(HUD_LIBS)
-
-#########################
 # Test Bad App Info
 #########################
 
@@ -402,52 +361,6 @@ test-good-app-info-tons-of-entries: good-app-info/tons-of-entries.hud-app-info t
 EXTRA_DIST += \
 	good-app-info/tons-of-entries.hud-app-info \
 	test-usage-dump-entries.sql
-
-#########################
-# Test App Indicator
-#########################
-
-TESTS += \
-	test-app-indicator-test
-
-check_PROGRAMS += \
-	test-app-indicator \
-	test-app-indicator-tracker
-
-test_app_indicator_SOURCES = \
-	test-app-indicator.c
-
-test_app_indicator_CFLAGS = \
-	$(HUD_CFLAGS) \
-	$(COVERAGE_CFLAGS) \
-	$(INDICATORTEST_CFLAGS) \
-	-I$(top_srcdir)/src \
-	-I$(top_builddir)/src \
-	-Wall -Werror
-
-test_app_indicator_LDADD = \
-	$(INDICATORTEST_LIBS) \
-	$(HUD_LIBS)
-
-test_app_indicator_tracker_SOURCES = \
-	test-app-indicator-tracker.c
-
-test_app_indicator_tracker_CFLAGS = \
-	$(HUD_CFLAGS) \
-	$(COVERAGE_CFLAGS) \
-	-I$(top_srcdir)/src \
-	-I$(top_builddir)/src \
-	-Wall -Werror
-
-test_app_indicator_tracker_LDADD = \
-	$(HUD_LIBS)
-
-test-app-indicator-test: test-app-indicator-tracker test-app-indicator Makefile.am
-	@echo "#!/bin/bash -e" > $@
-	@echo $(XVFB_RUN) >> $@
-	@echo export INDICATOR_SERVICE_SHUTDOWN_TIMEOUT=2000 >> $@
-	@echo $(DBUS_RUNNER) --task $(builddir)/test-app-indicator-tracker --task-name Tracker --task $(builddir)/test-app-indicator --task-name AppIndicator --task /usr/lib/indicator-application/indicator-application-service --task-name Service --ignore-return >> $@
-	@chmod +x $@
 
 #########################
 # Footer

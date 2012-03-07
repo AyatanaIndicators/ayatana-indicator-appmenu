@@ -22,6 +22,8 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #ifndef __DISTANCE_H__
 #define __DISTANCE_H__
 
+#include <glib-object.h>
+
 G_BEGIN_DECLS
 
 guint calculate_distance (const gchar * needle, GStrv haystack, GStrv * matched);

@@ -43,7 +43,7 @@ AS_IF([test "x$enable_deprecations" = xno],
 # GTK Doc
 ###########################
 
-GTK_DOC_CHECK([1.9])
+GTK_DOC_CHECK([1.9], [--flavour=no-tmpl])
 AC_CONFIG_MACRO_DIR(m4)
 
 ###########################
@@ -242,6 +242,7 @@ tests/Makefile
 tests/manual/Makefile
 docs/Makefile
 docs/man/Makefile
+docs/devel/Makefile
 ])
 
 ###########################
