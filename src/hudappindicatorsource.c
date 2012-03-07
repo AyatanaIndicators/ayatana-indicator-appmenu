@@ -222,7 +222,10 @@ hud_app_indicator_source_ready (GObject      *connection,
 
       g_variant_get (reply, "(a(sisossssss))", &iter);
       while ((description = g_variant_iter_next_value (iter)))
-        hud_app_indicator_source_add_indicator (source, description);
+        {
+          hud_app_indicator_source_add_indicator (source, description);
+          g_variant_unref (description);
+        }
       g_variant_iter_free (iter);
       g_variant_unref (reply);
 
