@@ -132,6 +132,7 @@ bus_method (GDBusConnection       *connection,
         {
           g_dbus_method_invocation_return_error (invocation, G_DBUS_ERROR, G_DBUS_ERROR_INVALID_ARGS,
                                                  "item key has invalid format");
+          g_variant_unref (item_key);
           return;
         }
 
