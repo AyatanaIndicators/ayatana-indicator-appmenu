@@ -43,6 +43,9 @@
  * This is the class vtable for #HudItem.
  **/
 
+static GHashTable *hud_item_table;
+static guint64 hud_item_next_id;
+
 struct _HudItemPrivate
 {
   GObject parent_instance;
@@ -52,6 +55,7 @@ struct _HudItemPrivate
   HudStringList *tokens;
   gboolean enabled;
   guint usage;
+  guint64 id;
 };
 
 G_DEFINE_TYPE (HudItem, hud_item, G_TYPE_OBJECT)
@@ -61,6 +65,7 @@ hud_item_finalize (GObject *object)
 {
   HudItem *item = HUD_ITEM (object);
 
+  g_hash_table_remove (hud_item_table, &item->priv->id);
   hud_string_list_unref (item->priv->tokens);
   g_free (item->priv->desktop_file);
 
@@ -78,6 +83,8 @@ static void
 hud_item_class_init (HudItemClass *class)
 {
   GObjectClass *gobject_class = G_OBJECT_CLASS (class);
+
+  hud_item_table = g_hash_table_new (g_int64_hash, g_int64_equal);
 
   gobject_class->finalize = hud_item_finalize;
 
@@ -110,6 +117,9 @@ hud_item_construct (GType          g_type,
   item->priv->tokens = hud_string_list_ref (tokens);
   item->priv->desktop_file = g_strdup (desktop_file);
   item->priv->enabled = enabled;
+  item->priv->id = hud_item_next_id++;
+
+  g_hash_table_insert (hud_item_table, &item->priv->id, item);
 
   //item->usage = usage_tracker_get_usage (usage_tracker_get_instance (), desktop_file, identifier);
 
@@ -240,4 +250,38 @@ gboolean
 hud_item_get_enabled (HudItem *item)
 {
   return item->priv->enabled;
+}
+
+/**
+ * hud_item_get_id:
+ * @item: a #HudItem
+ *
+ * Gets the unique identifier of this #HudItem.
+ *
+ * The identifier can be used to refetch the item using
+ * hud_item_lookup() for as long as the item has not been destroyed.
+ *
+ * Returns: the ID of the item
+ **/
+guint64
+hud_item_get_id (HudItem *item)
+{
+  return item->priv->id;
+}
+
+/**
+ * hud_item_lookup:
+ * @id: an item identifier
+ *
+ * Looks up a #HudItem by its ID.
+ *
+ * The ID for a #HudItem can be queried with hud_item_get_id().
+ *
+ * Returns: (transfer none): the #HudItem with the given @id, or %NULL
+ *   if none exists
+ **/
+HudItem *
+hud_item_lookup (guint64 id)
+{
+  return g_hash_table_lookup (hud_item_table, &id);
 }

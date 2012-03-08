@@ -70,5 +70,7 @@ const gchar *           hud_item_get_app_icon                           (HudItem
 const gchar *           hud_item_get_item_icon                          (HudItem       *item);
 guint                   hud_item_get_usage                              (HudItem       *item);
 gboolean                hud_item_get_enabled                            (HudItem       *item);
+guint64                 hud_item_get_id                                 (HudItem       *item);
+HudItem *               hud_item_lookup                                 (guint64        id);
 
 #endif /* __HUD_ITEM_H__ */

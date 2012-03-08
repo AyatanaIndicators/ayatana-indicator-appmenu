@@ -36,13 +36,9 @@ GVariant *
 describe_query (HudQuery *query)
 {
   GVariantBuilder builder;
-  GVariant *query_key;
-  guint64 generation;
   gint n, i;
 
-  generation = hud_query_get_generation (query);
   n = hud_query_get_n_results (query);
-  query_key = hud_query_get_query_key (query);
 
   g_variant_builder_init (&builder, G_VARIANT_TYPE ("(sa(sssssv)v)"));
 
@@ -63,12 +59,12 @@ describe_query (HudQuery *query)
                              hud_item_get_app_icon (item),
                              hud_item_get_item_icon (item),
                              "" /* complete text */ , "" /* accel */,
-                             g_variant_new ("(vtu)", query_key, generation, i));
+                             g_variant_new_uint64 (hud_item_get_id (item)));
     }
   g_variant_builder_close (&builder);
 
   /* Query key */
-  g_variant_builder_add (&builder, "v", query_key);
+  g_variant_builder_add (&builder, "v", hud_query_get_query_key (query));
 
   return g_variant_builder_end (&builder);
 }
@@ -82,25 +78,6 @@ query_changed (HudQuery *query,
   g_dbus_connection_emit_signal (connection, NULL, DBUS_PATH,
                                  DBUS_IFACE, "UpdatedQuery",
                                  describe_query (query), NULL);
-}
-
-static gboolean
-unpack_key (GVariant  *parameters,
-            GVariant **query_key,
-            guint64   *generation,
-            guint     *i)
-{
-  gboolean success;
-  GVariant *key;
-
-  g_variant_get_child (parameters, 0, "v", &key);
-
-  if ((success = g_variant_is_of_type (key, G_VARIANT_TYPE ("(vtu)"))))
-    g_variant_get (key, "(vtu)", query_key, generation, i);
-
-  g_variant_unref (key);
-
-  return success;
 }
 
 static GVariant *
@@ -145,48 +122,32 @@ bus_method (GDBusConnection       *connection,
 
   else if (g_str_equal (method_name, "ExecuteQuery"))
     {
-      GVariant *query_key;
-      guint64 generation;
-      HudQuery *query;
-      guint i;
+      GVariant *platform_data;
+      GVariant *item_key;
+      HudItem *item;
 
-      /* FIXME: ExecuteQuery DBus API should be changed to make this less awkward. */
-      if (!unpack_key (parameters, &query_key, &generation, &i))
+      g_variant_get_child (parameters, 0, "v", &item_key);
+
+      if (!g_variant_is_of_type (item_key, G_VARIANT_TYPE_UINT64))
         {
           g_dbus_method_invocation_return_error (invocation, G_DBUS_ERROR, G_DBUS_ERROR_INVALID_ARGS,
-                                                 "query key has invalid format");
+                                                 "item key has invalid format");
           return;
         }
 
-      query = hud_query_lookup (query_key);
-      g_variant_unref (query_key);
+      item = hud_item_lookup (g_variant_get_uint64 (item_key));
+      g_variant_unref (item_key);
 
-      if (query == NULL)
+      if (item == NULL)
         {
           g_dbus_method_invocation_return_error (invocation, G_DBUS_ERROR, G_DBUS_ERROR_INVALID_ARGS,
-                                                 "query specified by query key does not exist");
+                                                 "item specified by item key does not exist");
           return;
         }
 
-      if (generation != hud_query_get_generation (query))
-        {
-          g_dbus_method_invocation_return_error (invocation, G_DBUS_ERROR, G_DBUS_ERROR_INVALID_ARGS,
-                                                 "query specified by query key has changed (%lu v %lu)",
-                                                 generation, hud_query_get_generation (query));
-          return;
-        }
-
-      if (i < hud_query_get_n_results (query))
-        {
-          GVariant *platform_data;
-          HudResult *result;
-
-          result = hud_query_get_result_by_index (query, i);
-
-          platform_data = unpack_platform_data (parameters);
-          hud_item_activate (hud_result_get_item (result), platform_data);
-          g_variant_unref (platform_data);
-        }
+      platform_data = unpack_platform_data (parameters);
+      hud_item_activate (item, platform_data);
+      g_variant_unref (platform_data);
 
       g_dbus_method_invocation_return_value (invocation, NULL);
     }
