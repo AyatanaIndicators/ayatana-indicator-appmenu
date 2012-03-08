@@ -36,8 +36,6 @@ HudQuery *              hud_query_new                                   (HudSour
                                                                          const gchar *search_string,
                                                                          gint         num_results);
 
-guint64                 hud_query_get_generation                        (HudQuery    *query);
-
 GVariant *              hud_query_get_query_key                         (HudQuery    *query);
 
 HudResult *             hud_query_get_result_by_index                   (HudQuery    *query,
