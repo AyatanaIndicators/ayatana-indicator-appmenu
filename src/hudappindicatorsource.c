@@ -81,30 +81,30 @@ hud_app_indicator_source_add_indicator (HudAppIndicatorSource *source,
   const gchar *dbus_name;
   const gchar *dbus_path;
   GSequenceIter *iter;
+  const gchar *id;
   gint32 position;
   gchar *title;
 
   g_variant_get_child (description, 1, "i", &position);
   g_variant_get_child (description, 2, "&s", &dbus_name);
   g_variant_get_child (description, 3, "&o", &dbus_path);
+  g_variant_get_child (description, 8, "&s", &id);
   g_variant_get_child (description, 9, "s", &title);
 
   if (title[0] == '\0')
     {
-      const gchar *id;
-
       g_free (title);
       /* TRANSLATORS:  This is used for Application indicators that
          are not providing a title string.  The '%s' represents the
          unique ID that the app indicator provides, but it is usually
          the package name and not generally human readable.  An example
          for Network Manager would be 'nm-applet'. */
-      g_variant_get_child (description, 8, "&s", &id);
       title = g_strdup_printf(_("Untitled Indicator (%s)"), id);
     }
-  g_debug ("adding appindicator at %d ('%s', %s, %s)", position, title, dbus_name, dbus_path);
+  g_debug ("adding appindicator %s at %d ('%s', %s, %s)", id, position, title, dbus_name, dbus_path);
 
-  collector = hud_dbusmenu_collector_new_for_endpoint (title, hud_settings.indicator_penalty, dbus_name, dbus_path);
+  collector = hud_dbusmenu_collector_new_for_endpoint (id, title, hud_settings.indicator_penalty,
+                                                       dbus_name, dbus_path);
   g_signal_connect (collector, "changed", G_CALLBACK (hud_app_indicator_source_collector_changed), source);
 
   iter = g_sequence_get_iter_at_pos (source->indicators, position);

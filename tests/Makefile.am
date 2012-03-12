@@ -43,6 +43,7 @@ test_distance_CFLAGS = \
 	-Wall -Werror
 
 test_distance_LDADD = \
+	../src/libhud-service.a		\
 	$(HUD_LIBS)
 
 DISTCLEANFILES += $(DISTANCE_XML_REPORT)
@@ -84,6 +85,7 @@ test_usage_db_simple_CFLAGS = \
 	-Wall -Werror
 
 test_usage_db_simple_LDADD = \
+	../src/libhud-service.a		\
 	$(HUD_LIBS)
 
 DISTCLEANFILES += $(USAGE_DB_SIMPLE_XML_REPORT)
@@ -126,6 +128,7 @@ test_usage_db_old_CFLAGS = \
 	-Wall -Werror
 
 test_usage_db_old_LDADD = \
+	../src/libhud-service.a		\
 	$(HUD_LIBS)
 
 DISTCLEANFILES += $(USAGE_DB_OLD_XML_REPORT)
@@ -170,6 +173,7 @@ test_usage_db_ancient_CFLAGS = \
 	-Wall -Werror
 
 test_usage_db_ancient_LDADD = \
+	../src/libhud-service.a		\
 	$(HUD_LIBS)
 
 EXTRA_DIST += \
@@ -214,6 +218,7 @@ test_usage_db_testapp_CFLAGS = \
 	-Wall -Werror
 
 test_usage_db_testapp_LDADD = \
+	../src/libhud-service.a		\
 	$(HUD_LIBS)
 
 EXTRA_DIST += \
@@ -319,6 +324,7 @@ test_bad_app_info_CFLAGS = \
 	-Wall -Werror
 
 test_bad_app_info_LDADD = \
+	../src/libhud-service.a		\
 	$(HUD_LIBS)
 
 #########################
@@ -342,6 +348,7 @@ test_load_app_info_CFLAGS = \
 	-Wall -Werror
 
 test_load_app_info_LDADD = \
+	../src/libhud-service.a		\
 	$(HUD_LIBS)
 
 test-good-app-info-tons-of-entries: good-app-info/tons-of-entries.hud-app-info test-load-app-info test-usage-dump-entries.sql Makefile.am

@@ -1,6 +1,8 @@
 indicator-appmenu (0.3.92-0ubuntu1) UNRELEASED; urgency=low
 
   * Backport r175 to fix sync issues
+  * Backport desrt's current work to add back hud syntax highlight and 
+    hud usage tracking
 
   [ Ted Gould ]
   * New upstream release.
