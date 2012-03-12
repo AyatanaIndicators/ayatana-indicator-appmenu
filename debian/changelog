@@ -1,12 +1,15 @@
 indicator-appmenu (0.3.92-0ubuntu1) UNRELEASED; urgency=low
 
+  * Backport r175 to fix sync issues
+
+  [ Ted Gould ]
   * New upstream release.
     * Docbook parsing build error (LP: #931777)
     * Ensure variants get valid strings (LP: #934429)
     * Typos in translator comments (LP: #945445)
     * Add GMenuModel support to HUD
 
- -- Ted Gould <ted@ubuntu.com>  Wed, 07 Mar 2012 15:25:00 -0600
+ -- Sebastien Bacher <seb128@ubuntu.com>  Mon, 12 Mar 2012 19:02:37 +0100
 
 indicator-appmenu (0.3.91-0ubuntu2) precise; urgency=low
 

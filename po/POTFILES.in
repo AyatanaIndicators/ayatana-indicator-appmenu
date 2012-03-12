@@ -1,19 +1,15 @@
 data/com.canonical.indicator.appmenu.gschema.xml.in
 data/com.canonical.indicator.appmenu.hud.gschema.xml.in
 data/com.canonical.indicator.appmenu.hud.search.gschema.xml.in
-src/create-db.c
 src/distance.c
 src/dump-app-info.c
 src/gdk-get-func.c
-src/gen-application-menu-registrar.xml.c
-src/gen-application-menu-renderer.xml.c
 src/hudappindicatorsource.c
 src/hudappmenuregistrar.c
 src/hud-cli.c
 src/huddbusmenucollector.c
 src/hud-dump-application.c
 src/hudindicatorsource.c
-src/hud.interface.c
 src/huditem.c
 src/hudmenumodelcollector.c
 src/hudquery.c
@@ -25,7 +21,6 @@ src/hudstringlist.c
 src/hud-verify-app-info.c
 src/hudwindowsource.c
 src/indicator-appmenu.c
-src/indicator-appmenu-marshal.c
 src/load-app-info.c
 src/usage-tracker.c
 src/window-menus.c
