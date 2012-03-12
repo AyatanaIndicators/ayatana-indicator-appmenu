@@ -1,8 +1,8 @@
-indicator-appmenu (0.3.92-0ubuntu1) UNRELEASED; urgency=low
+indicator-appmenu (0.3.92-0ubuntu1) precise; urgency=low
 
   * Backport r175 to fix sync issues
   * Backport desrt's current work to add back hud syntax highlight and 
-    hud usage tracking
+    hud usage tracking, fixes a segfault as well (lp: #950402)
 
   [ Ted Gould ]
   * New upstream release.
@@ -11,7 +11,7 @@ indicator-appmenu (0.3.92-0ubuntu1) UNRELEASED; urgency=low
     * Typos in translator comments (LP: #945445)
     * Add GMenuModel support to HUD
 
- -- Sebastien Bacher <seb128@ubuntu.com>  Mon, 12 Mar 2012 19:02:37 +0100
+ -- Sebastien Bacher <seb128@ubuntu.com>  Mon, 12 Mar 2012 21:02:50 +0100
 
 indicator-appmenu (0.3.91-0ubuntu2) precise; urgency=low
 

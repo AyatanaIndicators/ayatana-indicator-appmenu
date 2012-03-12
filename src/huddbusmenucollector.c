@@ -390,7 +390,8 @@ hud_dbusmenu_collector_setup_endpoint (HudDbusmenuCollector *collector,
   if (bus_name && object_path)
     {
       collector->client = dbusmenu_client_new (bus_name, object_path);
-      g_signal_connect (collector->client, "root-changed", G_CALLBACK (hud_dbusmenu_collector_root_changed), collector);
+      g_signal_connect_object (collector->client, "root-changed",
+                               G_CALLBACK (hud_dbusmenu_collector_root_changed), collector, 0);
       hud_dbusmenu_collector_setup_root (collector, dbusmenu_client_get_root (collector->client));
     }
 }
