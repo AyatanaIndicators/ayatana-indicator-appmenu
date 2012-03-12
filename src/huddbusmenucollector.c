@@ -208,6 +208,7 @@ struct _HudDbusmenuCollector
 
   DbusmenuClient *client;
   DbusmenuMenuitem *root;
+  gchar *application_id;
   HudStringList *prefix;
   GHashTable *items;
   guint penalty;
@@ -299,7 +300,7 @@ hud_dbusmenu_collector_property_changed (DbusmenuMenuitem *menuitem,
   else
     context = collector->prefix;
 
-  item = hud_dbusmenu_item_new (context, NULL, menuitem);
+  item = hud_dbusmenu_item_new (context, collector->application_id, menuitem);
   g_hash_table_remove (collector->items, menuitem);
   g_hash_table_insert (collector->items, menuitem, item);
 
@@ -467,7 +468,8 @@ hud_dbusmenu_collector_class_init (HudDbusmenuCollectorClass *class)
  * Returns: a new #HudDbusmenuCollector
  **/
 HudDbusmenuCollector *
-hud_dbusmenu_collector_new_for_endpoint (const gchar *prefix,
+hud_dbusmenu_collector_new_for_endpoint (const gchar *application_id,
+                                         const gchar *prefix,
                                          guint        penalty,
                                          const gchar *bus_name,
                                          const gchar *object_path)
@@ -475,6 +477,7 @@ hud_dbusmenu_collector_new_for_endpoint (const gchar *prefix,
   HudDbusmenuCollector *collector;
 
   collector = g_object_new (HUD_TYPE_DBUSMENU_COLLECTOR, NULL);
+  collector->application_id = g_strdup (application_id);
   if (prefix)
     collector->prefix = hud_string_list_cons (prefix, NULL);
   collector->penalty = penalty;
@@ -495,15 +498,22 @@ hud_dbusmenu_collector_new_for_endpoint (const gchar *prefix,
  * Returns: a new #HudDbusmenuCollector
  **/
 HudDbusmenuCollector *
-hud_dbusmenu_collector_new_for_window (BamfWindow *window)
+hud_dbusmenu_collector_new_for_window (BamfWindow  *window,
+                                       const gchar *desktop_file)
 {
   HudDbusmenuCollector *collector;
+  BamfApplication *application;
 
   collector = g_object_new (HUD_TYPE_DBUSMENU_COLLECTOR, NULL);
+  collector->application_id = g_strdup (desktop_file);
   collector->xid = bamf_window_get_xid (window);
   g_debug ("dbusmenu on %d", collector->xid);
   hud_app_menu_registrar_add_observer (hud_app_menu_registrar_get (), collector->xid,
                                        hud_dbusmenu_collector_registrar_observer_func, collector);
+
+  application = bamf_matcher_get_application_for_window (bamf_matcher_get_default (), window);
+  if (application != NULL)
+    collector->application_id = g_strdup (bamf_application_get_desktop_file (application));
 
   return collector;
 }

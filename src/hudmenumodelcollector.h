@@ -32,6 +32,7 @@ typedef struct _HudMenuModelCollector                       HudMenuModelCollecto
 
 GType                   hud_menu_model_collector_get_type               (void);
 
-HudMenuModelCollector * hud_menu_model_collector_get                    (BamfWindow *window);
+HudMenuModelCollector * hud_menu_model_collector_get                    (BamfWindow  *window,
+                                                                         const gchar *desktop_file);
 
 #endif /* __HUD_MENU_MODEL_COLLECTOR_H__ */

@@ -103,7 +103,8 @@ hud_app_indicator_source_add_indicator (HudAppIndicatorSource *source,
     }
   g_debug ("adding appindicator %s at %d ('%s', %s, %s)", id, position, title, dbus_name, dbus_path);
 
-  collector = hud_dbusmenu_collector_new_for_endpoint (title, hud_settings.indicator_penalty, dbus_name, dbus_path);
+  collector = hud_dbusmenu_collector_new_for_endpoint (id, title, hud_settings.indicator_penalty,
+                                                       dbus_name, dbus_path);
   g_signal_connect (collector, "changed", G_CALLBACK (hud_app_indicator_source_collector_changed), source);
 
   iter = g_sequence_get_iter_at_pos (source->indicators, position);
