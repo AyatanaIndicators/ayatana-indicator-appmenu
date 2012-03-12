@@ -142,9 +142,8 @@ hud_result_get_if_matched (HudItem     *item,
 
 /* recurse so that we can avoid having to prepend the string */
 static void
-hud_result_format_tokens (GString             *string,
-                          HudStringList       *tokens,
-                          const gchar * const *matched)
+hud_result_format_tokens (GString       *string,
+                          HudStringList *tokens)
 {
   HudStringList *tail;
   gchar *escaped;
@@ -153,7 +152,7 @@ hud_result_format_tokens (GString             *string,
 
   if (tail)
     {
-      hud_result_format_tokens (string, tail, matched);
+      hud_result_format_tokens (string, tail);
       g_string_append (string, " &gt; ");
     }
 
@@ -169,7 +168,7 @@ hud_result_format_description (HudResult *result)
   gint i;
 
   description = g_string_new (NULL);
-  hud_result_format_tokens (description, hud_item_get_tokens (result->item), (const gchar **) result->matched);
+  hud_result_format_tokens (description, hud_item_get_tokens (result->item));
 
   for (i = 0; result->matched[i]; i++)
     {
