@@ -53,6 +53,7 @@ struct _HudItemPrivate
   gchar *desktop_file;
 
   HudStringList *tokens;
+  gchar *usage_tag;
   gboolean enabled;
   guint usage;
   guint64 id;
@@ -91,6 +92,35 @@ hud_item_class_init (HudItemClass *class)
   g_type_class_add_private (class, sizeof (HudItemPrivate));
 }
 
+static void
+hud_item_format_tokens (GString       *string,
+                        HudStringList *tokens)
+{
+  HudStringList *tail;
+
+  tail = hud_string_list_get_tail (tokens);
+
+  if (tail)
+    {
+      hud_item_format_tokens (string, tail);
+      g_string_append (string, "||");
+    }
+
+  g_string_append (string, hud_string_list_get_head (tokens));
+}
+
+static void
+hud_item_setup_usage (HudItem *item)
+{
+  GString *tag;
+
+  tag = g_string_new (NULL);
+  hud_item_format_tokens (tag, item->priv->tokens);
+  item->priv->usage_tag = g_string_free (tag, FALSE);
+  item->priv->usage = usage_tracker_get_usage (usage_tracker_get_instance (),
+                                               item->priv->desktop_file, item->priv->usage_tag);
+}
+
 /**
  * hud_item_construct:
  * @g_type: a #GType
@@ -121,7 +151,8 @@ hud_item_construct (GType          g_type,
 
   g_hash_table_insert (hud_item_table, &item->priv->id, item);
 
-  //item->usage = usage_tracker_get_usage (usage_tracker_get_instance (), desktop_file, identifier);
+  if (desktop_file)
+    hud_item_setup_usage (item);
 
   return item;
 }
@@ -167,8 +198,12 @@ hud_item_activate (HudItem  *item,
   HUD_ITEM_GET_CLASS (item)
     ->activate (item, platform_data);
 
-  //usage_tracker_mark_usage (usage_tracker_get_instance (), item->desktop_file, item->identifier);
-  //item->usage = usage_tracker_get_usage (usage_tracker_get_instance (), item->desktop_file, item->identifier);
+  if (item->priv->usage_tag)
+    {
+      usage_tracker_mark_usage (usage_tracker_get_instance (), item->priv->desktop_file, item->priv->usage_tag);
+      item->priv->usage = usage_tracker_get_usage (usage_tracker_get_instance (),
+                                                   item->priv->desktop_file, item->priv->usage_tag);
+    }
 }
 
 /**
