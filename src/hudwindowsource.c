@@ -65,6 +65,8 @@ struct _HudWindowSource
   BamfMatcher *matcher;
 
   BamfWindow *active_window;
+  BamfApplication *active_application;
+  const gchar *active_desktop_file;
 };
 
 typedef GObjectClass HudWindowSourceClass;
@@ -136,38 +138,6 @@ hud_window_source_name_in_ignore_list (BamfWindow *window)
   return ignored;
 }
 
-static gboolean
-hud_window_source_should_ignore_window (HudWindowSource *source,
-                                        BamfWindow      *window)
-{
-  BamfApplication *application;
-  const gchar *desktop_file;
-
-  application = bamf_matcher_get_application_for_window (source->matcher, window);
-
-  if (application == NULL)
-    {
-      g_debug ("ignoring window with no application");
-      return TRUE;
-    }
-
-  desktop_file = bamf_application_get_desktop_file (application);
-
-  if (desktop_file == NULL)
-    {
-      g_debug ("ignoring application with no desktop file");
-      return TRUE;
-    }
-
-  if (hud_window_source_desktop_file_in_debug_list (desktop_file))
-    return TRUE;
-
-  if (hud_window_source_name_in_ignore_list (window))
-    return TRUE;
-
-  return FALSE;
-}
-
 static HudSource *
 hud_window_source_get_collector (HudWindowSource *source)
 {
@@ -221,6 +191,8 @@ hud_window_source_active_window_changed (BamfMatcher *matcher,
   HudWindowSource *source = user_data;
   HudSource *collector;
   BamfWindow *window;
+  BamfApplication *application;
+  const gchar *desktop_file;
 
   g_debug ("Switching windows");
 
@@ -238,7 +210,26 @@ hud_window_source_active_window_changed (BamfMatcher *matcher,
       return;
     }
 
-  if (hud_window_source_should_ignore_window (source, window))
+  if (hud_window_source_name_in_ignore_list (window))
+    return;
+
+  application = bamf_matcher_get_application_for_window (source->matcher, window);
+
+  if (application == NULL)
+    {
+      g_debug ("ignoring window with no application");
+      return;
+    }
+
+  desktop_file = bamf_application_get_desktop_file (application);
+
+  if (desktop_file == NULL)
+    {
+      g_debug ("ignoring application with no desktop file");
+      return;
+    }
+
+  if (hud_window_source_desktop_file_in_debug_list (desktop_file))
     return;
 
   g_debug ("new active window (xid %u)", bamf_window_get_xid (window));
@@ -247,8 +238,11 @@ hud_window_source_active_window_changed (BamfMatcher *matcher,
   if (collector)
     g_signal_handlers_disconnect_by_func (collector, hud_window_source_collector_changed, source);
 
+  g_clear_object (&source->active_application);
   g_clear_object (&source->active_window);
   source->active_window = g_object_ref (window);
+  source->active_application = g_object_ref (application);
+  source->active_desktop_file = desktop_file;
 
   collector = hud_window_source_get_collector (source);
   g_signal_connect_object (collector, "changed", G_CALLBACK (hud_window_source_collector_changed), source, 0);
@@ -276,6 +270,7 @@ hud_window_source_finalize (GObject *object)
   HudWindowSource *source = HUD_WINDOW_SOURCE (object);
 
   /* bamf matcher signals already disconnected in dispose */
+  g_clear_object (&source->active_application);
   g_clear_object (&source->active_window);
 
   G_OBJECT_CLASS (hud_window_source_parent_class)
