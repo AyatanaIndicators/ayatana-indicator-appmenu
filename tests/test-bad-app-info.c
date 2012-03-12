@@ -24,7 +24,6 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <glib/gstdio.h>
 #include <glib-object.h>
 #include "load-app-info.h"
-#include "load-app-info.c"
 
 static void
 build_db (sqlite3 * db)
