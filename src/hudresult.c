@@ -18,6 +18,8 @@
 
 #include "hudresult.h"
 
+#include <string.h>
+
 #include "hudsettings.h"
 #include "distance.h"
 
@@ -138,6 +140,64 @@ hud_result_get_if_matched (HudItem     *item,
     return NULL;
 }
 
+/* recurse so that we can avoid having to prepend the string */
+static void
+hud_result_format_tokens (GString             *string,
+                          HudStringList       *tokens,
+                          const gchar * const *matched)
+{
+  HudStringList *tail;
+  gchar *escaped;
+
+  tail = hud_string_list_get_tail (tokens);
+
+  if (tail)
+    {
+      hud_result_format_tokens (string, tail, matched);
+      g_string_append (string, " &gt; ");
+    }
+
+  escaped = g_markup_escape_text (hud_string_list_get_head (tokens), -1);
+  g_string_append (string, escaped);
+  g_free (escaped);
+}
+
+static void
+hud_result_format_description (HudResult *result)
+{
+  GString *description;
+  gint i;
+
+  description = g_string_new (NULL);
+  hud_result_format_tokens (description, hud_item_get_tokens (result->item), (const gchar **) result->matched);
+
+  for (i = 0; result->matched[i]; i++)
+    {
+      gchar *escaped;
+      gchar *match;
+
+      escaped = g_markup_escape_text (result->matched[i], -1);
+      match = strstr (description->str, escaped);
+
+      if (match != NULL)
+        {
+          gsize start, end;
+
+          start = match - description->str;
+          end = start + strlen (escaped);
+
+          /* modify the end first so that the modification to the start
+           * doesn't change the offset of the end */
+          g_string_insert (description, end, "</b>");
+          g_string_insert (description, start, "<b>");
+        }
+
+      g_free (escaped);
+    }
+
+  result->description = g_string_free (description, FALSE);
+}
+
 /**
  * hud_result_new:
  * @item: a #HudItem
@@ -165,7 +225,7 @@ hud_result_new (HudItem     *item,
   result = g_object_new (HUD_TYPE_RESULT, NULL);
   result->item = g_object_ref (item);
   result->distance = calculate_distance_from_list (search_string, hud_item_get_tokens (item), &result->matched);
-  result->description = hud_string_list_pretty_print (hud_item_get_tokens (result->item));
+  hud_result_format_description (result);
 
   result->distance += (result->distance * penalty) / 100;
 
