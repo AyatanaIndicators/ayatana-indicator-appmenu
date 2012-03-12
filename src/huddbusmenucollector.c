@@ -377,7 +377,7 @@ hud_dbusmenu_collector_setup_endpoint (HudDbusmenuCollector *collector,
                                        const gchar          *bus_name,
                                        const gchar          *object_path)
 {
-  g_debug ("endpoint is %s %s\n", bus_name, object_path);
+  g_debug ("endpoint is %s %s", bus_name, object_path);
 
   if (collector->client)
     {
@@ -501,7 +501,7 @@ hud_dbusmenu_collector_new_for_window (BamfWindow *window)
 
   collector = g_object_new (HUD_TYPE_DBUSMENU_COLLECTOR, NULL);
   collector->xid = bamf_window_get_xid (window);
-  g_debug ("dbusmenu on %d\n", collector->xid);
+  g_debug ("dbusmenu on %d", collector->xid);
   hud_app_menu_registrar_add_observer (hud_app_menu_registrar_get (), collector->xid,
                                        hud_dbusmenu_collector_registrar_observer_func, collector);
 
