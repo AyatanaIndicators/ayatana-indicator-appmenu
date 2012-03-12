@@ -6,7 +6,7 @@
 			<_description>
 				In order to have the application's menu items appear higher
 				in the search results a slight penalty is given to the indicator
-				menu items.  This value represents then percentage of that peanlty
+				menu items.  This value represents then percentage of that penalty
 				so a value of '50' is a 50% additional to the calculated distance.
 			</_description>
 		</key>

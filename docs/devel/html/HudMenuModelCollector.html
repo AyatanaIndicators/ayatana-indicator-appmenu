@@ -1,0 +1,115 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>HudMenuModelCollector</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.76.1">
+<link rel="home" href="index.html" title="hud-service Hacking Guide">
+<link rel="up" href="ch04.html" title="Sources">
+<link rel="prev" href="HudDbusmenuCollector.html" title="HudDbusmenuCollector">
+<link rel="next" href="ch05.html" title="Utility API">
+<meta name="generator" content="GTK-Doc V1.18 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="2">
+<tr valign="middle">
+<td><a accesskey="p" href="HudDbusmenuCollector.html"><img src="left.png" width="24" height="24" border="0" alt="Prev"></a></td>
+<td><a accesskey="u" href="ch04.html"><img src="up.png" width="24" height="24" border="0" alt="Up"></a></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="24" height="24" border="0" alt="Home"></a></td>
+<th width="100%" align="center">hud-service Hacking Guide</th>
+<td><a accesskey="n" href="ch05.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
+</tr>
+<tr><td colspan="5" class="shortcuts">
+<a href="#HudMenuModelCollector.synopsis" class="shortcut">Top</a>
+                   | 
+                  <a href="#HudMenuModelCollector.description" class="shortcut">Description</a>
+                   | 
+                  <a href="#HudMenuModelCollector.object-hierarchy" class="shortcut">Object Hierarchy</a>
+                   | 
+                  <a href="#HudMenuModelCollector.implemented-interfaces" class="shortcut">Implemented Interfaces</a>
+</td></tr>
+</table>
+<div class="refentry">
+<a name="HudMenuModelCollector"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="HudMenuModelCollector.top_of_page"></a>HudMenuModelCollector</span></h2>
+<p>HudMenuModelCollector — a <a class="link" href="HudSource.html" title="HudSource"><span class="type">HudSource</span></a> that collects <a href="HudItem.html"><span class="type">HudItems</span></a> from
+  <a href="http://library.gnome.org/devel/gio/unstable/GMenuModel.html"><span class="type">GMenuModel</span></a></p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="HudMenuModelCollector.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">                    <a class="link" href="HudMenuModelCollector.html#HudMenuModelCollector-struct" title="HudMenuModelCollector">HudMenuModelCollector</a>;
+<a class="link" href="HudMenuModelCollector.html" title="HudMenuModelCollector"><span class="returnvalue">HudMenuModelCollector</span></a> * <a class="link" href="HudMenuModelCollector.html#hud-menu-model-collector-get" title="hud_menu_model_collector_get ()">hud_menu_model_collector_get</a>    (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/libbamf/BamfWindow.html"><span class="type">BamfWindow</span></a> *window</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="HudMenuModelCollector.object-hierarchy"></a><h2>Object Hierarchy</h2>
+<pre class="synopsis">
+  <a href="http://library.gnome.org/devel/gobject/unstable/gobject-The-Base-Object-Type.html#GObject">GObject</a>
+   +----HudMenuModelCollector
+</pre>
+</div>
+<div class="refsect1">
+<a name="HudMenuModelCollector.implemented-interfaces"></a><h2>Implemented Interfaces</h2>
+<p>
+HudMenuModelCollector implements
+ <a class="link" href="HudSource.html" title="HudSource">HudSource</a>.</p>
+</div>
+<div class="refsect1">
+<a name="HudMenuModelCollector.description"></a><h2>Description</h2>
+<p>
+The <a class="link" href="HudMenuModelCollector.html" title="HudMenuModelCollector"><span class="type">HudMenuModelCollector</span></a> collects menu items from the menus
+associated with a window exported from an application using
+<a href="http://library.gnome.org/devel/gio/unstable/GMenuModel.html"><span class="type">GMenuModel</span></a>.  Activations are performed using <a href="http://library.gnome.org/devel/gio/unstable/GActionGroup.html"><span class="type">GActionGroup</span></a> in the
+usual way.
+</p>
+<p>
+The <a href="http://library.gnome.org/devel/gio/unstable/GMenuModel.html"><span class="type">GMenuModel</span></a> is acquired using <a href="http://library.gnome.org/devel/gio/unstable/GDBusMenuModel.html"><span class="type">GDBusMenuModel</span></a> according to the
+properties set on the <a href="/usr/share/gtk-doc/html/libbamf/BamfWindow.html"><span class="type">BamfWindow</span></a> which must be passed to
+<a class="link" href="HudMenuModelCollector.html#hud-menu-model-collector-get" title="hud_menu_model_collector_get ()"><code class="function">hud_menu_model_collector_get()</code></a>.
+</p>
+</div>
+<div class="refsect1">
+<a name="HudMenuModelCollector.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="HudMenuModelCollector-struct"></a><h3>HudMenuModelCollector</h3>
+<pre class="programlisting">typedef struct _HudMenuModelCollector HudMenuModelCollector;</pre>
+<p>
+This is an opaque structure type.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="hud-menu-model-collector-get"></a><h3>hud_menu_model_collector_get ()</h3>
+<pre class="programlisting"><a class="link" href="HudMenuModelCollector.html" title="HudMenuModelCollector"><span class="returnvalue">HudMenuModelCollector</span></a> * hud_menu_model_collector_get    (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/libbamf/BamfWindow.html"><span class="type">BamfWindow</span></a> *window</code></em>);</pre>
+<p>
+If the given <em class="parameter"><code>window</code></em> has <span class="type">GMenuModel-style</span> menus then returns a
+collector for them, otherwise returns <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>window</code></em> :</span></p></td>
+<td>a <a href="/usr/share/gtk-doc/html/libbamf/BamfWindow.html"><span class="type">BamfWindow</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a <a class="link" href="HudMenuModelCollector.html" title="HudMenuModelCollector"><span class="type">HudMenuModelCollector</span></a>, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.18</div>
+</body>
+</html>

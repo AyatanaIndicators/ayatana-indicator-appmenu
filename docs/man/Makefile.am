@@ -6,7 +6,7 @@ man_MANS = \
 	hud-verify-app-info.1
 
 .xml.1:
-	@$(XSLT_PROC) -nonet http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl $<
+	@env -u XML_CATALOG_FILES $(XSLT_PROC) -nonet http://docbook.sourceforge.net/release/xsl/current/manpages/docbook.xsl $<
 
 EXTRA_DIST = \
 	$(man_MANS) \

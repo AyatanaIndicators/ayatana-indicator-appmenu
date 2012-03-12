@@ -19,69 +19,22 @@ You should have received a copy of the GNU General Public License along
 with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#include "distance.h"
+
 #include <glib-object.h>
 #include <glib/gprintf.h>
 #include <glib/gi18n.h>
 #include <gio/gio.h>
 
-#include "distance.h"
-#include "utils.h"
+#include "hudsettings.h"
 
-#define ADD_PENALTY         get_settings_uint(get_settings(), "add-penalty",        10)
-#define PRE_ADD_PENALTY     get_settings_uint(get_settings(), "add-penalty-pre",    1)
-#define DROP_PENALTY        get_settings_uint(get_settings(), "drop-penalty",       10)
-#define END_DROP_PENALTY    get_settings_uint(get_settings(), "drop-penalty-end",   10)
-#define TRANSPOSE_PENALTY   get_settings_uint(get_settings(), "transpose-penalty",  10)
-#define SWAP_PENALTY        get_settings_uint(get_settings(), "swap-penalty",       10)
-#define SWAP_CASE_PENALTY   get_settings_uint(get_settings(), "swap-penalty-case",  1)
-
-/* Checks to see if we can get the setting, and if we can use that,
-   otherwise use the fallback value we have here */
-static GSettings *
-get_settings (void)
-{
-	static gboolean first = TRUE;
-	static GSettings * settings = NULL;
-
-	if (first) {
-		first = FALSE;
-		if (settings_schema_exists("com.canonical.indicator.appmenu.hud.search")) {
-			settings = g_settings_new("com.canonical.indicator.appmenu.hud.search");
-		}
-	}
-	
-	return settings;
-}
-
-/* Checks to see if a character is in the list of characters
-   to be ignored */
-static gboolean
-ignore_character (gunichar inchar)
-{
-	static gchar * ignore = NULL;
-	if (ignore == NULL) {
-		/* TRANSLATORS: These are chacaters that should not be considered
-		   mistakes in the comparison functions.  Typically they are gramatical
-		   characters that can be found in menus. */
-		ignore = _(" _->");
-		if (!g_utf8_validate(ignore, -1, NULL)) {
-			g_warning("Translated ignore characters are not valid UTF-8");
-			ignore = "";
-		}
-	}
-
-	gchar * head = ignore;
-	while (head != NULL && head[0] != '\0') {
-		gunichar test = g_utf8_get_char(head);
-		if (test == inchar) {
-			return TRUE;
-		}
-
-		head = g_utf8_next_char(head);
-	}
-
-	return FALSE;
-}
+#define ADD_PENALTY         hud_settings.add_penalty
+#define PRE_ADD_PENALTY     hud_settings.add_penalty_pre
+#define DROP_PENALTY        hud_settings.drop_penalty
+#define END_DROP_PENALTY    hud_settings.drop_penalty_end
+#define TRANSPOSE_PENALTY   hud_settings.transpose_penalty
+#define SWAP_PENALTY        hud_settings.swap_penalty
+#define SWAP_CASE_PENALTY   hud_settings.swap_penalty_case
 
 /* Figure out how far off we are from a set of characters, basically
    whether they match or not */
@@ -89,8 +42,6 @@ static guint
 swap_cost (gunichar a, gunichar b)
 {
 	if (a == b)
-		return 0;
-	if (ignore_character(a) || ignore_character(b))
 		return 0;
 	if (g_unichar_toupper(a) == g_unichar_toupper(b))
 		return SWAP_CASE_PENALTY; /* Some penalty, but close */

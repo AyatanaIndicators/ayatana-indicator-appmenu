@@ -25,7 +25,21 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define DUMP_MATRIX 1
 #include "distance.h"
 #include "distance.c"
-#include "utils.c"
+
+/* hardcode some parameters so the test doesn't fail if the user
+ * has bogus things in GSettings.
+ */
+HudSettings hud_settings = {
+	.indicator_penalty = 50,
+	.add_penalty = 10,
+	.add_penalty_pre = 1,
+	.drop_penalty = 10,
+	.drop_penalty_end = 10,
+	.transpose_penalty = 10,
+	.swap_penalty = 10,
+	.swap_penalty_case = 1,
+	.max_distance = 30
+};
 
 /* Ensure the base calculation works */
 static void

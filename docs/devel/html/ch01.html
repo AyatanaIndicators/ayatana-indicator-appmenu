@@ -1,0 +1,102 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>Overview</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.76.1">
+<link rel="home" href="index.html" title="hud-service Hacking Guide">
+<link rel="up" href="index.html" title="hud-service Hacking Guide">
+<link rel="prev" href="index.html" title="hud-service Hacking Guide">
+<link rel="next" href="ch02.html" title="Data Types">
+<meta name="generator" content="GTK-Doc V1.18 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="2"><tr valign="middle">
+<td><a accesskey="p" href="index.html"><img src="left.png" width="24" height="24" border="0" alt="Prev"></a></td>
+<td> </td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="24" height="24" border="0" alt="Home"></a></td>
+<th width="100%" align="center">hud-service Hacking Guide</th>
+<td><a accesskey="n" href="ch02.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
+</tr></table>
+<div class="chapter">
+<div class="titlepage"><div><div><h2 class="title">
+<a name="idp9774464"></a>Overview</h2></div></div></div>
+<p>
+    The HUD consists of the interface in the shell and a backend service, <code class="literal">hud-service</code>. This
+    document attempts to describe the internal architecture of the service.
+  </p>
+<p>
+    The most important type in the service is <a class="link" href="HudSource.html" title="HudSource"><span class="type">HudSource</span></a>. This is
+    an interface. Each source is an entity against which a search can be performed. There is one interface
+    method: <a class="link" href="HudSource.html#hud-source-search" title="hud_source_search ()"><code class="function">hud_source_search()</code></a>. This is the main
+    mechanism by which queries are performed in the HUD. The interface also features a signal
+    <a class="link" href="HudSource.html#HudSource-changed" title='The "changed" signal'><code class="function">::changed</code></a> that is emitted when the result of
+    searching may have changed.
+  </p>
+<p>
+    Several implementations of <a class="link" href="HudSource.html" title="HudSource"><span class="type">HudSource</span></a> exist. A particular type
+    of source that gathers possible search results is referred to as a "collector". There are two of these:
+    <a class="link" href="HudMenuModelCollector.html" title="HudMenuModelCollector"><span class="type">HudMenuModelCollector</span></a> (for
+    <a href="http://library.gnome.org/devel/gio/unstable/GDBusMenuModel.html"><span class="type">GDBusMenuModel</span></a>) and
+    <a class="link" href="HudDbusmenuCollector.html" title="HudDbusmenuCollector"><span class="type">HudDbusmenuCollector</span></a> for Dbusmenu. These
+    "collector" sources only function when targetted at a particular endpoint (ie: a unique name and object path
+    on D-Bus). This is only useful for searching for items in one particular set of menus.
+  </p>
+<p>
+    <a class="link" href="HudSourceList.html" title="HudSourceList"><span class="type">HudWindowSource</span></a> acts as a multiplexer. It is responsible
+    for determining the currently focused window and performing searches submitted to it against the correct
+    collector for that window. Similarly, there are
+    <a class="link" href="HudSourceList.html" title="HudSourceList"><span class="type">HudIndicatorSource</span></a> and
+    <a class="link" href="HudSourceList.html" title="HudSourceList"><span class="type">HudAppIndicatorSource</span></a> for performing searches against the
+    system and application indicators, respectively.
+  </p>
+<p>
+    Finally, there is <a class="link" href="HudSourceList.html" title="HudSourceList"><span class="type">HudSourceList</span></a> which functions as a list
+    of multiple other <a class="link" href="HudSource.html" title="HudSource"><span class="type">HudSource</span></a>s (such that performing a search
+    against the list gives the combined result of searches performed against each of the contained sources).
+  </p>
+<p>
+    The <code class="literal">hud-service</code> initialises itself by creating the window, indicator and appindicator
+    sources and putting each of them into a <a class="link" href="HudSourceList.html" title="HudSourceList"><span class="type">HudSourceList</span></a>.
+    This is the source against which all queries submitted to the service are executed.
+  </p>
+<p>
+    Collectors are essentially a collection of <a class="link" href="HudItem.html" title="HudItem"><span class="type">HudItem</span></a>s. Each item
+    corresponds to an action that may appear in the results of a search made with the HUD. Items have a list of
+    strings describing themselves (eg: <code class="literal">['File', 'Open']</code> or
+    <code class="literal">['Bluetooth', 'Settings...']</code>) and some information about their origin (eg: the desktop
+    file of the application or indicator that created them). An item can be disabled, in which case it will
+    never appear in the results of a search. Items are activated using
+    <a class="link" href="HudItem.html#hud-item-activate" title="hud_item_activate ()"><code class="function">hud_item_activate()</code></a> which is implemented by
+    the collector in the appropriate way.
+  </p>
+<p>
+    The result of performing a search is a set of <a class="link" href="HudResult.html" title="HudResult"><span class="type">HudResult</span></a>s.
+    Each result refers to <a class="link" href="HudItem.html" title="HudItem"><span class="type">HudItem</span></a> along with information about why
+    that item matched, and how closely.
+  </p>
+<p>
+    The toplevel interface to performing a query is <a class="link" href="HudQuery.html" title="HudQuery"><span class="type">HudQuery</span></a>. It
+    takes a search string and a reference to a <a class="link" href="HudSource.html" title="HudSource"><span class="type">HudSource</span></a> to search
+    (which, as implemented, is always the toplevel 'list' source). It submits the search to the source then
+    sorts the results by relevence. If the source changes, it resubmits the search. The interface of
+    <a class="link" href="HudQuery.html" title="HudQuery"><span class="type">HudQuery</span></a> is an ordered sequence of results.
+    <a class="link" href="HudQuery.html" title="HudQuery"><span class="type">HudQuery</span></a> has its own
+    <a class="link" href="HudQuery.html#HudQuery-changed" title='The "changed" signal'><code class="function">::changed</code></a> signal.
+  </p>
+<p>
+    <code class="literal">hud-service</code> is essentially a simple D-Bus interface corresponding to
+    <a class="link" href="HudQuery.html" title="HudQuery"><span class="type">HudQuery</span></a> as used against the toplevel source list. New queries
+    can be created using <code class="function">StartQuery</code>. Queries can be destroyed using
+    <code class="function">CloseQuery</code>. <a class="link" href="HudItem.html" title="HudItem"><span class="type">HudItem</span></a>s corresponding to
+    results from the query can be activated using <code class="function">ExecuteQuery</code>. Finally, the
+    <a class="link" href="HudQuery.html#HudQuery-changed" title='The "changed" signal'><code class="function">::changed</code></a> signal is reported as the
+    <code class="function">UpdatedQuery</code> D-Bus signal.
+  </p>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.18</div>
+</body>
+</html>

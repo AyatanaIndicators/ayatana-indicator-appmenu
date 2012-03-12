@@ -1,3 +1,13 @@
+indicator-appmenu (0.3.92-0ubuntu1) UNRELEASED; urgency=low
+
+  * New upstream release.
+    * Docbook parsing build error (LP: #931777)
+    * Ensure variants get valid strings (LP: #934429)
+    * Typos in translator comments (LP: #945445)
+    * Add GMenuModel support to HUD
+
+ -- Ted Gould <ted@ubuntu.com>  Wed, 07 Mar 2012 15:25:00 -0600
+
 indicator-appmenu (0.3.91-0ubuntu2) precise; urgency=low
 
   * Backport r165 to fix a segfault in the hud service which gets quite

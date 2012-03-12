@@ -1,0 +1,271 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<title>HudStringList</title>
+<meta name="generator" content="DocBook XSL Stylesheets V1.76.1">
+<link rel="home" href="index.html" title="hud-service Hacking Guide">
+<link rel="up" href="ch02.html" title="Data Types">
+<link rel="prev" href="ch02.html" title="Data Types">
+<link rel="next" href="ch03.html" title="Queries, Results, Items">
+<meta name="generator" content="GTK-Doc V1.18 (XML mode)">
+<link rel="stylesheet" href="style.css" type="text/css">
+</head>
+<body bgcolor="white" text="black" link="#0000FF" vlink="#840084" alink="#0000FF">
+<table class="navigation" id="top" width="100%" summary="Navigation header" cellpadding="2" cellspacing="2">
+<tr valign="middle">
+<td><a accesskey="p" href="ch02.html"><img src="left.png" width="24" height="24" border="0" alt="Prev"></a></td>
+<td><a accesskey="u" href="ch02.html"><img src="up.png" width="24" height="24" border="0" alt="Up"></a></td>
+<td><a accesskey="h" href="index.html"><img src="home.png" width="24" height="24" border="0" alt="Home"></a></td>
+<th width="100%" align="center">hud-service Hacking Guide</th>
+<td><a accesskey="n" href="ch03.html"><img src="right.png" width="24" height="24" border="0" alt="Next"></a></td>
+</tr>
+<tr><td colspan="5" class="shortcuts">
+<a href="#hud-HudStringList.synopsis" class="shortcut">Top</a>
+                   | 
+                  <a href="#hud-HudStringList.description" class="shortcut">Description</a>
+</td></tr>
+</table>
+<div class="refentry">
+<a name="hud-HudStringList"></a><div class="titlepage"></div>
+<div class="refnamediv"><table width="100%"><tr>
+<td valign="top">
+<h2><span class="refentrytitle"><a name="hud-HudStringList.top_of_page"></a>HudStringList</span></h2>
+<p>HudStringList — a refcounted list of strings</p>
+</td>
+<td valign="top" align="right"></td>
+</tr></table></div>
+<div class="refsynopsisdiv">
+<a name="hud-HudStringList.synopsis"></a><h2>Synopsis</h2>
+<pre class="synopsis">                    <a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList">HudStringList</a>;
+<a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList"><span class="returnvalue">HudStringList</span></a> *     <a class="link" href="hud-HudStringList.html#hud-string-list-cons" title="hud_string_list_cons ()">hud_string_list_cons</a>                (<em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *head</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList"><span class="type">HudStringList</span></a> *tail</code></em>);
+<a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList"><span class="returnvalue">HudStringList</span></a> *     <a class="link" href="hud-HudStringList.html#hud-string-list-cons-label" title="hud_string_list_cons_label ()">hud_string_list_cons_label</a>          (<em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *label</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList"><span class="type">HudStringList</span></a> *tail</code></em>);
+const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       <a class="link" href="hud-HudStringList.html#hud-string-list-get-head" title="hud_string_list_get_head ()">hud_string_list_get_head</a>            (<em class="parameter"><code><a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList"><span class="type">HudStringList</span></a> *list</code></em>);
+<a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList"><span class="returnvalue">HudStringList</span></a> *     <a class="link" href="hud-HudStringList.html#hud-string-list-get-tail" title="hud_string_list_get_tail ()">hud_string_list_get_tail</a>            (<em class="parameter"><code><a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList"><span class="type">HudStringList</span></a> *list</code></em>);
+<a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *             <a class="link" href="hud-HudStringList.html#hud-string-list-pretty-print" title="hud_string_list_pretty_print ()">hud_string_list_pretty_print</a>        (<em class="parameter"><code><a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList"><span class="type">HudStringList</span></a> *list</code></em>);
+<a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList"><span class="returnvalue">HudStringList</span></a> *     <a class="link" href="hud-HudStringList.html#hud-string-list-ref" title="hud_string_list_ref ()">hud_string_list_ref</a>                 (<em class="parameter"><code><a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList"><span class="type">HudStringList</span></a> *list</code></em>);
+<span class="returnvalue">void</span>                <a class="link" href="hud-HudStringList.html#hud-string-list-unref" title="hud_string_list_unref ()">hud_string_list_unref</a>               (<em class="parameter"><code><a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList"><span class="type">HudStringList</span></a> *list</code></em>);
+</pre>
+</div>
+<div class="refsect1">
+<a name="hud-HudStringList.description"></a><h2>Description</h2>
+<p>
+<a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList"><span class="type">HudStringList</span></a> is a refcounted list of strings.
+</p>
+<p>
+Borrowing heavily on conventions of many functional programming
+languages, a list is a head element connected to a tail list (ie: the
+rest of the items).
+</p>
+<p>
+A <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> pointer is considered to be a valid empty list.
+</p>
+<p>
+Each list node is refcounted, and holds a reference on its 'tail'
+list.  This allows common tails to be shared.
+</p>
+<p>
+This mechanism is ideally suited to the HUD which is interested in
+displaying items of the form "File &gt; New" and "File &gt; Open".  In this
+case, these items would be represented (in reverse) by the lists
+<code class="code">['Open', 'File']</code> and <code class="code">['New', 'File']</code> with
+the common tail portion shared between both items.
+</p>
+<p>
+Each <a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList"><span class="type">HudStringList</span></a> node uses only one variable-sized block of
+memory.  The reference count and pointer to the 'tail' are stored in
+a header, followed by the 'head' string data.
+</p>
+</div>
+<div class="refsect1">
+<a name="hud-HudStringList.details"></a><h2>Details</h2>
+<div class="refsect2">
+<a name="HudStringList"></a><h3>HudStringList</h3>
+<pre class="programlisting">typedef struct _HudStringList HudStringList;</pre>
+<p>
+This is an opaque structure type.
+</p>
+</div>
+<hr>
+<div class="refsect2">
+<a name="hud-string-list-cons"></a><h3>hud_string_list_cons ()</h3>
+<pre class="programlisting"><a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList"><span class="returnvalue">HudStringList</span></a> *     hud_string_list_cons                (<em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *head</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList"><span class="type">HudStringList</span></a> *tail</code></em>);</pre>
+<p>
+Create a new list with <em class="parameter"><code>head</code></em> as the first item and <em class="parameter"><code>tail</code></em> as the rest
+of the items.
+</p>
+<p>
+A reference is taken on <em class="parameter"><code>tail</code></em>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>head</code></em> :</span></p></td>
+<td>a string for the head item</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>tail</code></em> :</span></p></td>
+<td>the tail <a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList"><span class="type">HudStringList</span></a>, possibly <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new list. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="hud-string-list-cons-label"></a><h3>hud_string_list_cons_label ()</h3>
+<pre class="programlisting"><a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList"><span class="returnvalue">HudStringList</span></a> *     hud_string_list_cons_label          (<em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *label</code></em>,
+                                                         <em class="parameter"><code><a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList"><span class="type">HudStringList</span></a> *tail</code></em>);</pre>
+<p>
+Slight "magic" helper function for doing the right thing with
+prepending menu labels.
+</p>
+<p>
+<em class="parameter"><code>label</code></em> is processed, removing mnemonic prefixes (ie: '_' characters)
+and then the function acts, essentially as <a class="link" href="hud-HudStringList.html#hud-string-list-cons" title="hud_string_list_cons ()"><code class="function">hud_string_list_cons()</code></a>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>label</code></em> :</span></p></td>
+<td>a menuitem label. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>tail</code></em> :</span></p></td>
+<td>the tail <a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList"><span class="type">HudStringList</span></a>, possibly <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new <a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList"><span class="type">HudStringList</span></a>. <span class="annotation">[<acronym title="Free data after the code is done."><span class="acronym">transfer full</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="hud-string-list-get-head"></a><h3>hud_string_list_get_head ()</h3>
+<pre class="programlisting">const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       hud_string_list_get_head            (<em class="parameter"><code><a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList"><span class="type">HudStringList</span></a> *list</code></em>);</pre>
+<p>
+Gets the head string of the list.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>list</code></em> :</span></p></td>
+<td>a non-empty (non-<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>) <a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList"><span class="type">HudStringList</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the head element, as a normal C string</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="hud-string-list-get-tail"></a><h3>hud_string_list_get_tail ()</h3>
+<pre class="programlisting"><a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList"><span class="returnvalue">HudStringList</span></a> *     hud_string_list_get_tail            (<em class="parameter"><code><a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList"><span class="type">HudStringList</span></a> *list</code></em>);</pre>
+<p>
+Gets the tail of the list.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>list</code></em> :</span></p></td>
+<td>a non-empty (non-<a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>) <a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList"><span class="type">HudStringList</span></a>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the tail of the list. <span class="annotation">[<acronym title="Don't free data after the code is done."><span class="acronym">transfer none</span></acronym>]</span>
+</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="hud-string-list-pretty-print"></a><h3>hud_string_list_pretty_print ()</h3>
+<pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *             hud_string_list_pretty_print        (<em class="parameter"><code><a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList"><span class="type">HudStringList</span></a> *list</code></em>);</pre>
+<p>
+Pretty-prints the list.
+</p>
+<p>
+This function is intended only for debugging purposes.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>list</code></em> :</span></p></td>
+<td>a <a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList"><span class="type">HudStringList</span></a>, possibly <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>the pretty-printed list</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="hud-string-list-ref"></a><h3>hud_string_list_ref ()</h3>
+<pre class="programlisting"><a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList"><span class="returnvalue">HudStringList</span></a> *     hud_string_list_ref                 (<em class="parameter"><code><a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList"><span class="type">HudStringList</span></a> *list</code></em>);</pre>
+<p>
+Increases the reference count on <em class="parameter"><code>list</code></em>.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>list</code></em> :</span></p></td>
+<td>a <a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList"><span class="type">HudStringList</span></a>, possibly <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr>
+<tr>
+<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
+<td>a new reference to the list</td>
+</tr>
+</tbody>
+</table></div>
+</div>
+<hr>
+<div class="refsect2">
+<a name="hud-string-list-unref"></a><h3>hud_string_list_unref ()</h3>
+<pre class="programlisting"><span class="returnvalue">void</span>                hud_string_list_unref               (<em class="parameter"><code><a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList"><span class="type">HudStringList</span></a> *list</code></em>);</pre>
+<p>
+Decreases the reference count on <em class="parameter"><code>list</code></em>, possibly freeing it.
+</p>
+<div class="variablelist"><table border="0">
+<col align="left" valign="top">
+<tbody><tr>
+<td><p><span class="term"><em class="parameter"><code>list</code></em> :</span></p></td>
+<td>a <a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList"><span class="type">HudStringList</span></a>, possibly <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>. <span class="annotation">[<acronym title="NULL is ok, both for passing and for returning."><span class="acronym">allow-none</span></acronym>]</span>
+</td>
+</tr></tbody>
+</table></div>
+</div>
+</div>
+</div>
+<div class="footer">
+<hr>
+          Generated by GTK-Doc V1.18</div>
+</body>
+</html>

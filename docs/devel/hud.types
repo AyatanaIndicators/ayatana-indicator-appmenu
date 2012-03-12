@@ -1,0 +1,11 @@
+hud_app_indicator_source_get_type
+hud_app_menu_registrar_get_type
+hud_dbusmenu_collector_get_type
+hud_indicator_source_get_type
+hud_item_get_type
+hud_menu_model_collector_get_type
+hud_query_get_type
+hud_result_get_type
+hud_source_get_type
+hud_source_list_get_type
+hud_window_source_get_type
