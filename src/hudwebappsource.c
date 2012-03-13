@@ -178,13 +178,18 @@ hud_webapp_source_remove_application (HudWebappSource *source,
 }
 
 static void
-hud_webapp_source_bamf_view_closed (BamfView *view,
+hud_webapp_source_bamf_view_closed (BamfMatcher *matcher,
+				    BamfView *view,
 				    gpointer user_data)
 {
   HudWebappSource *source;
   
   source = (HudWebappSource *)user_data;
-  hud_webapp_source_remove_application (source, (BamfApplication *)user_data);
+  
+  if (BAMF_IS_APPLICATION (view) == FALSE)
+    return;
+  
+  hud_webapp_source_remove_application (source, (BamfApplication *)view);
 }
 
 static void
@@ -205,7 +210,7 @@ hud_webapp_source_register_application (HudWebappSource *source,
   hud_webapp_source_collector_changed ((HudSource *)source, source);
   
   g_signal_connect (application, "active-changed", G_CALLBACK (on_active_changed), source);
-  g_signal_connect (application, "closed", G_CALLBACK (hud_webapp_source_bamf_view_closed), source);
+  
 }
 
 static void
@@ -260,6 +265,7 @@ hud_webapp_source_init (HudWebappSource *source)
     }
   
   g_signal_connect (matcher, "view-opened", G_CALLBACK (hud_webapp_source_bamf_view_opened), source);
+  g_signal_connect (matcher, "view-closed", G_CALLBACK (hud_webapp_source_bamf_view_closed), source);
   
   g_list_free (applications);
 }
