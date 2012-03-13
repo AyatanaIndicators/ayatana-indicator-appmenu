@@ -213,6 +213,7 @@ struct _HudDbusmenuCollector
   GHashTable *items;
   guint penalty;
   guint xid;
+  gboolean alive;
 };
 
 typedef GObjectClass HudDbusmenuCollectorClass;
@@ -326,7 +327,8 @@ hud_dbusmenu_collector_add_item (HudDbusmenuCollector *collector,
   for (child = dbusmenu_menuitem_get_children (menuitem); child; child = child->next)
     hud_dbusmenu_collector_add_item (collector, context, child->data);
 
-  hud_source_changed (HUD_SOURCE (collector));
+  if (collector->alive)
+    hud_source_changed (HUD_SOURCE (collector));
 }
 
 static void
@@ -343,7 +345,8 @@ hud_dbusmenu_collector_remove_item (HudDbusmenuCollector *collector,
   for (child = dbusmenu_menuitem_get_children (menuitem); child; child = child->next)
     hud_dbusmenu_collector_remove_item (collector, child->data);
 
-  hud_source_changed (HUD_SOURCE (collector));
+  if (collector->alive)
+    hud_source_changed (HUD_SOURCE (collector));
 }
 
 static void
@@ -418,8 +421,15 @@ hud_dbusmenu_collector_finalize (GObject *object)
     hud_app_menu_registrar_remove_observer (hud_app_menu_registrar_get (), collector->xid,
                                             hud_dbusmenu_collector_registrar_observer_func, collector);
 
-  hud_string_list_unref (collector->prefix);
+  /* remove all the items without firing change signals */
+  collector->alive = FALSE;
+  hud_dbusmenu_collector_setup_endpoint (collector, NULL, NULL);
+
+  /* make sure the table is empty before we free it */
+  g_assert (g_hash_table_size (collector->items) == 0);
   g_hash_table_unref (collector->items);
+
+  hud_string_list_unref (collector->prefix);
   g_clear_object (&collector->client);
 
   G_OBJECT_CLASS (hud_dbusmenu_collector_parent_class)
@@ -484,6 +494,8 @@ hud_dbusmenu_collector_new_for_endpoint (const gchar *application_id,
   collector->penalty = penalty;
   hud_dbusmenu_collector_setup_endpoint (collector, bus_name, object_path);
 
+  collector->alive = TRUE;
+
   return collector;
 }
 
@@ -515,6 +527,8 @@ hud_dbusmenu_collector_new_for_window (BamfWindow  *window,
   application = bamf_matcher_get_application_for_window (bamf_matcher_get_default (), window);
   if (application != NULL)
     collector->application_id = g_strdup (bamf_application_get_desktop_file (application));
+
+  collector->alive = TRUE;
 
   return collector;
 }

@@ -1,3 +1,14 @@
+indicator-appmenu (0.3.92-0ubuntu2) UNRELEASED; urgency=low
+
+  * Backport desrt's r216, r217, r218, should fix:
+    - "don't setup usage data for disable items or those without labels"
+       (lp: #953579)
+    - "remove all items from the dbusmenucollector on free" (lp: #953771)
+    - "check the window title from bamf for being NULL before comparing 
+       on it" (lp: #953620)
+
+ -- Sebastien Bacher <seb128@ubuntu.com>  Tue, 13 Mar 2012 15:59:13 +0100
+
 indicator-appmenu (0.3.92-0ubuntu1) precise; urgency=low
 
   * Backport r175 to fix sync issues
