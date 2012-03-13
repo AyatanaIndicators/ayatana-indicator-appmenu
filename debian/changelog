@@ -1,4 +1,4 @@
-indicator-appmenu (0.3.92-0ubuntu2) UNRELEASED; urgency=low
+indicator-appmenu (0.3.92-0ubuntu2) precise; urgency=low
 
   * Backport desrt's r216, r217, r218, should fix:
     - "don't setup usage data for disable items or those without labels"
@@ -7,7 +7,7 @@ indicator-appmenu (0.3.92-0ubuntu2) UNRELEASED; urgency=low
     - "check the window title from bamf for being NULL before comparing 
        on it" (lp: #953620)
 
- -- Sebastien Bacher <seb128@ubuntu.com>  Tue, 13 Mar 2012 15:59:13 +0100
+ -- Sebastien Bacher <seb128@ubuntu.com>  Tue, 13 Mar 2012 16:07:06 +0100
 
 indicator-appmenu (0.3.92-0ubuntu1) precise; urgency=low
 
