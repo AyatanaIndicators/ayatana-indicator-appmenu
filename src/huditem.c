@@ -114,11 +114,14 @@ hud_item_setup_usage (HudItem *item)
 {
   GString *tag;
 
-  tag = g_string_new (NULL);
-  hud_item_format_tokens (tag, item->priv->tokens);
-  item->priv->usage_tag = g_string_free (tag, FALSE);
-  item->priv->usage = usage_tracker_get_usage (usage_tracker_get_instance (),
-                                               item->priv->desktop_file, item->priv->usage_tag);
+  if (item->priv->tokens && item->priv->enabled)
+    {
+      tag = g_string_new (NULL);
+      hud_item_format_tokens (tag, item->priv->tokens);
+      item->priv->usage_tag = g_string_free (tag, FALSE);
+      item->priv->usage = usage_tracker_get_usage (usage_tracker_get_instance (),
+                                                   item->priv->desktop_file, item->priv->usage_tag);
+    }
 }
 
 /**
