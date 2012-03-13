@@ -125,6 +125,10 @@ hud_window_source_name_in_ignore_list (BamfWindow *window)
   window_name = bamf_view_get_name (BAMF_VIEW (window));
   g_debug ("checking window name '%s'", window_name);
 
+  /* sometimes bamf returns NULL here... protect ourselves */
+  if (window_name == NULL)
+    return TRUE;
+
   for (i = 0; i < G_N_ELEMENTS (ignored_names); i++)
     if (g_str_equal (ignored_names[i], window_name))
       {
