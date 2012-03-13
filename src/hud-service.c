@@ -21,6 +21,7 @@
 
 #include "hudappindicatorsource.h"
 #include "hudindicatorsource.h"
+#include "hudwebappsource.h"
 #include "hudwindowsource.h"
 #include "hudsourcelist.h"
 #include "hudsettings.h"
@@ -252,6 +253,15 @@ main (int argc, char **argv)
     source = hud_app_indicator_source_new ();
     hud_source_list_add (source_list, HUD_SOURCE (source));
     g_object_unref (source);
+  }
+  
+  {
+    HudWebappSource *source;
+    
+    source = hud_webapp_source_new ();
+    hud_source_list_add (source_list, HUD_SOURCE (source));
+    
+    g_object_unref (G_OBJECT (source));
   }
 
   g_bus_own_name (G_BUS_TYPE_SESSION, DBUS_NAME, G_BUS_NAME_OWNER_FLAGS_NONE,
