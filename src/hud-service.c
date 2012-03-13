@@ -258,7 +258,7 @@ main (int argc, char **argv)
   {
     HudWebappSource *source;
     
-    source = hud_webapp_source_new ();
+    source = hud_webapp_source_new (window_source);
     hud_source_list_add (source_list, HUD_SOURCE (source));
     
     g_object_unref (G_OBJECT (source));

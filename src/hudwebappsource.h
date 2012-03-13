@@ -20,6 +20,7 @@
 #define __HUD_WEBAPP_SOURCE_H__
 
 #include <glib-object.h>
+#include "hudwindowsource.h"
 
 #define HUD_TYPE_WEBAPP_SOURCE                           (hud_webapp_source_get_type ())
 #define HUD_WEBAPP_SOURCE(inst)                          (G_TYPE_CHECK_INSTANCE_CAST ((inst),                     \
@@ -30,6 +31,6 @@
 typedef struct _HudWebappSource                          HudWebappSource;
 
 GType                   hud_webapp_source_get_type                   (void);
-HudWebappSource *    hud_webapp_source_new                        (void);
+HudWebappSource *    hud_webapp_source_new                        (HudWindowSource *window_source);
 
 #endif /* __HUD_WEBAPP_SOURCE_H__ */

@@ -48,6 +48,8 @@ struct _HudWebappSource
   GObject parent_instance;
   
   GList *applications;
+  
+  HudWindowSource *window_source;
 };
 
 typedef GObjectClass HudWebappSourceClass;
@@ -86,10 +88,27 @@ hud_webapp_source_search (HudSource   *hud_source,
   for (walk = source->applications; walk != NULL; walk = walk->next)
     {
       HudWebappApplicationSource *application_source;
+      GArray *xids;
+      guint32 active_xid;
+      int i;
       
       application_source = (HudWebappApplicationSource *)walk->data;
+      
+      active_xid = hud_window_source_get_active_xid (source->window_source);
+      xids = bamf_application_get_xids (application_source->application);
+      
+      if (xids == NULL)
+	continue;
+      
+      for (i = 0; i < xids->len; i++)
+	{
+	  if (active_xid == g_array_index(xids, guint32, i))
+	    {
+	      hud_source_search (application_source->collector, results_array, search_string);
+	      break;
+	    }
+	}
 
-      hud_source_search (application_source->collector, results_array, search_string);
     }
 }
 
@@ -290,7 +309,13 @@ hud_webapp_source_class_init (HudWebappSourceClass *class)
  * Returns: a new #HudWebappSource
  **/
 HudWebappSource *
-hud_webapp_source_new (void)
+hud_webapp_source_new (HudWindowSource *window_source)
 {
-  return g_object_new (HUD_TYPE_WEBAPP_SOURCE, NULL);
+  HudWebappSource *webapp_source;
+  
+  webapp_source = (HudWebappSource *) g_object_new (HUD_TYPE_WEBAPP_SOURCE, NULL);
+  
+  webapp_source->window_source = window_source;
+  
+  return webapp_source;
 }
