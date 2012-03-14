@@ -65,6 +65,8 @@ struct _HudWindowSource
   BamfMatcher *matcher;
 
   BamfWindow *active_window;
+  BamfApplication *active_application;
+  const gchar *active_desktop_file;
 };
 
 typedef GObjectClass HudWindowSourceClass;
@@ -123,6 +125,10 @@ hud_window_source_name_in_ignore_list (BamfWindow *window)
   window_name = bamf_view_get_name (BAMF_VIEW (window));
   g_debug ("checking window name '%s'", window_name);
 
+  /* sometimes bamf returns NULL here... protect ourselves */
+  if (window_name == NULL)
+    return TRUE;
+
   for (i = 0; i < G_N_ELEMENTS (ignored_names); i++)
     if (g_str_equal (ignored_names[i], window_name))
       {
@@ -134,38 +140,6 @@ hud_window_source_name_in_ignore_list (BamfWindow *window)
   g_free (window_name);
 
   return ignored;
-}
-
-static gboolean
-hud_window_source_should_ignore_window (HudWindowSource *source,
-                                        BamfWindow      *window)
-{
-  BamfApplication *application;
-  const gchar *desktop_file;
-
-  application = bamf_matcher_get_application_for_window (source->matcher, window);
-
-  if (application == NULL)
-    {
-      g_debug ("ignoring window with no application");
-      return TRUE;
-    }
-
-  desktop_file = bamf_application_get_desktop_file (application);
-
-  if (desktop_file == NULL)
-    {
-      g_debug ("ignoring application with no desktop file");
-      return TRUE;
-    }
-
-  if (hud_window_source_desktop_file_in_debug_list (desktop_file))
-    return TRUE;
-
-  if (hud_window_source_name_in_ignore_list (window))
-    return TRUE;
-
-  return FALSE;
 }
 
 static HudSource *
@@ -191,11 +165,12 @@ hud_window_source_get_collector (HudWindowSource *source)
        * For that reason, we check first for GMenuModel and assume if it
        * doesn't exist then it must be dbusmenu.
        */
-      menumodel_collector = hud_menu_model_collector_get (source->active_window);
+      menumodel_collector = hud_menu_model_collector_get (source->active_window, source->active_desktop_file);
       if (menumodel_collector)
         collector = HUD_SOURCE (menumodel_collector);
       else
-        collector = HUD_SOURCE (hud_dbusmenu_collector_new_for_window (source->active_window));
+        collector = HUD_SOURCE (hud_dbusmenu_collector_new_for_window (source->active_window,
+                                                                       source->active_desktop_file));
 
       g_object_set_qdata_full (G_OBJECT (source->active_window), menu_collector_quark, collector, g_object_unref);
     }
@@ -221,6 +196,8 @@ hud_window_source_active_window_changed (BamfMatcher *matcher,
   HudWindowSource *source = user_data;
   HudSource *collector;
   BamfWindow *window;
+  BamfApplication *application;
+  const gchar *desktop_file;
 
   g_debug ("Switching windows");
 
@@ -238,7 +215,26 @@ hud_window_source_active_window_changed (BamfMatcher *matcher,
       return;
     }
 
-  if (hud_window_source_should_ignore_window (source, window))
+  if (hud_window_source_name_in_ignore_list (window))
+    return;
+
+  application = bamf_matcher_get_application_for_window (source->matcher, window);
+
+  if (application == NULL)
+    {
+      g_debug ("ignoring window with no application");
+      return;
+    }
+
+  desktop_file = bamf_application_get_desktop_file (application);
+
+  if (desktop_file == NULL)
+    {
+      g_debug ("ignoring application with no desktop file");
+      return;
+    }
+
+  if (hud_window_source_desktop_file_in_debug_list (desktop_file))
     return;
 
   g_debug ("new active window (xid %u)", bamf_window_get_xid (window));
@@ -247,8 +243,11 @@ hud_window_source_active_window_changed (BamfMatcher *matcher,
   if (collector)
     g_signal_handlers_disconnect_by_func (collector, hud_window_source_collector_changed, source);
 
+  g_clear_object (&source->active_application);
   g_clear_object (&source->active_window);
   source->active_window = g_object_ref (window);
+  source->active_application = g_object_ref (application);
+  source->active_desktop_file = desktop_file;
 
   collector = hud_window_source_get_collector (source);
   g_signal_connect_object (collector, "changed", G_CALLBACK (hud_window_source_collector_changed), source, 0);
@@ -276,6 +275,7 @@ hud_window_source_finalize (GObject *object)
   HudWindowSource *source = HUD_WINDOW_SOURCE (object);
 
   /* bamf matcher signals already disconnected in dispose */
+  g_clear_object (&source->active_application);
   g_clear_object (&source->active_window);
 
   G_OBJECT_CLASS (hud_window_source_parent_class)
