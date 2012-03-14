@@ -61,7 +61,8 @@ am_test_bad_app_info_OBJECTS =  \
 	test_bad_app_info-test-bad-app-info.$(OBJEXT)
 test_bad_app_info_OBJECTS = $(am_test_bad_app_info_OBJECTS)
 am__DEPENDENCIES_1 =
-test_bad_app_info_DEPENDENCIES = $(am__DEPENDENCIES_1)
+test_bad_app_info_DEPENDENCIES = ../src/libhud-service.a \
+	$(am__DEPENDENCIES_1)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
@@ -71,14 +72,16 @@ test_bad_app_info_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	-o $@
 am_test_distance_OBJECTS = test_distance-test-distance.$(OBJEXT)
 test_distance_OBJECTS = $(am_test_distance_OBJECTS)
-test_distance_DEPENDENCIES = $(am__DEPENDENCIES_1)
+test_distance_DEPENDENCIES = ../src/libhud-service.a \
+	$(am__DEPENDENCIES_1)
 test_distance_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(test_distance_CFLAGS) \
 	$(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 am_test_load_app_info_OBJECTS =  \
 	test_load_app_info-test-load-app-info.$(OBJEXT)
 test_load_app_info_OBJECTS = $(am_test_load_app_info_OBJECTS)
-test_load_app_info_DEPENDENCIES = $(am__DEPENDENCIES_1)
+test_load_app_info_DEPENDENCIES = ../src/libhud-service.a \
+	$(am__DEPENDENCIES_1)
 test_load_app_info_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(test_load_app_info_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
@@ -86,7 +89,8 @@ test_load_app_info_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 am_test_usage_db_ancient_OBJECTS =  \
 	test_usage_db_ancient-test-usage-db-ancient.$(OBJEXT)
 test_usage_db_ancient_OBJECTS = $(am_test_usage_db_ancient_OBJECTS)
-test_usage_db_ancient_DEPENDENCIES = $(am__DEPENDENCIES_1)
+test_usage_db_ancient_DEPENDENCIES = ../src/libhud-service.a \
+	$(am__DEPENDENCIES_1)
 test_usage_db_ancient_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(test_usage_db_ancient_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
@@ -94,7 +98,8 @@ test_usage_db_ancient_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 am_test_usage_db_old_OBJECTS =  \
 	test_usage_db_old-test-usage-db-old.$(OBJEXT)
 test_usage_db_old_OBJECTS = $(am_test_usage_db_old_OBJECTS)
-test_usage_db_old_DEPENDENCIES = $(am__DEPENDENCIES_1)
+test_usage_db_old_DEPENDENCIES = ../src/libhud-service.a \
+	$(am__DEPENDENCIES_1)
 test_usage_db_old_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(test_usage_db_old_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
@@ -102,7 +107,8 @@ test_usage_db_old_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 am_test_usage_db_simple_OBJECTS =  \
 	test_usage_db_simple-test-usage-db-simple.$(OBJEXT)
 test_usage_db_simple_OBJECTS = $(am_test_usage_db_simple_OBJECTS)
-test_usage_db_simple_DEPENDENCIES = $(am__DEPENDENCIES_1)
+test_usage_db_simple_DEPENDENCIES = ../src/libhud-service.a \
+	$(am__DEPENDENCIES_1)
 test_usage_db_simple_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(test_usage_db_simple_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
@@ -110,7 +116,8 @@ test_usage_db_simple_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 am_test_usage_db_testapp_OBJECTS =  \
 	test_usage_db_testapp-test-usage-db-testapp.$(OBJEXT)
 test_usage_db_testapp_OBJECTS = $(am_test_usage_db_testapp_OBJECTS)
-test_usage_db_testapp_DEPENDENCIES = $(am__DEPENDENCIES_1)
+test_usage_db_testapp_DEPENDENCIES = ../src/libhud-service.a \
+	$(am__DEPENDENCIES_1)
 test_usage_db_testapp_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(test_usage_db_testapp_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
@@ -448,6 +455,7 @@ test_distance_CFLAGS = \
 	-Wall -Werror
 
 test_distance_LDADD = \
+	../src/libhud-service.a		\
 	$(HUD_LIBS)
 
 USAGE_DB_SIMPLE_XML_REPORT = test-usage-db-simple.xml
@@ -463,6 +471,7 @@ test_usage_db_simple_CFLAGS = \
 	-Wall -Werror
 
 test_usage_db_simple_LDADD = \
+	../src/libhud-service.a		\
 	$(HUD_LIBS)
 
 USAGE_DB_OLD_XML_REPORT = test-usage-db-old.xml
@@ -478,6 +487,7 @@ test_usage_db_old_CFLAGS = \
 	-Wall -Werror
 
 test_usage_db_old_LDADD = \
+	../src/libhud-service.a		\
 	$(HUD_LIBS)
 
 test_usage_db_ancient_SOURCES = \
@@ -492,6 +502,7 @@ test_usage_db_ancient_CFLAGS = \
 	-Wall -Werror
 
 test_usage_db_ancient_LDADD = \
+	../src/libhud-service.a		\
 	$(HUD_LIBS)
 
 USAGE_TESTAPP_XML_REPORT = test-usage-db-testapp.xml
@@ -507,6 +518,7 @@ test_usage_db_testapp_CFLAGS = \
 	-Wall -Werror
 
 test_usage_db_testapp_LDADD = \
+	../src/libhud-service.a		\
 	$(HUD_LIBS)
 
 USAGE_OFF_XML_REPORT = $(abs_builddir)/test-usage-db-off.xml
@@ -521,6 +533,7 @@ test_bad_app_info_CFLAGS = \
 	-Wall -Werror
 
 test_bad_app_info_LDADD = \
+	../src/libhud-service.a		\
 	$(HUD_LIBS)
 
 test_load_app_info_SOURCES = \
@@ -534,6 +547,7 @@ test_load_app_info_CFLAGS = \
 	-Wall -Werror
 
 test_load_app_info_LDADD = \
+	../src/libhud-service.a		\
 	$(HUD_LIBS)
 
 all: all-recursive

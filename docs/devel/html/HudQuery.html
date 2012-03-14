@@ -43,7 +43,6 @@
 <a name="HudQuery.synopsis"></a><h2>Synopsis</h2>
 <pre class="synopsis">                    <a class="link" href="HudQuery.html#HudQuery-struct" title="HudQuery">HudQuery</a>;
 <span class="returnvalue">void</span>                <a class="link" href="HudQuery.html#hud-query-close" title="hud_query_close ()">hud_query_close</a>                     (<em class="parameter"><code><a class="link" href="HudQuery.html" title="HudQuery"><span class="type">HudQuery</span></a> *query</code></em>);
-<span class="returnvalue">guint64</span>             <a class="link" href="HudQuery.html#hud-query-get-generation" title="hud_query_get_generation ()">hud_query_get_generation</a>            (<em class="parameter"><code><a class="link" href="HudQuery.html" title="HudQuery"><span class="type">HudQuery</span></a> *query</code></em>);
 <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>               <a class="link" href="HudQuery.html#hud-query-get-n-results" title="hud_query_get_n_results ()">hud_query_get_n_results</a>             (<em class="parameter"><code><a class="link" href="HudQuery.html" title="HudQuery"><span class="type">HudQuery</span></a> *query</code></em>);
 <a href="http://library.gnome.org/devel/glib/unstable/glib-GVariant.html#GVariant"><span class="returnvalue">GVariant</span></a> *          <a class="link" href="HudQuery.html#hud-query-get-query-key" title="hud_query_get_query_key ()">hud_query_get_query_key</a>             (<em class="parameter"><code><a class="link" href="HudQuery.html" title="HudQuery"><span class="type">HudQuery</span></a> *query</code></em>);
 <a class="link" href="HudResult.html" title="HudResult"><span class="returnvalue">HudResult</span></a> *         <a class="link" href="HudQuery.html#hud-query-get-result-by-index" title="hud_query_get_result_by_index ()">hud_query_get_result_by_index</a>       (<em class="parameter"><code><a class="link" href="HudQuery.html" title="HudQuery"><span class="type">HudQuery</span></a> *query</code></em>,
@@ -83,11 +82,6 @@ The query maintains a list of results from the search which are
 sorted by relevance and accessible by index.  Contrast this with the
 stateless nature of <a class="link" href="HudSource.html" title="HudSource"><span class="type">HudSource</span></a>.
 </p>
-<p>
-The query has a "generation" counter that is bumped each time the
-results list changes.  This can be used to guard against stale
-index-based references to specific search results.
-</p>
 </div>
 <div class="refsect1">
 <a name="HudQuery.details"></a><h2>Details</h2>
@@ -120,33 +114,6 @@ This only drops the internal reference.
 <td>a <a class="link" href="HudQuery.html" title="HudQuery"><span class="type">HudQuery</span></a>
 </td>
 </tr></tbody>
-</table></div>
-</div>
-<hr>
-<div class="refsect2">
-<a name="hud-query-get-generation"></a><h3>hud_query_get_generation ()</h3>
-<pre class="programlisting"><span class="returnvalue">guint64</span>             hud_query_get_generation            (<em class="parameter"><code><a class="link" href="HudQuery.html" title="HudQuery"><span class="type">HudQuery</span></a> *query</code></em>);</pre>
-<p>
-Gets the current value of the generation counter for query.
-</p>
-<p>
-The generation counter is incremented each time the <a class="link" href="HudQuery.html" title="HudQuery"><span class="type">HudQuery</span></a> emits a
-the ::changed signal.  Its purpose is to guard against stale
-index-based references to results of the query.
-</p>
-<div class="variablelist"><table border="0">
-<col align="left" valign="top">
-<tbody>
-<tr>
-<td><p><span class="term"><em class="parameter"><code>query</code></em> :</span></p></td>
-<td>a <a class="link" href="HudQuery.html" title="HudQuery"><span class="type">HudQuery</span></a>
-</td>
-</tr>
-<tr>
-<td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>the generation number</td>
-</tr>
-</tbody>
 </table></div>
 </div>
 <hr>
@@ -306,10 +273,6 @@ it in addition to releasing your ref.
                                                         <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="type">gpointer</span></a>  user_data)      : <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Signals.html#G-SIGNAL-RUN-LAST:CAPS"><code class="literal">Run Last</code></a></pre>
 <p>
 Indicates that the results of <em class="parameter"><code>query</code></em> have changed.
-</p>
-<p>
-The generation counter is increased each time this signal fires.
-See <a class="link" href="HudQuery.html#hud-query-get-generation" title="hud_query_get_generation ()"><code class="function">hud_query_get_generation()</code></a>.
 </p>
 <div class="variablelist"><table border="0">
 <col align="left" valign="top">

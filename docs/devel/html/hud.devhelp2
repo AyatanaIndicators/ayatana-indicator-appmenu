@@ -56,7 +56,6 @@
     <keyword type="function" name="hud_result_new ()" link="HudResult.html#hud-result-new"/>
     <keyword type="struct" name="HudQuery" link="HudQuery.html#HudQuery-struct"/>
     <keyword type="function" name="hud_query_close ()" link="HudQuery.html#hud-query-close"/>
-    <keyword type="function" name="hud_query_get_generation ()" link="HudQuery.html#hud-query-get-generation"/>
     <keyword type="function" name="hud_query_get_n_results ()" link="HudQuery.html#hud-query-get-n-results"/>
     <keyword type="function" name="hud_query_get_query_key ()" link="HudQuery.html#hud-query-get-query-key"/>
     <keyword type="function" name="hud_query_get_result_by_index ()" link="HudQuery.html#hud-query-get-result-by-index"/>
