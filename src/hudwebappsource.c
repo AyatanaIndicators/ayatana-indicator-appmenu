@@ -18,11 +18,15 @@
 
 #include "hudwebappsource.h"
 
+#include <stdio.h>
+
 #include <glib/gi18n.h>
 #include <gio/gio.h>
 
 #include <libbamf/libbamf.h>
 #include <libbamf/bamf-application.h>
+#include <libbamf/bamf-view.h>
+#include <libbamf/bamf-tab.h>
 
 #include "hudsettings.h"
 #include "huddbusmenucollector.h"
@@ -74,6 +78,46 @@ hud_webapp_source_collector_changed (HudSource *source,
   hud_source_changed ((HudSource *)user_data);
 }
 
+static gboolean
+hud_webapp_source_should_search_app (BamfApplication *application,
+				     guint32 active_xid)
+{
+  GList *children, *walk;
+  gboolean should;
+  
+  should = FALSE;
+  
+  children = bamf_view_get_children (BAMF_VIEW (application));
+
+  printf("baz\n");
+  
+  for (walk = children; walk != NULL; walk = walk->next)
+    {
+      BamfTab *child;
+      
+      printf("Fooo\n");
+
+      if (BAMF_IS_TAB (walk->data) == FALSE)
+	continue;
+      
+      child = BAMF_TAB (walk->data);
+      
+      printf("Whhhy\n");
+      
+      printf("active_xid: %u, tab_xid: %u \n", active_xid,
+	     (guint32)bamf_tab_get_xid (child));
+      
+      if ((active_xid == bamf_tab_get_xid (child)) &&
+	  bamf_tab_get_is_foreground_tab (child))
+	{
+	  should = TRUE;
+	  break;
+	}
+    }
+  
+  g_list_free (children);
+  return should;
+}
 
 static void
 hud_webapp_source_search (HudSource   *hud_source,
@@ -88,25 +132,15 @@ hud_webapp_source_search (HudSource   *hud_source,
   for (walk = source->applications; walk != NULL; walk = walk->next)
     {
       HudWebappApplicationSource *application_source;
-      GArray *xids;
       guint32 active_xid;
-      int i;
       
       application_source = (HudWebappApplicationSource *)walk->data;
       
       active_xid = hud_window_source_get_active_xid (source->window_source);
-      xids = bamf_application_get_xids (application_source->application);
-      
-      if (xids == NULL)
-	continue;
-      
-      for (i = 0; i < xids->len; i++)
+
+      if (hud_webapp_source_should_search_app (application_source->application, active_xid))
 	{
-	  if (active_xid == g_array_index(xids, guint32, i))
-	    {
-	      hud_source_search (application_source->collector, results_array, search_string);
-	      break;
-	    }
+	  hud_source_search (application_source->collector, results_array, search_string);
 	}
 
     }
