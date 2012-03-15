@@ -67,6 +67,7 @@ struct _HudWindowSource
   BamfWindow *active_window;
   BamfApplication *active_application;
   const gchar *active_desktop_file;
+  HudSource *active_collector;
 };
 
 typedef GObjectClass HudWindowSourceClass;
@@ -194,7 +195,6 @@ hud_window_source_active_window_changed (BamfMatcher *matcher,
                                          gpointer     user_data)
 {
   HudWindowSource *source = user_data;
-  HudSource *collector;
   BamfWindow *window;
   BamfApplication *application;
   const gchar *desktop_file;
@@ -239,18 +239,20 @@ hud_window_source_active_window_changed (BamfMatcher *matcher,
 
   g_debug ("new active window (xid %u)", bamf_window_get_xid (window));
 
-  collector = hud_window_source_get_collector (source);
-  if (collector)
-    g_signal_handlers_disconnect_by_func (collector, hud_window_source_collector_changed, source);
 
+  if (source->active_collector)
+    g_signal_handlers_disconnect_by_func (source->active_collector, hud_window_source_collector_changed, source);
+
+  g_clear_object (&source->active_collector);
   g_clear_object (&source->active_application);
   g_clear_object (&source->active_window);
   source->active_window = g_object_ref (window);
   source->active_application = g_object_ref (application);
   source->active_desktop_file = desktop_file;
+  source->active_collector = g_object_ref (hud_window_source_get_collector (source));
 
-  collector = hud_window_source_get_collector (source);
-  g_signal_connect_object (collector, "changed", G_CALLBACK (hud_window_source_collector_changed), source, 0);
+  g_signal_connect_object (source->active_collector, "changed",
+                           G_CALLBACK (hud_window_source_collector_changed), source, 0);
 
   hud_source_changed (HUD_SOURCE (source));
 }
@@ -261,12 +263,9 @@ hud_window_source_search (HudSource   *hud_source,
                           const gchar *search_string)
 {
   HudWindowSource *source = HUD_WINDOW_SOURCE (hud_source);
-  HudSource *collector;
 
-  collector = hud_window_source_get_collector (source);
-
-  if (collector)
-    hud_source_search (collector, results_array, search_string);
+  if (source->active_collector)
+    hud_source_search (source->active_collector, results_array, search_string);
 }
 
 static void
