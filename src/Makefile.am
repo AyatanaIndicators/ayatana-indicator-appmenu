@@ -104,6 +104,8 @@ libhud_service_a_SOURCES = \
 	hudindicatorsource.c	\
 	hudwindowsource.h	\
 	hudwindowsource.c	\
+	huddebugsource.h	\
+	huddebugsource.c	\
 	hudsourcelist.h		\
 	hudsourcelist.c		\
 	hudsource.h		\

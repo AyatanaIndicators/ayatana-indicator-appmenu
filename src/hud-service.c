@@ -18,10 +18,12 @@
 
 #include <glib.h>
 #include <gio/gio.h>
+#include <stdlib.h>
 
 #include "hudappindicatorsource.h"
 #include "hudindicatorsource.h"
 #include "hudwindowsource.h"
+#include "huddebugsource.h"
 #include "hudsourcelist.h"
 #include "hudsettings.h"
 
@@ -253,6 +255,15 @@ main (int argc, char **argv)
     hud_source_list_add (source_list, HUD_SOURCE (source));
     g_object_unref (source);
   }
+
+  if (getenv ("HUD_DEBUG_SOURCE"))
+    {
+      HudDebugSource *source;
+
+      source = hud_debug_source_new ();
+      hud_source_list_add (source_list, HUD_SOURCE (source));
+      g_object_unref (source);
+    }
 
   g_bus_own_name (G_BUS_TYPE_SESSION, DBUS_NAME, G_BUS_NAME_OWNER_FLAGS_NONE,
                   bus_acquired_cb, NULL, name_lost_cb, source_list, NULL);
