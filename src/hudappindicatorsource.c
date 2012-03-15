@@ -359,8 +359,6 @@ hud_app_indicator_source_search (HudSource   *hud_source,
       hud_source_search (g_sequence_get (iter), results_array, search_string);
       iter = g_sequence_iter_next (iter);
     }
-
-
 }
 
 static void
