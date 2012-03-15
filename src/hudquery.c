@@ -140,7 +140,7 @@ hud_query_source_changed (HudSource *source,
   HudQuery *query = user_data;
 
   if (!query->refresh_id)
-    query->refresh_id = g_idle_add (hud_query_dispatch_refresh, g_object_ref (query));
+    query->refresh_id = g_idle_add (hud_query_dispatch_refresh, query);
 }
 
 static void
@@ -149,6 +149,9 @@ hud_query_finalize (GObject *object)
   HudQuery *query = HUD_QUERY (object);
 
   g_debug ("Destroyed query '%s'", query->search_string);
+
+  if (query->refresh_id)
+    g_source_remove (query->refresh_id);
 
   hud_source_unuse (query->source);
 
