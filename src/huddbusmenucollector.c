@@ -359,6 +359,13 @@ hud_dbusmenu_collector_property_changed (DbusmenuMenuitem *menuitem,
 
   item = hud_dbusmenu_item_new (context, collector->application_id, menuitem);
   g_hash_table_remove (collector->items, menuitem);
+
+  if (collector->use_count && dbusmenu_menuitem_property_exist (menuitem, DBUSMENU_MENUITEM_PROP_CHILD_DISPLAY))
+    {
+      dbusmenu_menuitem_handle_event (menuitem, DBUSMENU_MENUITEM_EVENT_OPENED, NULL, 0);
+      item->is_opened = TRUE;
+    }
+
   g_hash_table_insert (collector->items, menuitem, item);
 
   hud_source_changed (HUD_SOURCE (collector));
