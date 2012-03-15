@@ -317,10 +317,15 @@ hud_window_source_finalize (GObject *object)
 static void
 hud_window_source_init (HudWindowSource *source)
 {
+  BamfWindow *window;
+
   source->matcher = bamf_matcher_get_default ();
 
   g_signal_connect_object (source->matcher, "active-window-changed",
                            G_CALLBACK (hud_window_source_active_window_changed), source, 0);
+  window = bamf_matcher_get_active_window (source->matcher);
+  if (window != NULL)
+    hud_window_source_active_window_changed (source->matcher, NULL, BAMF_VIEW (window), source);
 }
 
 static void
