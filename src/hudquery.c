@@ -146,6 +146,8 @@ hud_query_finalize (GObject *object)
 {
   HudQuery *query = HUD_QUERY (object);
 
+  hud_source_unuse (query->source);
+
   g_object_unref (query->source);
   g_free (query->search_string);
   g_ptr_array_unref (query->results);
@@ -204,6 +206,8 @@ hud_query_new (HudSource   *source,
   query->results = g_ptr_array_new_with_free_func (g_object_unref);
   query->search_string = g_strdup (search_string);
   query->num_results = num_results;
+
+  hud_source_use (query->source);
 
   hud_query_refresh (query);
 
