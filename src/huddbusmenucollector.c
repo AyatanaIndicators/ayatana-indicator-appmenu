@@ -538,7 +538,6 @@ hud_dbusmenu_collector_new_for_window (BamfWindow  *window,
                                        const gchar *desktop_file)
 {
   HudDbusmenuCollector *collector;
-  BamfApplication *application;
 
   collector = g_object_new (HUD_TYPE_DBUSMENU_COLLECTOR, NULL);
   collector->application_id = g_strdup (desktop_file);
@@ -546,10 +545,6 @@ hud_dbusmenu_collector_new_for_window (BamfWindow  *window,
   g_debug ("dbusmenu on %d", collector->xid);
   hud_app_menu_registrar_add_observer (hud_app_menu_registrar_get (), collector->xid,
                                        hud_dbusmenu_collector_registrar_observer_func, collector);
-
-  application = bamf_matcher_get_application_for_window (bamf_matcher_get_default (), window);
-  if (application != NULL)
-    collector->application_id = g_strdup (bamf_application_get_desktop_file (application));
 
   collector->alive = TRUE;
 
