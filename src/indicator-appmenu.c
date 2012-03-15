@@ -1260,7 +1260,7 @@ get_menus (IndicatorAppmenu * iapp, GError ** error)
 	}
 
 	GVariantBuilder array;
-	g_variant_builder_init (&array, G_VARIANT_TYPE_ARRAY);
+	g_variant_builder_init (&array, G_VARIANT_TYPE("a(uso)"));
 	GList * appkeys = NULL;
 	for (appkeys = g_hash_table_get_keys(iapp->apps); appkeys != NULL; appkeys = g_list_next(appkeys)) {
 		gpointer hash_val = g_hash_table_lookup(iapp->apps, appkeys->data);
