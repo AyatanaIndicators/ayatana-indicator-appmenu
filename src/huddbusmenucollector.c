@@ -214,6 +214,7 @@ struct _HudDbusmenuCollector
   guint penalty;
   guint xid;
   gboolean alive;
+  gint use_count;
 };
 
 typedef GObjectClass HudDbusmenuCollectorClass;
@@ -221,6 +222,24 @@ typedef GObjectClass HudDbusmenuCollectorClass;
 static void hud_dbusmenu_collector_iface_init (HudSourceInterface *iface);
 G_DEFINE_TYPE_WITH_CODE (HudDbusmenuCollector, hud_dbusmenu_collector, G_TYPE_OBJECT,
                          G_IMPLEMENT_INTERFACE (HUD_TYPE_SOURCE, hud_dbusmenu_collector_iface_init))
+
+static void
+hud_dbusmenu_collector_use (HudSource *source)
+{
+  HudDbusmenuCollector *collector = HUD_DBUSMENU_COLLECTOR (source);
+
+  collector->use_count++;
+}
+
+static void
+hud_dbusmenu_collector_unuse (HudSource *source)
+{
+  HudDbusmenuCollector *collector = HUD_DBUSMENU_COLLECTOR (source);
+
+  g_return_if_fail (collector->use_count > 0);
+
+  collector->use_count--;
+}
 
 static void
 hud_dbusmenu_collector_search (HudSource   *source,
@@ -447,6 +466,8 @@ hud_dbusmenu_collector_init (HudDbusmenuCollector *collector)
 static void
 hud_dbusmenu_collector_iface_init (HudSourceInterface *iface)
 {
+  iface->use = hud_dbusmenu_collector_use;
+  iface->unuse = hud_dbusmenu_collector_unuse;
   iface->search = hud_dbusmenu_collector_search;
 }
 

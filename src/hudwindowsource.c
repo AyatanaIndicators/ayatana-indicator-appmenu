@@ -68,6 +68,7 @@ struct _HudWindowSource
   BamfApplication *active_application;
   const gchar *active_desktop_file;
   HudSource *active_collector;
+  gint use_count;
 };
 
 typedef GObjectClass HudWindowSourceClass;
@@ -241,7 +242,11 @@ hud_window_source_active_window_changed (BamfMatcher *matcher,
 
 
   if (source->active_collector)
-    g_signal_handlers_disconnect_by_func (source->active_collector, hud_window_source_collector_changed, source);
+    {
+      g_signal_handlers_disconnect_by_func (source->active_collector, hud_window_source_collector_changed, source);
+      if (source->use_count)
+        hud_source_unuse (source->active_collector);
+    }
 
   g_clear_object (&source->active_collector);
   g_clear_object (&source->active_application);
@@ -251,10 +256,38 @@ hud_window_source_active_window_changed (BamfMatcher *matcher,
   source->active_desktop_file = desktop_file;
   source->active_collector = g_object_ref (hud_window_source_get_collector (source));
 
+  if (source->use_count)
+    hud_source_use (source->active_collector);
   g_signal_connect_object (source->active_collector, "changed",
                            G_CALLBACK (hud_window_source_collector_changed), source, 0);
 
   hud_source_changed (HUD_SOURCE (source));
+}
+
+static void
+hud_window_source_use (HudSource *hud_source)
+{
+  HudWindowSource *source = HUD_WINDOW_SOURCE (hud_source);
+
+  if (source->use_count == 0)
+    if (source->active_collector)
+      hud_source_use (source->active_collector);
+
+  source->use_count++;
+}
+
+static void
+hud_window_source_unuse (HudSource *hud_source)
+{
+  HudWindowSource *source = HUD_WINDOW_SOURCE (hud_source);
+
+  g_return_if_fail (source->use_count > 0);
+
+  source->use_count--;
+
+  if (source->use_count == 0)
+    if (source->active_collector)
+      hud_source_unuse (source->active_collector);
 }
 
 static void
@@ -293,6 +326,8 @@ hud_window_source_init (HudWindowSource *source)
 static void
 hud_window_source_iface_init (HudSourceInterface *iface)
 {
+  iface->use = hud_window_source_use;
+  iface->unuse = hud_window_source_unuse;
   iface->search = hud_window_source_search;
 }
 

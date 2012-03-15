@@ -55,6 +55,7 @@ struct _HudAppIndicatorSource
   GSequence    *indicators;
   guint         subscription;
   GCancellable *cancellable;
+  gint          use_count;
   gboolean      ready;
 };
 
@@ -107,6 +108,10 @@ hud_app_indicator_source_add_indicator (HudAppIndicatorSource *source,
                                                        dbus_name, dbus_path);
   g_signal_connect (collector, "changed", G_CALLBACK (hud_app_indicator_source_collector_changed), source);
 
+  /* If query is active, mark new app indicator as used. */
+  if (source->use_count)
+    hud_source_use (HUD_SOURCE (collector));
+
   iter = g_sequence_get_iter_at_pos (source->indicators, position);
   g_sequence_insert_before (iter, collector);
   g_free (title);
@@ -130,6 +135,9 @@ hud_app_indicator_source_remove_indicator (HudAppIndicatorSource *source,
 
       collector = g_sequence_get (iter);
       g_signal_handlers_disconnect_by_func (collector, hud_app_indicator_source_collector_changed, source);
+      /* Drop use count if we added one... */
+      if (source->use_count)
+        hud_source_unuse (HUD_SOURCE (collector));
       g_sequence_remove (iter);
     }
 }
@@ -313,6 +321,30 @@ hud_app_indicator_source_name_vanished (GDBusConnection *connection,
 }
 
 static void
+hud_app_indicator_source_use (HudSource *hud_source)
+{
+  HudAppIndicatorSource *source = HUD_APP_INDICATOR_SOURCE (hud_source);
+
+  if (source->use_count == 0)
+    g_sequence_foreach (source->indicators, (GFunc) hud_source_use, NULL);
+
+  source->use_count++;
+}
+
+static void
+hud_app_indicator_source_unuse (HudSource *hud_source)
+{
+  HudAppIndicatorSource *source = HUD_APP_INDICATOR_SOURCE (hud_source);
+
+  g_return_if_fail (source->use_count > 0);
+
+  source->use_count--;
+
+  if (source->use_count == 0)
+    g_sequence_foreach (source->indicators, (GFunc) hud_source_unuse, NULL);
+}
+
+static void
 hud_app_indicator_source_search (HudSource   *hud_source,
                                  GPtrArray   *results_array,
                                  const gchar *search_string)
@@ -351,6 +383,8 @@ hud_app_indicator_source_init (HudAppIndicatorSource *source)
 static void
 hud_app_indicator_source_iface_init (HudSourceInterface *iface)
 {
+  iface->use = hud_app_indicator_source_use;
+  iface->unuse = hud_app_indicator_source_unuse;
   iface->search = hud_app_indicator_source_search;
 }
 
