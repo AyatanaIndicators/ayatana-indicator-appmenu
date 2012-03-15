@@ -216,6 +216,7 @@ struct _HudDbusmenuCollector
   guint xid;
   gboolean alive;
   gint use_count;
+  gboolean reentrance_check;
 };
 
 typedef GObjectClass HudDbusmenuCollectorClass;
@@ -259,10 +260,14 @@ hud_dbusmenu_collector_use (HudSource *source)
 {
   HudDbusmenuCollector *collector = HUD_DBUSMENU_COLLECTOR (source);
 
+  collector->reentrance_check = TRUE;
+
   if (collector->use_count == 0)
     g_hash_table_foreach (collector->items, hud_dbusmenu_collector_open_submenu, NULL);
 
   collector->use_count++;
+
+  collector->reentrance_check = FALSE;
 }
 
 static void
@@ -272,10 +277,14 @@ hud_dbusmenu_collector_unuse (HudSource *source)
 
   g_return_if_fail (collector->use_count > 0);
 
+  collector->reentrance_check = TRUE;
+
   collector->use_count--;
 
   if (collector->use_count == 0)
     g_hash_table_foreach (collector->items, hud_dbusmenu_collector_close_submenu, NULL);
+
+  collector->reentrance_check = FALSE;
 }
 
 static void
@@ -316,6 +325,8 @@ hud_dbusmenu_collector_child_added (DbusmenuMenuitem *menuitem,
   HudStringList *context;
   HudItem *item;
 
+  g_assert (!collector->reentrance_check);
+
   item = g_hash_table_lookup (collector->items, menuitem);
   g_assert (item != NULL);
 
@@ -331,6 +342,8 @@ hud_dbusmenu_collector_child_removed (DbusmenuMenuitem *menuitem,
 {
   HudDbusmenuCollector *collector = user_data;
 
+  g_assert (!collector->reentrance_check);
+
   hud_dbusmenu_collector_remove_item (collector, child);
 }
 
@@ -344,6 +357,8 @@ hud_dbusmenu_collector_property_changed (DbusmenuMenuitem *menuitem,
   DbusmenuMenuitem *parent;
   HudStringList *context;
   HudDbusmenuItem *item;
+
+  g_assert (!collector->reentrance_check);
 
   parent = dbusmenu_menuitem_get_parent (menuitem);
 
@@ -450,6 +465,8 @@ hud_dbusmenu_collector_root_changed (DbusmenuClient   *client,
                                      gpointer          user_data)
 {
   HudDbusmenuCollector *collector = user_data;
+
+  g_assert (!collector->reentrance_check);
 
   hud_dbusmenu_collector_setup_root (collector, root);
 }
