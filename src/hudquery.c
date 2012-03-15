@@ -16,6 +16,8 @@
  * Author: Ryan Lortie <desrt@desrt.ca>
  */
 
+#define G_LOG_DOMAIN "hudquery"
+
 #include "hudquery.h"
 
 #include "hudresult.h"
@@ -146,6 +148,8 @@ hud_query_finalize (GObject *object)
 {
   HudQuery *query = HUD_QUERY (object);
 
+  g_debug ("Destroyed query '%s'", query->search_string);
+
   hud_source_unuse (query->source);
 
   g_object_unref (query->source);
@@ -200,6 +204,8 @@ hud_query_new (HudSource   *source,
                gint         num_results)
 {
   HudQuery *query;
+
+  g_debug ("Created query '%s'", search_string);
 
   query = g_object_new (HUD_TYPE_QUERY, NULL);
   query->source = g_object_ref (source);
