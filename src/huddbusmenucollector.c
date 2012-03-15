@@ -429,6 +429,8 @@ hud_dbusmenu_collector_finalize (GObject *object)
   g_assert (g_hash_table_size (collector->items) == 0);
   g_hash_table_unref (collector->items);
 
+  g_free (collector->application_id);
+
   hud_string_list_unref (collector->prefix);
   g_clear_object (&collector->client);
 
