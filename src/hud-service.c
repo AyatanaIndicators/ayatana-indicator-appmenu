@@ -105,6 +105,14 @@ unpack_platform_data (GVariant *parameters)
   return g_variant_ref_sink (platform_data);
 }
 
+static gboolean
+drop_query_timeout (gpointer user_data)
+{
+  g_object_unref (user_data);
+
+  return G_SOURCE_REMOVE;
+}
+
 static void
 bus_method (GDBusConnection       *connection,
             const gchar           *sender,
@@ -183,6 +191,16 @@ bus_method (GDBusConnection       *connection,
       if (query != NULL)
         {
           g_signal_handlers_disconnect_by_func (query, query_changed, connection);
+          /* Unity does 'CloseQuery' immediately followed by
+           * 'StartQuery' on every keystroke.  Delay the destruction of
+           * the query for a moment just in case a 'StartQuery' is on the
+           * way.
+           *
+           * That way we can avoid allowing the use count to drop to
+           * zero only to be increased again back to 1.  This prevents a
+           * bunch of dbusmenu "closed"/"opened" calls being sent.
+           */
+          g_timeout_add (1000, drop_query_timeout, g_object_ref (query));
           hud_query_close (query);
         }
 
