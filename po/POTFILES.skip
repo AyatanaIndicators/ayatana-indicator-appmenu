@@ -1,1 +1,6 @@
+src/create-db.c
+src/gen-application-menu-registrar.xml.c
+src/gen-application-menu-renderer.xml.c
 src/hud-gtk.ui
+src/hud.interface.c
+src/indicator-appmenu-marshal.c

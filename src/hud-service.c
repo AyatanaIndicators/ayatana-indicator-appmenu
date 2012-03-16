@@ -16,9 +16,13 @@
  * Author: Ryan Lortie <desrt@desrt.ca>
  */
 
+#include "config.h"
+
 #include <glib.h>
 #include <gio/gio.h>
 #include <stdlib.h>
+#include <locale.h>
+#include <libintl.h>
 
 #include "hudappindicatorsource.h"
 #include "hudindicatorsource.h"
@@ -231,6 +235,10 @@ main (int argc, char **argv)
   HudSourceList *source_list;
 
   g_type_init ();
+
+  setlocale (LC_ALL, "");
+  bindtextdomain (GETTEXT_PACKAGE, GNOMELOCALEDIR);
+  textdomain (GETTEXT_PACKAGE);
 
   hud_settings_init ();
 
