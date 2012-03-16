@@ -208,7 +208,7 @@ hud_indicator_source_name_vanished (GDBusConnection *connection,
       g_signal_handlers_disconnect_by_func (indicator->collector, hud_indicator_source_collector_changed, indicator);
       /* Drop our use count on dying indicator (if any) */
       if (indicator->source->use_count)
-        hud_source_use (indicator->collector);
+        hud_source_unuse (indicator->collector);
       g_clear_object (&indicator->collector);
     }
 
