@@ -1275,8 +1275,7 @@ get_menus (IndicatorAppmenu * iapp, GError ** error)
 		}
 	}
 
-	GVariant * array = g_variant_builder_end(&builder);
-	return g_variant_new_tuple(&array, 1);
+	return g_variant_new ("(a(uso))", &builder);
 }
 
 /* A method has been called from our dbus inteface.  Figure out what it
