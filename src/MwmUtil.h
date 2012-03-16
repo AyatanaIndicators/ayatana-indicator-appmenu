@@ -1,4 +1,4 @@
-/**
+/*
  *
  * $Id$
  *
@@ -29,7 +29,7 @@
  *   is suitable for client side use on 64-bit architectures.
  *   X expects fields with a format of 32 to be longs, even
  *   when sizeof(long) == 8.
- **/
+ */
 
 #ifndef MWMUTIL_H_INCLUDED
 #define MWMUTIL_H_INCLUDED

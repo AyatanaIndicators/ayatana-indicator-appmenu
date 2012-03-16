@@ -1,0 +1,58 @@
+<?xml version="1.0"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+               "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd"
+[
+  <!ENTITY % local.common.attrib "xmlns:xi  CDATA  #FIXED 'http://www.w3.org/2003/XInclude'">
+  ]>
+
+<book id="index">
+  <bookinfo>
+    <title>hud-service Hacking Guide</title>
+  </bookinfo>
+
+  <xi:include href="hud-overview.xml"/>
+
+  <chapter>
+    <title>Data Types</title>
+    <xi:include href="xml/hudstringlist.xml"/>
+  </chapter>
+
+  <chapter>
+    <title>Queries, Results, Items</title>
+    <xi:include href="xml/huditem.xml"/>
+    <xi:include href="xml/hudresult.xml"/>
+    <xi:include href="xml/hudquery.xml"/>
+  </chapter>
+
+  <chapter>
+    <title>Sources</title>
+    <xi:include href="xml/hudsource.xml"/>
+    <xi:include href="xml/hudsourcelist.xml"/>
+    <xi:include href="xml/hudwindowsource.xml"/>
+    <xi:include href="xml/hudindicatorsource.xml"/>
+    <xi:include href="xml/hudappindicatorsource.xml"/>
+    <xi:include href="xml/huddbusmenucollector.xml"/>
+    <xi:include href="xml/hudmenumodelcollector.xml"/>
+  </chapter>
+
+  <chapter>
+    <title>Utility API</title>
+    <xi:include href="xml/hudsettings.xml"/>
+    <xi:include href="xml/hudappmenuregistrar.xml"/>
+  </chapter>
+
+  <chapter id="object-tree">
+    <title>Object Hierarchy</title>
+     <xi:include href="xml/tree_index.sgml"/>
+  </chapter>
+  <index id="api-index-full">
+    <title>API Index</title>
+    <xi:include href="xml/api-index-full.xml"><xi:fallback /></xi:include>
+  </index>
+  <index id="deprecated-api-index" role="deprecated">
+    <title>Index of deprecated API</title>
+    <xi:include href="xml/api-index-deprecated.xml"><xi:fallback /></xi:include>
+  </index>
+
+  <xi:include href="xml/annotation-glossary.xml"><xi:fallback /></xi:include>
+</book>

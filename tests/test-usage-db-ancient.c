@@ -22,12 +22,13 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <glib.h>
 #include <glib-object.h>
 
+#include "hudsettings.h"
 #include "load-app-info.h"
-#include "load-app-info.c"
 #include "usage-tracker.h"
-#include "usage-tracker.c"
-#include "utils.c"
-#include "create-db.c"
+
+HudSettings hud_settings = {
+  .store_usage_data = TRUE
+};
 
 gint
 main (gint argc, gchar * argv[])
