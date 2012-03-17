@@ -449,13 +449,13 @@ hud_dbusmenu_collector_setup_root (HudDbusmenuCollector *collector,
         g_hash_table_foreach (collector->items, hud_dbusmenu_collector_close_submenu, NULL);
 
       hud_dbusmenu_collector_remove_item (collector, collector->root);
-      collector->root = NULL;
+      g_clear_object (&collector->root);
     }
 
   if (root)
     {
       hud_dbusmenu_collector_add_item (collector, collector->prefix, root);
-      collector->root = root;
+      collector->root = g_object_ref (root);
     }
 }
 
