@@ -72,7 +72,7 @@ window_menu_model_finalize (GObject *object)
 }
 
 WindowMenuModel *
-window_menu_model_new (BamfWindow * window)
+window_menu_model_new (BamfApplication * app, BamfWindow * window)
 {
 	WindowMenuModel * menu = g_object_new(WINDOW_MENU_MODEL_TYPE, NULL);
 

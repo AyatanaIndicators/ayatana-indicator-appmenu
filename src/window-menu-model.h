@@ -30,7 +30,7 @@ struct _WindowMenuModel {
 };
 
 GType window_menu_model_get_type (void);
-WindowMenuModel * window_menu_model_new (BamfWindow * window);
+WindowMenuModel * window_menu_model_new (BamfApplication * app, BamfWindow * window);
 
 G_END_DECLS
 
