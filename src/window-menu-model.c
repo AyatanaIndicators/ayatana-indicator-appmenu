@@ -11,6 +11,8 @@
 #include "gactionmuxer.h"
 
 struct _WindowMenuModelPrivate {
+	guint xid;
+
 	/* All the actions */
 	GActionMuxer * action_mux;
 
@@ -38,6 +40,7 @@ static guint               get_location                 (WindowMenu * wm,
                                                          IndicatorObjectEntry * entry);
 static WindowMenuStatus    get_status                   (WindowMenu * wm);
 static gboolean            get_error_state              (WindowMenu * wm);
+static guint               get_xid                      (WindowMenu * wm);
 
 /* GLib boilerplate */
 G_DEFINE_TYPE (WindowMenuModel, window_menu_model, WINDOW_MENU_TYPE);
@@ -62,6 +65,7 @@ window_menu_model_class_init (WindowMenuModelClass *klass)
 	wm_class->get_location = get_location;
 	wm_class->get_status = get_status;
 	wm_class->get_error_state = get_error_state;
+	wm_class->get_xid = get_xid;
 
 	return;
 }
@@ -150,6 +154,8 @@ WindowMenuModel *
 window_menu_model_new (BamfApplication * app, BamfWindow * window)
 {
 	WindowMenuModel * menu = g_object_new(WINDOW_MENU_MODEL_TYPE, NULL);
+
+	menu->priv->xid = bamf_window_get_xid(window);
 
 	gchar *unique_bus_name;
 	gchar *app_menu_object_path;
@@ -273,3 +279,10 @@ get_error_state (WindowMenu * wm)
 	return FALSE;
 }
 
+/* Get the XID of this guy */
+static guint
+get_xid (WindowMenu * wm)
+{
+	g_return_val_if_fail(IS_WINDOW_MENU_MODEL(wm), 0);
+	return WINDOW_MENU_MODEL(wm)->priv->xid;
+}
