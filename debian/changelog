@@ -1,9 +1,9 @@
-indicator-appmenu (0.3.92-0ubuntu1~ppa3~gmm1) UNRELEASED; urgency=low
+indicator-appmenu (0.3.92-0ubuntu1~ppa3~gmm1) precise; urgency=low
 
   * Upstream Merge
     * GMenuModel menu support
 
- -- Ted Gould <ted@ubuntu.com>  Sun, 18 Mar 2012 13:57:41 -0500
+ -- Ted Gould <ted@ubuntu.com>  Sun, 18 Mar 2012 13:59:53 -0500
 
 indicator-appmenu (0.3.92-0ubuntu1~ppa2) precise; urgency=low
 
