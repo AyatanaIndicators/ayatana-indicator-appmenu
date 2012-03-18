@@ -110,8 +110,8 @@ window_menu_model_new (BamfWindow * window)
 	}
 
 	/* when the action groups change, we could end up having items
-	* enabled/disabled.  how to deal with that?
-	*/
+	 * enabled/disabled.  how to deal with that?
+	 */
 
 	g_free (unique_bus_name);
 	g_free (app_menu_object_path);
