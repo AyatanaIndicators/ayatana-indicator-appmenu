@@ -4,6 +4,8 @@
 
 #include <libbamf/libbamf.h>
 #include <gio/gio.h>
+#include <gtk/gtk.h>
+#include <glib/gi18n.h>
 
 #include "window-menu-model.h"
 #include "gactionmuxer.h"
@@ -63,7 +65,13 @@ window_menu_model_dispose (GObject *object)
 	WindowMenuModel * menu = WINDOW_MENU_MODEL(object);
 
 	g_clear_object(&menu->priv->action_mux);
+
+	/* Application Menu */
 	g_clear_object(&menu->priv->app_menu_model);
+	g_clear_object(&menu->priv->application_menu.label);
+	g_clear_object(&menu->priv->application_menu.menu);
+
+	/* Window Menus */
 	g_clear_object(&menu->priv->win_menu_model);
 
 	G_OBJECT_CLASS (window_menu_model_parent_class)->dispose (object);
@@ -81,9 +89,30 @@ window_menu_model_finalize (GObject *object)
 /* Adds the application menu and turns the whole thing into an object
    entry that can be used elsewhere */
 static void
-add_application_menu (WindowMenuModel * menu, gchar * appname, GMenuModel * model)
+add_application_menu (WindowMenuModel * menu, const gchar * appname, GMenuModel * model)
 {
+	g_return_if_fail(G_IS_MENU_MODEL(model));
+
 	menu->priv->app_menu_model = g_object_ref(model);
+
+	if (appname != NULL) {
+		menu->priv->application_menu.label = GTK_LABEL(gtk_label_new(appname));
+	} else {
+		menu->priv->application_menu.label = GTK_LABEL(gtk_label_new(_("Unknown Application Name")));
+	}
+	g_object_ref_sink(menu->priv->application_menu.label);
+	gtk_widget_show(GTK_WIDGET(menu->priv->application_menu.label));
+
+	menu->priv->application_menu.menu = GTK_MENU(gtk_menu_new());
+
+	GtkWidget * item = gtk_menu_item_new_with_label("Test");
+	gtk_widget_show(item);
+	gtk_menu_shell_append(GTK_MENU_SHELL(menu->priv->application_menu.menu), item);
+
+	gtk_widget_show(GTK_WIDGET(menu->priv->application_menu.menu));
+	g_object_ref_sink(menu->priv->application_menu.menu);
+
+	menu->priv->has_application_menu = TRUE;
 
 	return;
 }
