@@ -1103,6 +1103,20 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 	
 		menus = g_hash_table_lookup(appmenu->apps, GUINT_TO_POINTER(xid));
 
+		/* First look to see if we can get these from the
+		   GMenuModel access */
+		if (menus == NULL) {
+			gchar * uniquename = bamf_window_get_utf8_prop (window, "_GTK_UNIQUE_BUS_NAME");
+
+			if (uniquename != NULL) {
+				menus = WINDOW_MENU(window_menu_model_new(/* TODO */ NULL, window));
+
+				g_hash_table_insert(appmenu->apps, GUINT_TO_POINTER(xid), menus);
+			}
+
+			g_free(uniquename);
+		}
+
 		if (menus == NULL) {
 			g_debug("Looking for parent window on XID %d", xid);
 			window = bamf_window_get_transient(window);
