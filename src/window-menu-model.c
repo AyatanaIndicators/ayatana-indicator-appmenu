@@ -82,6 +82,17 @@ add_application_menu (WindowMenuModel * menu, gchar * appname, GMenuModel * mode
 
 
 
+	return;
+}
+
+/* Adds the window menu and turns it into a set of IndicatorObjectEntries
+   that can be used elsewhere */
+static void
+add_window_menu (WindowMenuModel * menu, GMenuModel * model)
+{
+
+
+	return;
 }
 
 /* Builds the menu model from the window for the application */
@@ -122,11 +133,19 @@ window_menu_model_new (BamfApplication * app, BamfWindow * window)
 
 	/* Build us some menus */
 	if (app_menu_object_path != NULL) {
-		add_application_menu(menu, NULL, G_MENU_MODEL(g_dbus_menu_model_get (session, unique_bus_name, app_menu_object_path)));
+		GMenuModel * model = G_MENU_MODEL(g_dbus_menu_model_get (session, unique_bus_name, app_menu_object_path));
+
+		add_application_menu(menu, NULL, model);
+
+		g_object_unref(model);
 	}
 
 	if (menubar_object_path != NULL) {
-		menu->priv->menubar = g_dbus_menu_model_get (session, unique_bus_name, menubar_object_path);
+		GMenuModel * model = G_MENU_MODEL(g_dbus_menu_model_get (session, unique_bus_name, menubar_object_path));
+
+		add_window_menu(menu, model);
+
+		g_object_unref(model);
 	}
 
 	/* when the action groups change, we could end up having items
