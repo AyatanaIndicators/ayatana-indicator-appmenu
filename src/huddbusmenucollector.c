@@ -208,10 +208,12 @@ struct _HudDbusmenuCollector
 
   DbusmenuClient *client;
   DbusmenuMenuitem *root;
+  gchar *application_id;
   HudStringList *prefix;
   GHashTable *items;
   guint penalty;
   guint xid;
+  gboolean alive;
 };
 
 typedef GObjectClass HudDbusmenuCollectorClass;
@@ -299,7 +301,7 @@ hud_dbusmenu_collector_property_changed (DbusmenuMenuitem *menuitem,
   else
     context = collector->prefix;
 
-  item = hud_dbusmenu_item_new (context, NULL, menuitem);
+  item = hud_dbusmenu_item_new (context, collector->application_id, menuitem);
   g_hash_table_remove (collector->items, menuitem);
   g_hash_table_insert (collector->items, menuitem, item);
 
@@ -325,7 +327,8 @@ hud_dbusmenu_collector_add_item (HudDbusmenuCollector *collector,
   for (child = dbusmenu_menuitem_get_children (menuitem); child; child = child->next)
     hud_dbusmenu_collector_add_item (collector, context, child->data);
 
-  hud_source_changed (HUD_SOURCE (collector));
+  if (collector->alive)
+    hud_source_changed (HUD_SOURCE (collector));
 }
 
 static void
@@ -342,7 +345,8 @@ hud_dbusmenu_collector_remove_item (HudDbusmenuCollector *collector,
   for (child = dbusmenu_menuitem_get_children (menuitem); child; child = child->next)
     hud_dbusmenu_collector_remove_item (collector, child->data);
 
-  hud_source_changed (HUD_SOURCE (collector));
+  if (collector->alive)
+    hud_source_changed (HUD_SOURCE (collector));
 }
 
 static void
@@ -377,7 +381,7 @@ hud_dbusmenu_collector_setup_endpoint (HudDbusmenuCollector *collector,
                                        const gchar          *bus_name,
                                        const gchar          *object_path)
 {
-  g_debug ("endpoint is %s %s\n", bus_name, object_path);
+  g_debug ("endpoint is %s %s", bus_name, object_path);
 
   if (collector->client)
     {
@@ -389,7 +393,8 @@ hud_dbusmenu_collector_setup_endpoint (HudDbusmenuCollector *collector,
   if (bus_name && object_path)
     {
       collector->client = dbusmenu_client_new (bus_name, object_path);
-      g_signal_connect (collector->client, "root-changed", G_CALLBACK (hud_dbusmenu_collector_root_changed), collector);
+      g_signal_connect_object (collector->client, "root-changed",
+                               G_CALLBACK (hud_dbusmenu_collector_root_changed), collector, 0);
       hud_dbusmenu_collector_setup_root (collector, dbusmenu_client_get_root (collector->client));
     }
 }
@@ -416,8 +421,15 @@ hud_dbusmenu_collector_finalize (GObject *object)
     hud_app_menu_registrar_remove_observer (hud_app_menu_registrar_get (), collector->xid,
                                             hud_dbusmenu_collector_registrar_observer_func, collector);
 
-  hud_string_list_unref (collector->prefix);
+  /* remove all the items without firing change signals */
+  collector->alive = FALSE;
+  hud_dbusmenu_collector_setup_endpoint (collector, NULL, NULL);
+
+  /* make sure the table is empty before we free it */
+  g_assert (g_hash_table_size (collector->items) == 0);
   g_hash_table_unref (collector->items);
+
+  hud_string_list_unref (collector->prefix);
   g_clear_object (&collector->client);
 
   G_OBJECT_CLASS (hud_dbusmenu_collector_parent_class)
@@ -467,7 +479,8 @@ hud_dbusmenu_collector_class_init (HudDbusmenuCollectorClass *class)
  * Returns: a new #HudDbusmenuCollector
  **/
 HudDbusmenuCollector *
-hud_dbusmenu_collector_new_for_endpoint (const gchar *prefix,
+hud_dbusmenu_collector_new_for_endpoint (const gchar *application_id,
+                                         const gchar *prefix,
                                          guint        penalty,
                                          const gchar *bus_name,
                                          const gchar *object_path)
@@ -475,10 +488,13 @@ hud_dbusmenu_collector_new_for_endpoint (const gchar *prefix,
   HudDbusmenuCollector *collector;
 
   collector = g_object_new (HUD_TYPE_DBUSMENU_COLLECTOR, NULL);
+  collector->application_id = g_strdup (application_id);
   if (prefix)
     collector->prefix = hud_string_list_cons (prefix, NULL);
   collector->penalty = penalty;
   hud_dbusmenu_collector_setup_endpoint (collector, bus_name, object_path);
+
+  collector->alive = TRUE;
 
   return collector;
 }
@@ -495,15 +511,24 @@ hud_dbusmenu_collector_new_for_endpoint (const gchar *prefix,
  * Returns: a new #HudDbusmenuCollector
  **/
 HudDbusmenuCollector *
-hud_dbusmenu_collector_new_for_window (BamfWindow *window)
+hud_dbusmenu_collector_new_for_window (BamfWindow  *window,
+                                       const gchar *desktop_file)
 {
   HudDbusmenuCollector *collector;
+  BamfApplication *application;
 
   collector = g_object_new (HUD_TYPE_DBUSMENU_COLLECTOR, NULL);
+  collector->application_id = g_strdup (desktop_file);
   collector->xid = bamf_window_get_xid (window);
-  g_debug ("dbusmenu on %d\n", collector->xid);
+  g_debug ("dbusmenu on %d", collector->xid);
   hud_app_menu_registrar_add_observer (hud_app_menu_registrar_get (), collector->xid,
                                        hud_dbusmenu_collector_registrar_observer_func, collector);
+
+  application = bamf_matcher_get_application_for_window (bamf_matcher_get_default (), window);
+  if (application != NULL)
+    collector->application_id = g_strdup (bamf_application_get_desktop_file (application));
+
+  collector->alive = TRUE;
 
   return collector;
 }

@@ -16,8 +16,12 @@
  * Author: Ryan Lortie <desrt@desrt.ca>
  */
 
+#include "config.h"
+
 #include <glib.h>
 #include <gio/gio.h>
+#include <locale.h>
+#include <libintl.h>
 
 #include "hudappindicatorsource.h"
 #include "hudindicatorsource.h"
@@ -132,6 +136,7 @@ bus_method (GDBusConnection       *connection,
         {
           g_dbus_method_invocation_return_error (invocation, G_DBUS_ERROR, G_DBUS_ERROR_INVALID_ARGS,
                                                  "item key has invalid format");
+          g_variant_unref (item_key);
           return;
         }
 
@@ -228,6 +233,10 @@ main (int argc, char **argv)
   HudSourceList *source_list;
 
   g_type_init ();
+
+  setlocale (LC_ALL, "");
+  bindtextdomain (GETTEXT_PACKAGE, GNOMELOCALEDIR);
+  textdomain (GETTEXT_PACKAGE);
 
   hud_settings_init ();
 

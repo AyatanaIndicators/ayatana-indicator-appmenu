@@ -147,7 +147,8 @@ hud_indicator_source_name_appeared (GDBusConnection *connection,
   HudIndicatorSourceIndicator *indicator = user_data;
   HudDbusmenuCollector *collector;
 
-  collector = hud_dbusmenu_collector_new_for_endpoint (_(indicator->info->user_visible_name),
+  collector = hud_dbusmenu_collector_new_for_endpoint (indicator->info->indicator_name,
+                                                       _(indicator->info->user_visible_name),
                                                        hud_settings.indicator_penalty,
                                                        name_owner, indicator->info->dbus_menu_path);
   g_signal_connect (collector, "changed", G_CALLBACK (hud_indicator_source_collector_changed), indicator);

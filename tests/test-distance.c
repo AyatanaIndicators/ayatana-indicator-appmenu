@@ -22,9 +22,8 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <glib.h>
 #include <glib-object.h>
 
-#define DUMP_MATRIX 1
+#include "hudsettings.h"
 #include "distance.h"
-#include "distance.c"
 
 /* hardcode some parameters so the test doesn't fail if the user
  * has bogus things in GSettings.
