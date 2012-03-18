@@ -9,12 +9,16 @@
 #include "gactionmuxer.h"
 
 struct _WindowMenuModelPrivate {
+	/* All the actions */
 	GActionMuxer * action_mux;
-	GDBusMenuModel *app_menu;
-	GDBusMenuModel *menubar;
 
+	/* Application Menu */
+	GDBusMenuModel * app_menu_model;
 	IndicatorObjectEntry application_menu;
 	gboolean has_application_menu;
+
+	/* Window Menus */
+	GDBusMenuModel * win_menu_model;
 };
 
 #define WINDOW_MENU_MODEL_GET_PRIVATE(o) \
@@ -59,8 +63,8 @@ window_menu_model_dispose (GObject *object)
 	WindowMenuModel * menu = WINDOW_MENU_MODEL(object);
 
 	g_clear_object(&menu->priv->action_mux);
-	g_clear_object(&menu->priv->app_menu);
-	g_clear_object(&menu->priv->menubar);
+	g_clear_object(&menu->priv->app_menu_model);
+	g_clear_object(&menu->priv->win_menu_model);
 
 	G_OBJECT_CLASS (window_menu_model_parent_class)->dispose (object);
 	return;
@@ -79,8 +83,7 @@ window_menu_model_finalize (GObject *object)
 static void
 add_application_menu (WindowMenuModel * menu, gchar * appname, GMenuModel * model)
 {
-
-
+	menu->priv->app_menu_model = g_object_ref(model);
 
 	return;
 }
@@ -90,6 +93,7 @@ add_application_menu (WindowMenuModel * menu, gchar * appname, GMenuModel * mode
 static void
 add_window_menu (WindowMenuModel * menu, GMenuModel * model)
 {
+	menu->priv->win_menu_model = g_object_ref(model);
 
 
 	return;
