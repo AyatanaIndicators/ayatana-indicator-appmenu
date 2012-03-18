@@ -12,6 +12,9 @@ struct _WindowMenuModelPrivate {
 	GActionMuxer * action_mux;
 	GDBusMenuModel *app_menu;
 	GDBusMenuModel *menubar;
+
+	IndicatorObjectEntry application_menu;
+	gboolean has_application_menu;
 };
 
 #define WINDOW_MENU_MODEL_GET_PRIVATE(o) \
@@ -71,6 +74,17 @@ window_menu_model_finalize (GObject *object)
 	return;
 }
 
+/* Adds the application menu and turns the whole thing into an object
+   entry that can be used elsewhere */
+static void
+add_application_menu (WindowMenuModel * menu, gchar * appname, GMenuModel * model)
+{
+
+
+
+}
+
+/* Builds the menu model from the window for the application */
 WindowMenuModel *
 window_menu_model_new (BamfApplication * app, BamfWindow * window)
 {
@@ -97,20 +111,22 @@ window_menu_model_new (BamfApplication * app, BamfWindow * window)
 
 	session = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, NULL);
 
-	if (app_menu_object_path != NULL) {
-		menu->priv->app_menu = g_dbus_menu_model_get (session, unique_bus_name, app_menu_object_path);
-	}
-
-	if (menubar_object_path != NULL) {
-		menu->priv->menubar = g_dbus_menu_model_get (session, unique_bus_name, menubar_object_path);
-	}
-
+	/* Setup actions */
 	if (application_object_path != NULL) {
 		g_action_muxer_insert(menu->priv->action_mux, ACTION_MUX_PREFIX_APP, G_ACTION_GROUP(g_dbus_action_group_get (session, unique_bus_name, application_object_path)));
 	}
 
 	if (window_object_path != NULL) {
 		g_action_muxer_insert(menu->priv->action_mux, ACTION_MUX_PREFIX_WIN, G_ACTION_GROUP(g_dbus_action_group_get (session, unique_bus_name, window_object_path)));
+	}
+
+	/* Build us some menus */
+	if (app_menu_object_path != NULL) {
+		add_application_menu(menu, NULL, G_MENU_MODEL(g_dbus_menu_model_get (session, unique_bus_name, app_menu_object_path)));
+	}
+
+	if (menubar_object_path != NULL) {
+		menu->priv->menubar = g_dbus_menu_model_get (session, unique_bus_name, menubar_object_path);
 	}
 
 	/* when the action groups change, we could end up having items
