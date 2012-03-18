@@ -26,13 +26,23 @@ struct _WindowMenuModelPrivate {
 #define WINDOW_MENU_MODEL_GET_PRIVATE(o) \
 (G_TYPE_INSTANCE_GET_PRIVATE ((o), WINDOW_MENU_MODEL_TYPE, WindowMenuModelPrivate))
 
-static void window_menu_model_class_init (WindowMenuModelClass *klass);
-static void window_menu_model_init       (WindowMenuModel *self);
-static void window_menu_model_dispose    (GObject *object);
-static void window_menu_model_finalize   (GObject *object);
+/* Base class stuff */
+static void                window_menu_model_class_init (WindowMenuModelClass *klass);
+static void                window_menu_model_init       (WindowMenuModel *self);
+static void                window_menu_model_dispose    (GObject *object);
+static void                window_menu_model_finalize   (GObject *object);
 
+/* Window Menu subclassin' */
+static GList *             get_entries                  (WindowMenu * wm);
+static guint               get_location                 (WindowMenu * wm,
+                                                         IndicatorObjectEntry * entry);
+static WindowMenuStatus    get_status                   (WindowMenu * wm);
+static gboolean            get_error_state              (WindowMenu * wm);
+
+/* GLib boilerplate */
 G_DEFINE_TYPE (WindowMenuModel, window_menu_model, WINDOW_MENU_TYPE);
 
+/* Prefixes to the action muxer */
 #define ACTION_MUX_PREFIX_WIN  "window"
 #define ACTION_MUX_PREFIX_APP  "application"
 
@@ -45,6 +55,13 @@ window_menu_model_class_init (WindowMenuModelClass *klass)
 
 	object_class->dispose = window_menu_model_dispose;
 	object_class->finalize = window_menu_model_finalize;
+
+	WindowMenuClass * wm_class = WINDOW_MENU_CLASS(klass);
+
+	wm_class->get_entries = get_entries;
+	wm_class->get_location = get_location;
+	wm_class->get_status = get_status;
+	wm_class->get_error_state = get_error_state;
 
 	return;
 }
@@ -195,3 +212,37 @@ window_menu_model_new (BamfApplication * app, BamfWindow * window)
 
 	return menu;
 }
+
+/* Get the list of entries */
+static GList *
+get_entries (WindowMenu * wm)
+{
+
+
+	return NULL;
+}
+
+/* Find the location of an entry */
+static guint
+get_location (WindowMenu * wm, IndicatorObjectEntry * entry)
+{
+
+	return 0;
+}
+
+/* Get's the status of the application to whether underlines should be
+   shown to the application.  GMenuModel doesn't give us this info. */
+static WindowMenuStatus
+get_status (WindowMenu * wm)
+{
+	return WINDOW_MENU_STATUS_NORMAL;
+}
+
+/* Says whether the application is in error, GMenuModel doesn't give us this
+   information on the app */
+static gboolean
+get_error_state (WindowMenu * wm)
+{
+	return FALSE;
+}
+
