@@ -6,12 +6,12 @@
 #include <gio/gio.h>
 
 #include "window-menu-model.h"
+#include "gactionmuxer.h"
 
 struct _WindowMenuModelPrivate {
+	GActionMuxer * action_mux;
 	GDBusMenuModel *app_menu;
 	GDBusMenuModel *menubar;
-	GDBusActionGroup *application;
-	GDBusActionGroup *window;
 };
 
 #define WINDOW_MENU_MODEL_GET_PRIVATE(o) \
@@ -23,6 +23,9 @@ static void window_menu_model_dispose    (GObject *object);
 static void window_menu_model_finalize   (GObject *object);
 
 G_DEFINE_TYPE (WindowMenuModel, window_menu_model, WINDOW_MENU_TYPE);
+
+#define ACTION_MUX_PREFIX_WIN  "window"
+#define ACTION_MUX_PREFIX_APP  "application"
 
 static void
 window_menu_model_class_init (WindowMenuModelClass *klass)
@@ -42,6 +45,8 @@ window_menu_model_init (WindowMenuModel *self)
 {
 	self->priv = WINDOW_MENU_MODEL_GET_PRIVATE(self);
 
+	self->priv->action_mux = g_action_muxer_new();
+
 	return;
 }
 
@@ -50,10 +55,9 @@ window_menu_model_dispose (GObject *object)
 {
 	WindowMenuModel * menu = WINDOW_MENU_MODEL(object);
 
+	g_clear_object(&menu->priv->action_mux);
 	g_clear_object(&menu->priv->app_menu);
 	g_clear_object(&menu->priv->menubar);
-	g_clear_object(&menu->priv->application);
-	g_clear_object(&menu->priv->window);
 
 	G_OBJECT_CLASS (window_menu_model_parent_class)->dispose (object);
 	return;
@@ -102,11 +106,11 @@ window_menu_model_new (BamfWindow * window)
 	}
 
 	if (application_object_path != NULL) {
-		menu->priv->application = g_dbus_action_group_get (session, unique_bus_name, application_object_path);
+		g_action_muxer_insert(menu->priv->action_mux, ACTION_MUX_PREFIX_APP, G_ACTION_GROUP(g_dbus_action_group_get (session, unique_bus_name, application_object_path)));
 	}
 
 	if (window_object_path != NULL) {
-		menu->priv->window = g_dbus_action_group_get (session, unique_bus_name, window_object_path);
+		g_action_muxer_insert(menu->priv->action_mux, ACTION_MUX_PREFIX_WIN, G_ACTION_GROUP(g_dbus_action_group_get (session, unique_bus_name, window_object_path)));
 	}
 
 	/* when the action groups change, we could end up having items
