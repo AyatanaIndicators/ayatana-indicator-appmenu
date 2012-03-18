@@ -1258,8 +1258,18 @@ get_menu_for_window (IndicatorAppmenu * iapp, guint windowid, GError ** error)
 		return NULL;
 	}
 
-	return g_variant_new("(so)", window_menu_get_address(wm),
-	                     window_menu_get_path(wm));
+	GVariantBuilder builder;
+	g_variant_builder_init(&builder, G_VARIANT_TYPE_TUPLE);
+
+	if (IS_WINDOW_MENU_DBUSMENU(wm)) {
+		g_variant_builder_add_value(&builder, g_variant_new_string(window_menu_dbusmenu_get_address(WINDOW_MENU_DBUSMENU(wm))));
+		g_variant_builder_add_value(&builder, g_variant_new_object_path(window_menu_dbusmenu_get_path(WINDOW_MENU_DBUSMENU(wm))));
+	} else {
+		g_variant_builder_add_value(&builder, g_variant_new_string(""));
+		g_variant_builder_add_value(&builder, g_variant_new_object_path("/"));
+	}
+
+	return g_variant_builder_end(&builder);
 }
 
 /* Get all the menus we have */
@@ -1282,8 +1292,14 @@ get_menus (IndicatorAppmenu * iapp, GError ** error)
 		GVariantBuilder tuple;
 		g_variant_builder_init(&tuple, G_VARIANT_TYPE_TUPLE);
 		g_variant_builder_add_value(&tuple, g_variant_new_uint32(window_menu_get_xid(WINDOW_MENU(hash_val))));
-		g_variant_builder_add_value(&tuple, g_variant_new_string(window_menu_get_address(WINDOW_MENU(hash_val))));
-		g_variant_builder_add_value(&tuple, g_variant_new_object_path(window_menu_get_path(WINDOW_MENU(hash_val))));
+
+		if (IS_WINDOW_MENU_DBUSMENU(hash_val)) {
+			g_variant_builder_add_value(&tuple, g_variant_new_string(window_menu_dbusmenu_get_address(WINDOW_MENU_DBUSMENU(hash_val))));
+			g_variant_builder_add_value(&tuple, g_variant_new_object_path(window_menu_dbusmenu_get_path(WINDOW_MENU_DBUSMENU(hash_val))));
+		} else {
+			g_variant_builder_add_value(&tuple, g_variant_new_string(""));
+			g_variant_builder_add_value(&tuple, g_variant_new_object_path("/"));
+		}
 
 		g_variant_builder_add_value(&array, g_variant_builder_end(&tuple));
 	}

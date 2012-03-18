@@ -150,30 +150,6 @@ window_menu_get_xid (WindowMenu * wm)
 	}
 }
 
-gchar *
-window_menu_get_path (WindowMenu * wm)
-{
-	WindowMenuClass * class = WINDOW_MENU_GET_CLASS(wm);
-
-	if (class->get_path != NULL) {
-		return class->get_path(wm);
-	} else {
-		return NULL;
-	}
-}
-
-gchar *
-window_menu_get_address (WindowMenu * wm)
-{
-	WindowMenuClass * class = WINDOW_MENU_GET_CLASS(wm);
-
-	if (class->get_address != NULL) {
-		return class->get_address(wm);
-	} else {
-		return NULL;
-	}
-}
-
 gboolean
 window_menu_get_error_state (WindowMenu * wm)
 {

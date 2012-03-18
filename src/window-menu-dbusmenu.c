@@ -75,8 +75,6 @@ static void props_cb (GObject * object, GAsyncResult * res, gpointer user_data);
 static GList *          get_entries      (WindowMenu * wm);
 static guint            get_location     (WindowMenu * wm, IndicatorObjectEntry * entry);
 static guint            get_xid          (WindowMenu * wm);
-static gchar *          get_path         (WindowMenu * wm);
-static gchar *          get_address      (WindowMenu * wm);
 static gboolean         get_error_state  (WindowMenu * wm);
 static WindowMenuStatus get_status       (WindowMenu * wm);
 static void             entry_restore    (WindowMenu * wm, IndicatorObjectEntry * entry);
@@ -98,8 +96,6 @@ window_menu_dbusmenu_class_init (WindowMenuDbusmenuClass *klass)
 	menu_class->get_entries = get_entries;
 	menu_class->get_location = get_location;
 	menu_class->get_xid = get_xid;
-	menu_class->get_path = get_path;
-	menu_class->get_address = get_address;
 	menu_class->get_error_state = get_error_state;
 	menu_class->get_status = get_status;
 	menu_class->entry_restore = entry_restore;
@@ -799,8 +795,8 @@ get_xid (WindowMenu * wm)
 }
 
 /* Get the path for this object */
-static gchar *
-get_path (WindowMenu * wm)
+gchar *
+window_menu_dbusmenu_get_path (WindowMenuDbusmenu * wm)
 {
 	g_return_val_if_fail(IS_WINDOW_MENU_DBUSMENU(wm), NULL);
 	WindowMenuDbusmenuPrivate * priv = WINDOW_MENU_DBUSMENU_GET_PRIVATE(wm);
@@ -813,8 +809,8 @@ get_path (WindowMenu * wm)
 }
 
 /* Get the address of this object */
-static gchar *
-get_address (WindowMenu * wm)
+gchar *
+window_menu_dbusmenu_get_address (WindowMenuDbusmenu * wm)
 {
 	g_return_val_if_fail(IS_WINDOW_MENU_DBUSMENU(wm), NULL);
 	WindowMenuDbusmenuPrivate * priv = WINDOW_MENU_DBUSMENU_GET_PRIVATE(wm);

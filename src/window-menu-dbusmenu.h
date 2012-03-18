@@ -46,6 +46,8 @@ struct _WindowMenuDbusmenu {
 
 GType window_menu_dbusmenu_get_type (void);
 WindowMenuDbusmenu * window_menu_dbusmenu_new (const guint windowid, const gchar * dbus_addr, const gchar * dbus_object);
+gchar * window_menu_dbusmenu_get_path (WindowMenuDbusmenu * wm);
+gchar * window_menu_dbusmenu_get_address (WindowMenuDbusmenu * wm);
 
 G_END_DECLS
 

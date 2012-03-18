@@ -58,8 +58,6 @@ struct _WindowMenuClass {
 	guint            (*get_location)     (WindowMenu * wm, IndicatorObjectEntry * entry);
 
 	guint            (*get_xid)          (WindowMenu * wm);
-	gchar *          (*get_path)         (WindowMenu * wm);
-	gchar *          (*get_address)      (WindowMenu * wm);
 
 	gboolean         (*get_error_state)  (WindowMenu * wm);
 	WindowMenuStatus (*get_status)       (WindowMenu * wm);
@@ -88,8 +86,6 @@ GList * window_menu_get_entries (WindowMenu * wm);
 guint window_menu_get_location (WindowMenu * wm, IndicatorObjectEntry * entry);
 
 guint window_menu_get_xid (WindowMenu * wm);
-gchar * window_menu_get_path (WindowMenu * wm);
-gchar * window_menu_get_address (WindowMenu * wm);
 
 gboolean window_menu_get_error_state (WindowMenu * wm);
 WindowMenuStatus window_menu_get_status (WindowMenu * wm);
