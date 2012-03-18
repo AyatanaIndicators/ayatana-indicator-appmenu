@@ -217,17 +217,44 @@ window_menu_model_new (BamfApplication * app, BamfWindow * window)
 static GList *
 get_entries (WindowMenu * wm)
 {
+	g_return_val_if_fail(IS_WINDOW_MENU_MODEL(wm), NULL);
+	WindowMenuModel * menu = WINDOW_MENU_MODEL(wm);
 
+	GList * ret = NULL;
 
-	return NULL;
+	if (menu->priv->has_application_menu) {
+		ret = g_list_append(ret, &menu->priv->application_menu);
+	}
+
+	return ret;
 }
 
 /* Find the location of an entry */
 static guint
 get_location (WindowMenu * wm, IndicatorObjectEntry * entry)
 {
+	g_return_val_if_fail(IS_WINDOW_MENU_MODEL(wm), 0);
+	WindowMenuModel * menu = WINDOW_MENU_MODEL(wm);
 
-	return 0;
+	gboolean found = FALSE;
+	guint pos = 0;
+
+	if (menu->priv->has_application_menu) {
+		if (entry == &menu->priv->application_menu) {
+			pos = 0;
+			found = TRUE;
+		} else {
+			/* We need to put a shift in if there is an application
+			   menu and we're not looking for that one */
+			pos = 1;
+		}
+	}
+
+	if (!found) {
+		g_warning("Unable to find entry: %p", entry);
+	}
+
+	return pos;
 }
 
 /* Get's the status of the application to whether underlines should be
