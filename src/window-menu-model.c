@@ -250,6 +250,11 @@ item_inserted_cb (GtkContainer *menu,
 #endif
                   gpointer      data)
 {
+	if (g_object_get_data(G_OBJECT(widget), ENTRY_DATA) != NULL) {
+		entry_on_menuitem(WINDOW_MENU_MODEL(data), GTK_MENU_ITEM(widget));
+	}
+
+	g_signal_emit_by_name(data, WINDOW_MENU_SIGNAL_ENTRY_ADDED, g_object_get_data(G_OBJECT(widget), ENTRY_DATA));
 
 	return;
 }
@@ -258,7 +263,7 @@ item_inserted_cb (GtkContainer *menu,
 static void
 item_removed_cb (GtkContainer *menu, GtkWidget *widget, gpointer data)
 {
-
+	g_signal_emit_by_name(data, WINDOW_MENU_SIGNAL_ENTRY_REMOVED, g_object_get_data(G_OBJECT(widget), ENTRY_DATA));
 	return;
 }
 
