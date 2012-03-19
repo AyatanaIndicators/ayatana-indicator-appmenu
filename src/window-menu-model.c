@@ -223,6 +223,24 @@ mi_find_menu (GtkMenuItem * mi)
 	}
 }
 
+/* Put an entry on a menu item */
+static void
+entry_on_menuitem (WindowMenuModel * menu, GtkMenuItem * gmi)
+{
+	IndicatorObjectEntry * entry = g_new0(IndicatorObjectEntry, 1);
+
+	entry->label = mi_find_label(GTK_WIDGET(gmi));
+	entry->image = mi_find_icon(GTK_WIDGET(gmi));
+	entry->menu = mi_find_menu(gmi);
+
+	/* TODO: set up some weak pointers here */
+	/* TODO: Oh, and some label update signals and stuff */
+
+	g_object_set_data_full(G_OBJECT(gmi), ENTRY_DATA, entry, g_free);
+
+	return;
+}
+
 /* A child item was added to a menu we're watching.  Let's try to integrate it. */
 static void
 item_inserted_cb (GtkContainer *menu,
@@ -277,16 +295,7 @@ add_window_menu (WindowMenuModel * menu, GMenuModel * model)
 			continue;
 		}
 
-		IndicatorObjectEntry * entry = g_new0(IndicatorObjectEntry, 1);
-
-		entry->label = mi_find_label(GTK_WIDGET(gmi));
-		entry->image = mi_find_icon(GTK_WIDGET(gmi));
-		entry->menu = mi_find_menu(gmi);
-
-		/* TODO: set up some weak pointers here */
-		/* TODO: Oh, and some label update signals and stuff */
-
-		g_object_set_data_full(G_OBJECT(gmi), ENTRY_DATA, entry, g_free);
+		entry_on_menuitem(menu, gmi);
 	}
 
 	return;
