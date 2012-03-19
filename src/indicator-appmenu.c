@@ -1109,7 +1109,9 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 			gchar * uniquename = bamf_window_get_utf8_prop (window, "_GTK_UNIQUE_BUS_NAME");
 
 			if (uniquename != NULL) {
-				menus = WINDOW_MENU(window_menu_model_new(/* TODO */ NULL, window));
+				BamfApplication * app = bamf_matcher_get_application_for_window(matcher, window);
+
+				menus = WINDOW_MENU(window_menu_model_new(app, window));
 
 				g_hash_table_insert(appmenu->apps, GUINT_TO_POINTER(xid), menus);
 			}

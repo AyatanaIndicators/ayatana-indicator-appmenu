@@ -6,15 +6,18 @@
 #include <gio/gio.h>
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
+#include <gio/gdesktopappinfo.h>
 
 #include "window-menu-model.h"
 #include "gactionmuxer.h"
+#include "gtkmodelmenu.h"
 
 struct _WindowMenuModelPrivate {
 	guint xid;
 
 	/* All the actions */
 	GActionMuxer * action_mux;
+	GtkAccelGroup * accel_group;
 
 	/* Application Menu */
 	GDBusMenuModel * app_menu_model;
@@ -76,6 +79,7 @@ window_menu_model_init (WindowMenuModel *self)
 	self->priv = WINDOW_MENU_MODEL_GET_PRIVATE(self);
 
 	self->priv->action_mux = g_action_muxer_new();
+	self->priv->accel_group = gtk_accel_group_new();
 
 	return;
 }
@@ -86,6 +90,7 @@ window_menu_model_dispose (GObject *object)
 	WindowMenuModel * menu = WINDOW_MENU_MODEL(object);
 
 	g_clear_object(&menu->priv->action_mux);
+	g_clear_object(&menu->priv->accel_group);
 
 	/* Application Menu */
 	g_clear_object(&menu->priv->app_menu_model);
@@ -124,11 +129,7 @@ add_application_menu (WindowMenuModel * menu, const gchar * appname, GMenuModel 
 	g_object_ref_sink(menu->priv->application_menu.label);
 	gtk_widget_show(GTK_WIDGET(menu->priv->application_menu.label));
 
-	menu->priv->application_menu.menu = GTK_MENU(gtk_menu_new());
-
-	GtkWidget * item = gtk_menu_item_new_with_label("Test");
-	gtk_widget_show(item);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu->priv->application_menu.menu), item);
+	menu->priv->application_menu.menu = GTK_MENU(gtk_model_menu_create_menu(model, G_ACTION_OBSERVABLE(menu->priv->action_mux), menu->priv->accel_group));
 
 	gtk_widget_show(GTK_WIDGET(menu->priv->application_menu.menu));
 	g_object_ref_sink(menu->priv->application_menu.menu);
@@ -153,6 +154,9 @@ add_window_menu (WindowMenuModel * menu, GMenuModel * model)
 WindowMenuModel *
 window_menu_model_new (BamfApplication * app, BamfWindow * window)
 {
+	g_return_val_if_fail(BAMF_IS_APPLICATION(app), NULL);
+	g_return_val_if_fail(BAMF_IS_WINDOW(window), NULL);
+
 	WindowMenuModel * menu = g_object_new(WINDOW_MENU_MODEL_TYPE, NULL);
 
 	menu->priv->xid = bamf_window_get_xid(window);
@@ -189,11 +193,23 @@ window_menu_model_new (BamfApplication * app, BamfWindow * window)
 
 	/* Build us some menus */
 	if (app_menu_object_path != NULL) {
+		const gchar * desktop_path = bamf_application_get_desktop_file(app);
+		gchar * app_name = NULL;
+
+		if (desktop_path != NULL) {
+			GDesktopAppInfo * desktop = g_desktop_app_info_new_from_filename(desktop_path);
+
+			app_name = g_strdup(g_app_info_get_name(G_APP_INFO(desktop)));
+
+			g_object_unref(desktop);
+		}
+
 		GMenuModel * model = G_MENU_MODEL(g_dbus_menu_model_get (session, unique_bus_name, app_menu_object_path));
 
-		add_application_menu(menu, NULL, model);
+		add_application_menu(menu, app_name, model);
 
 		g_object_unref(model);
+		g_free(app_name);
 	}
 
 	if (menubar_object_path != NULL) {
