@@ -1,3 +1,10 @@
+indicator-appmenu (0.3.94-0ubuntu3) precise; urgency=low
+
+  * Backport r180 to fix unity-panel-service segfaults when unsetting
+    the menuproxy variable to disable menus export (lp: #953479, #958048)
+
+ -- Sebastien Bacher <seb128@ubuntu.com>  Mon, 19 Mar 2012 11:36:10 +0100
+
 indicator-appmenu (0.3.94-0ubuntu2) precise; urgency=low
 
   * Init translation, fix system indicator names not translated in the hud
