@@ -233,6 +233,11 @@ entry_on_menuitem (WindowMenuModel * menu, GtkMenuItem * gmi)
 	entry->image = mi_find_icon(GTK_WIDGET(gmi));
 	entry->menu = mi_find_menu(gmi);
 
+	if (entry->label == NULL && entry->image == NULL) {
+		g_warning("Item doesn't have a label or an image, aborting");
+		return;
+	}
+
 	/* TODO: set up some weak pointers here */
 	/* TODO: Oh, and some label update signals and stuff */
 
