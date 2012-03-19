@@ -144,6 +144,73 @@ add_application_menu (WindowMenuModel * menu, const gchar * appname, GMenuModel 
 	return;
 }
 
+/* Find the label in a GTK MenuItem */
+GtkLabel *
+mi_find_label (GtkWidget * mi)
+{
+	if (GTK_IS_LABEL(mi)) {
+		return GTK_LABEL(mi);
+	}
+
+	GtkLabel * retval = NULL;
+
+	if (GTK_IS_CONTAINER(mi)) {
+		GList * children = gtk_container_get_children(GTK_CONTAINER(mi));
+		GList * child = children;
+
+		while (child != NULL && retval == NULL) {
+			if (GTK_IS_WIDGET(child->data)) {
+				retval = mi_find_label(GTK_WIDGET(child->data));
+			}
+			child = g_list_next(child);
+		}
+
+		g_list_free(children);
+	}
+
+	return retval;
+}
+
+/* Find the icon in a GTK MenuItem */
+GtkImage *
+mi_find_icon (GtkWidget * mi)
+{
+	if (GTK_IS_IMAGE(mi)) {
+		return GTK_IMAGE(mi);
+	}
+
+	GtkImage * retval = NULL;
+
+	if (GTK_IS_CONTAINER(mi)) {
+		GList * children = gtk_container_get_children(GTK_CONTAINER(mi));
+		GList * child = children;
+
+		while (child != NULL && retval == NULL) {
+			if (GTK_IS_WIDGET(child->data)) {
+				retval = mi_find_icon(GTK_WIDGET(child->data));
+			}
+			child = g_list_next(child);
+		}
+
+		g_list_free(children);
+	}
+
+	return retval;
+}
+
+/* Check the menu and make sure we return it if it's a menu
+   all proper like that */
+GtkMenu *
+mi_find_menu (GtkMenuItem * mi)
+{
+	GtkWidget * retval = gtk_menu_item_get_submenu(mi);
+	if (GTK_IS_MENU(retval)) {
+		return GTK_MENU(retval);
+	} else {
+		return NULL;
+	}
+}
+
 /* Adds the window menu and turns it into a set of IndicatorObjectEntries
    that can be used elsewhere */
 static void
@@ -162,7 +229,9 @@ add_window_menu (WindowMenuModel * menu, GMenuModel * model)
 		GtkMenuItem * gmi = GTK_MENU_ITEM(child->data);
 		IndicatorObjectEntry * entry = g_new0(IndicatorObjectEntry, 1);
 
-
+		entry->label = mi_find_label(GTK_WIDGET(gmi));
+		entry->image = mi_find_icon(GTK_WIDGET(gmi));
+		entry->menu = mi_find_menu(gmi);
 
 		g_object_set_data_full(G_OBJECT(gmi), ENTRY_DATA, entry, g_free);
 	}
