@@ -21,7 +21,6 @@
 
 #include "gtkmodelmenuitem.h"
 
-#include "gtkaccelmapprivate.h"
 #include "gtkmodelmenu.h"
 
 struct _GtkModelMenuItem
@@ -83,7 +82,7 @@ gtk_model_menu_item_set_active (GtkModelMenuItem *item,
 
   if (gtk_check_menu_item_get_active (checkitem) != active)
     {
-      _gtk_check_menu_item_set_active (checkitem, active);
+      // TODO _gtk_check_menu_item_set_active (checkitem, active);
       g_object_notify (G_OBJECT (checkitem), "active");
       gtk_check_menu_item_toggled (checkitem);
       gtk_widget_queue_draw (GTK_WIDGET (item));
@@ -185,6 +184,22 @@ gtk_model_menu_item_action_removed (GActionObserver   *observer,
   item->has_indicator = FALSE;
 
   gtk_widget_queue_resize (GTK_WIDGET (item));
+}
+
+gchar *
+_gtk_accel_path_for_action (const gchar *action_name,
+                            GVariant    *parameter)
+{
+  GString *s;
+
+  s = g_string_new ("<GAction>/");
+  g_string_append (s, action_name);
+  if (parameter)
+    {    
+      g_string_append_c (s, '/');
+      g_variant_print_string (parameter, s, FALSE);
+    }    
+  return g_string_free (s, FALSE);
 }
 
 static void

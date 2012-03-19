@@ -44,7 +44,11 @@ libappmenu_la_SOURCES = \
 	gactionobservable.c \
 	gactionobservable.h \
 	gactionobserver.c \
-	gactionobserver.h    
+	gactionobserver.h \
+	gtkmodelmenu.c \
+	gtkmodelmenu.h \
+	gtkmodelmenuitem.c \
+	gtkmodelmenuitem.h
 libappmenu_la_CFLAGS = \
 	$(INDICATOR_CFLAGS) \
 	$(COVERAGE_CFLAGS) \

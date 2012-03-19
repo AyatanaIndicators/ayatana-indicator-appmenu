@@ -23,11 +23,7 @@
 
 #include "gtkmodelmenu.h"
 
-#include "gtkmenu.h"
-#include "gtkmenubar.h"
-#include "gtkseparatormenuitem.h"
 #include "gtkmodelmenuitem.h"
-#include "gtkapplicationprivate.h"
 
 typedef struct {
   GActionObservable *actions;
@@ -279,6 +275,7 @@ notify_attach (GtkMenu    *menu,
                GParamSpec *pspec,
                gpointer    data)
 {
+#if 0
   GtkWidget *widget;
   GtkWidget *toplevel;
   GActionObservable *actions;
@@ -293,6 +290,7 @@ notify_attach (GtkMenu    *menu,
 
       gtk_model_menu_populate (GTK_MENU_SHELL (menu), actions, accels);
     }
+#endif
 }
 
 /**
@@ -344,6 +342,7 @@ hierarchy_changed (GtkMenuShell *shell,
                    GObject      *previous_toplevel,
                    gpointer      data)
 {
+#if 0
   GtkWidget *toplevel;
   GActionObservable *actions;
   GtkAccelGroup *accels;
@@ -356,6 +355,7 @@ hierarchy_changed (GtkMenuShell *shell,
 
       gtk_model_menu_populate (shell, actions, accels);
     }
+#endif
 }
 
 /**

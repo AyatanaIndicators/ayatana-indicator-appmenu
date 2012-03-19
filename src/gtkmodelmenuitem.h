@@ -20,8 +20,8 @@
 #ifndef __GTK_MODEL_MENU_ITEM_H__
 #define __GTK_MODEL_MENU_ITEM_H__
 
-#include <gtk/gactionobservable.h>
-#include <gtk/gtkcheckmenuitem.h>
+#include <gtk/gtk.h>
+#include "gactionobservable.h"
 
 #define GTK_TYPE_MODEL_MENU_ITEM                            (gtk_model_menu_item_get_type ())
 #define GTK_MODEL_MENU_ITEM(inst)                           (G_TYPE_CHECK_INSTANCE_CAST ((inst),                      \
