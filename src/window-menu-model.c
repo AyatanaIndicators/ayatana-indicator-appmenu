@@ -227,6 +227,11 @@ add_window_menu (WindowMenuModel * menu, GMenuModel * model)
 	GList * child;
 	for (child = children; child != NULL; child = g_list_next(child)) {
 		GtkMenuItem * gmi = GTK_MENU_ITEM(child->data);
+
+		if (gmi == NULL) {
+			continue;
+		}
+
 		IndicatorObjectEntry * entry = g_new0(IndicatorObjectEntry, 1);
 
 		entry->label = mi_find_label(GTK_WIDGET(gmi));
@@ -346,7 +351,9 @@ get_entries (WindowMenu * wm)
 		for (child = children; child != NULL; child = g_list_next(child)) {
 			gpointer entry = g_object_get_data(child->data, ENTRY_DATA);
 			/* TODO: Handle case of no entry */
-			ret = g_list_append(ret, entry);
+			if (entry != NULL) {
+				ret = g_list_append(ret, entry);
+			}
 		}
 	}
 
