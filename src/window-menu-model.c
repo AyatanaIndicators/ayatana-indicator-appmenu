@@ -26,6 +26,7 @@ struct _WindowMenuModelPrivate {
 
 	/* Window Menus */
 	GDBusMenuModel * win_menu_model;
+	GtkMenu * win_menu;
 };
 
 #define WINDOW_MENU_MODEL_GET_PRIVATE(o) \
@@ -99,6 +100,7 @@ window_menu_model_dispose (GObject *object)
 
 	/* Window Menus */
 	g_clear_object(&menu->priv->win_menu_model);
+	g_clear_object(&menu->priv->win_menu);
 
 	G_OBJECT_CLASS (window_menu_model_parent_class)->dispose (object);
 	return;
@@ -146,6 +148,10 @@ add_window_menu (WindowMenuModel * menu, GMenuModel * model)
 {
 	menu->priv->win_menu_model = g_object_ref(model);
 
+	menu->priv->win_menu = GTK_MENU(gtk_model_menu_create_menu(model, G_ACTION_OBSERVABLE(menu->priv->action_mux), menu->priv->accel_group));
+	g_object_ref_sink(menu->priv->win_menu);
+
+	/* TODO: Signals for the menu changing */
 
 	return;
 }
