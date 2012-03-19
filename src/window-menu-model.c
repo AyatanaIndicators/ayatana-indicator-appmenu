@@ -10,12 +10,14 @@
 
 #include "window-menu-model.h"
 #include "gactionmuxer.h"
+#include "gtkmodelmenu.h"
 
 struct _WindowMenuModelPrivate {
 	guint xid;
 
 	/* All the actions */
 	GActionMuxer * action_mux;
+	GtkAccelGroup * accel_group;
 
 	/* Application Menu */
 	GDBusMenuModel * app_menu_model;
@@ -77,6 +79,7 @@ window_menu_model_init (WindowMenuModel *self)
 	self->priv = WINDOW_MENU_MODEL_GET_PRIVATE(self);
 
 	self->priv->action_mux = g_action_muxer_new();
+	self->priv->accel_group = gtk_accel_group_new();
 
 	return;
 }
@@ -87,6 +90,7 @@ window_menu_model_dispose (GObject *object)
 	WindowMenuModel * menu = WINDOW_MENU_MODEL(object);
 
 	g_clear_object(&menu->priv->action_mux);
+	g_clear_object(&menu->priv->accel_group);
 
 	/* Application Menu */
 	g_clear_object(&menu->priv->app_menu_model);
@@ -125,11 +129,7 @@ add_application_menu (WindowMenuModel * menu, const gchar * appname, GMenuModel 
 	g_object_ref_sink(menu->priv->application_menu.label);
 	gtk_widget_show(GTK_WIDGET(menu->priv->application_menu.label));
 
-	menu->priv->application_menu.menu = GTK_MENU(gtk_menu_new());
-
-	GtkWidget * item = gtk_menu_item_new_with_label("Test");
-	gtk_widget_show(item);
-	gtk_menu_shell_append(GTK_MENU_SHELL(menu->priv->application_menu.menu), item);
+	menu->priv->application_menu.menu = GTK_MENU(gtk_model_menu_create_menu(model, G_ACTION_OBSERVABLE(menu->priv->action_mux), menu->priv->accel_group));
 
 	gtk_widget_show(GTK_WIDGET(menu->priv->application_menu.menu));
 	g_object_ref_sink(menu->priv->application_menu.menu);
