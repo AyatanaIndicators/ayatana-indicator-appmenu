@@ -355,9 +355,11 @@ window_menu_model_new (BamfApplication * app, BamfWindow * window)
 		if (desktop_path != NULL) {
 			GDesktopAppInfo * desktop = g_desktop_app_info_new_from_filename(desktop_path);
 
-			app_name = g_strdup(g_app_info_get_name(G_APP_INFO(desktop)));
+			if (desktop != NULL) {
+				app_name = g_strdup(g_app_info_get_name(G_APP_INFO(desktop)));
 
-			g_object_unref(desktop);
+				g_object_unref(desktop);
+			}
 		}
 
 		GMenuModel * model = G_MENU_MODEL(g_dbus_menu_model_get (session, unique_bus_name, app_menu_object_path));
