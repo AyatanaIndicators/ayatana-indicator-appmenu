@@ -268,6 +268,16 @@ get_entries (WindowMenu * wm)
 		ret = g_list_append(ret, &menu->priv->application_menu);
 	}
 
+	if (menu->priv->win_menu != NULL) {
+		GList * children = gtk_container_get_children(GTK_CONTAINER(menu->priv->win_menu));
+		GList * child;
+		for (child = children; child != NULL; child = g_list_next(child)) {
+			gpointer entry = g_object_get_data(child->data, ENTRY_DATA);
+			/* TODO: Handle case of no entry */
+			ret = g_list_append(ret, entry);
+		}
+	}
+
 	return ret;
 }
 
@@ -292,7 +302,23 @@ get_location (WindowMenu * wm, IndicatorObjectEntry * entry)
 		}
 	}
 
+	if (menu->priv->win_menu != NULL) {
+		GList * children = gtk_container_get_children(GTK_CONTAINER(menu->priv->win_menu));
+		GList * child;
+		for (child = children; child != NULL; child = g_list_next(child), pos++) {
+			gpointer lentry = g_object_get_data(child->data, ENTRY_DATA);
+
+			if (entry == lentry) {
+				found = TRUE;
+				break;
+			}
+		}
+	}
+
 	if (!found) {
+		/* NOTE: Not printing any of the values here because there's
+		   a pretty good chance that they're not valid.  Let's not crash
+		   things here. */
 		g_warning("Unable to find entry: %p", entry);
 	}
 
