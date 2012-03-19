@@ -1,9 +1,9 @@
-indicator-appmenu (0.3.92-0ubuntu1~ppa3~gmm4) UNRELEASED; urgency=low
+indicator-appmenu (0.3.92-0ubuntu1~ppa3~gmm4) precise; urgency=low
 
   * Upstream Merge
     * Doing the window menus
 
- -- Ted Gould <ted@ubuntu.com>  Mon, 19 Mar 2012 10:35:15 -0500
+ -- Ted Gould <ted@ubuntu.com>  Mon, 19 Mar 2012 10:46:19 -0500
 
 indicator-appmenu (0.3.92-0ubuntu1~ppa3~gmm3) precise; urgency=low
 
