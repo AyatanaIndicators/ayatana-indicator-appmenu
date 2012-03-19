@@ -153,6 +153,9 @@ add_window_menu (WindowMenuModel * menu, GMenuModel * model)
 WindowMenuModel *
 window_menu_model_new (BamfApplication * app, BamfWindow * window)
 {
+	g_return_val_if_fail(BAMF_IS_APPLICATION(app), NULL);
+	g_return_val_if_fail(BAMF_IS_WINDOW(window), NULL);
+
 	WindowMenuModel * menu = g_object_new(WINDOW_MENU_MODEL_TYPE, NULL);
 
 	menu->priv->xid = bamf_window_get_xid(window);
