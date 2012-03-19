@@ -26,6 +26,7 @@ struct _WindowMenuModelPrivate {
 
 	/* Window Menus */
 	GDBusMenuModel * win_menu_model;
+	GtkMenu * win_menu;
 };
 
 #define WINDOW_MENU_MODEL_GET_PRIVATE(o) \
@@ -51,6 +52,9 @@ G_DEFINE_TYPE (WindowMenuModel, window_menu_model, WINDOW_MENU_TYPE);
 /* Prefixes to the action muxer */
 #define ACTION_MUX_PREFIX_WIN  "win"
 #define ACTION_MUX_PREFIX_APP  "app"
+
+/* Entry data on the menuitem */
+#define ENTRY_DATA  "window-menu-model-menuitem-entry"
 
 static void
 window_menu_model_class_init (WindowMenuModelClass *klass)
@@ -99,6 +103,7 @@ window_menu_model_dispose (GObject *object)
 
 	/* Window Menus */
 	g_clear_object(&menu->priv->win_menu_model);
+	g_clear_object(&menu->priv->win_menu);
 
 	G_OBJECT_CLASS (window_menu_model_parent_class)->dispose (object);
 	return;
@@ -139,6 +144,73 @@ add_application_menu (WindowMenuModel * menu, const gchar * appname, GMenuModel 
 	return;
 }
 
+/* Find the label in a GTK MenuItem */
+GtkLabel *
+mi_find_label (GtkWidget * mi)
+{
+	if (GTK_IS_LABEL(mi)) {
+		return GTK_LABEL(mi);
+	}
+
+	GtkLabel * retval = NULL;
+
+	if (GTK_IS_CONTAINER(mi)) {
+		GList * children = gtk_container_get_children(GTK_CONTAINER(mi));
+		GList * child = children;
+
+		while (child != NULL && retval == NULL) {
+			if (GTK_IS_WIDGET(child->data)) {
+				retval = mi_find_label(GTK_WIDGET(child->data));
+			}
+			child = g_list_next(child);
+		}
+
+		g_list_free(children);
+	}
+
+	return retval;
+}
+
+/* Find the icon in a GTK MenuItem */
+GtkImage *
+mi_find_icon (GtkWidget * mi)
+{
+	if (GTK_IS_IMAGE(mi)) {
+		return GTK_IMAGE(mi);
+	}
+
+	GtkImage * retval = NULL;
+
+	if (GTK_IS_CONTAINER(mi)) {
+		GList * children = gtk_container_get_children(GTK_CONTAINER(mi));
+		GList * child = children;
+
+		while (child != NULL && retval == NULL) {
+			if (GTK_IS_WIDGET(child->data)) {
+				retval = mi_find_icon(GTK_WIDGET(child->data));
+			}
+			child = g_list_next(child);
+		}
+
+		g_list_free(children);
+	}
+
+	return retval;
+}
+
+/* Check the menu and make sure we return it if it's a menu
+   all proper like that */
+GtkMenu *
+mi_find_menu (GtkMenuItem * mi)
+{
+	GtkWidget * retval = gtk_menu_item_get_submenu(mi);
+	if (GTK_IS_MENU(retval)) {
+		return GTK_MENU(retval);
+	} else {
+		return NULL;
+	}
+}
+
 /* Adds the window menu and turns it into a set of IndicatorObjectEntries
    that can be used elsewhere */
 static void
@@ -146,6 +218,26 @@ add_window_menu (WindowMenuModel * menu, GMenuModel * model)
 {
 	menu->priv->win_menu_model = g_object_ref(model);
 
+	menu->priv->win_menu = GTK_MENU(gtk_model_menu_create_menu(model, G_ACTION_OBSERVABLE(menu->priv->action_mux), menu->priv->accel_group));
+	g_object_ref_sink(menu->priv->win_menu);
+
+	/* TODO: Signals for the menu changing */
+
+	GList * children = gtk_container_get_children(GTK_CONTAINER(menu->priv->win_menu));
+	GList * child;
+	for (child = children; child != NULL; child = g_list_next(child)) {
+		GtkMenuItem * gmi = GTK_MENU_ITEM(child->data);
+		IndicatorObjectEntry * entry = g_new0(IndicatorObjectEntry, 1);
+
+		entry->label = mi_find_label(GTK_WIDGET(gmi));
+		entry->image = mi_find_icon(GTK_WIDGET(gmi));
+		entry->menu = mi_find_menu(gmi);
+
+		/* TODO: set up some weak pointers here */
+		/* TODO: Oh, and some label update signals and stuff */
+
+		g_object_set_data_full(G_OBJECT(gmi), ENTRY_DATA, entry, g_free);
+	}
 
 	return;
 }
@@ -248,6 +340,16 @@ get_entries (WindowMenu * wm)
 		ret = g_list_append(ret, &menu->priv->application_menu);
 	}
 
+	if (menu->priv->win_menu != NULL) {
+		GList * children = gtk_container_get_children(GTK_CONTAINER(menu->priv->win_menu));
+		GList * child;
+		for (child = children; child != NULL; child = g_list_next(child)) {
+			gpointer entry = g_object_get_data(child->data, ENTRY_DATA);
+			/* TODO: Handle case of no entry */
+			ret = g_list_append(ret, entry);
+		}
+	}
+
 	return ret;
 }
 
@@ -272,7 +374,23 @@ get_location (WindowMenu * wm, IndicatorObjectEntry * entry)
 		}
 	}
 
+	if (menu->priv->win_menu != NULL) {
+		GList * children = gtk_container_get_children(GTK_CONTAINER(menu->priv->win_menu));
+		GList * child;
+		for (child = children; child != NULL; child = g_list_next(child), pos++) {
+			gpointer lentry = g_object_get_data(child->data, ENTRY_DATA);
+
+			if (entry == lentry) {
+				found = TRUE;
+				break;
+			}
+		}
+	}
+
 	if (!found) {
+		/* NOTE: Not printing any of the values here because there's
+		   a pretty good chance that they're not valid.  Let's not crash
+		   things here. */
 		g_warning("Unable to find entry: %p", entry);
 	}
 
