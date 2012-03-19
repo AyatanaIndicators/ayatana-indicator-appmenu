@@ -1,3 +1,10 @@
+indicator-appmenu (0.3.92-0ubuntu1~ppa3~gmm3) UNRELEASED; urgency=low
+
+  * Upstream Merge
+    * Changing defined strings
+
+ -- Ted Gould <ted@ubuntu.com>  Sun, 18 Mar 2012 22:07:38 -0500
+
 indicator-appmenu (0.3.92-0ubuntu1~ppa3~gmm2) precise; urgency=low
 
   * Upstream Merge

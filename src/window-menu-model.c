@@ -49,8 +49,8 @@ static guint               get_xid                      (WindowMenu * wm);
 G_DEFINE_TYPE (WindowMenuModel, window_menu_model, WINDOW_MENU_TYPE);
 
 /* Prefixes to the action muxer */
-#define ACTION_MUX_PREFIX_WIN  "window"
-#define ACTION_MUX_PREFIX_APP  "application"
+#define ACTION_MUX_PREFIX_WIN  "win"
+#define ACTION_MUX_PREFIX_APP  "app"
 
 static void
 window_menu_model_class_init (WindowMenuModelClass *klass)
