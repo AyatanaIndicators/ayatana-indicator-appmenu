@@ -53,6 +53,9 @@ G_DEFINE_TYPE (WindowMenuModel, window_menu_model, WINDOW_MENU_TYPE);
 #define ACTION_MUX_PREFIX_WIN  "win"
 #define ACTION_MUX_PREFIX_APP  "app"
 
+/* Entry data on the menuitem */
+#define ENTRY_DATA  "window-menu-model-menuitem-entry"
+
 static void
 window_menu_model_class_init (WindowMenuModelClass *klass)
 {
@@ -152,6 +155,17 @@ add_window_menu (WindowMenuModel * menu, GMenuModel * model)
 	g_object_ref_sink(menu->priv->win_menu);
 
 	/* TODO: Signals for the menu changing */
+
+	GList * children = gtk_container_get_children(GTK_CONTAINER(menu->priv->win_menu));
+	GList * child;
+	for (child = children; child != NULL; child = g_list_next(child)) {
+		GtkMenuItem * gmi = GTK_MENU_ITEM(child->data);
+		IndicatorObjectEntry * entry = g_new0(IndicatorObjectEntry, 1);
+
+
+
+		g_object_set_data_full(G_OBJECT(gmi), ENTRY_DATA, entry, g_free);
+	}
 
 	return;
 }
