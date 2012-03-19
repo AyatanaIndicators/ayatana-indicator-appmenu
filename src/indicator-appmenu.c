@@ -184,7 +184,7 @@ static GQuark error_quark                                            (void);
 static gboolean retry_registration                                   (gpointer user_data);
 static void bus_method_call                                          (GDBusConnection * connection,
                                                                       const gchar * sender,
-                                                                      const gchar * path,
+                                                                      const gchar * object_path,
                                                                       const gchar * interface,
                                                                       const gchar * method,
                                                                       GVariant * params,
@@ -1282,7 +1282,7 @@ get_menus (IndicatorAppmenu * iapp, GError ** error)
    is and dispatch it. */
 static void
 bus_method_call (GDBusConnection * connection, const gchar * sender,
-                 const gchar * path, const gchar * interface,
+                 const gchar * object_path, const gchar * interface,
                  const gchar * method, GVariant * params,
                  GDBusMethodInvocation * invocation, gpointer user_data)
 {
