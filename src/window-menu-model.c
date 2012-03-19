@@ -233,6 +233,9 @@ add_window_menu (WindowMenuModel * menu, GMenuModel * model)
 		entry->image = mi_find_icon(GTK_WIDGET(gmi));
 		entry->menu = mi_find_menu(gmi);
 
+		/* TODO: set up some weak pointers here */
+		/* TODO: Oh, and some label update signals and stuff */
+
 		g_object_set_data_full(G_OBJECT(gmi), ENTRY_DATA, entry, g_free);
 	}
 
