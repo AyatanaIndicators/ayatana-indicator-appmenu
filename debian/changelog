@@ -3,8 +3,9 @@ indicator-appmenu (0.3.92-0ubuntu1~ppa3~gmm2) UNRELEASED; urgency=low
   * Upstream Merge
     * Using Gtk Model Menu and the desktop file to get the info
   * debian/rules: Dropping gtk2 for now
+  * debina/indicator-appmenu-gtk2.install: Dropping files
 
- -- Ted Gould <ted@ubuntu.com>  Sun, 18 Mar 2012 21:46:02 -0500
+ -- Ted Gould <ted@ubuntu.com>  Sun, 18 Mar 2012 21:47:34 -0500
 
 indicator-appmenu (0.3.92-0ubuntu1~ppa3~gmm1) precise; urgency=low
 
