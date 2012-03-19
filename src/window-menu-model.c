@@ -6,6 +6,7 @@
 #include <gio/gio.h>
 #include <gtk/gtk.h>
 #include <glib/gi18n.h>
+#include <gio/gdesktopappinfo.h>
 
 #include "window-menu-model.h"
 #include "gactionmuxer.h"
@@ -192,11 +193,23 @@ window_menu_model_new (BamfApplication * app, BamfWindow * window)
 
 	/* Build us some menus */
 	if (app_menu_object_path != NULL) {
+		const gchar * desktop_path = bamf_application_get_desktop_file(app);
+		gchar * app_name = NULL;
+
+		if (desktop_path != NULL) {
+			GDesktopAppInfo * desktop = g_desktop_app_info_new_from_filename(desktop_path);
+
+			app_name = g_strdup(g_app_info_get_name(G_APP_INFO(desktop)));
+
+			g_object_unref(desktop);
+		}
+
 		GMenuModel * model = G_MENU_MODEL(g_dbus_menu_model_get (session, unique_bus_name, app_menu_object_path));
 
-		add_application_menu(menu, NULL, model);
+		add_application_menu(menu, app_name, model);
 
 		g_object_unref(model);
+		g_free(app_name);
 	}
 
 	if (menubar_object_path != NULL) {
