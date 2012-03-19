@@ -27,6 +27,8 @@ struct _WindowMenuModelPrivate {
 	/* Window Menus */
 	GDBusMenuModel * win_menu_model;
 	GtkMenu * win_menu;
+	gulong win_menu_insert;
+	gulong win_menu_remove;
 };
 
 #define WINDOW_MENU_MODEL_GET_PRIVATE(o) \
@@ -102,6 +104,16 @@ window_menu_model_dispose (GObject *object)
 	g_clear_object(&menu->priv->application_menu.menu);
 
 	/* Window Menus */
+	if (menu->priv->win_menu_insert != 0) {
+		g_signal_handler_disconnect(menu->priv->win_menu, menu->priv->win_menu_insert);
+		menu->priv->win_menu_insert = 0;
+	}
+
+	if (menu->priv->win_menu_remove != 0) {
+		g_signal_handler_disconnect(menu->priv->win_menu, menu->priv->win_menu_remove);
+		menu->priv->win_menu_remove = 0;
+	}
+
 	g_clear_object(&menu->priv->win_menu_model);
 	g_clear_object(&menu->priv->win_menu);
 
@@ -211,6 +223,27 @@ mi_find_menu (GtkMenuItem * mi)
 	}
 }
 
+/* A child item was added to a menu we're watching.  Let's try to integrate it. */
+static void
+item_inserted_cb (GtkContainer *menu,
+                  GtkWidget    *widget,
+#ifdef HAVE_GTK3
+                  gint          position,
+#endif
+                  gpointer      data)
+{
+
+	return;
+}
+
+/* A child item was removed from a menu we're watching. */
+static void
+item_removed_cb (GtkContainer *menu, GtkWidget *widget, gpointer data)
+{
+
+	return;
+}
+
 /* Adds the window menu and turns it into a set of IndicatorObjectEntries
    that can be used elsewhere */
 static void
@@ -219,9 +252,21 @@ add_window_menu (WindowMenuModel * menu, GMenuModel * model)
 	menu->priv->win_menu_model = g_object_ref(model);
 
 	menu->priv->win_menu = GTK_MENU(gtk_model_menu_create_menu(model, G_ACTION_OBSERVABLE(menu->priv->action_mux), menu->priv->accel_group));
+	g_assert(menu->priv->win_menu != NULL);
 	g_object_ref_sink(menu->priv->win_menu);
 
-	/* TODO: Signals for the menu changing */
+	menu->priv->win_menu_insert = g_signal_connect(G_OBJECT (menu->priv->win_menu),
+#ifdef HAVE_GTK3
+		"insert",
+#else
+		"child-added",
+#endif
+		G_CALLBACK (item_inserted_cb),
+		menu);
+	menu->priv->win_menu_remove = g_signal_connect (G_OBJECT (menu->priv->win_menu),
+		"remove",
+		G_CALLBACK (item_removed_cb),
+		menu);
 
 	GList * children = gtk_container_get_children(GTK_CONTAINER(menu->priv->win_menu));
 	GList * child;
