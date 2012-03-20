@@ -63,6 +63,26 @@ hud_source_list_source_changed (HudSource *source,
 }
 
 static void
+hud_source_list_use (HudSource *source)
+{
+  HudSourceList *list = HUD_SOURCE_LIST (source);
+  GSList *node;
+
+  for (node = list->list; node; node = node->next)
+    hud_source_use (node->data);
+}
+
+static void
+hud_source_list_unuse (HudSource *source)
+{
+  HudSourceList *list = HUD_SOURCE_LIST (source);
+  GSList *node;
+
+  for (node = list->list; node; node = node->next)
+    hud_source_unuse (node->data);
+}
+
+static void
 hud_source_list_search (HudSource   *source,
                         GPtrArray   *results_array,
                         const gchar *search_string)
@@ -94,6 +114,8 @@ hud_source_list_init (HudSourceList *list)
 static void
 hud_source_list_iface_init (HudSourceInterface *iface)
 {
+  iface->use = hud_source_list_use;
+  iface->unuse = hud_source_list_unuse;
   iface->search = hud_source_list_search;
 }
 

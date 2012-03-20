@@ -24,7 +24,8 @@ Build-Depends: debhelper (>= 5.0),
                libncurses5-dev,
                libappindicator3-dev,
                indicator-application (>= 0.4.90),
-               xvfb
+               xvfb,
+               valac-0.16
 Standards-Version: 3.9.2
 Homepage: http://launchpad.net/indicator-appmenu
 Vcs-Bzr: http://bazaar.launchpad.net/~ubuntu-desktop/indicator-appmenu/ubuntu

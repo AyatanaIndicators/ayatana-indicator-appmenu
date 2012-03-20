@@ -1,3 +1,15 @@
+indicator-appmenu (0.3.94-0ubuntu4) UNRELEASED; urgency=low
+
+  * Rebase on desrt's r238, including:
+    - support for xul applications in the hud (lp: #921231)
+    - should fix an hud-service assertion error (lp: #955937)
+  * debian/control:
+    - build depends on vala for hud-gtk
+  * debian/indicator-appmenu-tools.install:
+    - install hud-gtk with the tools
+
+ -- Sebastien Bacher <seb128@ubuntu.com>  Tue, 20 Mar 2012 13:26:39 +0100
+
 indicator-appmenu (0.3.94-0ubuntu3) precise; urgency=low
 
   * Backport r180 to fix unity-panel-service segfaults when unsetting

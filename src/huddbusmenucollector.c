@@ -61,6 +61,7 @@ typedef struct
   HudItem parent_instance;
 
   DbusmenuMenuitem *menuitem;
+  gboolean is_opened;
 } HudDbusmenuItem;
 
 typedef HudItemClass HudDbusmenuItemClass;
@@ -155,7 +156,7 @@ hud_dbusmenu_item_get_label_property (const gchar *type)
 }
 
 
-static HudItem *
+static HudDbusmenuItem *
 hud_dbusmenu_item_new (HudStringList    *context,
                        const gchar      *desktop_file,
                        DbusmenuMenuitem *menuitem)
@@ -199,7 +200,7 @@ hud_dbusmenu_item_new (HudStringList    *context,
 
   hud_string_list_unref (tokens);
 
-  return HUD_ITEM (item);
+  return item;
 }
 
 struct _HudDbusmenuCollector
@@ -214,6 +215,8 @@ struct _HudDbusmenuCollector
   guint penalty;
   guint xid;
   gboolean alive;
+  gint use_count;
+  gboolean reentrance_check;
 };
 
 typedef GObjectClass HudDbusmenuCollectorClass;
@@ -221,6 +224,68 @@ typedef GObjectClass HudDbusmenuCollectorClass;
 static void hud_dbusmenu_collector_iface_init (HudSourceInterface *iface);
 G_DEFINE_TYPE_WITH_CODE (HudDbusmenuCollector, hud_dbusmenu_collector, G_TYPE_OBJECT,
                          G_IMPLEMENT_INTERFACE (HUD_TYPE_SOURCE, hud_dbusmenu_collector_iface_init))
+
+static void
+hud_dbusmenu_collector_open_submenu (gpointer key,
+                                     gpointer value,
+                                     gpointer user_data)
+{
+  DbusmenuMenuitem *menuitem = key;
+  HudDbusmenuItem *item = value;
+
+  if (dbusmenu_menuitem_property_exist (menuitem, DBUSMENU_MENUITEM_PROP_CHILD_DISPLAY))
+    {
+      dbusmenu_menuitem_handle_event (menuitem, DBUSMENU_MENUITEM_EVENT_OPENED, NULL, 0);
+      item->is_opened = TRUE;
+    }
+}
+
+static void
+hud_dbusmenu_collector_close_submenu (gpointer key,
+                                      gpointer value,
+                                      gpointer user_data)
+{
+  DbusmenuMenuitem *menuitem = key;
+  HudDbusmenuItem *item = value;
+
+  if (item->is_opened)
+    {
+      dbusmenu_menuitem_handle_event (menuitem, DBUSMENU_MENUITEM_EVENT_CLOSED, NULL, 0);
+      item->is_opened = FALSE;
+    }
+}
+
+static void
+hud_dbusmenu_collector_use (HudSource *source)
+{
+  HudDbusmenuCollector *collector = HUD_DBUSMENU_COLLECTOR (source);
+
+  collector->reentrance_check = TRUE;
+
+  if (collector->use_count == 0)
+    g_hash_table_foreach (collector->items, hud_dbusmenu_collector_open_submenu, NULL);
+
+  collector->use_count++;
+
+  collector->reentrance_check = FALSE;
+}
+
+static void
+hud_dbusmenu_collector_unuse (HudSource *source)
+{
+  HudDbusmenuCollector *collector = HUD_DBUSMENU_COLLECTOR (source);
+
+  g_return_if_fail (collector->use_count > 0);
+
+  collector->reentrance_check = TRUE;
+
+  collector->use_count--;
+
+  if (collector->use_count == 0)
+    g_hash_table_foreach (collector->items, hud_dbusmenu_collector_close_submenu, NULL);
+
+  collector->reentrance_check = FALSE;
+}
 
 static void
 hud_dbusmenu_collector_search (HudSource   *source,
@@ -260,6 +325,8 @@ hud_dbusmenu_collector_child_added (DbusmenuMenuitem *menuitem,
   HudStringList *context;
   HudItem *item;
 
+  g_assert (!collector->reentrance_check);
+
   item = g_hash_table_lookup (collector->items, menuitem);
   g_assert (item != NULL);
 
@@ -275,6 +342,8 @@ hud_dbusmenu_collector_child_removed (DbusmenuMenuitem *menuitem,
 {
   HudDbusmenuCollector *collector = user_data;
 
+  g_assert (!collector->reentrance_check);
+
   hud_dbusmenu_collector_remove_item (collector, child);
 }
 
@@ -287,7 +356,9 @@ hud_dbusmenu_collector_property_changed (DbusmenuMenuitem *menuitem,
   HudDbusmenuCollector *collector = user_data;
   DbusmenuMenuitem *parent;
   HudStringList *context;
-  HudItem *item;
+  HudDbusmenuItem *item;
+
+  g_assert (!collector->reentrance_check);
 
   parent = dbusmenu_menuitem_get_parent (menuitem);
 
@@ -303,6 +374,13 @@ hud_dbusmenu_collector_property_changed (DbusmenuMenuitem *menuitem,
 
   item = hud_dbusmenu_item_new (context, collector->application_id, menuitem);
   g_hash_table_remove (collector->items, menuitem);
+
+  if (collector->use_count && dbusmenu_menuitem_property_exist (menuitem, DBUSMENU_MENUITEM_PROP_CHILD_DISPLAY))
+    {
+      dbusmenu_menuitem_handle_event (menuitem, DBUSMENU_MENUITEM_EVENT_OPENED, NULL, 0);
+      item->is_opened = TRUE;
+    }
+
   g_hash_table_insert (collector->items, menuitem, item);
 
   hud_source_changed (HUD_SOURCE (collector));
@@ -313,15 +391,23 @@ hud_dbusmenu_collector_add_item (HudDbusmenuCollector *collector,
                                  HudStringList        *context,
                                  DbusmenuMenuitem     *menuitem)
 {
-  HudItem *item;
+  HudDbusmenuItem *item;
   GList *child;
 
   item = hud_dbusmenu_item_new (context, NULL, menuitem);
-  context = hud_item_get_tokens (item);
+  context = hud_item_get_tokens (HUD_ITEM (item));
 
   g_signal_connect (menuitem, "property-changed", G_CALLBACK (hud_dbusmenu_collector_property_changed), collector);
   g_signal_connect (menuitem, "child-added", G_CALLBACK (hud_dbusmenu_collector_child_added), collector);
   g_signal_connect (menuitem, "child-removed", G_CALLBACK (hud_dbusmenu_collector_child_removed), collector);
+
+  /* If we're actively being queried and we add a new submenu item, open it. */
+  if (collector->use_count && dbusmenu_menuitem_property_exist (menuitem, DBUSMENU_MENUITEM_PROP_CHILD_DISPLAY))
+    {
+      dbusmenu_menuitem_handle_event (menuitem, DBUSMENU_MENUITEM_EVENT_OPENED, NULL, 0);
+      item->is_opened = TRUE;
+    }
+
   g_hash_table_insert (collector->items, menuitem, item);
 
   for (child = dbusmenu_menuitem_get_children (menuitem); child; child = child->next)
@@ -355,14 +441,21 @@ hud_dbusmenu_collector_setup_root (HudDbusmenuCollector *collector,
 {
   if (collector->root)
     {
+      /* If the collector has the submenus opened, close them before we
+       * remove them all.  The use_count being non-zero will cause them
+       * to be reopened as they are added back below (if they will be).
+       */
+      if (collector->use_count > 0)
+        g_hash_table_foreach (collector->items, hud_dbusmenu_collector_close_submenu, NULL);
+
       hud_dbusmenu_collector_remove_item (collector, collector->root);
-      collector->root = NULL;
+      g_clear_object (&collector->root);
     }
 
   if (root)
     {
       hud_dbusmenu_collector_add_item (collector, collector->prefix, root);
-      collector->root = root;
+      collector->root = g_object_ref (root);
     }
 }
 
@@ -372,6 +465,8 @@ hud_dbusmenu_collector_root_changed (DbusmenuClient   *client,
                                      gpointer          user_data)
 {
   HudDbusmenuCollector *collector = user_data;
+
+  g_assert (!collector->reentrance_check);
 
   hud_dbusmenu_collector_setup_root (collector, root);
 }
@@ -429,6 +524,8 @@ hud_dbusmenu_collector_finalize (GObject *object)
   g_assert (g_hash_table_size (collector->items) == 0);
   g_hash_table_unref (collector->items);
 
+  g_free (collector->application_id);
+
   hud_string_list_unref (collector->prefix);
   g_clear_object (&collector->client);
 
@@ -445,6 +542,8 @@ hud_dbusmenu_collector_init (HudDbusmenuCollector *collector)
 static void
 hud_dbusmenu_collector_iface_init (HudSourceInterface *iface)
 {
+  iface->use = hud_dbusmenu_collector_use;
+  iface->unuse = hud_dbusmenu_collector_unuse;
   iface->search = hud_dbusmenu_collector_search;
 }
 
@@ -515,7 +614,6 @@ hud_dbusmenu_collector_new_for_window (BamfWindow  *window,
                                        const gchar *desktop_file)
 {
   HudDbusmenuCollector *collector;
-  BamfApplication *application;
 
   collector = g_object_new (HUD_TYPE_DBUSMENU_COLLECTOR, NULL);
   collector->application_id = g_strdup (desktop_file);
@@ -523,10 +621,6 @@ hud_dbusmenu_collector_new_for_window (BamfWindow  *window,
   g_debug ("dbusmenu on %d", collector->xid);
   hud_app_menu_registrar_add_observer (hud_app_menu_registrar_get (), collector->xid,
                                        hud_dbusmenu_collector_registrar_observer_func, collector);
-
-  application = bamf_matcher_get_application_for_window (bamf_matcher_get_default (), window);
-  if (application != NULL)
-    collector->application_id = g_strdup (bamf_application_get_desktop_file (application));
 
   collector->alive = TRUE;
 
@@ -549,10 +643,5 @@ hud_dbusmenu_collector_set_prefix (HudDbusmenuCollector *collector,
 {
   hud_string_list_unref (collector->prefix);
   collector->prefix = hud_string_list_cons (prefix, NULL);
-
-  if (collector->root)
-    {
-      hud_dbusmenu_collector_remove_item (collector, collector->root);
-      hud_dbusmenu_collector_add_item (collector, collector->prefix, collector->root);
-    }
+  hud_dbusmenu_collector_setup_root (collector, collector->root);
 }
