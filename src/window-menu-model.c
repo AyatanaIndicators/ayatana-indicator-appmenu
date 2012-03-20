@@ -234,8 +234,16 @@ entry_on_menuitem (WindowMenuModel * menu, GtkMenuItem * gmi)
 	entry->menu = mi_find_menu(gmi);
 
 	if (entry->label == NULL && entry->image == NULL) {
-		g_warning("Item doesn't have a label or an image, aborting");
-		return;
+		const gchar * label = gtk_menu_item_get_label(gmi);
+		if (label == NULL) {
+			g_warning("Item doesn't have a label or an image, aborting");
+			return;
+		}
+
+		entry->label = GTK_LABEL(gtk_label_new(label));
+		gtk_widget_show(GTK_WIDGET(entry->label));
+
+		/* TODO: handle widget lifecycle */
 	}
 
 	/* TODO: set up some weak pointers here */
