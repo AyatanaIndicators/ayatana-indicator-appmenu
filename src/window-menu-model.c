@@ -238,8 +238,6 @@ entry_on_menuitem (WindowMenuModel * menu, GtkMenuItem * gmi)
 		return;
 	}
 
-	g_debug("Creating a new entry on: %s", gtk_label_get_label(entry->label));
-
 	/* TODO: set up some weak pointers here */
 	/* TODO: Oh, and some label update signals and stuff */
 
@@ -257,7 +255,7 @@ item_inserted_cb (GtkContainer *menu,
 #endif
                   gpointer      data)
 {
-	if (g_object_get_data(G_OBJECT(widget), ENTRY_DATA) != NULL) {
+	if (g_object_get_data(G_OBJECT(widget), ENTRY_DATA) == NULL) {
 		entry_on_menuitem(WINDOW_MENU_MODEL(data), GTK_MENU_ITEM(widget));
 	}
 
