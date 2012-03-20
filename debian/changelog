@@ -1,4 +1,4 @@
-indicator-appmenu (0.3.94-0ubuntu4) UNRELEASED; urgency=low
+indicator-appmenu (0.3.94-0ubuntu4) precise; urgency=low
 
   * Rebase on desrt's r238, including:
     - support for xul applications in the hud (lp: #921231)
@@ -8,7 +8,7 @@ indicator-appmenu (0.3.94-0ubuntu4) UNRELEASED; urgency=low
   * debian/indicator-appmenu-tools.install:
     - install hud-gtk with the tools
 
- -- Sebastien Bacher <seb128@ubuntu.com>  Tue, 20 Mar 2012 13:26:39 +0100
+ -- Sebastien Bacher <seb128@ubuntu.com>  Tue, 20 Mar 2012 13:47:35 +0100
 
 indicator-appmenu (0.3.94-0ubuntu3) precise; urgency=low
 
