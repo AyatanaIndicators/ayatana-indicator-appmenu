@@ -259,7 +259,9 @@ item_inserted_cb (GtkContainer *menu,
 		entry_on_menuitem(WINDOW_MENU_MODEL(data), GTK_MENU_ITEM(widget));
 	}
 
-	g_signal_emit_by_name(data, WINDOW_MENU_SIGNAL_ENTRY_ADDED, g_object_get_data(G_OBJECT(widget), ENTRY_DATA));
+	if (g_object_get_data(G_OBJECT(widget), ENTRY_DATA) != NULL) {
+		g_signal_emit_by_name(data, WINDOW_MENU_SIGNAL_ENTRY_ADDED, g_object_get_data(G_OBJECT(widget), ENTRY_DATA));
+	}
 
 	return;
 }
