@@ -61,8 +61,8 @@ struct _HudMenuModelCollector
 
   gchar *desktop_file;
   GPtrArray *items;
+  gint use_count;
 };
-
 
 typedef struct
 {
@@ -329,6 +329,22 @@ hud_menu_model_collector_disconnect (gpointer data,
 }
 
 static void
+hud_menu_model_collector_use (HudSource *source)
+{
+  HudMenuModelCollector *collector = HUD_MENU_MODEL_COLLECTOR (source);
+
+  collector->use_count++;
+}
+
+static void
+hud_menu_model_collector_unuse (HudSource *source)
+{
+  HudMenuModelCollector *collector = HUD_MENU_MODEL_COLLECTOR (source);
+
+  collector->use_count--;
+}
+
+static void
 hud_menu_model_collector_search (HudSource   *source,
                                  GPtrArray   *results_array,
                                  const gchar *search_string)
@@ -381,6 +397,8 @@ hud_menu_model_collector_init (HudMenuModelCollector *collector)
 static void
 hud_menu_model_collector_iface_init (HudSourceInterface *iface)
 {
+  iface->use = hud_menu_model_collector_use;
+  iface->unuse = hud_menu_model_collector_unuse;
   iface->search = hud_menu_model_collector_search;
 }
 
