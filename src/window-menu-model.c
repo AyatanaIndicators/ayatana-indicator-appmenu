@@ -27,6 +27,8 @@ struct _WindowMenuModelPrivate {
 	/* Window Menus */
 	GDBusMenuModel * win_menu_model;
 	GtkMenu * win_menu;
+	gulong win_menu_insert;
+	gulong win_menu_remove;
 };
 
 #define WINDOW_MENU_MODEL_GET_PRIVATE(o) \
@@ -102,6 +104,16 @@ window_menu_model_dispose (GObject *object)
 	g_clear_object(&menu->priv->application_menu.menu);
 
 	/* Window Menus */
+	if (menu->priv->win_menu_insert != 0) {
+		g_signal_handler_disconnect(menu->priv->win_menu, menu->priv->win_menu_insert);
+		menu->priv->win_menu_insert = 0;
+	}
+
+	if (menu->priv->win_menu_remove != 0) {
+		g_signal_handler_disconnect(menu->priv->win_menu, menu->priv->win_menu_remove);
+		menu->priv->win_menu_remove = 0;
+	}
+
 	g_clear_object(&menu->priv->win_menu_model);
 	g_clear_object(&menu->priv->win_menu);
 
@@ -211,6 +223,55 @@ mi_find_menu (GtkMenuItem * mi)
 	}
 }
 
+/* Put an entry on a menu item */
+static void
+entry_on_menuitem (WindowMenuModel * menu, GtkMenuItem * gmi)
+{
+	IndicatorObjectEntry * entry = g_new0(IndicatorObjectEntry, 1);
+
+	entry->label = mi_find_label(GTK_WIDGET(gmi));
+	entry->image = mi_find_icon(GTK_WIDGET(gmi));
+	entry->menu = mi_find_menu(gmi);
+
+	if (entry->label == NULL && entry->image == NULL) {
+		g_warning("Item doesn't have a label or an image, aborting");
+		return;
+	}
+
+	/* TODO: set up some weak pointers here */
+	/* TODO: Oh, and some label update signals and stuff */
+
+	g_object_set_data_full(G_OBJECT(gmi), ENTRY_DATA, entry, g_free);
+
+	return;
+}
+
+/* A child item was added to a menu we're watching.  Let's try to integrate it. */
+static void
+item_inserted_cb (GtkContainer *menu,
+                  GtkWidget    *widget,
+#ifdef HAVE_GTK3
+                  gint          position,
+#endif
+                  gpointer      data)
+{
+	if (g_object_get_data(G_OBJECT(widget), ENTRY_DATA) == NULL) {
+		entry_on_menuitem(WINDOW_MENU_MODEL(data), GTK_MENU_ITEM(widget));
+	}
+
+	g_signal_emit_by_name(data, WINDOW_MENU_SIGNAL_ENTRY_ADDED, g_object_get_data(G_OBJECT(widget), ENTRY_DATA));
+
+	return;
+}
+
+/* A child item was removed from a menu we're watching. */
+static void
+item_removed_cb (GtkContainer *menu, GtkWidget *widget, gpointer data)
+{
+	g_signal_emit_by_name(data, WINDOW_MENU_SIGNAL_ENTRY_REMOVED, g_object_get_data(G_OBJECT(widget), ENTRY_DATA));
+	return;
+}
+
 /* Adds the window menu and turns it into a set of IndicatorObjectEntries
    that can be used elsewhere */
 static void
@@ -219,24 +280,32 @@ add_window_menu (WindowMenuModel * menu, GMenuModel * model)
 	menu->priv->win_menu_model = g_object_ref(model);
 
 	menu->priv->win_menu = GTK_MENU(gtk_model_menu_create_menu(model, G_ACTION_OBSERVABLE(menu->priv->action_mux), menu->priv->accel_group));
+	g_assert(menu->priv->win_menu != NULL);
 	g_object_ref_sink(menu->priv->win_menu);
 
-	/* TODO: Signals for the menu changing */
+	menu->priv->win_menu_insert = g_signal_connect(G_OBJECT (menu->priv->win_menu),
+#ifdef HAVE_GTK3
+		"insert",
+#else
+		"child-added",
+#endif
+		G_CALLBACK (item_inserted_cb),
+		menu);
+	menu->priv->win_menu_remove = g_signal_connect (G_OBJECT (menu->priv->win_menu),
+		"remove",
+		G_CALLBACK (item_removed_cb),
+		menu);
 
 	GList * children = gtk_container_get_children(GTK_CONTAINER(menu->priv->win_menu));
 	GList * child;
 	for (child = children; child != NULL; child = g_list_next(child)) {
 		GtkMenuItem * gmi = GTK_MENU_ITEM(child->data);
-		IndicatorObjectEntry * entry = g_new0(IndicatorObjectEntry, 1);
 
-		entry->label = mi_find_label(GTK_WIDGET(gmi));
-		entry->image = mi_find_icon(GTK_WIDGET(gmi));
-		entry->menu = mi_find_menu(gmi);
+		if (gmi == NULL) {
+			continue;
+		}
 
-		/* TODO: set up some weak pointers here */
-		/* TODO: Oh, and some label update signals and stuff */
-
-		g_object_set_data_full(G_OBJECT(gmi), ENTRY_DATA, entry, g_free);
+		entry_on_menuitem(menu, gmi);
 	}
 
 	return;
@@ -291,9 +360,11 @@ window_menu_model_new (BamfApplication * app, BamfWindow * window)
 		if (desktop_path != NULL) {
 			GDesktopAppInfo * desktop = g_desktop_app_info_new_from_filename(desktop_path);
 
-			app_name = g_strdup(g_app_info_get_name(G_APP_INFO(desktop)));
+			if (desktop != NULL) {
+				app_name = g_strdup(g_app_info_get_name(G_APP_INFO(desktop)));
 
-			g_object_unref(desktop);
+				g_object_unref(desktop);
+			}
 		}
 
 		GMenuModel * model = G_MENU_MODEL(g_dbus_menu_model_get (session, unique_bus_name, app_menu_object_path));
@@ -346,7 +417,9 @@ get_entries (WindowMenu * wm)
 		for (child = children; child != NULL; child = g_list_next(child)) {
 			gpointer entry = g_object_get_data(child->data, ENTRY_DATA);
 			/* TODO: Handle case of no entry */
-			ret = g_list_append(ret, entry);
+			if (entry != NULL) {
+				ret = g_list_append(ret, entry);
+			}
 		}
 	}
 

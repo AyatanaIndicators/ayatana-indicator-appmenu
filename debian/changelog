@@ -1,3 +1,10 @@
+indicator-appmenu (0.3.92-0ubuntu1~ppa3~gmm5) UNRELEASED; urgency=low
+
+  * Upstream Merge
+    * Fixing truth and supporting GTK3
+
+ -- Ted Gould <ted@ubuntu.com>  Tue, 20 Mar 2012 14:50:45 -0500
+
 indicator-appmenu (0.3.92-0ubuntu1~ppa3~gmm4) precise; urgency=low
 
   * Upstream Merge
