@@ -1,5 +1,4 @@
 /*
- * Copyright © 2011 Red Hat, Inc.
  * Copyright © 2011 Canonical Limited
  *
  * This library is free software; you can redistribute it and/or
@@ -15,8 +14,7 @@
  * You should have received a copy of the GNU Lesser General Public
  * License along with this library. If not, see <http://www.gnu.org/licenses/>.
  *
- * Author: Matthias Clasen <mclasen@redhat.com>
- *         Ryan Lortie <desrt@desrt.ca>
+ * Author: Ryan Lortie <desrt@desrt.ca>
  */
 
 #include "config.h"
@@ -270,121 +268,3 @@ gtk_model_menu_create_menu (GMenuModel        *model,
   return menu;
 }
 
-static void
-notify_attach (GtkMenu    *menu,
-               GParamSpec *pspec,
-               gpointer    data)
-{
-#if 0
-  GtkWidget *widget;
-  GtkWidget *toplevel;
-  GActionObservable *actions;
-  GtkAccelGroup *accels;
-
-  widget = gtk_menu_get_attach_widget (menu);
-  toplevel = gtk_widget_get_toplevel (widget);
-  if (GTK_IS_APPLICATION_WINDOW (toplevel))
-    {
-      actions = gtk_application_window_get_observable (GTK_APPLICATION_WINDOW (toplevel));
-      accels = gtk_application_window_get_accel_group (GTK_APPLICATION_WINDOW (toplevel));
-
-      gtk_model_menu_populate (GTK_MENU_SHELL (menu), actions, accels);
-    }
-#endif
-}
-
-/**
- * gtk_menu_new_from_model:
- * @model: a #GMenuModel
- *
- * Creates a #GtkMenu and populates it with menu items and
- * submenus according to @model.
- *
- * The created menu items are connected to actions found in the
- * #GtkApplicationWindow to which the menu belongs - typically
- * by means of being attached to a widget (see gtk_menu_attach_to_widget())
- * that is contained within the #GtkApplicationWindows widget hierarchy.
- *
- * Returns: a new #GtkMenu
- *
- * Since: 3.4
- */
-GtkWidget *
-gtk_menu_new_from_model (GMenuModel *model)
-{
-  GtkWidget *menu;
-
-  menu = gtk_menu_new ();
-  gtk_model_menu_bind (GTK_MENU_SHELL (menu), model, TRUE);
-  g_signal_connect (menu, "notify::attach-widget",
-                    G_CALLBACK (notify_attach), NULL);
-
-  return menu;
-}
-
-GtkWidget *
-gtk_model_menu_create_menu_bar (GMenuModel        *model,
-                                GActionObservable *actions,
-                                GtkAccelGroup     *accels)
-{
-  GtkWidget *menubar;
-
-  menubar = gtk_menu_bar_new ();
-
-  gtk_model_menu_bind (GTK_MENU_SHELL (menubar), model, FALSE);
-  gtk_model_menu_populate (GTK_MENU_SHELL (menubar), actions, accels);
-
-  return menubar;
-}
-
-static void
-hierarchy_changed (GtkMenuShell *shell,
-                   GObject      *previous_toplevel,
-                   gpointer      data)
-{
-#if 0
-  GtkWidget *toplevel;
-  GActionObservable *actions;
-  GtkAccelGroup *accels;
-
-  toplevel = gtk_widget_get_toplevel (GTK_WIDGET (shell));
-  if (GTK_IS_APPLICATION_WINDOW (toplevel))
-    {
-      actions = gtk_application_window_get_observable (GTK_APPLICATION_WINDOW (toplevel));
-      accels = gtk_application_window_get_accel_group (GTK_APPLICATION_WINDOW (toplevel));
-
-      gtk_model_menu_populate (shell, actions, accels);
-    }
-#endif
-}
-
-/**
- * gtk_menu_bar_new_from_model:
- * @model: a #GMenuModel
- *
- * Creates a new #GtkMenuBar and populates it with menu items
- * and submenus according to @model.
- *
- * The created menu items are connected to actions found in the
- * #GtkApplicationWindow to which the menu bar belongs - typically
- * by means of being contained within the #GtkApplicationWindows
- * widget hierarchy.
- *
- * Returns: a new #GtkMenuBar
- *
- * Since: 3.4
- */
-GtkWidget *
-gtk_menu_bar_new_from_model (GMenuModel *model)
-{
-  GtkWidget *menubar;
-
-  menubar = gtk_menu_bar_new ();
-
-  gtk_model_menu_bind (GTK_MENU_SHELL (menubar), model, FALSE);
-
-  g_signal_connect (menubar, "hierarchy-changed",
-                    G_CALLBACK (hierarchy_changed), NULL);
-
-  return menubar;
-}
