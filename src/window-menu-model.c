@@ -223,6 +223,20 @@ mi_find_menu (GtkMenuItem * mi)
 	}
 }
 
+/* Destroy and unref the items of the object entry */
+static void
+entry_object_free (gpointer inentry)
+{
+	IndicatorObjectEntry * entry = (IndicatorObjectEntry *)inentry;
+
+	g_clear_object(&entry->label);
+	g_clear_object(&entry->image);
+	g_clear_object(&entry->menu);
+
+	g_free(entry);
+	return;
+}
+
 /* Put an entry on a menu item */
 static void
 entry_on_menuitem (WindowMenuModel * menu, GtkMenuItem * gmi)
@@ -242,14 +256,24 @@ entry_on_menuitem (WindowMenuModel * menu, GtkMenuItem * gmi)
 
 		entry->label = GTK_LABEL(gtk_label_new(label));
 		gtk_widget_show(GTK_WIDGET(entry->label));
+	}
 
-		/* TODO: handle widget lifecycle */
+	if (entry->label != NULL) {
+		g_object_ref_sink(entry->label);
+	}
+
+	if (entry->image != NULL) {
+		g_object_ref_sink(entry->image);
+	}
+
+	if (entry->menu != NULL) {
+		g_object_ref_sink(entry->menu);
 	}
 
 	/* TODO: set up some weak pointers here */
 	/* TODO: Oh, and some label update signals and stuff */
 
-	g_object_set_data_full(G_OBJECT(gmi), ENTRY_DATA, entry, g_free);
+	g_object_set_data_full(G_OBJECT(gmi), ENTRY_DATA, entry, entry_object_free);
 
 	return;
 }
