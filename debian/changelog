@@ -1,4 +1,4 @@
-indicator-appmenu (0.3.95-0ubuntu1~ppa1) UNRELEASED; urgency=low
+indicator-appmenu (0.3.95-0ubuntu1~ppa1) precise; urgency=low
 
   * New upstream release.
     * Adding GMenuModel menu support (LP: #950084)
@@ -9,7 +9,7 @@ indicator-appmenu (0.3.95-0ubuntu1~ppa1) UNRELEASED; urgency=low
     * Highlight hits in GMenuModel HUD (LP: #950079)
     * Several Coverity bugs (LP: #957420, #957414, #957412, #957415)
 
- -- Ted Gould <ted@ubuntu.com>  Wed, 21 Mar 2012 13:23:03 -0500
+ -- Ted Gould <ted@ubuntu.com>  Wed, 21 Mar 2012 13:45:19 -0500
 
 indicator-appmenu (0.3.94-0ubuntu4) precise; urgency=low
 
