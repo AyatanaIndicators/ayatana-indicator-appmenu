@@ -1,4 +1,4 @@
-indicator-appmenu (0.3.95-0ubuntu1) UNRELEASED; urgency=low
+indicator-appmenu (0.3.95-0ubuntu1) precise; urgency=low
 
   * New upstream release.
     * Adding GMenuModel menu support (LP: #950084)
