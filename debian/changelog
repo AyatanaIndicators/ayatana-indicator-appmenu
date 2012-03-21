@@ -63,23 +63,6 @@ indicator-appmenu (0.3.92-0ubuntu1) precise; urgency=low
 
  -- Sebastien Bacher <seb128@ubuntu.com>  Mon, 12 Mar 2012 21:02:50 +0100
 
-indicator-appmenu (0.3.92-0ubuntu1~ppa2) precise; urgency=low
-
-  * Upstream Merge
-    * Fix to give HudItems unique IDs to solve sync issues
-
- -- Ted Gould <ted@ubuntu.com>  Thu, 08 Mar 2012 10:44:08 -0600
-
-indicator-appmenu (0.3.92-0ubuntu1~ppa1) precise; urgency=low
-
-  * New upstream release.
-    * Docbook parsing build error (LP: #931777)
-    * Ensure variants get valid strings (LP: #934429)
-    * Typos in translator comments (LP: #945445)
-    * Add GMenuModel support to HUD
-
- -- Ted Gould <ted@ubuntu.com>  Wed, 07 Mar 2012 15:25:00 -0600
-
 indicator-appmenu (0.3.91-0ubuntu2) precise; urgency=low
 
   * Backport r165 to fix a segfault in the hud service which gets quite
