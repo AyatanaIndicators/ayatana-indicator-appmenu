@@ -69,6 +69,7 @@ hud_item_finalize (GObject *object)
   g_hash_table_remove (hud_item_table, &item->priv->id);
   hud_string_list_unref (item->priv->tokens);
   g_free (item->priv->desktop_file);
+  g_free (item->priv->usage_tag);
 
   G_OBJECT_CLASS (hud_item_parent_class)
     ->finalize (object);

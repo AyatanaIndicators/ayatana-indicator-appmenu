@@ -29,12 +29,26 @@ libappmenu_la_SOURCES = \
 	MwmUtil.h \
 	indicator-appmenu.c \
 	indicator-appmenu-marshal.c \
-	window-menus.c \
-	window-menus.h \
+	window-menu.c \
+	window-menu.h \
+	window-menu-dbusmenu.c \
+	window-menu-dbusmenu.h \
+	window-menu-model.c \
+	window-menu-model.h \
 	gen-application-menu-renderer.xml.c \
 	gen-application-menu-renderer.xml.h \
 	gen-application-menu-registrar.xml.c \
-	gen-application-menu-registrar.xml.h
+	gen-application-menu-registrar.xml.h \
+	gactionmuxer.c \
+	gactionmuxer.h \
+	gactionobservable.c \
+	gactionobservable.h \
+	gactionobserver.c \
+	gactionobserver.h \
+	gtkmodelmenu.c \
+	gtkmodelmenu.h \
+	gtkmodelmenuitem.c \
+	gtkmodelmenuitem.h
 libappmenu_la_CFLAGS = \
 	$(INDICATOR_CFLAGS) \
 	$(COVERAGE_CFLAGS) \
@@ -104,6 +118,8 @@ libhud_service_a_SOURCES = \
 	hudindicatorsource.c	\
 	hudwindowsource.h	\
 	hudwindowsource.c	\
+	huddebugsource.h	\
+	huddebugsource.c	\
 	hudsourcelist.h		\
 	hudsourcelist.c		\
 	hudsource.h		\

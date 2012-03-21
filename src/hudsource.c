@@ -85,6 +85,52 @@ hud_source_default_init (HudSourceInterface *iface)
 }
 
 /**
+ * hud_source_use:
+ * @source; a #HudSource
+ *
+ * Mark a #HudSource as "in use" (ie: actively being queried).
+ *
+ * The source maintains a use count.  You must call hud_source_unuse()
+ * for as many times as you called hud_source_use().
+ *
+ * The source may not emit change signals unless it is marked as being
+ * used (although it is free to ignore this hint and emit them anyway).
+ * Some data in the source may also be out of date.  It is therefore
+ * recommended that calls to hud_source_search() be preceeded by a call
+ * to this function.
+ **/
+void
+hud_source_use (HudSource *source)
+{
+  g_return_if_fail (HUD_IS_SOURCE (source));
+
+  g_debug ("use on %s %p", G_OBJECT_TYPE_NAME (source), source);
+
+  HUD_SOURCE_GET_IFACE (source)
+    ->use (source);
+}
+
+/**
+ * hud_source_unuse:
+ * @source; a #HudSource
+ *
+ * Reverses the effect of a previous call to hud_source_use().
+ *
+ * The source maintains a use count.  You must call hud_source_unuse()
+ * for as many times as you called hud_source_use().
+ **/
+void
+hud_source_unuse (HudSource *source)
+{
+  g_return_if_fail (HUD_IS_SOURCE (source));
+
+  g_debug ("unuse on %s %p", G_OBJECT_TYPE_NAME (source), source);
+
+  HUD_SOURCE_GET_IFACE (source)
+    ->unuse (source);
+}
+
+/**
  * hud_source_search:
  * @source: a #HudSource
  * @results_array: (element-type HudResult): array to append results to

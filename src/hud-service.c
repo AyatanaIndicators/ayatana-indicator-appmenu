@@ -16,12 +16,20 @@
  * Author: Ryan Lortie <desrt@desrt.ca>
  */
 
+#define G_LOG_DOMAIN "hud-service"
+
+#include "config.h"
+
 #include <glib.h>
 #include <gio/gio.h>
+#include <stdlib.h>
+#include <locale.h>
+#include <libintl.h>
 
 #include "hudappindicatorsource.h"
 #include "hudindicatorsource.h"
 #include "hudwindowsource.h"
+#include "huddebugsource.h"
 #include "hudsourcelist.h"
 #include "hudsettings.h"
 
@@ -75,6 +83,8 @@ query_changed (HudQuery *query,
 {
   GDBusConnection *connection = user_data;
 
+  g_debug ("emit UpdatedQuery signal");
+
   g_dbus_connection_emit_signal (connection, NULL, DBUS_PATH,
                                  DBUS_IFACE, "UpdatedQuery",
                                  describe_query (query), NULL);
@@ -93,6 +103,14 @@ unpack_platform_data (GVariant *parameters)
   g_free (startup_id);
 
   return g_variant_ref_sink (platform_data);
+}
+
+static gboolean
+drop_query_timeout (gpointer user_data)
+{
+  g_object_unref (user_data);
+
+  return G_SOURCE_REMOVE;
 }
 
 static void
@@ -114,6 +132,7 @@ bus_method (GDBusConnection       *connection,
       HudQuery *query;
 
       g_variant_get (parameters, "(&si)", &search_string, &num_results);
+      g_debug ("'StartQuery' from %s: '%s', %d", sender, search_string, num_results);
       query = hud_query_new (source, search_string, num_results);
       g_signal_connect_object (query, "changed", G_CALLBACK (query_changed), connection, 0);
       g_dbus_method_invocation_return_value (invocation, describe_query (query));
@@ -124,20 +143,25 @@ bus_method (GDBusConnection       *connection,
     {
       GVariant *platform_data;
       GVariant *item_key;
+      guint64 key_value;
       HudItem *item;
 
       g_variant_get_child (parameters, 0, "v", &item_key);
 
       if (!g_variant_is_of_type (item_key, G_VARIANT_TYPE_UINT64))
         {
+          g_debug ("'ExecuteQuery' from %s: incorrect item key (not uint64)", sender);
           g_dbus_method_invocation_return_error (invocation, G_DBUS_ERROR, G_DBUS_ERROR_INVALID_ARGS,
                                                  "item key has invalid format");
           g_variant_unref (item_key);
           return;
         }
 
-      item = hud_item_lookup (g_variant_get_uint64 (item_key));
+      key_value = g_variant_get_uint64 (item_key);
       g_variant_unref (item_key);
+
+      item = hud_item_lookup (key_value);
+      g_debug ("'ExecuteQuery' from %s, item #%"G_GUINT64_FORMAT": %p", sender, key_value, item);
 
       if (item == NULL)
         {
@@ -158,6 +182,8 @@ bus_method (GDBusConnection       *connection,
       GVariant *query_key;
       HudQuery *query;
 
+      g_debug ("Got 'CloseQuery' from %s", sender);
+
       g_variant_get (parameters, "(v)", &query_key);
       query = hud_query_lookup (query_key);
       g_variant_unref (query_key);
@@ -165,6 +191,16 @@ bus_method (GDBusConnection       *connection,
       if (query != NULL)
         {
           g_signal_handlers_disconnect_by_func (query, query_changed, connection);
+          /* Unity does 'CloseQuery' immediately followed by
+           * 'StartQuery' on every keystroke.  Delay the destruction of
+           * the query for a moment just in case a 'StartQuery' is on the
+           * way.
+           *
+           * That way we can avoid allowing the use count to drop to
+           * zero only to be increased again back to 1.  This prevents a
+           * bunch of dbusmenu "closed"/"opened" calls being sent.
+           */
+          g_timeout_add (1000, drop_query_timeout, g_object_ref (query));
           hud_query_close (query);
         }
 
@@ -205,12 +241,22 @@ bus_acquired_cb (GDBusConnection *connection,
   };
   GError *error = NULL;
 
+  g_debug ("Bus acquired (guid %s)", g_dbus_connection_get_guid (connection));
+
   if (!g_dbus_connection_register_object (connection, DBUS_PATH, get_iface_info (), &vtable, source, NULL, &error))
     {
       g_warning ("Unable to register path '"DBUS_PATH"': %s", error->message);
       g_main_loop_quit (mainloop);
       g_error_free (error);
     }
+}
+
+static void
+name_acquired_cb (GDBusConnection *connection,
+                  const gchar     *name,
+                  gpointer         user_data)
+{
+  g_debug ("Acquired bus name '%s'", name);
 }
 
 static void
@@ -229,6 +275,10 @@ main (int argc, char **argv)
   HudSourceList *source_list;
 
   g_type_init ();
+
+  setlocale (LC_ALL, "");
+  bindtextdomain (GETTEXT_PACKAGE, GNOMELOCALEDIR);
+  textdomain (GETTEXT_PACKAGE);
 
   hud_settings_init ();
 
@@ -254,8 +304,17 @@ main (int argc, char **argv)
     g_object_unref (source);
   }
 
+  if (getenv ("HUD_DEBUG_SOURCE"))
+    {
+      HudDebugSource *source;
+
+      source = hud_debug_source_new ();
+      hud_source_list_add (source_list, HUD_SOURCE (source));
+      g_object_unref (source);
+    }
+
   g_bus_own_name (G_BUS_TYPE_SESSION, DBUS_NAME, G_BUS_NAME_OWNER_FLAGS_NONE,
-                  bus_acquired_cb, NULL, name_lost_cb, source_list, NULL);
+                  bus_acquired_cb, name_acquired_cb, name_lost_cb, source_list, NULL);
 
   mainloop = g_main_loop_new (NULL, FALSE);
   g_main_loop_run (mainloop);

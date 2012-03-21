@@ -36,7 +36,8 @@ host_triplet = @host@
 @BUILD_TESTS_TRUE@am__append_1 = \
 @BUILD_TESTS_TRUE@	scripts \
 @BUILD_TESTS_TRUE@	tests \
-@BUILD_TESTS_TRUE@	tools
+@BUILD_TESTS_TRUE@	tools \
+@BUILD_TESTS_TRUE@	tools-vala
 
 subdir = .
 DIST_COMMON = README $(am__configure_deps) $(srcdir)/Makefile.am \
@@ -85,7 +86,7 @@ AM_RECURSIVE_TARGETS = $(RECURSIVE_TARGETS:-recursive=) \
 	distdir dist dist-all distcheck
 ETAGS = etags
 CTAGS = ctags
-DIST_SUBDIRS = data po src docs scripts tests tools
+DIST_SUBDIRS = data po src docs scripts tests tools tools-vala
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 distdir = $(PACKAGE)-$(VERSION)
 top_distdir = $(distdir)
@@ -243,6 +244,7 @@ SHELL = @SHELL@
 SHTOOL = @SHTOOL@
 STRIP = @STRIP@
 USE_NLS = @USE_NLS@
+VALAC = @VALAC@
 VERSION = @VERSION@
 XGETTEXT = @XGETTEXT@
 XGETTEXT_015 = @XGETTEXT_015@
@@ -273,6 +275,8 @@ docdir = @docdir@
 dvidir = @dvidir@
 exec_prefix = @exec_prefix@
 gsettingsschemadir = @gsettingsschemadir@
+gtk_CFLAGS = @gtk_CFLAGS@
+gtk_LIBS = @gtk_LIBS@
 host = @host@
 host_alias = @host_alias@
 host_cpu = @host_cpu@
