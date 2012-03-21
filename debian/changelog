@@ -2,8 +2,10 @@ indicator-appmenu (0.3.94-0ubuntu5~ppa1) UNRELEASED; urgency=low
 
   * Upstream Merge
     * Adding GMenuModel menu support (LP: #950084)
+    * GTK2 fixes
+    * Vala fixes
 
- -- Ted Gould <ted@ubuntu.com>  Wed, 21 Mar 2012 10:16:44 -0500
+ -- Ted Gould <ted@ubuntu.com>  Wed, 21 Mar 2012 13:08:08 -0500
 
 indicator-appmenu (0.3.94-0ubuntu4) precise; urgency=low
 
