@@ -6,7 +6,8 @@ EXTRA_DIST = \
 
 bin_PROGRAMS = \
 	hud-dump-application \
-	hud-verify-app-info
+	hud-verify-app-info \
+	hud-gtk
 
 bin_SCRIPTS = \
 	hud-list-applications
@@ -104,6 +105,8 @@ libhud_service_a_SOURCES = \
 	hudindicatorsource.c	\
 	hudwindowsource.h	\
 	hudwindowsource.c	\
+	huddebugsource.h	\
+	huddebugsource.c	\
 	hudsourcelist.h		\
 	hudsourcelist.c		\
 	hudsource.h		\
@@ -176,6 +179,25 @@ else
 EXTRA_DIST += \
 	$(hud_cli_SOURCES)
 endif
+
+####################
+# hud-gtk
+####################
+
+hudgtkdatadir = $(datadir)/hud-gtk
+hudgtkdata_DATA = hud-gtk.ui
+EXTRA_DIST += hud-gtk.ui
+
+hud_gtk_SOURCES = \
+	hud-gtk.vala
+
+hud_gtk_VALAFLAGS = --pkg gtk+-3.0
+hud_gtk_CFLAGS = \
+	-DHUD_GTK_DATADIR=\""$(hudgtkdatadir)"\"	\
+	$(gtk_CFLAGS)
+
+hud_gtk_LDADD = \
+	$(gtk_LIBS)
 
 #######################
 # HUD Dump Application

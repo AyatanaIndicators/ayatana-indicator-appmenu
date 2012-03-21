@@ -61,8 +61,8 @@ struct _HudMenuModelCollector
 
   gchar *desktop_file;
   GPtrArray *items;
+  gint use_count;
 };
-
 
 typedef struct
 {
@@ -329,6 +329,22 @@ hud_menu_model_collector_disconnect (gpointer data,
 }
 
 static void
+hud_menu_model_collector_use (HudSource *source)
+{
+  HudMenuModelCollector *collector = HUD_MENU_MODEL_COLLECTOR (source);
+
+  collector->use_count++;
+}
+
+static void
+hud_menu_model_collector_unuse (HudSource *source)
+{
+  HudMenuModelCollector *collector = HUD_MENU_MODEL_COLLECTOR (source);
+
+  collector->use_count--;
+}
+
+static void
 hud_menu_model_collector_search (HudSource   *source,
                                  GPtrArray   *results_array,
                                  const gchar *search_string)
@@ -381,6 +397,8 @@ hud_menu_model_collector_init (HudMenuModelCollector *collector)
 static void
 hud_menu_model_collector_iface_init (HudSourceInterface *iface)
 {
+  iface->use = hud_menu_model_collector_use;
+  iface->unuse = hud_menu_model_collector_unuse;
   iface->search = hud_menu_model_collector_search;
 }
 
@@ -393,14 +411,18 @@ hud_menu_model_collector_class_init (HudMenuModelCollectorClass *class)
 /**
  * hud_menu_model_collector_get:
  * @window: a #BamfWindow
+ * @desktop_file: the desktop file of the application of @window
  *
  * If the given @window has #GMenuModel-style menus then returns a
  * collector for them, otherwise returns %NULL.
  *
+ * @desktop_file is used for usage tracking.
+ *
  * Returns: a #HudMenuModelCollector, or %NULL
  **/
 HudMenuModelCollector *
-hud_menu_model_collector_get (BamfWindow *window)
+hud_menu_model_collector_get (BamfWindow  *window,
+                              const gchar *desktop_file)
 {
   HudMenuModelCollector *collector;
   gchar *unique_bus_name;
@@ -442,6 +464,8 @@ hud_menu_model_collector_get (BamfWindow *window)
 
   if (window_object_path)
     collector->window = g_dbus_action_group_get (session, unique_bus_name, window_object_path);
+
+  collector->desktop_file = g_strdup (desktop_file);
 
   /* when the action groups change, we could end up having items
    * enabled/disabled.  how to deal with that?

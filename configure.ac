@@ -1,5 +1,5 @@
 AC_INIT([indicator-appmenu],
-        [0.3.92],
+        [0.3.94],
         [http://bugs.launchpad.net/indicator-appmenu],
         [indicator-appmenu],
         [http://launchpad.net/indicator-appmenu])
@@ -20,6 +20,7 @@ AM_SILENT_RULES([yes])
 # Check for programs
 AC_PROG_CC
 AM_PROG_CC_C_O
+AM_PROG_VALAC([0.15.2])
 
 # Initialize libtool
 LT_PREREQ([2.2.6])
@@ -85,6 +86,8 @@ AS_IF([test "x$with_gtk" = x3],
         ],
       [AC_MSG_FAILURE([Value for --with-gtk was neither 2 nor 3])]
 )
+
+PKG_CHECK_MODULES(gtk, gtk+-3.0 >= $GTK3_REQUIRED_VERSION)
 
 AC_SUBST(INDICATOR_CFLAGS)
 AC_SUBST(INDICATOR_LIBS)

@@ -3,6 +3,8 @@ debian/tmp/gtk3/usr/lib/indicator-appmenu/menu-pusher /usr/lib/indicator-appmenu
 debian/tmp/gtk3/usr/lib/indicator-appmenu/mock-json-app /usr/lib/indicator-appmenu/
 debian/tmp/gtk3/usr/bin/hud-cli /usr/bin/
 debian/tmp/gtk3/usr/bin/hud-dump-application /usr/bin/
+debian/tmp/gtk3/usr/bin/hud-gtk /usr/bin/
 debian/tmp/gtk3/usr/bin/hud-list-applications /usr/bin/
 debian/tmp/gtk3/usr/bin/hud-verify-app-info /usr/bin/
 debian/tmp/gtk3/usr/share/man/ /usr/share/
+debian/tmp/gtk3/usr/share/hud-gtk /usr/share/

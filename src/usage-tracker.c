@@ -20,6 +20,8 @@ You should have received a copy of the GNU General Public License along
 with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#define G_LOG_DOMAIN "usagetracker"
+
 #ifdef HAVE_CONFIG_H
 #include "config.h"
 #endif
@@ -340,6 +342,8 @@ usage_tracker_mark_usage (UsageTracker * self, const gchar * application, const 
 	g_return_if_fail(IS_USAGE_TRACKER(self));
 	g_return_if_fail(self->priv->db != NULL);
 
+	g_debug ("Marking %s %s", application, entry);
+
 	check_app_init(self, application);
 
 	sqlite3_reset(self->priv->insert_entry);
@@ -403,6 +407,8 @@ usage_tracker_get_usage (UsageTracker * self, const gchar * application, const g
 	if (exec_status != SQLITE_DONE) {
 		g_warning("Unknown status from executing entry_count: %d", exec_status);
 	}
+
+	g_debug ("Usage of %s %s is %u", application, entry, count);
 
 	return count;
 }
