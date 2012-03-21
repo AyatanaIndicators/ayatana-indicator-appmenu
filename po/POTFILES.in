@@ -23,4 +23,6 @@ src/hudwindowsource.c
 src/indicator-appmenu.c
 src/load-app-info.c
 src/usage-tracker.c
-src/window-menus.c
+src/window-menu.c
+src/window-menu-dbusmenu.c
+src/window-menu-model.c
