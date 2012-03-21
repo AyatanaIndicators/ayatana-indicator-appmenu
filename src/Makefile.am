@@ -207,7 +207,7 @@ hud_gtk_SOURCES = \
 
 hud_gtk_VALAFLAGS = --pkg gtk+-3.0
 hud_gtk_CFLAGS = \
-	-DHUD_GTK_DATADIR=\""$(hudgtkdatadir)"\"	\
+	-DHUD_GTK_DATADIR=\""$(hudgtkdatadir)"\" \
 	$(gtk_CFLAGS)
 
 hud_gtk_LDADD = \
