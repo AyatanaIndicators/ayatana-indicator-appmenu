@@ -426,6 +426,7 @@ add_window_menu (WindowMenuModel * menu, GMenuModel * model)
 
 		entry_on_menuitem(menu, gmi);
 	}
+	g_list_free(children);
 
 	return;
 }
@@ -548,6 +549,8 @@ get_entries (WindowMenu * wm)
 				ret = g_list_append(ret, entry);
 			}
 		}
+
+		g_list_free(children);
 	}
 
 	return ret;
@@ -585,6 +588,8 @@ get_location (WindowMenu * wm, IndicatorObjectEntry * entry)
 				break;
 			}
 		}
+
+		g_list_free(children);
 	}
 
 	if (!found) {
