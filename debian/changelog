@@ -1,0 +1,656 @@
+indicator-appmenu (0.3.95-0ubuntu1~ppa1) UNRELEASED; urgency=low
+
+  * New upstream release.
+    * Adding GMenuModel menu support (LP: #950084)
+    * Support for XUL applications in the hud (LP: #921231)
+    * Init translation, fix system indicator names not translated in the HUD
+      (LP: #955880)
+    * Fix an hud-service assertion error (LP: #955937)
+    * Highlight hits in GMenuModel HUD (LP: #950079)
+    * Several Coverity bugs (LP: #957420, #957414, #957412, #957415)
+
+ -- Ted Gould <ted@ubuntu.com>  Wed, 21 Mar 2012 13:23:03 -0500
+
+indicator-appmenu (0.3.94-0ubuntu4) precise; urgency=low
+
+  * Rebase on desrt's r238, including:
+    - support for xul applications in the hud (lp: #921231)
+    - should fix an hud-service assertion error (lp: #955937)
+  * debian/control:
+    - build depends on vala for hud-gtk
+  * debian/indicator-appmenu-tools.install:
+    - install hud-gtk with the tools
+
+ -- Sebastien Bacher <seb128@ubuntu.com>  Tue, 20 Mar 2012 13:47:35 +0100
+
+indicator-appmenu (0.3.94-0ubuntu3) precise; urgency=low
+
+  * Backport r180 to fix unity-panel-service segfaults when unsetting
+    the menuproxy variable to disable menus export (lp: #953479, #958048)
+
+ -- Sebastien Bacher <seb128@ubuntu.com>  Mon, 19 Mar 2012 11:36:10 +0100
+
+indicator-appmenu (0.3.94-0ubuntu2) precise; urgency=low
+
+  * Init translation, fix system indicator names not translated in the hud
+    (lp: #955880)
+
+ -- Sebastien Bacher <seb128@ubuntu.com>  Thu, 15 Mar 2012 19:42:30 +0100
+
+indicator-appmenu (0.3.94-0ubuntu1) precise; urgency=low
+
+  * New upstream release.
+
+ -- Sebastien Bacher <seb128@ubuntu.com>  Wed, 14 Mar 2012 20:47:58 +0100
+
+indicator-appmenu (0.3.92-0ubuntu2) precise; urgency=low
+
+  * Backport desrt's r216, r217, r218, should fix:
+    - "don't setup usage data for disable items or those without labels"
+       (lp: #953579)
+    - "remove all items from the dbusmenucollector on free" (lp: #953771)
+    - "check the window title from bamf for being NULL before comparing 
+       on it" (lp: #953620)
+
+ -- Sebastien Bacher <seb128@ubuntu.com>  Tue, 13 Mar 2012 16:07:06 +0100
+
+indicator-appmenu (0.3.92-0ubuntu1) precise; urgency=low
+
+  * Backport r175 to fix sync issues
+  * Backport desrt's current work to add back hud syntax highlight and 
+    hud usage tracking, fixes a segfault as well (lp: #950402)
+
+  [ Ted Gould ]
+  * New upstream release.
+    * Docbook parsing build error (LP: #931777)
+    * Ensure variants get valid strings (LP: #934429)
+    * Typos in translator comments (LP: #945445)
+    * Add GMenuModel support to HUD
+
+ -- Sebastien Bacher <seb128@ubuntu.com>  Mon, 12 Mar 2012 21:02:50 +0100
+
+indicator-appmenu (0.3.91-0ubuntu2) precise; urgency=low
+
+  * Backport r165 to fix a segfault in the hud service which gets quite
+    some duplicates (lp: #934429)
+
+ -- Sebastien Bacher <seb128@ubuntu.com>  Mon, 27 Feb 2012 12:29:34 +0100
+
+indicator-appmenu (0.3.91-0ubuntu1) precise; urgency=low
+
+  * debian/control:
+    - drop scrollkeeper build-depends, that source is deprecated and not
+      need to build the indicator
+
+  [ Ted Gould ]
+  * New upstream release.
+    * Fix resize in HUD CLI (LP: #921284)
+    * Remove extranious g_errors (LP: #921288)
+    * Making usage of usage data more fair (LP: #923999)
+    * Ensure property exists before evaluating on it (LP: #930059)
+    * Protect against improperly parsed messages (LP: #931219)
+    * Fix UTF-8 handling in distance algorithms (LP: #930065)
+    * Correct name of dash in blacklist (LP: #932530)
+    * Add support of AppIndicator title changes
+
+ -- Sebastien Bacher <seb128@ubuntu.com>  Wed, 15 Feb 2012 20:58:01 +0100
+
+indicator-appmenu (0.3.90-0ubuntu2) precise; urgency=low
+
+  * Backport upstream work for better matching of utf8 strings (lp: #930065)
+
+ -- Sebastien Bacher <seb128@ubuntu.com>  Tue, 14 Feb 2012 17:58:13 +0100
+
+indicator-appmenu (0.3.90-0ubuntu1) precise; urgency=low
+
+  [ Ted Gould ]
+  * New upstream release.
+    * Make the focusing blacklist an environment variable
+    * Updating to new indicator-application API and using the title
+    * Add a visible/enable property for custom items
+    * Add support for entry_activate_window to switch focus when passed an XID
+    * Supporting what BAMF calls Unity-2d
+    * Include the build directory for tests
+    * Removing debug interfaces we're not using
+    * Don't build a found object if we're already over max
+    * Updating to use DBusmenu 0.5.90
+    * Rename dbusmenu collector to avoid namespace collitions
+    * Use indexes in the database and make the creation easier to modify
+    * Add in the HUD feature
+    * Fixing the libexec path for OpenSuSE
+    * Add a setting for the menu mode
+    * Making the test tools optional
+    * Adding code coverage output
+  * debian/control:
+    * Increasing the dep on libindicator version
+    * Add a dep in tools on sqlite3 (LP: #921274)
+    * Adding xvfb
+    * Added autoreconf
+  	* Adding appindicator test build dependencies on the application
+      indicator stuff.
+    * Adding build deps on new libraries for CLI tool
+    * Adding sqlite and dbus-test-runner deps
+    * Updating dbusmenu dep to 0.5.90
+    * Ensuring we don't get installed with an indicator-application version
+      less than 0.4.90
+    * Making the builddep require 0.4.90 of indicator-application 
+      so the test suite builds
+  * debian/indicator-appmenu.install:
+    * Adding GSchemas
+    * Grabbing the dbus service too
+    * Adding in the HUD components to the various packages.
+  * debian/indicator-appmenu-tools.install:
+    * Adding man pages
+    * Move tools to /usr/bin
+    * Adding in the HUD components to the various packages.
+  * debian/rules:
+    * Adding in autoreconf.mk
+    * Adding autopoint
+    * Adding make check
+
+  [ Ken VanDine ]
+  * debian/rules
+    * ensure $DISPLAY isn't set, it makes the tests fail in pbuilder
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Thu, 09 Feb 2012 13:13:35 -0500
+
+indicator-appmenu (0.3.2-0ubuntu3) precise; urgency=low
+
+  * src/indicator-appmenu.c
+    - set menu visibility, fixes the disappearing menus with libindicator 
+      >= 0.4.90
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Thu, 26 Jan 2012 00:20:24 -0500
+
+indicator-appmenu (0.3.2-0ubuntu2) precise; urgency=low
+
+  * no change rebuild for libindicator7
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Wed, 25 Jan 2012 09:51:34 -0500
+
+indicator-appmenu (0.3.2-0ubuntu1) precise; urgency=low
+
+  * New upstream release.
+  * debian/patches/double-ref-of-entry-label.patch: included in the new version
+
+ -- Sebastien Bacher <seb128@ubuntu.com>  Tue, 13 Dec 2011 10:45:03 +0100
+
+indicator-appmenu (0.3.2-0ubuntu1~ppa1) oneiric; urgency=low
+
+  * New upstream release.
+    * Ensure that the label is ref'd using a ref_sink()
+  * Drop debian/patches/double-ref-of-entry-label.patch: Upstream
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 13 Oct 2011 13:38:29 -0500
+
+indicator-appmenu (0.3.1-0ubuntu2) oneiric; urgency=low
+
+  * debian/patches/double-ref-of-entry-label.patch:
+    - Don't leak GtkLabels by adding a second ref on top of the floating
+      ref.  Instead, sink the floating ref.  Part of bug 835646.
+
+ -- Michael Terry <mterry@ubuntu.com>  Thu, 06 Oct 2011 10:19:08 -0400
+
+indicator-appmenu (0.3.1-0ubuntu1) oneiric; urgency=low
+
+  * New upstream release.
+    * Fix reference leak
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 29 Sep 2011 10:26:10 -0500
+
+indicator-appmenu (0.3.0-0ubuntu1) oneiric; urgency=low
+
+  * New upstream release.
+    * Version Bump
+
+ -- Ted Gould <ted@ubuntu.com>  Wed, 28 Sep 2011 13:54:23 -0500
+
+indicator-appmenu (0.2.91-0ubuntu4) oneiric; urgency=low
+
+  [ Didier Roche ]
+  * debian/rules:
+    - stripping gtk from list of build-dep isn't needed on those components
+
+  [ Sebastien Bacher ]
+  * debian/conrol.in:
+    - recommends appmenu-gtk as well it's still needed
+
+ -- Sebastien Bacher <seb128@ubuntu.com>  Tue, 02 Aug 2011 21:39:58 +0200
+
+indicator-appmenu (0.2.91-0ubuntu2) oneiric; urgency=low
+
+  * debian/rules:
+    - avoid making indicator-appmenu* depends on gtk2/3 by dpkg-shlibdeps.
+      The library doesn't hurt if gtk isn't installed and that enable
+      pre-installlation of the indicator stack without requiring the full gtk
+      stack being there without any gtk app installed.
+
+ -- Didier Roche <didrocks@ubuntu.com>  Mon, 25 Jul 2011 18:19:47 +0200
+
+indicator-appmenu (0.2.91-0ubuntu1) oneiric; urgency=low
+
+  [ Ted Gould ]
+  * New upstream release.
+    * libindicator 0.4 migration 
+
+  [ Ken VanDine ]
+  * bumped build depends for libindicator to >= 0.3.90
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Fri, 08 Jul 2011 11:30:22 -0400
+
+indicator-appmenu (0.2.90-0ubuntu3) oneiric; urgency=low
+
+  * Rebuild for libdbusmenu-gtk3-4
+  * debian/control
+    - Dropped build depends on indicator-appmenu-gtk2
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Tue, 28 Jun 2011 09:03:44 -0400
+
+indicator-appmenu (0.2.90-0ubuntu2) oneiric; urgency=low
+
+  * debian/control
+    - Make indicator-appmenu recommend appmenu-gtk3 (LP: #791735)
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Wed, 22 Jun 2011 23:31:46 -0400
+
+indicator-appmenu (0.2.90-0ubuntu1) oneiric; urgency=low
+
+  [ Ted Gould ]
+  * New upstream release.
+    - When freeing existing entries, don't skip every other one
+    - When an entry gets inserted mid-menu (instead of at the end),
+      place it in the correct place instead of assuming the end
+    - When a new entry gets added with an empty submenu, actually watch
+      the submenu for new items instead of dropping it on the floor
+    - GTK 3 Port
+  * debian/indicator-appmenu.install: Installing the GTK3 indicator
+
+  [ Ken VanDine ]
+  * debian/control
+    - Bumped standards version to 3.9.2
+    - Add new binary for indicator-appmenu-gtk2
+    - Make indicator-appmenu recommend indicator-appmenu-gtk2 (until unity
+      can load gtk3 indicators)
+    - indicator-appmenu-gtk2 replaces indicator-appmenu << 0.2.90
+    - Added build depends for libdbusmenu-gtk3-dev, libindicator3-dev 
+      and libbamf3-dev
+  * debian/rules
+    - build for both gtk2 and gtk3
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Wed, 22 Jun 2011 12:59:36 -0400
+
+indicator-appmenu (0.2.1-0ubuntu3) oneiric; urgency=low
+
+  * debian/control:
+    - get indicator-appmenu recommends appmenu-qt as it's toolkit agnostic
+
+ -- Didier Roche <didrocks@ubuntu.com>  Fri, 27 May 2011 11:26:19 +0200
+
+indicator-appmenu (0.2.1-0ubuntu2) natty; urgency=low
+
+  * Backport bug fixes from trunk:
+    - When freeing existing entries, don't skip every other one
+    - When an entry gets inserted mid-menu (instead of at the end),
+      place it in the correct place instead of assuming the end
+    - When a new entry gets added with an empty submenu, actually watch
+      the submenu for new items instead of dropping it on the floor
+
+ -- Michael Terry <mterry@ubuntu.com>  Fri, 15 Apr 2011 16:21:17 -0400
+
+indicator-appmenu (0.2.1-0ubuntu1) natty; urgency=low
+
+  * New upstream release.
+    ∘ Protect props_cb() with a reference and check for
+      cancellation (LP: #741488)
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 14 Apr 2011 16:19:16 -0500
+
+indicator-appmenu (0.2.0-0ubuntu1) natty; urgency=low
+
+  * New upstream release.
+    ∘ Adding a check of the indicator environment to hide the menu stubs
+      under Unity (LP: #703555)
+    ∘ Send about-to-show on menus that don't have any children currently
+      (LP: #619811)
+    ∘ Work around bugs in signaling by delaying the destruction of menu
+      caches for five seconds (LP: #718926)
+    ∘ Disconnecting client signal handlers on displose (LP: #738561)
+    ∘ Remove menuitem signals on root changes (LP: #743404)
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 07 Apr 2011 11:01:06 -0500
+
+indicator-appmenu (0.1.97-0ubuntu1) natty; urgency=low
+
+  * New upstream release.
+    ∘ Support Unregistering menus from DBus (LP: #734880)
+
+ -- Ted Gould <ted@ubuntu.com>  Wed, 16 Mar 2011 14:37:43 -0500
+
+indicator-appmenu (0.1.96-0ubuntu1) natty; urgency=low
+
+  * New upstream release.
+    ∘ Fix to match DBusmenu API changes
+    ∘ Pass signal through libindicator to show menu items on Alt
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 10 Mar 2011 14:30:06 -0600
+
+indicator-appmenu (0.1.95-0ubuntu1) natty; urgency=low
+
+  * New upstream release.
+    * Accessible description support
+  * debian/control: Updating libindicator to 0.3.19
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 17 Feb 2011 14:26:34 -0600
+
+indicator-appmenu (0.1.94-0ubuntu1) natty; urgency=low
+
+  * New upstream release.
+    * Removing the unused 'destroy' signal on window menus
+    * Removing g_error's in the .so
+    * Use the menus_destroyed() function instead of removing from
+      the hashtable. (LP: #714531)
+
+ -- Ted Gould <ted@ubuntu.com>  Fri, 11 Feb 2011 10:05:47 -0600
+
+indicator-appmenu (0.1.93-0ubuntu2) natty; urgency=low
+
+  * src/indicator-appmenu.c
+    - Using the destroy() function instead of just removing from the hashtable 
+      as it handles more details of switching windows. Then we have to unref 
+      as the destroy function does not. (LP: #714531)
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Mon, 07 Feb 2011 12:44:20 -0500
+
+indicator-appmenu (0.1.93-0ubuntu1) natty; urgency=low
+
+  * New upstream release.
+    * Remove the signals on menu items we're no longer caring
+      about (LP: #706941)
+    * Close open menus when switching windows (LP: #709305)
+    * Find the correct entry to remove when removing entries
+    * Watch window closing at the indicator level instead of
+      the window level to make it less racy
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 03 Feb 2011 14:44:17 -0600
+
+indicator-appmenu (0.1.92-0ubuntu1) natty; urgency=low
+
+  * New upstream release.
+    * Stopping a crash when menus disappear
+    * Check to make sure we're signaled with a BamfWindow and
+      ignore other BAMF signals.
+    * Check to ensure that what we get back from BAMF is non-NULL
+      before connecting to it.
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 27 Jan 2011 16:16:21 -0600
+
+indicator-appmenu (0.1.91-0ubuntu1) natty; urgency=low
+
+  * New upstream release.
+    * Using BAMF to watch for window destruction (LP: #703769)
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 20 Jan 2011 08:49:37 -0600
+
+indicator-appmenu (0.1.90-0ubuntu1) natty; urgency=low
+
+  [ Ted Gould ]
+  * New upstream release.
+    * GDBus Port
+    * Migration from ayatana.org to canonical.com
+  * debian/patches/01-shortcut-fix.patch: Merged upstream
+
+  [ Ken VanDine ]
+  * debian/control
+    - Bumped build depends for dbusmenu to >= 0.3.91
+    - Bumped build depends for libindicator to >= 0.3.16
+    - Dropped build depends for libdbus-glib-1-dev
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Fri, 14 Jan 2011 12:22:13 -0600
+
+indicator-appmenu (0.0.13-0ubuntu4) natty; urgency=low
+
+  * debian/patches/01-shortcut-fix.patch: Fix the handling of showing
+    the menus so it works with all menus in an application. (LP: #688018)
+
+ -- Ted Gould <ted@ubuntu.com>  Fri, 10 Dec 2010 20:17:44 -0600
+
+indicator-appmenu (0.0.13-0ubuntu3) natty; urgency=low
+
+  * debian/control
+    - Bump build depends for libdbusmenu-* to >= 0.3.90 
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Thu, 09 Dec 2010 11:36:38 -0500
+
+indicator-appmenu (0.0.13-0ubuntu2) natty; urgency=low
+
+  * Upstream Merge
+    * Add Eclipse to the blacklist (LP: #633828)
+
+ -- Ted Gould <ted@ubuntu.com>  Mon, 27 Sep 2010 12:04:29 -0500
+
+indicator-appmenu (0.0.13-0ubuntu2~ppa3) natty; urgency=low
+
+  * Upstream Merge
+    * Fixing counting of menus for GEdit and others.
+
+ -- Ted Gould <ted@ubuntu.com>  Fri, 10 Dec 2010 16:34:34 -0600
+
+indicator-appmenu (0.0.13-0ubuntu2~ppa2) natty; urgency=low
+
+  * Upstream Merge
+    * Fixing signaling
+
+ -- Ted Gould <ted@ubuntu.com>  Fri, 10 Dec 2010 14:50:30 -0600
+
+indicator-appmenu (0.0.13-0ubuntu2~ppa1) maverick; urgency=low
+
+  * Upstream Merge
+    * Add Eclipse to the blacklist (LP: #633828)
+
+ -- Ted Gould <ted@ubuntu.com>  Mon, 27 Sep 2010 12:04:29 -0500
+
+indicator-appmenu (0.0.13-0ubuntu1) maverick; urgency=low
+
+  * New upstream release.
+    * Using the BAMF closed windows interface to detect short lived
+      windows. (LP: #645355)
+    * Tracking BAMF windows differently and caching stubs
+    * Droping Chrome from the blacklist of stubs (LP: #646136)
+    * Removing the Edit menu from the stubs (LP: #646136)
+  * debian/patches/01_bzr_fix_race_condition.patch: (merged upstream)
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 23 Sep 2010 12:43:39 -0500
+
+indicator-appmenu (0.0.12-0ubuntu1) maverick; urgency=low
+
+  * New upstream realease:
+    - Fix Action for top-level dropdown menu item not activated (LP: #637692)
+  * debian/control:
+    - depends on latest libindicator-dev for ABI change
+    - depends on latest bamf with distro patch
+  * debian/rules:
+    - add a patch system
+  * debian/patches/01_bzr_fix_race_condition.patch:
+    - This patch ensures that windows which are already closed according to bamf
+      are not passed on for processing in mutter. (Jason Smith) (LP: #645355)
+
+ -- Didier Roche <didrocks@ubuntu.com>  Wed, 22 Sep 2010 20:09:47 +0200
+
+indicator-appmenu (0.0.11-0ubuntu3) maverick; urgency=low
+
+  * Cherry pick fix to blacklist chrome and chromium 
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Thu, 16 Sep 2010 11:31:02 -0400
+
+indicator-appmenu (0.0.11-0ubuntu2) maverick; urgency=low
+
+  * Cherry pick fix for maximized windows getting closed (LP: #637108)
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Thu, 16 Sep 2010 08:59:12 -0400
+
+indicator-appmenu (0.0.11-0ubuntu1) maverick; urgency=low
+
+  * New upstream release.
+    * Check to see if an app wants stubs shown (LP: #633211)
+    * Adding a blacklist of known desktop files (LP: #633211)
+  * debian/control
+    * Bumped build depends for libbamf-dev to 0.2.50
+
+ -- Ted Gould <ted@ubuntu.com>  Wed, 15 Sep 2010 15:07:36 -0500
+
+indicator-appmenu (0.0.10-0ubuntu1) maverick; urgency=low
+
+  * New upstream release
+    * Detect and show the menus on desktop windows (LP: #591168)
+    * Have the close item in the default menu work
+    * Handle event errors
+    * Only restoring if WindowMenus are involved
+  [Ken VanDine]
+  * debian/control
+    - Bumped build depends for libbamf-dev to 0.2.46
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 09 Sep 2010 11:16:48 -0500
+
+indicator-appmenu (0.0.9-0ubuntu1) maverick; urgency=low
+
+  * New upstream release.
+    - DBus name change, s/WindowMenu/AppMenu/g
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Thu, 22 Jul 2010 15:15:25 +0200
+
+indicator-appmenu (0.0.8-0ubuntu2~ppa1) lucid; urgency=low
+
+  * Merge upstream
+    * Adding in a debug interface for getting JSON data from the
+      applet directly.
+
+ -- Ted Gould <ted@ubuntu.com>  Mon, 12 Jul 2010 17:09:24 -0500
+
+indicator-appmenu (0.0.8-0ubuntu1) maverick; urgency=low
+
+  * New upstream release.
+    * Adding a new utility to make a mock application
+    * Fixing menus that are added after a window is shown
+    * Tracking the root item so that we can disconnect signals
+    * Switching to using stock menu items
+  * debian/control: Adding build dep on dbusmenu-jsonloader-dev
+  * debian/indicator-appmenu-tools.install: Adding to the 
+    new mock-json-app binary into the package.
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 01 Jul 2010 09:18:52 -0500
+
+indicator-appmenu (0.0.7-0ubuntu2) maverick; urgency=low
+
+  * Backport upstream change to fix crash issues
+
+ -- Sebastien Bacher <seb128@ubuntu.com>  Tue, 29 Jun 2010 23:27:06 +0200
+
+indicator-appmenu (0.0.7-0ubuntu1) maverick; urgency=low
+
+  * New upstream release.
+    * Accelerator support (LP: #586978)
+    * Setting the window ID and debug check
+  * debian/control: Updating libdbusmenu*-dev to 0.3.3
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 24 Jun 2010 10:54:52 -0500
+
+indicator-appmenu (0.0.6-0ubuntu1) maverick; urgency=low
+
+  * debian/control: Updating libbamf-dev to 0.2.30
+
+  [Ted Gould]
+  * debian/control: Updating libbamf-dev to 0.2.28
+  * New upstream release.
+    * Adding support for default window menus and a dummy
+      desktop menu.
+    * Transient detection on new windows
+    * Look for transient windows on window switching.
+    * Fix visiblity and enable defaults
+    * Watching for applications dropping off the bus and removing
+      their windows.
+  * Adding indicator-appmenu-crashdb.conf and source_indicator-appmenu.py
+    so that bugs reported with ubuntu-bug will go to the upstream project
+    if the package is gotten from a PPA.
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Thu, 17 Jun 2010 16:27:04 -0400
+
+indicator-appmenu (0.0.5-0ubuntu1) maverick; urgency=low
+
+  * New upstream release
+    * Supporting for visibility and enable properties.
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 10 Jun 2010 12:10:35 -0500
+
+indicator-appmenu (0.0.4-0ubuntu1~ppa2) maverick; urgency=low
+
+  * debian/control
+    - Fixed typo in description 
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Thu, 10 Jun 2010 09:21:12 -0400
+
+indicator-appmenu (0.0.4-0ubuntu1~ppa1) maverick; urgency=low
+
+  * New upstream release.
+    * Application switching using BAMF
+    * Adding a debug interface and scripts
+  * debian/control: Requiring libbamf-dev to build
+  * debian/control, debian/indicator-appmenu.install and
+    debian/indicator-appmenu-tools.install: Breaking out the tools
+    into their own package as most users won't need them.
+
+ -- Ted Gould <ted@ubuntu.com>  Fri, 04 Jun 2010 09:42:16 -0500
+
+indicator-appmenu (0.0.3-0ubuntu1~ppa1) maverick; urgency=low
+
+  * New upstream release.
+    * Dynamic menu items
+  * debian/control: Increasing dbusmenu reqs to 0.3.0
+
+  [Ken VanDine]
+  * debian/watch added
+  * debian/control
+    - Added Homepage and Vcs 
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 27 May 2010 12:15:24 -0500
+
+indicator-appmenu (0.0.2-0ubuntu1~ppa1) lucid; urgency=low
+
+  * New upstream release.
+    * Updates to the demo at UDS.
+
+ -- Ted Gould <ted@ubuntu.com>  Thu, 13 May 2010 14:33:12 +0200
+
+indicator-appmenu (0.0.1-0ubuntu1~ppa4) lucid; urgency=low
+
+  * Upstream Merge
+    * Fixes and Qt integration fixes.
+
+ -- Ted Gould <ted@ubuntu.com>  Mon, 10 May 2010 18:13:06 +0200
+
+indicator-appmenu (0.0.1-0ubuntu1~ppa3) lucid; urgency=low
+
+  * Upstream Merge
+    * Making it so we don't track window IDs at all
+
+ -- Ted Gould <ted@ubuntu.com>  Fri, 07 May 2010 17:25:28 +0200
+
+indicator-appmenu (0.0.1-0ubuntu1~ppa2) lucid; urgency=low
+
+  * Upstream Merge
+    * Building the menus at a demo quality
+  * Autogen
+
+ -- Ted Gould <ted@ubuntu.com>  Fri, 07 May 2010 16:04:54 +0200
+
+indicator-appmenu (0.0.1-0ubuntu1~ppa1) lucid; urgency=low
+
+  * New upstream release.
+    * Now it allows registering things.
+
+ -- Ted Gould <ted@ubuntu.com>  Wed, 05 May 2010 11:21:33 +0200
+
+indicator-appmenu (0.0.0-0ubuntu1~ppa1) lucid; urgency=low
+
+  * Initial release
+
+ -- Ted Gould <ted@ubuntu.com>  Mon, 19 Apr 2010 12:56:43 -0500
