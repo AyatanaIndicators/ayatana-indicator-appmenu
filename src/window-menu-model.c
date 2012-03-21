@@ -535,7 +535,15 @@ get_entries (WindowMenu * wm)
 		GList * child;
 		for (child = children; child != NULL; child = g_list_next(child)) {
 			gpointer entry = g_object_get_data(child->data, ENTRY_DATA);
-			/* TODO: Handle case of no entry */
+
+			if (entry == NULL) {
+				/* Try to build the entry, it is possible (but unlikely) that
+				   we could beat the signal that this isn't created.  So we'll
+				   just handle that race here */
+				entry_on_menuitem(menu, GTK_MENU_ITEM(child->data));
+				entry = g_object_get_data(child->data, ENTRY_DATA);
+			}
+
 			if (entry != NULL) {
 				ret = g_list_append(ret, entry);
 			}
