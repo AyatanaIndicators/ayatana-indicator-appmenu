@@ -1,11 +1,15 @@
-indicator-appmenu (0.3.94-0ubuntu5~ppa1) UNRELEASED; urgency=low
+indicator-appmenu (0.3.95-0ubuntu1~ppa1) UNRELEASED; urgency=low
 
-  * Upstream Merge
+  * New upstream release.
     * Adding GMenuModel menu support (LP: #950084)
-    * GTK2 fixes
-    * Vala fixes
+    * Support for XUL applications in the hud (LP: #921231)
+    * Init translation, fix system indicator names not translated in the HUD
+      (LP: #955880)
+    * Fix an hud-service assertion error (LP: #955937)
+    * Highlight hits in GMenuModel HUD (LP: #950079)
+    * Several Coverity bugs (LP: #957420, #957414, #957412, #957415)
 
- -- Ted Gould <ted@ubuntu.com>  Wed, 21 Mar 2012 13:08:08 -0500
+ -- Ted Gould <ted@ubuntu.com>  Wed, 21 Mar 2012 13:23:03 -0500
 
 indicator-appmenu (0.3.94-0ubuntu4) precise; urgency=low
 
