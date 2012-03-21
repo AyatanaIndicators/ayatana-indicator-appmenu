@@ -186,7 +186,7 @@ static GQuark error_quark                                            (void);
 static gboolean retry_registration                                   (gpointer user_data);
 static void bus_method_call                                          (GDBusConnection * connection,
                                                                       const gchar * sender,
-                                                                      const gchar * path,
+                                                                      const gchar * object_path,
                                                                       const gchar * interface,
                                                                       const gchar * method,
                                                                       GVariant * params,
@@ -1297,38 +1297,37 @@ get_menus (IndicatorAppmenu * iapp, GError ** error)
 		return NULL;
 	}
 
-	GVariantBuilder array;
-	g_variant_builder_init (&array, G_VARIANT_TYPE_ARRAY);
-	GList * appkeys = NULL;
-	for (appkeys = g_hash_table_get_keys(iapp->apps); appkeys != NULL; appkeys = g_list_next(appkeys)) {
-		gpointer hash_val = g_hash_table_lookup(iapp->apps, appkeys->data);
+	GVariantBuilder builder;
+	GHashTableIter hash_iter;
+	gpointer value;
 
-		if (hash_val == NULL) { continue; }
-
-		GVariantBuilder tuple;
-		g_variant_builder_init(&tuple, G_VARIANT_TYPE_TUPLE);
-		g_variant_builder_add_value(&tuple, g_variant_new_uint32(window_menu_get_xid(WINDOW_MENU(hash_val))));
-
-		if (IS_WINDOW_MENU_DBUSMENU(hash_val)) {
-			g_variant_builder_add_value(&tuple, g_variant_new_string(window_menu_dbusmenu_get_address(WINDOW_MENU_DBUSMENU(hash_val))));
-			g_variant_builder_add_value(&tuple, g_variant_new_object_path(window_menu_dbusmenu_get_path(WINDOW_MENU_DBUSMENU(hash_val))));
-		} else {
-			g_variant_builder_add_value(&tuple, g_variant_new_string(""));
-			g_variant_builder_add_value(&tuple, g_variant_new_object_path("/"));
+	g_variant_builder_init (&builder, G_VARIANT_TYPE("a(uso)"));
+	g_hash_table_iter_init (&hash_iter, iapp->apps);
+	while (g_hash_table_iter_next (&hash_iter, NULL, &value)) {
+		if (value != NULL) {
+			WindowMenu * wm = WINDOW_MENU(value);
+			if (IS_WINDOW_MENU_DBUSMENU(wm)) {
+				g_variant_builder_add (&builder, "(uso)",
+				                       window_menu_get_xid(wm),
+				                       window_menu_dbusmenu_get_address(WINDOW_MENU_DBUSMENU(wm)),
+				                       window_menu_dbusmenu_get_path(WINDOW_MENU_DBUSMENU(wm)));
+			} else {
+				g_variant_builder_add (&builder, "(uso)",
+				                       window_menu_get_xid(wm),
+				                       "",
+				                       "/");
+			}
 		}
-
-		g_variant_builder_add_value(&array, g_variant_builder_end(&tuple));
 	}
 
-	GVariant * varray = g_variant_builder_end(&array);
-	return g_variant_new_tuple(&varray, 1);
+	return g_variant_new ("(a(uso))", &builder);
 }
 
 /* A method has been called from our dbus inteface.  Figure out what it
    is and dispatch it. */
 static void
 bus_method_call (GDBusConnection * connection, const gchar * sender,
-                 const gchar * path, const gchar * interface,
+                 const gchar * object_path, const gchar * interface,
                  const gchar * method, GVariant * params,
                  GDBusMethodInvocation * invocation, gpointer user_data)
 {
