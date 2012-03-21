@@ -16,6 +16,8 @@
  * Author: Ryan Lortie <desrt@desrt.ca>
  */
 
+#define G_LOG_DOMAIN "hudquery"
+
 #include "hudquery.h"
 
 #include "hudresult.h"
@@ -138,13 +140,20 @@ hud_query_source_changed (HudSource *source,
   HudQuery *query = user_data;
 
   if (!query->refresh_id)
-    query->refresh_id = g_idle_add (hud_query_dispatch_refresh, g_object_ref (query));
+    query->refresh_id = g_idle_add (hud_query_dispatch_refresh, query);
 }
 
 static void
 hud_query_finalize (GObject *object)
 {
   HudQuery *query = HUD_QUERY (object);
+
+  g_debug ("Destroyed query '%s'", query->search_string);
+
+  if (query->refresh_id)
+    g_source_remove (query->refresh_id);
+
+  hud_source_unuse (query->source);
 
   g_object_unref (query->source);
   g_free (query->search_string);
@@ -199,11 +208,15 @@ hud_query_new (HudSource   *source,
 {
   HudQuery *query;
 
+  g_debug ("Created query '%s'", search_string);
+
   query = g_object_new (HUD_TYPE_QUERY, NULL);
   query->source = g_object_ref (source);
   query->results = g_ptr_array_new_with_free_func (g_object_unref);
   query->search_string = g_strdup (search_string);
   query->num_results = num_results;
+
+  hud_source_use (query->source);
 
   hud_query_refresh (query);
 
