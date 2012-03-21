@@ -223,25 +223,142 @@ mi_find_menu (GtkMenuItem * mi)
 	}
 }
 
+typedef struct _WindowMenuEntry WindowMenuEntry;
+struct _WindowMenuEntry {
+	IndicatorObjectEntry entry;
+
+	GtkMenuItem * gmi;
+
+	gulong label_sig;
+	gulong sensitive_sig;
+	gulong visible_sig;
+};
+
+/* Destroy and unref the items of the object entry */
+static void
+entry_object_free (gpointer inentry)
+{
+	WindowMenuEntry * entry = (WindowMenuEntry *)inentry;
+
+	if (entry->label_sig != 0) {
+		g_signal_handler_disconnect(entry->gmi, entry->label_sig);
+	}
+
+	if (entry->sensitive_sig != 0) {
+		g_signal_handler_disconnect(entry->gmi, entry->sensitive_sig);
+	}
+
+	if (entry->visible_sig != 0) {
+		g_signal_handler_disconnect(entry->gmi, entry->visible_sig);
+	}
+
+	g_clear_object(&entry->entry.label);
+	g_clear_object(&entry->entry.image);
+	g_clear_object(&entry->entry.menu);
+
+	g_free(entry);
+	return;
+}
+
+/* Sync the menu label changing to the label object */
+static void
+entry_label_notify (GObject * obj, GParamSpec * pspec, gpointer user_data)
+{
+	g_return_if_fail(GTK_IS_MENU_ITEM(obj));
+
+	GtkMenuItem * gmi = GTK_MENU_ITEM(obj);
+	WindowMenuEntry * entry = (WindowMenuEntry *)user_data;
+
+	if (entry->entry.label != NULL) {
+		const gchar * label = gtk_menu_item_get_label(gmi);
+		gtk_label_set_label(entry->entry.label, label);
+	}
+
+	return;
+}
+
+/* Watch for visible changes and ensure they can be picked up by the
+   indicator object host */
+static void
+entry_visible_notify (GObject * obj, GParamSpec * pspec, gpointer user_data)
+{
+	g_return_if_fail(GTK_IS_WIDGET(obj));
+	GtkWidget * widget = GTK_WIDGET(obj);
+	WindowMenuEntry * entry = (WindowMenuEntry *)user_data;
+	gboolean visible = gtk_widget_get_visible(widget);
+
+	if (entry->entry.label != NULL) {
+		gtk_widget_set_visible(GTK_WIDGET(entry->entry.label), visible);
+	}
+
+	if (entry->entry.image != NULL) {
+		gtk_widget_set_visible(GTK_WIDGET(entry->entry.image), visible);
+	}
+
+	return;
+}
+
+/* Watch for sensitive changes and ensure they can be picked up by the
+   indicator object host */
+static void
+entry_sensitive_notify (GObject * obj, GParamSpec * pspec, gpointer user_data)
+{
+	g_return_if_fail(GTK_IS_WIDGET(obj));
+	GtkWidget * widget = GTK_WIDGET(obj);
+	WindowMenuEntry * entry = (WindowMenuEntry *)user_data;
+	gboolean sensitive = gtk_widget_get_sensitive(widget);
+
+	if (entry->entry.label != NULL) {
+		gtk_widget_set_sensitive(GTK_WIDGET(entry->entry.label), sensitive);
+	}
+
+	if (entry->entry.image != NULL) {
+		gtk_widget_set_sensitive(GTK_WIDGET(entry->entry.image), sensitive);
+	}
+
+	return;
+}
+
 /* Put an entry on a menu item */
 static void
 entry_on_menuitem (WindowMenuModel * menu, GtkMenuItem * gmi)
 {
-	IndicatorObjectEntry * entry = g_new0(IndicatorObjectEntry, 1);
+	WindowMenuEntry * entry = g_new0(WindowMenuEntry, 1);
 
-	entry->label = mi_find_label(GTK_WIDGET(gmi));
-	entry->image = mi_find_icon(GTK_WIDGET(gmi));
-	entry->menu = mi_find_menu(gmi);
+	entry->gmi = gmi;
 
-	if (entry->label == NULL && entry->image == NULL) {
-		g_warning("Item doesn't have a label or an image, aborting");
-		return;
+	entry->entry.label = mi_find_label(GTK_WIDGET(gmi));
+	entry->entry.image = mi_find_icon(GTK_WIDGET(gmi));
+	entry->entry.menu = mi_find_menu(gmi);
+
+	if (entry->entry.label == NULL && entry->entry.image == NULL) {
+		const gchar * label = gtk_menu_item_get_label(gmi);
+		if (label == NULL) {
+			g_warning("Item doesn't have a label or an image, aborting");
+			return;
+		}
+
+		entry->entry.label = GTK_LABEL(gtk_label_new(label));
+		gtk_widget_show(GTK_WIDGET(entry->entry.label));
+		entry->label_sig = g_signal_connect(G_OBJECT(gmi), "notify::label", G_CALLBACK(entry_label_notify), entry->entry.label);
 	}
 
-	/* TODO: set up some weak pointers here */
-	/* TODO: Oh, and some label update signals and stuff */
+	if (entry->entry.label != NULL) {
+		g_object_ref_sink(entry->entry.label);
+	}
 
-	g_object_set_data_full(G_OBJECT(gmi), ENTRY_DATA, entry, g_free);
+	if (entry->entry.image != NULL) {
+		g_object_ref_sink(entry->entry.image);
+	}
+
+	if (entry->entry.menu != NULL) {
+		g_object_ref_sink(entry->entry.menu);
+	}
+
+	entry->sensitive_sig = g_signal_connect(G_OBJECT(gmi), "notify::sensitive", G_CALLBACK(entry_sensitive_notify), entry);
+	entry->visible_sig = g_signal_connect(G_OBJECT(gmi), "notify::visible", G_CALLBACK(entry_visible_notify), entry);
+
+	g_object_set_data_full(G_OBJECT(gmi), ENTRY_DATA, entry, entry_object_free);
 
 	return;
 }
@@ -259,7 +376,9 @@ item_inserted_cb (GtkContainer *menu,
 		entry_on_menuitem(WINDOW_MENU_MODEL(data), GTK_MENU_ITEM(widget));
 	}
 
-	g_signal_emit_by_name(data, WINDOW_MENU_SIGNAL_ENTRY_ADDED, g_object_get_data(G_OBJECT(widget), ENTRY_DATA));
+	if (g_object_get_data(G_OBJECT(widget), ENTRY_DATA) != NULL) {
+		g_signal_emit_by_name(data, WINDOW_MENU_SIGNAL_ENTRY_ADDED, g_object_get_data(G_OBJECT(widget), ENTRY_DATA));
+	}
 
 	return;
 }
@@ -416,7 +535,15 @@ get_entries (WindowMenu * wm)
 		GList * child;
 		for (child = children; child != NULL; child = g_list_next(child)) {
 			gpointer entry = g_object_get_data(child->data, ENTRY_DATA);
-			/* TODO: Handle case of no entry */
+
+			if (entry == NULL) {
+				/* Try to build the entry, it is possible (but unlikely) that
+				   we could beat the signal that this isn't created.  So we'll
+				   just handle that race here */
+				entry_on_menuitem(menu, GTK_MENU_ITEM(child->data));
+				entry = g_object_get_data(child->data, ENTRY_DATA);
+			}
+
 			if (entry != NULL) {
 				ret = g_list_append(ret, entry);
 			}

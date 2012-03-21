@@ -1370,6 +1370,7 @@ bus_method_call (GDBusConnection * connection, const gchar * sender,
 static void
 window_entry_added (WindowMenu * mw, IndicatorObjectEntry * entry, gpointer user_data)
 {
+	entry->parent_object = user_data;
 	g_signal_emit_by_name(G_OBJECT(user_data), INDICATOR_OBJECT_SIGNAL_ENTRY_ADDED, entry);
 	return;
 }
@@ -1378,6 +1379,7 @@ window_entry_added (WindowMenu * mw, IndicatorObjectEntry * entry, gpointer user
 static void
 window_entry_removed (WindowMenu * mw, IndicatorObjectEntry * entry, gpointer user_data)
 {
+	entry->parent_object = user_data;
 	g_signal_emit_by_name(G_OBJECT(user_data), INDICATOR_OBJECT_SIGNAL_ENTRY_REMOVED, entry);
 	return;
 }
