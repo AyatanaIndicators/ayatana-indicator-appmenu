@@ -118,6 +118,7 @@ hud_string_list_cons (const gchar   *head,
 
   list = g_malloc (G_STRUCT_OFFSET (HudStringList, head) + headlen + 1);
   list->tail = hud_string_list_ref (tail);
+  /* coverity[secure_coding] */
   strcpy (list->head, head);
   list->ref_count = 1;
 

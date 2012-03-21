@@ -6,8 +6,7 @@ EXTRA_DIST = \
 
 bin_PROGRAMS = \
 	hud-dump-application \
-	hud-verify-app-info \
-	hud-gtk
+	hud-verify-app-info
 
 bin_SCRIPTS = \
 	hud-list-applications
@@ -30,12 +29,26 @@ libappmenu_la_SOURCES = \
 	MwmUtil.h \
 	indicator-appmenu.c \
 	indicator-appmenu-marshal.c \
-	window-menus.c \
-	window-menus.h \
+	window-menu.c \
+	window-menu.h \
+	window-menu-dbusmenu.c \
+	window-menu-dbusmenu.h \
+	window-menu-model.c \
+	window-menu-model.h \
 	gen-application-menu-renderer.xml.c \
 	gen-application-menu-renderer.xml.h \
 	gen-application-menu-registrar.xml.c \
-	gen-application-menu-registrar.xml.h
+	gen-application-menu-registrar.xml.h \
+	gactionmuxer.c \
+	gactionmuxer.h \
+	gactionobservable.c \
+	gactionobservable.h \
+	gactionobserver.c \
+	gactionobserver.h \
+	gtkmodelmenu.c \
+	gtkmodelmenu.h \
+	gtkmodelmenuitem.c \
+	gtkmodelmenuitem.h
 libappmenu_la_CFLAGS = \
 	$(INDICATOR_CFLAGS) \
 	$(COVERAGE_CFLAGS) \
@@ -179,25 +192,6 @@ else
 EXTRA_DIST += \
 	$(hud_cli_SOURCES)
 endif
-
-####################
-# hud-gtk
-####################
-
-hudgtkdatadir = $(datadir)/hud-gtk
-hudgtkdata_DATA = hud-gtk.ui
-EXTRA_DIST += hud-gtk.ui
-
-hud_gtk_SOURCES = \
-	hud-gtk.vala
-
-hud_gtk_VALAFLAGS = --pkg gtk+-3.0
-hud_gtk_CFLAGS = \
-	-DHUD_GTK_DATADIR=\""$(hudgtkdatadir)"\"	\
-	$(gtk_CFLAGS)
-
-hud_gtk_LDADD = \
-	$(gtk_LIBS)
 
 #######################
 # HUD Dump Application

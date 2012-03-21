@@ -128,6 +128,8 @@ This is an opaque structure type.
 <pre class="programlisting">struct HudSourceInterface {
   GTypeInterface g_iface;
 
+  void (* use)    (HudSource   *source);
+  void (* unuse)  (HudSource   *source);
   void (* search) (HudSource   *source,
                    GPtrArray   *results_array,
                    const gchar *search_string);
@@ -143,6 +145,14 @@ This is the interface vtable for <a class="link" href="HudSource.html" title="Hu
 <td><p><span class="term"><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GTypeInterface"><span class="type">GTypeInterface</span></a> <em class="structfield"><code><a name="HudSourceInterface.g-iface"></a>g_iface</code></em>;</span></p></td>
 <td>the <a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GTypeInterface"><span class="type">GTypeInterface</span></a>
 </td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="HudSourceInterface.use"></a>use</code></em> ()</span></p></td>
+<td></td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="structfield"><code><a name="HudSourceInterface.unuse"></a>unuse</code></em> ()</span></p></td>
+<td></td>
 </tr>
 <tr>
 <td><p><span class="term"><em class="structfield"><code><a name="HudSourceInterface.search"></a>search</code></em> ()</span></p></td>
