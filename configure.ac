@@ -1,5 +1,5 @@
 AC_INIT([indicator-appmenu],
-        [0.3.94],
+        [0.3.95],
         [http://bugs.launchpad.net/indicator-appmenu],
         [indicator-appmenu],
         [http://launchpad.net/indicator-appmenu])
@@ -76,6 +76,7 @@ AS_IF([test "x$with_gtk" = x3],
                                        indicator3-0.4 >= $INDICATOR_REQUIRED_VERSION
                                        dbusmenu-gtk3-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION
                                        libbamf3 >= $BAMF_REQUIRED_VERSION)
+         AC_DEFINE(HAVE_GTK3, 1, [whether gtk3 is available])
         ],
       [test "x$with_gtk" = x2],
         [PKG_CHECK_MODULES(INDICATOR,  gtk+-2.0 >= $GTK_REQUIRED_VERSION
@@ -241,6 +242,7 @@ scripts/Makefile
 data/Makefile
 tools/Makefile
 po/Makefile.in
+tools-vala/Makefile
 tests/Makefile
 tests/manual/Makefile
 docs/Makefile
