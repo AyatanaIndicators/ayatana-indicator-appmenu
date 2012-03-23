@@ -264,7 +264,6 @@ hud_menu_model_collector_model_changed (GMenuModel *model,
 
               target = g_menu_model_get_item_attribute_value (model, i, G_MENU_ATTRIBUTE_TARGET, NULL);
 
-              /* XXX: todo: target */
               item = hud_model_item_new (tokens, collector->desktop_file, collector->icon,
                                          G_REMOTE_ACTION_GROUP (action_group),
                                          value + 4, target);
