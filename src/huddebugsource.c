@@ -71,7 +71,7 @@ hud_debug_source_timeout (gpointer user_data)
   g_date_time_unref (now);
   g_free (time);
 
-  source->item = hud_item_new (tokens, NULL, TRUE);
+  source->item = hud_item_new (tokens, NULL, NULL, TRUE);
   hud_string_list_unref (tokens);
 
   hud_source_changed (HUD_SOURCE (source));
