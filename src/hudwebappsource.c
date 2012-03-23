@@ -325,9 +325,21 @@ hud_webapp_source_init (HudWebappSource *source)
 }
 
 static void
+hud_webapp_source_use (HudSource *hud_source)
+{
+}
+
+static void
+hud_webapp_source_unuse (HudSource *hud_source)
+{
+}
+
+static void
 hud_webapp_source_iface_init (HudSourceInterface *iface)
 {
   iface->search = hud_webapp_source_search;
+  iface->use = hud_webapp_source_use;
+  iface->unuse = hud_webapp_source_unuse;
 }
 
 static void
