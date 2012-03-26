@@ -53,6 +53,10 @@ namespace HudGtk {
 			query_key = null;
 			model.clear ();
 
+			if (entry.text == "") {
+				return;
+			}
+
 			try {
 				var session = Bus.get_sync (BusType.SESSION, null);
 				var reply = session.call_sync ("com.canonical.hud", "/com/canonical/hud", "com.canonical.hud",
