@@ -359,6 +359,7 @@ hud_dbusmenu_collector_property_changed (DbusmenuMenuitem *menuitem,
   DbusmenuMenuitem *parent;
   HudStringList *context;
   HudDbusmenuItem *item;
+  gboolean was_open;
 
   g_assert (!collector->reentrance_check);
 
@@ -374,10 +375,13 @@ hud_dbusmenu_collector_property_changed (DbusmenuMenuitem *menuitem,
   else
     context = collector->prefix;
 
-  item = hud_dbusmenu_item_new (context, collector->application_id, collector->icon, menuitem);
+  item = g_hash_table_lookup (collector->items, menuitem);
+  was_open = item->is_opened;
   g_hash_table_remove (collector->items, menuitem);
 
-  if (collector->use_count && dbusmenu_menuitem_property_exist (menuitem, DBUSMENU_MENUITEM_PROP_CHILD_DISPLAY))
+  item = hud_dbusmenu_item_new (context, collector->application_id, collector->icon, menuitem);
+
+  if (collector->use_count && !was_open && dbusmenu_menuitem_property_exist (menuitem, DBUSMENU_MENUITEM_PROP_CHILD_DISPLAY))
     {
       dbusmenu_menuitem_handle_event (menuitem, DBUSMENU_MENUITEM_EVENT_OPENED, NULL, 0);
       item->is_opened = TRUE;
