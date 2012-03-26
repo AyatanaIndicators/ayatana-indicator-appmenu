@@ -1278,8 +1278,12 @@ get_menu_for_window (IndicatorAppmenu * iapp, guint windowid, GError ** error)
 	g_variant_builder_init(&builder, G_VARIANT_TYPE_TUPLE);
 
 	if (IS_WINDOW_MENU_DBUSMENU(wm)) {
-		g_variant_builder_add_value(&builder, g_variant_new_string(window_menu_dbusmenu_get_address(WINDOW_MENU_DBUSMENU(wm))));
-		g_variant_builder_add_value(&builder, g_variant_new_object_path(window_menu_dbusmenu_get_path(WINDOW_MENU_DBUSMENU(wm))));
+		gchar * address = window_menu_dbusmenu_get_address(WINDOW_MENU_DBUSMENU(wm));
+		gchar * path = window_menu_dbusmenu_get_path(WINDOW_MENU_DBUSMENU(wm));
+		g_variant_builder_add_value(&builder, g_variant_new_string(address));
+		g_variant_builder_add_value(&builder, g_variant_new_object_path(path));
+		g_free(address);
+		g_free(path);
 	} else {
 		g_variant_builder_add_value(&builder, g_variant_new_string(""));
 		g_variant_builder_add_value(&builder, g_variant_new_object_path("/"));
@@ -1307,10 +1311,14 @@ get_menus (IndicatorAppmenu * iapp, GError ** error)
 		if (value != NULL) {
 			WindowMenu * wm = WINDOW_MENU(value);
 			if (IS_WINDOW_MENU_DBUSMENU(wm)) {
+				gchar * address = window_menu_dbusmenu_get_address(WINDOW_MENU_DBUSMENU(wm));
+				gchar * path = window_menu_dbusmenu_get_path(WINDOW_MENU_DBUSMENU(wm));
 				g_variant_builder_add (&builder, "(uso)",
 				                       window_menu_get_xid(wm),
-				                       window_menu_dbusmenu_get_address(WINDOW_MENU_DBUSMENU(wm)),
-				                       window_menu_dbusmenu_get_path(WINDOW_MENU_DBUSMENU(wm)));
+				                       address,
+				                       path);
+				g_free(address);
+				g_free(path);
 			} else {
 				g_variant_builder_add (&builder, "(uso)",
 				                       window_menu_get_xid(wm),
