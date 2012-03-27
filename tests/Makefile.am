@@ -377,7 +377,11 @@ TESTS += \
 	test-dbus-message-count
 
 test-dbus-message-count: test-dbus-message-count.in
-	@cp $< $@
+	@sed \
+		-e "s|\@top_builddir\@|$(top_builddir)|" \
+		-e "s|\@builddir\@|$(builddir)|" \
+		-e "s|\@srcdir\@|$(srcdir)|" \
+		$< > $@
 	@chmod +x $@
 
 EXTRA_DIST += \
