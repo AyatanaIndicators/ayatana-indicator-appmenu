@@ -370,6 +370,23 @@ EXTRA_DIST += \
 	test-usage-dump-entries.sql
 
 #########################
+# Test Dbus Messages
+#########################
+
+TESTS += \
+	test-dbus-message-count
+
+test-dbus-message-count: test-dbus-message-count.in
+	@cp $< $@
+	@chmod +x $@
+
+EXTRA_DIST += \
+	test-dbus-message-count-send-query
+	test-dbus-message-count.in
+
+DISTCLEANFILES += bustlefile
+
+#########################
 # Footer
 #########################
 
