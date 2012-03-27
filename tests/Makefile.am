@@ -386,7 +386,8 @@ test-dbus-message-count: test-dbus-message-count.in
 
 EXTRA_DIST += \
 	test-dbus-message-count-send-query \
-	test-dbus-message-count.in
+	test-dbus-message-count.in \
+	test-dbus-message-count.json
 
 DISTCLEANFILES += bustlefile
 
