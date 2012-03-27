@@ -2,7 +2,7 @@
 
 export DISPLAY=
 
-. run-xvfb.sh
+. @srcdir@/run-xvfb.sh
 
 dbus-test-runner \
 	--max-wait 10 \
