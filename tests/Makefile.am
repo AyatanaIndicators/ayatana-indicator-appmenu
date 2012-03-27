@@ -389,7 +389,7 @@ EXTRA_DIST += \
 	test-dbus-message-count.in \
 	test-dbus-message-count.json
 
-DISTCLEANFILES += bustlefile
+DISTCLEANFILES += test-dbus-message-count.bustle
 
 #########################
 # Footer

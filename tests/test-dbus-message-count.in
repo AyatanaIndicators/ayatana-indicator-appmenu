@@ -6,7 +6,7 @@ export DISPLAY=
 
 dbus-test-runner \
 	--max-wait 10 \
-	-b @builddir@/bustlefile \
+	-b @builddir@/test-dbus-message-count.bustle \
 	--task /usr/bin/metacity --task-name metacity \
 	--task /usr/lib/bamf/bamfdaemon --task-name bamf \
 	--task @top_builddir@/src/hud-service --task-name hud --wait-for org.ayatana.bamf \
@@ -15,4 +15,4 @@ dbus-test-runner \
 	--task @srcdir@/test-dbus-message-count-send-query --wait-for com.canonical.AppMenu.Registrar --task-name query
 
 sleep 1
-bustle-count bustlefile
+bustle-count test-dbus-message-count.bustle
