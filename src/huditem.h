@@ -59,9 +59,11 @@ GType                   hud_item_get_type                               (void);
 gpointer                hud_item_construct                              (GType          g_type,
                                                                          HudStringList *tokens,
                                                                          const gchar   *desktop_file,
+                                                                         const gchar   *app_icon,
                                                                          gboolean       enabled);
 HudItem *               hud_item_new                                    (HudStringList *tokens,
                                                                          const gchar   *desktop_file,
+                                                                         const gchar   *app_icon,
                                                                          gboolean       enabled);
 void                    hud_item_activate                               (HudItem       *item,
                                                                          GVariant      *platform_data);

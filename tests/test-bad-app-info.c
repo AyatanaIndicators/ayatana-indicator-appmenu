@@ -60,32 +60,29 @@ main (int argv, char * argc[])
 
 	if (tmpfile < 0) {
 		passed = FALSE;
-		goto cleanup;
-	}
+	} else {
 
-	close(tmpfile);
-	/* NOTE: there is a small security bug here in that we're closing the
-	   file and reopening it, so the temp isn't really gauranteed to be
-	   safe.  But, I don't think we're really worried about security in this
-	   utility. */
+		close(tmpfile);
+		/* NOTE: there is a small security bug here in that we're closing the
+		   file and reopening it, so the temp isn't really gauranteed to be
+		   safe.  But, I don't think we're really worried about security in this
+		   utility. */
 
-	sqlite3 * db = NULL;
-	int open_status = sqlite3_open(filename, &db); 
+		sqlite3 * db = NULL;
+		int open_status = sqlite3_open(filename, &db); 
 
-	if (open_status != SQLITE_OK) {
-		g_warning("Error opening usage DB: %s", filename);
-		passed = FALSE;
-		goto cleanup;
-	}
+		if (open_status != SQLITE_OK) {
+			g_warning("Error opening usage DB: %s", filename);
+			passed = FALSE;
+		} else {
 
-	/* Create the table in the DB */
-	build_db(db);
+			/* Create the table in the DB */
+			build_db(db);
 
-	passed = !load_app_info(argc[1], db);
+			passed = !load_app_info(argc[1], db);
 
-cleanup:
-	if (db != NULL) {
-		sqlite3_close(db);
+			sqlite3_close(db);
+		}
 	}
 
 	if (filename != NULL) {

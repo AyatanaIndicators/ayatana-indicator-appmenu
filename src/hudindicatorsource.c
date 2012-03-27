@@ -92,7 +92,7 @@ static const IndicatorInfo indicator_info[] = {
 typedef struct
 {
   const IndicatorInfo *info;
-  HudSource *source;
+  HudIndicatorSource *source;
   HudSource *collector;
 } HudIndicatorSourceIndicator;
 
@@ -102,6 +102,7 @@ struct _HudIndicatorSource
 
   HudIndicatorSourceIndicator *indicators;
   gint n_indicators;
+  gint use_count;
 };
 
 typedef GObjectClass HudIndicatorSourceClass;
@@ -109,6 +110,40 @@ typedef GObjectClass HudIndicatorSourceClass;
 static void hud_indicator_source_iface_init (HudSourceInterface *iface);
 G_DEFINE_TYPE_WITH_CODE (HudIndicatorSource, hud_indicator_source, G_TYPE_OBJECT,
                          G_IMPLEMENT_INTERFACE (HUD_TYPE_SOURCE, hud_indicator_source_iface_init))
+
+static void
+hud_indicator_source_use (HudSource *hud_source)
+{
+  HudIndicatorSource *source = HUD_INDICATOR_SOURCE (hud_source);
+  gint i;
+
+  if (source->use_count == 0)
+    {
+      for (i = 0; i < source->n_indicators; i++)
+        if (source->indicators[i].collector)
+          hud_source_use (source->indicators[i].collector);
+    }
+
+  source->use_count++;
+}
+
+static void
+hud_indicator_source_unuse (HudSource *hud_source)
+{
+  HudIndicatorSource *source = HUD_INDICATOR_SOURCE (hud_source);
+  gint i;
+
+  g_return_if_fail (source->use_count > 0);
+
+  source->use_count--;
+
+  if (source->use_count == 0)
+    {
+      for (i = 0; i < source->n_indicators; i++)
+        if (source->indicators[i].collector)
+          hud_source_unuse (source->indicators[i].collector);
+    }
+}
 
 static void
 hud_indicator_source_search (HudSource   *hud_source,
@@ -135,7 +170,7 @@ hud_indicator_source_collector_changed (HudSource *source,
 {
   HudIndicatorSourceIndicator *indicator = user_data;
 
-  hud_source_changed (indicator->source);
+  hud_source_changed (HUD_SOURCE (indicator->source));
 }
 
 static void
@@ -149,12 +184,17 @@ hud_indicator_source_name_appeared (GDBusConnection *connection,
 
   collector = hud_dbusmenu_collector_new_for_endpoint (indicator->info->indicator_name,
                                                        _(indicator->info->user_visible_name),
+                                                       indicator->info->icon,
                                                        hud_settings.indicator_penalty,
                                                        name_owner, indicator->info->dbus_menu_path);
   g_signal_connect (collector, "changed", G_CALLBACK (hud_indicator_source_collector_changed), indicator);
   indicator->collector = HUD_SOURCE (collector);
 
-  hud_source_changed (indicator->source);
+  /* Set initial use count on new indicator if query is active. */
+  if (indicator->source->use_count)
+    hud_source_use (indicator->collector);
+
+  hud_source_changed (HUD_SOURCE (indicator->source));
 }
 
 static void
@@ -167,10 +207,13 @@ hud_indicator_source_name_vanished (GDBusConnection *connection,
   if (indicator->collector)
     {
       g_signal_handlers_disconnect_by_func (indicator->collector, hud_indicator_source_collector_changed, indicator);
+      /* Drop our use count on dying indicator (if any) */
+      if (indicator->source->use_count)
+        hud_source_unuse (indicator->collector);
       g_clear_object (&indicator->collector);
     }
 
-  hud_source_changed (indicator->source);
+  hud_source_changed (HUD_SOURCE (indicator->source));
 }
 
 static void
@@ -186,7 +229,7 @@ hud_indicator_source_init (HudIndicatorSource *source)
       HudIndicatorSourceIndicator *indicator = &source->indicators[i];
 
       indicator->info = &indicator_info[i];
-      indicator->source = HUD_SOURCE (source);
+      indicator->source = source;
 
       g_bus_watch_name (G_BUS_TYPE_SESSION, indicator->info->dbus_name, G_BUS_NAME_WATCHER_FLAGS_NONE,
                         hud_indicator_source_name_appeared, hud_indicator_source_name_vanished, indicator, NULL);
@@ -196,6 +239,8 @@ hud_indicator_source_init (HudIndicatorSource *source)
 static void
 hud_indicator_source_iface_init (HudSourceInterface *iface)
 {
+  iface->use = hud_indicator_source_use;
+  iface->unuse = hud_indicator_source_unuse;
   iface->search = hud_indicator_source_search;
 }
 

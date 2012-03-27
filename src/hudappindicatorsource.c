@@ -55,6 +55,7 @@ struct _HudAppIndicatorSource
   GSequence    *indicators;
   guint         subscription;
   GCancellable *cancellable;
+  gint          use_count;
   gboolean      ready;
 };
 
@@ -82,9 +83,11 @@ hud_app_indicator_source_add_indicator (HudAppIndicatorSource *source,
   const gchar *dbus_path;
   GSequenceIter *iter;
   const gchar *id;
+  const gchar *icon_name;
   gint32 position;
   gchar *title;
 
+  g_variant_get_child (description, 0, "&s", &icon_name);
   g_variant_get_child (description, 1, "i", &position);
   g_variant_get_child (description, 2, "&s", &dbus_name);
   g_variant_get_child (description, 3, "&o", &dbus_path);
@@ -101,11 +104,16 @@ hud_app_indicator_source_add_indicator (HudAppIndicatorSource *source,
          for Network Manager would be 'nm-applet'. */
       title = g_strdup_printf(_("Untitled Indicator (%s)"), id);
     }
-  g_debug ("adding appindicator %s at %d ('%s', %s, %s)", id, position, title, dbus_name, dbus_path);
+  g_debug ("adding appindicator %s at %d ('%s', %s, %s, %s)", id, position, title, icon_name, dbus_name, dbus_path);
 
-  collector = hud_dbusmenu_collector_new_for_endpoint (id, title, hud_settings.indicator_penalty,
+  collector = hud_dbusmenu_collector_new_for_endpoint (id, title, icon_name,
+                                                       hud_settings.indicator_penalty,
                                                        dbus_name, dbus_path);
   g_signal_connect (collector, "changed", G_CALLBACK (hud_app_indicator_source_collector_changed), source);
+
+  /* If query is active, mark new app indicator as used. */
+  if (source->use_count)
+    hud_source_use (HUD_SOURCE (collector));
 
   iter = g_sequence_get_iter_at_pos (source->indicators, position);
   g_sequence_insert_before (iter, collector);
@@ -130,6 +138,9 @@ hud_app_indicator_source_remove_indicator (HudAppIndicatorSource *source,
 
       collector = g_sequence_get (iter);
       g_signal_handlers_disconnect_by_func (collector, hud_app_indicator_source_collector_changed, source);
+      /* Drop use count if we added one... */
+      if (source->use_count)
+        hud_source_unuse (HUD_SOURCE (collector));
       g_sequence_remove (iter);
     }
 }
@@ -191,6 +202,29 @@ hud_app_indicator_source_dbus_signal (GDBusConnection *connection,
 
           collector = g_sequence_get (iter);
           hud_dbusmenu_collector_set_prefix (collector, title);
+        }
+    }
+
+  else if (g_str_equal (signal_name, "ApplicationIconChanged"))
+    {
+      GSequenceIter *iter;
+      const gchar *icon;
+      gint32 position;
+
+      if (!g_variant_is_of_type (parameters, G_VARIANT_TYPE ("(iss)")))
+        return;
+
+      g_variant_get (parameters, "(i&ss)", &position, &icon, NULL);
+
+      g_debug ("changing icon of appindicator at %d to '%s'", position, icon);
+
+      iter = g_sequence_get_iter_at_pos (source->indicators, position);
+      if (!g_sequence_iter_is_end (iter))
+        {
+          HudDbusmenuCollector *collector;
+
+          collector = g_sequence_get (iter);
+          hud_dbusmenu_collector_set_icon (collector, icon);
         }
     }
 }
@@ -313,6 +347,30 @@ hud_app_indicator_source_name_vanished (GDBusConnection *connection,
 }
 
 static void
+hud_app_indicator_source_use (HudSource *hud_source)
+{
+  HudAppIndicatorSource *source = HUD_APP_INDICATOR_SOURCE (hud_source);
+
+  if (source->use_count == 0)
+    g_sequence_foreach (source->indicators, (GFunc) hud_source_use, NULL);
+
+  source->use_count++;
+}
+
+static void
+hud_app_indicator_source_unuse (HudSource *hud_source)
+{
+  HudAppIndicatorSource *source = HUD_APP_INDICATOR_SOURCE (hud_source);
+
+  g_return_if_fail (source->use_count > 0);
+
+  source->use_count--;
+
+  if (source->use_count == 0)
+    g_sequence_foreach (source->indicators, (GFunc) hud_source_unuse, NULL);
+}
+
+static void
 hud_app_indicator_source_search (HudSource   *hud_source,
                                  GPtrArray   *results_array,
                                  const gchar *search_string)
@@ -327,8 +385,6 @@ hud_app_indicator_source_search (HudSource   *hud_source,
       hud_source_search (g_sequence_get (iter), results_array, search_string);
       iter = g_sequence_iter_next (iter);
     }
-
-
 }
 
 static void
@@ -351,6 +407,8 @@ hud_app_indicator_source_init (HudAppIndicatorSource *source)
 static void
 hud_app_indicator_source_iface_init (HudSourceInterface *iface)
 {
+  iface->use = hud_app_indicator_source_use;
+  iface->unuse = hud_app_indicator_source_unuse;
   iface->search = hud_app_indicator_source_search;
 }
 

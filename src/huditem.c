@@ -54,6 +54,7 @@ struct _HudItemPrivate
 
   HudStringList *tokens;
   gchar *usage_tag;
+  gchar *app_icon;
   gboolean enabled;
   guint usage;
   guint64 id;
@@ -69,6 +70,7 @@ hud_item_finalize (GObject *object)
   g_hash_table_remove (hud_item_table, &item->priv->id);
   hud_string_list_unref (item->priv->tokens);
   g_free (item->priv->desktop_file);
+  g_free (item->priv->usage_tag);
 
   G_OBJECT_CLASS (hud_item_parent_class)
     ->finalize (object);
@@ -129,6 +131,7 @@ hud_item_setup_usage (HudItem *item)
  * @g_type: a #GType
  * @tokens: the search tokens for the item
  * @desktop_file: the desktop file of the provider of the item
+ * @app_icon: the icon name for the application that created this item
  * @enabled: if the item is enabled
  *
  * This is the Vala-style chain-up constructor corresponding to
@@ -142,6 +145,7 @@ gpointer
 hud_item_construct (GType          g_type,
                     HudStringList *tokens,
                     const gchar   *desktop_file,
+                    const gchar   *app_icon,
                     gboolean       enabled)
 {
   HudItem *item;
@@ -149,6 +153,7 @@ hud_item_construct (GType          g_type,
   item = g_object_new (g_type, NULL);
   item->priv->tokens = hud_string_list_ref (tokens);
   item->priv->desktop_file = g_strdup (desktop_file);
+  item->priv->app_icon = g_strdup (app_icon);
   item->priv->enabled = enabled;
   item->priv->id = hud_item_next_id++;
 
@@ -164,6 +169,7 @@ hud_item_construct (GType          g_type,
  * hud_item_new:
  * @tokens: the search tokens for the item
  * @desktop_file: the desktop file of the provider of the item
+ * @app_icon: the icon name for the application that created this item
  * @enabled: if the item is enabled
  *
  * Creates a new #HudItem.
@@ -176,9 +182,10 @@ hud_item_construct (GType          g_type,
 HudItem *
 hud_item_new (HudStringList *tokens,
               const gchar   *desktop_file,
+              const gchar   *app_icon,
               gboolean       enabled)
 {
-  return hud_item_construct (HUD_TYPE_ITEM, tokens, desktop_file, enabled);
+  return hud_item_construct (HUD_TYPE_ITEM, tokens, desktop_file, app_icon, enabled);
 }
 
 /**
@@ -235,7 +242,7 @@ hud_item_get_tokens (HudItem *item)
  *
  * Gets the icon for the action represented by @item, if one exists.
  *
- * Returns: the icon name, or %NULL if there is no icon
+ * Returns: the icon name, or "" if there is no icon
  **/
 const gchar *
 hud_item_get_item_icon (HudItem *item)
@@ -249,12 +256,12 @@ hud_item_get_item_icon (HudItem *item)
  *
  * Gets the icon of the application that @item lies within.
  *
- * Returns: the icon name, or %NULL if there is no icon
+ * Returns: the icon name, or "" if there is no icon
  **/
 const gchar *
 hud_item_get_app_icon (HudItem *item)
 {
-  return "";
+  return item->priv->app_icon ? item->priv->app_icon : "";
 }
 
 /**

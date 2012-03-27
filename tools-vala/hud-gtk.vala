@@ -1,3 +1,5 @@
+extern const string HUD_GTK_DATADIR;
+
 namespace HudGtk {
 	public class CellRendererVariant : Gtk.CellRendererText {
 		public Variant value {
@@ -51,6 +53,10 @@ namespace HudGtk {
 			query_key = null;
 			model.clear ();
 
+			if (entry.text == "") {
+				return;
+			}
+
 			try {
 				var session = Bus.get_sync (BusType.SESSION, null);
 				var reply = session.call_sync ("com.canonical.hud", "/com/canonical/hud", "com.canonical.hud",
@@ -85,7 +91,7 @@ namespace HudGtk {
 			try {
 				new CellRendererVariant ();
 				session = Bus.get_sync (BusType.SESSION, null);
-				builder.add_from_file ("hud-gtk.ui");
+				builder.add_from_file (HUD_GTK_DATADIR + "/hud-gtk.ui");
 			} catch (Error e) {
 				error (e.message);
 			}

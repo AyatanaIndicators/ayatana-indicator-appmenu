@@ -67,6 +67,9 @@ struct _HudWindowSource
   BamfWindow *active_window;
   BamfApplication *active_application;
   const gchar *active_desktop_file;
+  const gchar *active_icon;
+  HudSource *active_collector;
+  gint use_count;
 };
 
 typedef GObjectClass HudWindowSourceClass;
@@ -165,12 +168,15 @@ hud_window_source_get_collector (HudWindowSource *source)
        * For that reason, we check first for GMenuModel and assume if it
        * doesn't exist then it must be dbusmenu.
        */
-      menumodel_collector = hud_menu_model_collector_get (source->active_window, source->active_desktop_file);
+      menumodel_collector = hud_menu_model_collector_get (source->active_window,
+                                                          source->active_desktop_file,
+                                                          source->active_icon);
       if (menumodel_collector)
         collector = HUD_SOURCE (menumodel_collector);
       else
         collector = HUD_SOURCE (hud_dbusmenu_collector_new_for_window (source->active_window,
-                                                                       source->active_desktop_file));
+                                                                       source->active_desktop_file,
+                                                                       source->active_icon));
 
       g_object_set_qdata_full (G_OBJECT (source->active_window), menu_collector_quark, collector, g_object_unref);
     }
@@ -194,7 +200,6 @@ hud_window_source_active_window_changed (BamfMatcher *matcher,
                                          gpointer     user_data)
 {
   HudWindowSource *source = user_data;
-  HudSource *collector;
   BamfWindow *window;
   BamfApplication *application;
   const gchar *desktop_file;
@@ -239,20 +244,55 @@ hud_window_source_active_window_changed (BamfMatcher *matcher,
 
   g_debug ("new active window (xid %u)", bamf_window_get_xid (window));
 
-  collector = hud_window_source_get_collector (source);
-  if (collector)
-    g_signal_handlers_disconnect_by_func (collector, hud_window_source_collector_changed, source);
 
+  if (source->active_collector)
+    {
+      g_signal_handlers_disconnect_by_func (source->active_collector, hud_window_source_collector_changed, source);
+      if (source->use_count)
+        hud_source_unuse (source->active_collector);
+    }
+
+  g_clear_object (&source->active_collector);
   g_clear_object (&source->active_application);
   g_clear_object (&source->active_window);
   source->active_window = g_object_ref (window);
   source->active_application = g_object_ref (application);
   source->active_desktop_file = desktop_file;
+  source->active_icon = bamf_view_get_icon (BAMF_VIEW (application));
+  source->active_collector = g_object_ref (hud_window_source_get_collector (source));
 
-  collector = hud_window_source_get_collector (source);
-  g_signal_connect_object (collector, "changed", G_CALLBACK (hud_window_source_collector_changed), source, 0);
+  if (source->use_count)
+    hud_source_use (source->active_collector);
+  g_signal_connect_object (source->active_collector, "changed",
+                           G_CALLBACK (hud_window_source_collector_changed), source, 0);
 
   hud_source_changed (HUD_SOURCE (source));
+}
+
+static void
+hud_window_source_use (HudSource *hud_source)
+{
+  HudWindowSource *source = HUD_WINDOW_SOURCE (hud_source);
+
+  if (source->use_count == 0)
+    if (source->active_collector)
+      hud_source_use (source->active_collector);
+
+  source->use_count++;
+}
+
+static void
+hud_window_source_unuse (HudSource *hud_source)
+{
+  HudWindowSource *source = HUD_WINDOW_SOURCE (hud_source);
+
+  g_return_if_fail (source->use_count > 0);
+
+  source->use_count--;
+
+  if (source->use_count == 0)
+    if (source->active_collector)
+      hud_source_unuse (source->active_collector);
 }
 
 static void
@@ -261,12 +301,9 @@ hud_window_source_search (HudSource   *hud_source,
                           const gchar *search_string)
 {
   HudWindowSource *source = HUD_WINDOW_SOURCE (hud_source);
-  HudSource *collector;
 
-  collector = hud_window_source_get_collector (source);
-
-  if (collector)
-    hud_source_search (collector, results_array, search_string);
+  if (source->active_collector)
+    hud_source_search (source->active_collector, results_array, search_string);
 }
 
 static void
@@ -285,15 +322,22 @@ hud_window_source_finalize (GObject *object)
 static void
 hud_window_source_init (HudWindowSource *source)
 {
+  BamfWindow *window;
+
   source->matcher = bamf_matcher_get_default ();
 
   g_signal_connect_object (source->matcher, "active-window-changed",
                            G_CALLBACK (hud_window_source_active_window_changed), source, 0);
+  window = bamf_matcher_get_active_window (source->matcher);
+  if (window != NULL)
+    hud_window_source_active_window_changed (source->matcher, NULL, BAMF_VIEW (window), source);
 }
 
 static void
 hud_window_source_iface_init (HudSourceInterface *iface)
 {
+  iface->use = hud_window_source_use;
+  iface->unuse = hud_window_source_unuse;
   iface->search = hud_window_source_search;
 }
 
