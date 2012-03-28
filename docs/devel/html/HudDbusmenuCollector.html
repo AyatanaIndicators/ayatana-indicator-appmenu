@@ -46,12 +46,14 @@
 <a class="link" href="HudDbusmenuCollector.html" title="HudDbusmenuCollector"><span class="returnvalue">HudDbusmenuCollector</span></a> * <a class="link" href="HudDbusmenuCollector.html#hud-dbusmenu-collector-new-for-endpoint" title="hud_dbusmenu_collector_new_for_endpoint ()">hud_dbusmenu_collector_new_for_endpoint</a>
                                                         (<em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *application_id</code></em>,
                                                          <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *prefix</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *icon</code></em>,
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> penalty</code></em>,
                                                          <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *bus_name</code></em>,
                                                          <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *object_path</code></em>);
 <a class="link" href="HudDbusmenuCollector.html" title="HudDbusmenuCollector"><span class="returnvalue">HudDbusmenuCollector</span></a> * <a class="link" href="HudDbusmenuCollector.html#hud-dbusmenu-collector-new-for-window" title="hud_dbusmenu_collector_new_for_window ()">hud_dbusmenu_collector_new_for_window</a>
-                                                        (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/libbamf/BamfWindow.html"><span class="type">BamfWindow</span></a> *window</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *desktop_file</code></em>);
+                                                        (<em class="parameter"><code><span class="type">BamfWindow</span> *window</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *desktop_file</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *icon</code></em>);
 <span class="returnvalue">void</span>                <a class="link" href="HudDbusmenuCollector.html#hud-dbusmenu-collector-set-prefix" title="hud_dbusmenu_collector_set_prefix ()">hud_dbusmenu_collector_set_prefix</a>   (<em class="parameter"><code><a class="link" href="HudDbusmenuCollector.html" title="HudDbusmenuCollector"><span class="type">HudDbusmenuCollector</span></a> *collector</code></em>,
                                                          <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *prefix</code></em>);
 </pre>
@@ -72,7 +74,7 @@ HudDbusmenuCollector implements
 <div class="refsect1">
 <a name="HudDbusmenuCollector.description"></a><h2>Description</h2>
 <p>
-The <a class="link" href="HudDbusmenuCollector.html" title="HudDbusmenuCollector"><span class="type">HudDbusmenuCollector</span></a> collects menu items from a <a href="/usr/share/gtk-doc/html/libdbusmenu-glib/libdbusmenu-glib-DbusmenuClient.html#DbusmenuClient"><span class="type">DbusmenuClient</span></a>.
+The <a class="link" href="HudDbusmenuCollector.html" title="HudDbusmenuCollector"><span class="type">HudDbusmenuCollector</span></a> collects menu items from a <span class="type">DbusmenuClient</span>.
 </p>
 <p>
 There are two modes of operation.
@@ -80,7 +82,7 @@ There are two modes of operation.
 <p>
 In the simple mode, the collector is created with a specified
 endpoint using <a class="link" href="HudDbusmenuCollector.html#hud-dbusmenu-collector-new-for-endpoint" title="hud_dbusmenu_collector_new_for_endpoint ()"><code class="function">hud_dbusmenu_collector_new_for_endpoint()</code></a>.  A
-<a href="/usr/share/gtk-doc/html/libdbusmenu-glib/libdbusmenu-glib-DbusmenuClient.html#DbusmenuClient"><span class="type">DbusmenuClient</span></a> is constructed using this endpoint and the collector
+<span class="type">DbusmenuClient</span> is constructed using this endpoint and the collector
 constructs <a href="HudItem.html"><span class="type">HudItems</span></a> for the contents of the menu found there.  This
 mode is intended for use with indicators.
 </p>
@@ -106,6 +108,7 @@ This is an opaque structure type.
 <pre class="programlisting"><a class="link" href="HudDbusmenuCollector.html" title="HudDbusmenuCollector"><span class="returnvalue">HudDbusmenuCollector</span></a> * hud_dbusmenu_collector_new_for_endpoint
                                                         (<em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *application_id</code></em>,
                                                          <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *prefix</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *icon</code></em>,
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> penalty</code></em>,
                                                          <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *bus_name</code></em>,
                                                          <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *object_path</code></em>);</pre>
@@ -113,7 +116,7 @@ This is an opaque structure type.
 Creates a new <a class="link" href="HudDbusmenuCollector.html" title="HudDbusmenuCollector"><span class="type">HudDbusmenuCollector</span></a> for the specified endpoint.
 </p>
 <p>
-Internally, a <a href="/usr/share/gtk-doc/html/libdbusmenu-glib/libdbusmenu-glib-DbusmenuClient.html#DbusmenuClient"><span class="type">DbusmenuClient</span></a> is created for this endpoint.  Searches
+Internally, a <span class="type">DbusmenuClient</span> is created for this endpoint.  Searches
 are performed against the contents of those menus.
 </p>
 <p>
@@ -133,8 +136,16 @@ otherwise.
 <col align="left" valign="top">
 <tbody>
 <tr>
+<td><p><span class="term"><em class="parameter"><code>application_id</code></em> :</span></p></td>
+<td>a unique identifier for the application</td>
+</tr>
+<tr>
 <td><p><span class="term"><em class="parameter"><code>prefix</code></em> :</span></p></td>
 <td>the title to prefix to all items</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>icon</code></em> :</span></p></td>
+<td>the icon for the appliction</td>
 </tr>
 <tr>
 <td><p><span class="term"><em class="parameter"><code>penalty</code></em> :</span></p></td>
@@ -161,8 +172,9 @@ otherwise.
 <div class="refsect2">
 <a name="hud-dbusmenu-collector-new-for-window"></a><h3>hud_dbusmenu_collector_new_for_window ()</h3>
 <pre class="programlisting"><a class="link" href="HudDbusmenuCollector.html" title="HudDbusmenuCollector"><span class="returnvalue">HudDbusmenuCollector</span></a> * hud_dbusmenu_collector_new_for_window
-                                                        (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/libbamf/BamfWindow.html"><span class="type">BamfWindow</span></a> *window</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *desktop_file</code></em>);</pre>
+                                                        (<em class="parameter"><code><span class="type">BamfWindow</span> *window</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *desktop_file</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *icon</code></em>);</pre>
 <p>
 Creates a new <a class="link" href="HudDbusmenuCollector.html" title="HudDbusmenuCollector"><span class="type">HudDbusmenuCollector</span></a> for the endpoint indicated by the
 <a class="link" href="HudAppMenuRegistrar.html" title="HudAppMenuRegistrar"><span class="type">HudAppMenuRegistrar</span></a> for <em class="parameter"><code>window</code></em>.
@@ -175,7 +187,7 @@ This call is intended to be used for application menus.
 <tbody>
 <tr>
 <td><p><span class="term"><em class="parameter"><code>window</code></em> :</span></p></td>
-<td>a <a href="/usr/share/gtk-doc/html/libbamf/BamfWindow.html"><span class="type">BamfWindow</span></a>
+<td>a <span class="type">BamfWindow</span>
 </td>
 </tr>
 <tr>

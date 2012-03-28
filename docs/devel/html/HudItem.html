@@ -46,6 +46,7 @@ struct              <a class="link" href="HudItem.html#HudItemClass" title="stru
 <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="returnvalue">gpointer</span></a>            <a class="link" href="HudItem.html#hud-item-construct" title="hud_item_construct ()">hud_item_construct</a>                  (<em class="parameter"><code><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GType"><span class="type">GType</span></a> g_type</code></em>,
                                                          <em class="parameter"><code><a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList"><span class="type">HudStringList</span></a> *tokens</code></em>,
                                                          <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *desktop_file</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *app_icon</code></em>,
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> enabled</code></em>);
 const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       <a class="link" href="HudItem.html#hud-item-get-app-icon" title="hud_item_get_app_icon ()">hud_item_get_app_icon</a>               (<em class="parameter"><code><a class="link" href="HudItem.html" title="HudItem"><span class="type">HudItem</span></a> *item</code></em>);
 <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="returnvalue">gboolean</span></a>            <a class="link" href="HudItem.html#hud-item-get-enabled" title="hud_item_get_enabled ()">hud_item_get_enabled</a>                (<em class="parameter"><code><a class="link" href="HudItem.html" title="HudItem"><span class="type">HudItem</span></a> *item</code></em>);
@@ -54,6 +55,7 @@ const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.htm
 <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="returnvalue">guint</span></a>               <a class="link" href="HudItem.html#hud-item-get-usage" title="hud_item_get_usage ()">hud_item_get_usage</a>                  (<em class="parameter"><code><a class="link" href="HudItem.html" title="HudItem"><span class="type">HudItem</span></a> *item</code></em>);
 <a class="link" href="HudItem.html" title="HudItem"><span class="returnvalue">HudItem</span></a> *           <a class="link" href="HudItem.html#hud-item-new" title="hud_item_new ()">hud_item_new</a>                        (<em class="parameter"><code><a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList"><span class="type">HudStringList</span></a> *tokens</code></em>,
                                                          <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *desktop_file</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *app_icon</code></em>,
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> enabled</code></em>);
 </pre>
 </div>
@@ -143,6 +145,7 @@ Activates <em class="parameter"><code>item</code></em>.
 <pre class="programlisting"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gpointer"><span class="returnvalue">gpointer</span></a>            hud_item_construct                  (<em class="parameter"><code><a href="http://library.gnome.org/devel/gobject/unstable/gobject-Type-Information.html#GType"><span class="type">GType</span></a> g_type</code></em>,
                                                          <em class="parameter"><code><a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList"><span class="type">HudStringList</span></a> *tokens</code></em>,
                                                          <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *desktop_file</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *app_icon</code></em>,
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> enabled</code></em>);</pre>
 <p>
 This is the Vala-style chain-up constructor corresponding to
@@ -166,6 +169,10 @@ Only subclasses of <a class="link" href="HudItem.html" title="HudItem"><span cla
 <tr>
 <td><p><span class="term"><em class="parameter"><code>desktop_file</code></em> :</span></p></td>
 <td>the desktop file of the provider of the item</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>app_icon</code></em> :</span></p></td>
+<td>the icon name for the application that created this item</td>
 </tr>
 <tr>
 <td><p><span class="term"><em class="parameter"><code>enabled</code></em> :</span></p></td>
@@ -195,7 +202,7 @@ Gets the icon of the application that <em class="parameter"><code>item</code></e
 </tr>
 <tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>the icon name, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if there is no icon</td>
+<td>the icon name, or "" if there is no icon</td>
 </tr>
 </tbody>
 </table></div>
@@ -242,7 +249,7 @@ Gets the icon for the action represented by <em class="parameter"><code>item</co
 </tr>
 <tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>
-<td>the icon name, or <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a> if there is no icon</td>
+<td>the icon name, or "" if there is no icon</td>
 </tr>
 </tbody>
 </table></div>
@@ -306,6 +313,7 @@ history.
 <a name="hud-item-new"></a><h3>hud_item_new ()</h3>
 <pre class="programlisting"><a class="link" href="HudItem.html" title="HudItem"><span class="returnvalue">HudItem</span></a> *           hud_item_new                        (<em class="parameter"><code><a class="link" href="hud-HudStringList.html#HudStringList" title="HudStringList"><span class="type">HudStringList</span></a> *tokens</code></em>,
                                                          <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *desktop_file</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *app_icon</code></em>,
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gboolean"><span class="type">gboolean</span></a> enabled</code></em>);</pre>
 <p>
 Creates a new <a class="link" href="HudItem.html" title="HudItem"><span class="type">HudItem</span></a>.
@@ -324,6 +332,10 @@ search.
 <tr>
 <td><p><span class="term"><em class="parameter"><code>desktop_file</code></em> :</span></p></td>
 <td>the desktop file of the provider of the item</td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>app_icon</code></em> :</span></p></td>
+<td>the icon name for the application that created this item</td>
 </tr>
 <tr>
 <td><p><span class="term"><em class="parameter"><code>enabled</code></em> :</span></p></td>
