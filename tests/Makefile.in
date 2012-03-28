@@ -385,7 +385,8 @@ top_srcdir = @top_srcdir@
 #########################
 DISTCLEANFILES = $(DISTANCE_XML_REPORT) $(USAGE_DB_SIMPLE_XML_REPORT) \
 	$(USAGE_DB_OLD_XML_REPORT) $(USAGE_TESTAPP_XML_REPORT) \
-	$(USAGE_OFF_XML_REPORT) $(TESTS)
+	$(USAGE_OFF_XML_REPORT) test-dbus-message-count.bustle \
+	$(TESTS)
 EXTRA_DIST = run-xvfb.sh test-usage-db-simple.sql \
 	test-usage-db-old.sql test-usage-db-ancient.sql \
 	test-usage-dump-entries.sql \
@@ -399,7 +400,8 @@ EXTRA_DIST = run-xvfb.sh test-usage-db-simple.sql \
 	bad-app-info/missing-menus.hud-app-info \
 	bad-app-info/multiple-menus.hud-app-info \
 	good-app-info/tons-of-entries.hud-app-info \
-	test-usage-dump-entries.sql
+	test-usage-dump-entries.sql test-dbus-message-count-send-query \
+	test-dbus-message-count.in test-dbus-message-count.json
 
 ######################
 # Test Distance
@@ -432,6 +434,10 @@ EXTRA_DIST = run-xvfb.sh test-usage-db-simple.sql \
 #########################
 # Test Good App Info
 #########################
+
+#########################
+# Test Dbus Messages
+#########################
 TESTS = test-distance-test test-usage-db-simple-test \
 	test-usage-db-old-test test-usage-db-ancient-test \
 	test-usage-db-testapp-test test-usage-db-off-test \
@@ -440,7 +446,7 @@ TESTS = test-distance-test test-usage-db-simple-test \
 	test-bad-app-info-missing-desktop \
 	test-bad-app-info-missing-menus \
 	test-bad-app-info-multiple-menus \
-	test-good-app-info-tons-of-entries
+	test-good-app-info-tons-of-entries test-dbus-message-count
 DBUS_RUNNER = dbus-test-runner
 XVFB_RUN = ". $(srcdir)/run-xvfb.sh"
 SUBDIRS = \
@@ -1299,6 +1305,14 @@ test-good-app-info-tons-of-entries: good-app-info/tons-of-entries.hud-app-info t
 	@echo fi >> $@
 	@echo cd .. >> $@
 	@echo rm -rf test-good-app-info-tons-of-entries.dir.\* >> $@
+	@chmod +x $@
+
+test-dbus-message-count: test-dbus-message-count.in
+	@sed \
+		-e "s|\@top_builddir\@|$(top_builddir)|" \
+		-e "s|\@builddir\@|$(builddir)|" \
+		-e "s|\@srcdir\@|$(srcdir)|" \
+		$< > $@
 	@chmod +x $@
 
 # Tell versions [3.59,3.63) of GNU make to not export all variables.

@@ -370,6 +370,28 @@ EXTRA_DIST += \
 	test-usage-dump-entries.sql
 
 #########################
+# Test Dbus Messages
+#########################
+
+TESTS += \
+	test-dbus-message-count
+
+test-dbus-message-count: test-dbus-message-count.in
+	@sed \
+		-e "s|\@top_builddir\@|$(top_builddir)|" \
+		-e "s|\@builddir\@|$(builddir)|" \
+		-e "s|\@srcdir\@|$(srcdir)|" \
+		$< > $@
+	@chmod +x $@
+
+EXTRA_DIST += \
+	test-dbus-message-count-send-query \
+	test-dbus-message-count.in \
+	test-dbus-message-count.json
+
+DISTCLEANFILES += test-dbus-message-count.bustle
+
+#########################
 # Footer
 #########################
 
