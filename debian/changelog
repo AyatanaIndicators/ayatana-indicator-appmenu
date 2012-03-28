@@ -1,4 +1,10 @@
-indicator-appmenu (0.3.95-0ubuntu1~ppa1) precise; urgency=low
+indicator-appmenu (0.3.95-0ubuntu2) precise; urgency=low
+
+  * Backport desrt's hud icons work (lp: #960931)
+
+ -- Sebastien Bacher <seb128@ubuntu.com>  Fri, 23 Mar 2012 16:58:35 +0100
+
+indicator-appmenu (0.3.95-0ubuntu1) precise; urgency=low
 
   * New upstream release.
     * Adding GMenuModel menu support (LP: #950084)

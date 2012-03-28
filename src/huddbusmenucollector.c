@@ -159,6 +159,7 @@ hud_dbusmenu_item_get_label_property (const gchar *type)
 static HudDbusmenuItem *
 hud_dbusmenu_item_new (HudStringList    *context,
                        const gchar      *desktop_file,
+                       const gchar      *icon,
                        DbusmenuMenuitem *menuitem)
 {
   HudStringList *tokens;
@@ -195,7 +196,7 @@ hud_dbusmenu_item_new (HudStringList    *context,
   if (enabled)
     enabled &= !dbusmenu_menuitem_property_exist (menuitem, DBUSMENU_MENUITEM_PROP_CHILD_DISPLAY);
 
-  item = hud_item_construct (hud_dbusmenu_item_get_type (), tokens, desktop_file, enabled);
+  item = hud_item_construct (hud_dbusmenu_item_get_type (), tokens, desktop_file, icon, enabled);
   item->menuitem = g_object_ref (menuitem);
 
   hud_string_list_unref (tokens);
@@ -211,6 +212,7 @@ struct _HudDbusmenuCollector
   DbusmenuMenuitem *root;
   gchar *application_id;
   HudStringList *prefix;
+  gchar *icon;
   GHashTable *items;
   guint penalty;
   guint xid;
@@ -372,7 +374,7 @@ hud_dbusmenu_collector_property_changed (DbusmenuMenuitem *menuitem,
   else
     context = collector->prefix;
 
-  item = hud_dbusmenu_item_new (context, collector->application_id, menuitem);
+  item = hud_dbusmenu_item_new (context, collector->application_id, collector->icon, menuitem);
   g_hash_table_remove (collector->items, menuitem);
 
   if (collector->use_count && dbusmenu_menuitem_property_exist (menuitem, DBUSMENU_MENUITEM_PROP_CHILD_DISPLAY))
@@ -394,7 +396,7 @@ hud_dbusmenu_collector_add_item (HudDbusmenuCollector *collector,
   HudDbusmenuItem *item;
   GList *child;
 
-  item = hud_dbusmenu_item_new (context, NULL, menuitem);
+  item = hud_dbusmenu_item_new (context, collector->application_id, collector->icon, menuitem);
   context = hud_item_get_tokens (HUD_ITEM (item));
 
   g_signal_connect (menuitem, "property-changed", G_CALLBACK (hud_dbusmenu_collector_property_changed), collector);
@@ -525,6 +527,7 @@ hud_dbusmenu_collector_finalize (GObject *object)
   g_hash_table_unref (collector->items);
 
   g_free (collector->application_id);
+  g_free (collector->icon);
 
   hud_string_list_unref (collector->prefix);
   g_clear_object (&collector->client);
@@ -555,7 +558,9 @@ hud_dbusmenu_collector_class_init (HudDbusmenuCollectorClass *class)
 
 /**
  * hud_dbusmenu_collector_new_for_endpoint:
+ * @application_id: a unique identifier for the application
  * @prefix: the title to prefix to all items
+ * @icon: the icon for the appliction
  * @penalty: the penalty to apply to all results
  * @bus_name: a D-Bus bus name
  * @object_path: an object path at the destination given by @bus_name
@@ -580,6 +585,7 @@ hud_dbusmenu_collector_class_init (HudDbusmenuCollectorClass *class)
 HudDbusmenuCollector *
 hud_dbusmenu_collector_new_for_endpoint (const gchar *application_id,
                                          const gchar *prefix,
+                                         const gchar *icon,
                                          guint        penalty,
                                          const gchar *bus_name,
                                          const gchar *object_path)
@@ -588,6 +594,7 @@ hud_dbusmenu_collector_new_for_endpoint (const gchar *application_id,
 
   collector = g_object_new (HUD_TYPE_DBUSMENU_COLLECTOR, NULL);
   collector->application_id = g_strdup (application_id);
+  collector->icon = g_strdup (icon);
   if (prefix)
     collector->prefix = hud_string_list_cons (prefix, NULL);
   collector->penalty = penalty;
@@ -611,12 +618,14 @@ hud_dbusmenu_collector_new_for_endpoint (const gchar *application_id,
  **/
 HudDbusmenuCollector *
 hud_dbusmenu_collector_new_for_window (BamfWindow  *window,
-                                       const gchar *desktop_file)
+                                       const gchar *desktop_file,
+                                       const gchar *icon)
 {
   HudDbusmenuCollector *collector;
 
   collector = g_object_new (HUD_TYPE_DBUSMENU_COLLECTOR, NULL);
   collector->application_id = g_strdup (desktop_file);
+  collector->icon = g_strdup (icon);
   collector->xid = bamf_window_get_xid (window);
   g_debug ("dbusmenu on %d", collector->xid);
   hud_app_menu_registrar_add_observer (hud_app_menu_registrar_get (), collector->xid,
@@ -643,5 +652,24 @@ hud_dbusmenu_collector_set_prefix (HudDbusmenuCollector *collector,
 {
   hud_string_list_unref (collector->prefix);
   collector->prefix = hud_string_list_cons (prefix, NULL);
+  hud_dbusmenu_collector_setup_root (collector, collector->root);
+}
+
+/**
+ * hud_dbusmenu_collector_set_icon:
+ * @collector: a #HudDbusmenuCollector
+ * @icon: the application icon
+ *
+ * Changes the application icon used for all items of the collector.
+ *
+ * This will involve destroying all of the items and recreating them
+ * (since each item's icon has to be changed).
+ **/
+void
+hud_dbusmenu_collector_set_icon (HudDbusmenuCollector *collector,
+                                 const gchar          *icon)
+{
+  g_free (collector->icon);
+  collector->icon = g_strdup (icon);
   hud_dbusmenu_collector_setup_root (collector, collector->root);
 }

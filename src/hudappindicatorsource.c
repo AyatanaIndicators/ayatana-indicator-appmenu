@@ -83,9 +83,11 @@ hud_app_indicator_source_add_indicator (HudAppIndicatorSource *source,
   const gchar *dbus_path;
   GSequenceIter *iter;
   const gchar *id;
+  const gchar *icon_name;
   gint32 position;
   gchar *title;
 
+  g_variant_get_child (description, 0, "&s", &icon_name);
   g_variant_get_child (description, 1, "i", &position);
   g_variant_get_child (description, 2, "&s", &dbus_name);
   g_variant_get_child (description, 3, "&o", &dbus_path);
@@ -102,9 +104,10 @@ hud_app_indicator_source_add_indicator (HudAppIndicatorSource *source,
          for Network Manager would be 'nm-applet'. */
       title = g_strdup_printf(_("Untitled Indicator (%s)"), id);
     }
-  g_debug ("adding appindicator %s at %d ('%s', %s, %s)", id, position, title, dbus_name, dbus_path);
+  g_debug ("adding appindicator %s at %d ('%s', %s, %s, %s)", id, position, title, icon_name, dbus_name, dbus_path);
 
-  collector = hud_dbusmenu_collector_new_for_endpoint (id, title, hud_settings.indicator_penalty,
+  collector = hud_dbusmenu_collector_new_for_endpoint (id, title, icon_name,
+                                                       hud_settings.indicator_penalty,
                                                        dbus_name, dbus_path);
   g_signal_connect (collector, "changed", G_CALLBACK (hud_app_indicator_source_collector_changed), source);
 
@@ -199,6 +202,29 @@ hud_app_indicator_source_dbus_signal (GDBusConnection *connection,
 
           collector = g_sequence_get (iter);
           hud_dbusmenu_collector_set_prefix (collector, title);
+        }
+    }
+
+  else if (g_str_equal (signal_name, "ApplicationIconChanged"))
+    {
+      GSequenceIter *iter;
+      const gchar *icon;
+      gint32 position;
+
+      if (!g_variant_is_of_type (parameters, G_VARIANT_TYPE ("(iss)")))
+        return;
+
+      g_variant_get (parameters, "(i&ss)", &position, &icon, NULL);
+
+      g_debug ("changing icon of appindicator at %d to '%s'", position, icon);
+
+      iter = g_sequence_get_iter_at_pos (source->indicators, position);
+      if (!g_sequence_iter_is_end (iter))
+        {
+          HudDbusmenuCollector *collector;
+
+          collector = g_sequence_get (iter);
+          hud_dbusmenu_collector_set_icon (collector, icon);
         }
     }
 }

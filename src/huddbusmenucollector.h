@@ -33,12 +33,16 @@ GType                   hud_dbusmenu_collector_get_type                 (void);
 
 HudDbusmenuCollector *  hud_dbusmenu_collector_new_for_endpoint         (const gchar *application_id,
                                                                          const gchar *prefix,
+                                                                         const gchar *icon,
                                                                          guint        penalty,
                                                                          const gchar *bus_name,
                                                                          const gchar *object_path);
 HudDbusmenuCollector *  hud_dbusmenu_collector_new_for_window           (BamfWindow  *window,
-                                                                         const gchar *desktop_file);
+                                                                         const gchar *desktop_file,
+                                                                         const gchar *icon);
 void                    hud_dbusmenu_collector_set_prefix               (HudDbusmenuCollector *collector,
                                                                          const gchar          *prefix);
+void                    hud_dbusmenu_collector_set_icon                 (HudDbusmenuCollector *collector,
+                                                                         const gchar          *icon);
 
 #endif /* __HUD_DBUSMENU_COLLECTOR_H__ */
