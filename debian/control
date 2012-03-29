@@ -25,6 +25,10 @@ Build-Depends: debhelper (>= 5.0),
                libappindicator3-dev,
                indicator-application (>= 0.4.90),
                xvfb,
+               bamfdaemon,
+               metacity,
+               bustle,
+               libindicator3-tools,
                valac-0.16
 Standards-Version: 3.9.2
 Homepage: http://launchpad.net/indicator-appmenu
