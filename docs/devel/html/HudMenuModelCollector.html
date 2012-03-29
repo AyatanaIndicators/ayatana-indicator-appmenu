@@ -43,8 +43,9 @@
 <div class="refsynopsisdiv">
 <a name="HudMenuModelCollector.synopsis"></a><h2>Synopsis</h2>
 <pre class="synopsis">                    <a class="link" href="HudMenuModelCollector.html#HudMenuModelCollector-struct" title="HudMenuModelCollector">HudMenuModelCollector</a>;
-<a class="link" href="HudMenuModelCollector.html" title="HudMenuModelCollector"><span class="returnvalue">HudMenuModelCollector</span></a> * <a class="link" href="HudMenuModelCollector.html#hud-menu-model-collector-get" title="hud_menu_model_collector_get ()">hud_menu_model_collector_get</a>    (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/libbamf/BamfWindow.html"><span class="type">BamfWindow</span></a> *window</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *desktop_file</code></em>);
+<a class="link" href="HudMenuModelCollector.html" title="HudMenuModelCollector"><span class="returnvalue">HudMenuModelCollector</span></a> * <a class="link" href="HudMenuModelCollector.html#hud-menu-model-collector-get" title="hud_menu_model_collector_get ()">hud_menu_model_collector_get</a>    (<em class="parameter"><code><span class="type">BamfWindow</span> *window</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *desktop_file</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *icon</code></em>);
 </pre>
 </div>
 <div class="refsect1">
@@ -70,7 +71,7 @@ usual way.
 </p>
 <p>
 The <a href="http://library.gnome.org/devel/gio/unstable/GMenuModel.html"><span class="type">GMenuModel</span></a> is acquired using <a href="http://library.gnome.org/devel/gio/unstable/GDBusMenuModel.html"><span class="type">GDBusMenuModel</span></a> according to the
-properties set on the <a href="/usr/share/gtk-doc/html/libbamf/BamfWindow.html"><span class="type">BamfWindow</span></a> which must be passed to
+properties set on the <span class="type">BamfWindow</span> which must be passed to
 <a class="link" href="HudMenuModelCollector.html#hud-menu-model-collector-get" title="hud_menu_model_collector_get ()"><code class="function">hud_menu_model_collector_get()</code></a>.
 </p>
 </div>
@@ -86,8 +87,9 @@ This is an opaque structure type.
 <hr>
 <div class="refsect2">
 <a name="hud-menu-model-collector-get"></a><h3>hud_menu_model_collector_get ()</h3>
-<pre class="programlisting"><a class="link" href="HudMenuModelCollector.html" title="HudMenuModelCollector"><span class="returnvalue">HudMenuModelCollector</span></a> * hud_menu_model_collector_get    (<em class="parameter"><code><a href="/usr/share/gtk-doc/html/libbamf/BamfWindow.html"><span class="type">BamfWindow</span></a> *window</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *desktop_file</code></em>);</pre>
+<pre class="programlisting"><a class="link" href="HudMenuModelCollector.html" title="HudMenuModelCollector"><span class="returnvalue">HudMenuModelCollector</span></a> * hud_menu_model_collector_get    (<em class="parameter"><code><span class="type">BamfWindow</span> *window</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *desktop_file</code></em>,
+                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *icon</code></em>);</pre>
 <p>
 If the given <em class="parameter"><code>window</code></em> has <span class="type">GMenuModel-style</span> menus then returns a
 collector for them, otherwise returns <a href="http://library.gnome.org/devel/glib/unstable/glib-Standard-Macros.html#NULL:CAPS"><code class="literal">NULL</code></a>.
@@ -100,13 +102,17 @@ collector for them, otherwise returns <a href="http://library.gnome.org/devel/gl
 <tbody>
 <tr>
 <td><p><span class="term"><em class="parameter"><code>window</code></em> :</span></p></td>
-<td>a <a href="/usr/share/gtk-doc/html/libbamf/BamfWindow.html"><span class="type">BamfWindow</span></a>
+<td>a <span class="type">BamfWindow</span>
 </td>
 </tr>
 <tr>
 <td><p><span class="term"><em class="parameter"><code>desktop_file</code></em> :</span></p></td>
 <td>the desktop file of the application of <em class="parameter"><code>window</code></em>
 </td>
+</tr>
+<tr>
+<td><p><span class="term"><em class="parameter"><code>icon</code></em> :</span></p></td>
+<td>the application icon's name</td>
 </tr>
 <tr>
 <td><p><span class="term"><span class="emphasis"><em>Returns</em></span> :</span></p></td>

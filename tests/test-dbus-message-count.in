@@ -1,0 +1,18 @@
+#!/bin/bash
+
+export DISPLAY=
+
+. @srcdir@/run-xvfb.sh
+
+dbus-test-runner \
+	--max-wait 10 \
+	-b @builddir@/test-dbus-message-count.bustle \
+	--task /usr/bin/metacity --task-name metacity \
+	--task /usr/lib/bamf/bamfdaemon --task-name bamf \
+	--task @top_builddir@/src/hud-service --task-name hud --wait-for org.ayatana.bamf \
+	--task /usr/lib/libindicator/indicator-loader3 --parameter @top_builddir@/src/.libs/libappmenu.so --task-name appmenu --wait-for org.ayatana.bamf \
+	--task /usr/lib/indicator-appmenu/mock-json-app --parameter @srcdir@/test-dbus-message-count.json --wait-for com.canonical.AppMenu.Registrar --task-name app \
+	--task @srcdir@/test-dbus-message-count-send-query --wait-for com.canonical.AppMenu.Registrar --task-name query
+
+sleep 1
+bustle-count test-dbus-message-count.bustle

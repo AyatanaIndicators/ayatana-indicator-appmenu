@@ -348,6 +348,9 @@ static void hud_gtk_window_entry_text_changed (HudGtkWindow* self, GObject* obje
 	GtkEntry* entry;
 	GVariant* _tmp2_;
 	GtkListStore* _tmp11_;
+	GtkEntry* _tmp12_;
+	const gchar* _tmp13_;
+	const gchar* _tmp14_;
 	GError * _inner_error_ = NULL;
 	g_return_if_fail (self != NULL);
 	g_return_if_fail (object != NULL);
@@ -401,45 +404,52 @@ static void hud_gtk_window_entry_text_changed (HudGtkWindow* self, GObject* obje
 	self->priv->query_key = NULL;
 	_tmp11_ = self->priv->model;
 	gtk_list_store_clear (_tmp11_);
+	_tmp12_ = entry;
+	_tmp13_ = gtk_entry_get_text (_tmp12_);
+	_tmp14_ = _tmp13_;
+	if (g_strcmp0 (_tmp14_, "") == 0) {
+		_g_object_unref0 (entry);
+		return;
+	}
 	{
-		GDBusConnection* _tmp12_ = NULL;
+		GDBusConnection* _tmp15_ = NULL;
 		GDBusConnection* session;
-		GDBusConnection* _tmp13_;
-		GtkEntry* _tmp14_;
-		const gchar* _tmp15_;
-		const gchar* _tmp16_;
-		GVariant* _tmp17_;
-		GVariant* _tmp18_;
-		GVariantType* _tmp19_;
-		GVariantType* _tmp20_;
-		GVariant* _tmp21_ = NULL;
-		GVariant* _tmp22_;
+		GDBusConnection* _tmp16_;
+		GtkEntry* _tmp17_;
+		const gchar* _tmp18_;
+		const gchar* _tmp19_;
+		GVariant* _tmp20_;
+		GVariant* _tmp21_;
+		GVariantType* _tmp22_;
+		GVariantType* _tmp23_;
+		GVariant* _tmp24_ = NULL;
+		GVariant* _tmp25_;
 		GVariant* reply;
-		GVariant* _tmp23_;
-		_tmp12_ = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, &_inner_error_);
-		session = _tmp12_;
+		GVariant* _tmp26_;
+		_tmp15_ = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, &_inner_error_);
+		session = _tmp15_;
 		if (_inner_error_ != NULL) {
 			goto __catch1_g_error;
 		}
-		_tmp13_ = session;
-		_tmp14_ = entry;
-		_tmp15_ = gtk_entry_get_text (_tmp14_);
-		_tmp16_ = _tmp15_;
-		_tmp17_ = g_variant_new ("(si)", _tmp16_, 15, NULL);
-		_tmp18_ = g_variant_ref_sink (_tmp17_);
-		_tmp19_ = g_variant_type_new ("(sa(sssssv)v)");
-		_tmp20_ = _tmp19_;
-		_tmp21_ = g_dbus_connection_call_sync (_tmp13_, "com.canonical.hud", "/com/canonical/hud", "com.canonical.hud", "StartQuery", _tmp18_, _tmp20_, 0, -1, NULL, &_inner_error_);
-		_tmp22_ = _tmp21_;
-		_g_variant_type_free0 (_tmp20_);
-		_g_variant_unref0 (_tmp18_);
-		reply = _tmp22_;
+		_tmp16_ = session;
+		_tmp17_ = entry;
+		_tmp18_ = gtk_entry_get_text (_tmp17_);
+		_tmp19_ = _tmp18_;
+		_tmp20_ = g_variant_new ("(si)", _tmp19_, 15, NULL);
+		_tmp21_ = g_variant_ref_sink (_tmp20_);
+		_tmp22_ = g_variant_type_new ("(sa(sssssv)v)");
+		_tmp23_ = _tmp22_;
+		_tmp24_ = g_dbus_connection_call_sync (_tmp16_, "com.canonical.hud", "/com/canonical/hud", "com.canonical.hud", "StartQuery", _tmp21_, _tmp23_, 0, -1, NULL, &_inner_error_);
+		_tmp25_ = _tmp24_;
+		_g_variant_type_free0 (_tmp23_);
+		_g_variant_unref0 (_tmp21_);
+		reply = _tmp25_;
 		if (_inner_error_ != NULL) {
 			_g_object_unref0 (session);
 			goto __catch1_g_error;
 		}
-		_tmp23_ = reply;
-		hud_gtk_window_populate_model (self, _tmp23_);
+		_tmp26_ = reply;
+		hud_gtk_window_populate_model (self, _tmp26_);
 		_g_variant_unref0 (reply);
 		_g_object_unref0 (session);
 	}
@@ -447,13 +457,13 @@ static void hud_gtk_window_entry_text_changed (HudGtkWindow* self, GObject* obje
 	__catch1_g_error:
 	{
 		GError* e = NULL;
-		GError* _tmp24_;
-		const gchar* _tmp25_;
+		GError* _tmp27_;
+		const gchar* _tmp28_;
 		e = _inner_error_;
 		_inner_error_ = NULL;
-		_tmp24_ = e;
-		_tmp25_ = _tmp24_->message;
-		g_warning ("hud-gtk.vala:63: %s", _tmp25_);
+		_tmp27_ = e;
+		_tmp28_ = _tmp27_->message;
+		g_warning ("hud-gtk.vala:67: %s", _tmp28_);
 		_g_error_free0 (e);
 	}
 	__finally1:
@@ -514,7 +524,7 @@ static void hud_gtk_window_view_activated (HudGtkWindow* self, GtkTreeView* view
 		_inner_error_ = NULL;
 		_tmp10_ = e;
 		_tmp11_ = _tmp10_->message;
-		g_warning ("hud-gtk.vala:78: %s", _tmp11_);
+		g_warning ("hud-gtk.vala:82: %s", _tmp11_);
 		_g_error_free0 (e);
 	}
 	__finally2:
@@ -595,7 +605,7 @@ HudGtkWindow* hud_gtk_window_construct (GType object_type, GtkApplication* appli
 		e = _inner_error_;
 		_inner_error_ = NULL;
 		_tmp7_ = e->message;
-		g_error ("hud-gtk.vala:92: %s", _tmp7_);
+		g_error ("hud-gtk.vala:96: %s", _tmp7_);
 		_g_error_free0 (e);
 	}
 	__finally3:
