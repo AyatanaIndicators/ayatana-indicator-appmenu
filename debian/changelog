@@ -1,4 +1,4 @@
-indicator-appmenu (0.3.96-0ubuntu1) precise-proposed; urgency=low
+indicator-appmenu (0.3.96-0ubuntu1) precise; urgency=low
 
   [ Charles Kerr ]
   * New upstream release.
