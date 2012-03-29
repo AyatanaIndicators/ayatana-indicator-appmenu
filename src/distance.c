@@ -121,19 +121,26 @@ calculate_token_distance (const gchar * needle, const gchar * haystack)
 
 	/* Allocate the matrix of penalties */
 	guint * penalty_matrix = g_malloc0(sizeof(guint) * (len_needle + 1) * (len_haystack + 1));
+	gint len_difference;
+	gint penalty;
 	int i;
 
 	/* Take the first row and first column and make them additional letter penalties */
+	penalty = 0;
 	for (i = 0; i < len_needle + 1; i++) {
-		MATRIX_VAL(i - 1, -1) = i * ADD_PENALTY;
+		MATRIX_VAL(i - 1, -1) = penalty;
+		penalty += ADD_PENALTY;
 	}
 
-	for (i = 0; i < len_haystack + 1; i++) {
-		if (i < len_haystack - len_needle) {
-			MATRIX_VAL(-1, i - 1) = i * PRE_ADD_PENALTY;
-		} else {
-			MATRIX_VAL(-1, i - 1) = (len_haystack - len_needle) * PRE_ADD_PENALTY + (i - (len_haystack - len_needle)) * DROP_PENALTY;
-		}
+	len_difference = len_haystack - len_needle;
+	penalty = 0;
+	for (i = 0; i < len_difference; i++) {
+		MATRIX_VAL(-1, i - 1) = penalty;
+		penalty += PRE_ADD_PENALTY;
+	}
+	for (; i < len_haystack + 1; i++) {
+		MATRIX_VAL(-1, i - 1) = penalty;
+		penalty += DROP_PENALTY;
 	}
 
 	/* Now go through the matrix building up the penalties */
