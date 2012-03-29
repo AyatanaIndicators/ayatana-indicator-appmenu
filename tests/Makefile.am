@@ -373,8 +373,8 @@ EXTRA_DIST += \
 # Test Dbus Messages
 #########################
 
-TESTS += \
-	test-dbus-message-count
+#TESTS += \
+#	test-dbus-message-count
 
 test-dbus-message-count: test-dbus-message-count.in
 	@sed \
