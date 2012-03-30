@@ -153,7 +153,7 @@ hud_token_distance (const HudToken *haystack,
    */
   result = d[--i][0];
   for (j = 1; j <= haystack->length; j++)
-    result = MIN (d[i][j], result + hud_settings.drop_penalty_end);
+    result = MIN (d[i][j], result + hud_settings.end_drop_penalty);
 
   return result;
 }

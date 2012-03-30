@@ -31,12 +31,9 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 HudSettings hud_settings = {
 	.indicator_penalty = 50,
 	.add_penalty = 10,
-	.add_penalty_pre = 1,
 	.drop_penalty = 10,
-	.drop_penalty_end = 10,
-	.transpose_penalty = 10,
+	.end_drop_penalty = 1,
 	.swap_penalty = 10,
-	.swap_penalty_case = 1,
 	.max_distance = 30
 };
 
