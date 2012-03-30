@@ -1,6 +1,6 @@
-data/com.canonical.indicator.appmenu.gschema.xml.in
-data/com.canonical.indicator.appmenu.hud.gschema.xml.in
-data/com.canonical.indicator.appmenu.hud.search.gschema.xml.in
+data/com.canonical.indicator.appmenu.gschema.xml
+data/com.canonical.indicator.appmenu.hud.gschema.xml
+data/com.canonical.indicator.appmenu.hud.search.gschema.xml
 src/distance.c
 src/dump-app-info.c
 src/gdk-get-func.c
