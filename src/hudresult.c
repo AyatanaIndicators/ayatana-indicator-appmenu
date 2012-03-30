@@ -21,7 +21,7 @@
 #include <string.h>
 
 #include "hudsettings.h"
-#include "distance.h"
+#include "hudtoken.h"
 
 /**
  * SECTION:hudresult
@@ -53,33 +53,6 @@ struct _HudResult
 };
 
 G_DEFINE_TYPE (HudResult, hud_result, G_TYPE_OBJECT)
-
-static guint
-calculate_distance_from_list (const gchar   *search_string,
-                              HudStringList *list,
-                              GStrv         *matched)
-{
-  HudStringList *iter;
-  const gchar **strv;
-  guint distance;
-  gint i = 0;
-
-  for (iter = list; iter; iter = hud_string_list_get_tail (iter))
-    i++;
-
-  strv = g_new (const char *, i + 1);
-  strv[i] = NULL;
-
-  for (iter = list; iter; iter = hud_string_list_get_tail (iter))
-    strv[--i] = hud_string_list_get_head (iter);
-
-  distance = calculate_distance (search_string, (char **) strv, matched);
-
-  g_free (strv);
-
-
-  return distance;
-}
 
 static void
 hud_result_finalize (GObject *object)
@@ -126,16 +99,16 @@ hud_result_class_init (HudResultClass *class)
  * Returns: a new #HudResult, or %NULL in event of a poor match
  **/
 HudResult *
-hud_result_get_if_matched (HudItem     *item,
-                           const gchar *search_string,
-                           guint        penalty)
+hud_result_get_if_matched (HudItem      *item,
+                           HudTokenList *search_tokens,
+                           guint         penalty)
 {
   if (!hud_item_get_enabled (item))
     return NULL;
 
   /* ignore the penalty in the max-distance calculation */
-  if (calculate_distance_from_list (search_string, hud_item_get_tokens (item), NULL) <= hud_settings.max_distance)
-    return hud_result_new (item, search_string, penalty);
+  if (hud_token_list_distance (hud_item_get_token_list (item), search_tokens) <= hud_settings.max_distance)
+    return hud_result_new (item, search_tokens, penalty);
   else
     return NULL;
 }
@@ -212,18 +185,19 @@ hud_result_format_description (HudResult *result)
  * Returns: the new #HudResult
  **/
 HudResult *
-hud_result_new (HudItem     *item,
-                const gchar *search_string,
-                guint        penalty)
+hud_result_new (HudItem      *item,
+                HudTokenList *search_tokens,
+                guint         penalty)
 {
   HudResult *result;
 
   g_return_val_if_fail (HUD_IS_ITEM (item), NULL);
-  g_return_val_if_fail (search_string != NULL, NULL);
+  g_return_val_if_fail (search_tokens != NULL, NULL);
 
   result = g_object_new (HUD_TYPE_RESULT, NULL);
   result->item = g_object_ref (item);
-  result->distance = calculate_distance_from_list (search_string, hud_item_get_tokens (item), &result->matched);
+  result->matched = g_new0 (gchar *, 1);
+  result->distance = hud_token_list_distance (hud_item_get_token_list (item), search_tokens);
   hud_result_format_description (result);
 
   result->distance += (result->distance * penalty) / 100;

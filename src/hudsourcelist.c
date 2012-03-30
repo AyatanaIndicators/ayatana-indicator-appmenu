@@ -83,9 +83,9 @@ hud_source_list_unuse (HudSource *source)
 }
 
 static void
-hud_source_list_search (HudSource   *source,
-                        GPtrArray   *results_array,
-                        const gchar *search_string)
+hud_source_list_search (HudSource    *source,
+                        GPtrArray    *results_array,
+                        HudTokenList *search_string)
 {
   HudSourceList *list = HUD_SOURCE_LIST (source);
   GSList *node;

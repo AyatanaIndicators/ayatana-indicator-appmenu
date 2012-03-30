@@ -19,6 +19,7 @@
 #include "huditem.h"
 
 #include "usage-tracker.h"
+#include "hudtoken.h"
 
 /**
  * SECTION:huditem
@@ -52,6 +53,7 @@ struct _HudItemPrivate
 
   gchar *desktop_file;
 
+  HudTokenList *token_list;
   HudStringList *tokens;
   gchar *usage_tag;
   gchar *app_icon;
@@ -68,6 +70,7 @@ hud_item_finalize (GObject *object)
   HudItem *item = HUD_ITEM (object);
 
   g_hash_table_remove (hud_item_table, &item->priv->id);
+  hud_token_list_free (item->priv->token_list);
   hud_string_list_unref (item->priv->tokens);
   g_free (item->priv->desktop_file);
   g_free (item->priv->usage_tag);
@@ -156,6 +159,7 @@ hud_item_construct (GType          g_type,
   item->priv->app_icon = g_strdup (app_icon);
   item->priv->enabled = enabled;
   item->priv->id = hud_item_next_id++;
+  item->priv->token_list = hud_token_list_new_from_string_list (tokens);
 
   g_hash_table_insert (hud_item_table, &item->priv->id, item);
 
@@ -329,4 +333,10 @@ HudItem *
 hud_item_lookup (guint64 id)
 {
   return g_hash_table_lookup (hud_item_table, &id);
+}
+
+HudTokenList *
+hud_item_get_token_list (HudItem *item)
+{
+  return item->priv->token_list;
 }

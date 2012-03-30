@@ -146,9 +146,9 @@ hud_indicator_source_unuse (HudSource *hud_source)
 }
 
 static void
-hud_indicator_source_search (HudSource   *hud_source,
-                             GPtrArray   *results_array,
-                             const gchar *search_string)
+hud_indicator_source_search (HudSource    *hud_source,
+                             GPtrArray    *results_array,
+                             HudTokenList *search_string)
 {
   HudIndicatorSource *source = HUD_INDICATOR_SOURCE (hud_source);
   gint i;
