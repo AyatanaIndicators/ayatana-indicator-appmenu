@@ -23,7 +23,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <glib-object.h>
 
 #include "hudsettings.h"
-#include "distance.h"
+#include "hudtoken.h"
 
 /* hardcode some parameters so the test doesn't fail if the user
  * has bogus things in GSettings.
@@ -36,6 +36,48 @@ HudSettings hud_settings = {
 	.swap_penalty = 10,
 	.max_distance = 30
 };
+
+static guint
+calculate_distance (const gchar *search, GStrv teststrings, gchar ***matches)
+{
+	HudStringList *list = NULL;
+	HudTokenList *haystack;
+	HudTokenList *needle;
+	guint distance;
+	gint i;
+
+	if (search == NULL || teststrings == NULL) {
+		return G_MAXINT;
+	}
+
+	for (i = 0; teststrings[i]; i++) {
+		HudStringList *tmp;
+
+		tmp = hud_string_list_cons (teststrings[i], list);
+		hud_string_list_unref (list);
+		list = tmp;
+	}
+
+	haystack = hud_token_list_new_from_string_list (list);
+	hud_string_list_unref (list);
+
+	needle = hud_token_list_new_from_string (search);
+	distance = hud_token_list_distance (haystack, needle, (const gchar ***) matches);
+
+	if (matches) {
+		/* These are owned by the tokenlists, so make copies
+		 * before freeing.
+		 */
+		for (i = 0; (*matches)[i]; i++) {
+			(*matches)[i] = g_strdup ((*matches)[i]);
+		}
+	}
+
+	hud_token_list_free (haystack);
+	hud_token_list_free (needle);
+
+	return distance;
+}
 
 /* Ensure the base calculation works */
 static void
