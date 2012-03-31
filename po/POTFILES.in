@@ -1,7 +1,6 @@
 data/com.canonical.indicator.appmenu.gschema.xml
 data/com.canonical.indicator.appmenu.hud.gschema.xml
 data/com.canonical.indicator.appmenu.hud.search.gschema.xml
-src/distance.c
 src/dump-app-info.c
 src/gdk-get-func.c
 src/hudappindicatorsource.c
@@ -18,6 +17,7 @@ src/hud-service.c
 src/hudsource.c
 src/hudsourcelist.c
 src/hudstringlist.c
+src/hudtoken.c
 src/hud-verify-app-info.c
 src/hudwindowsource.c
 src/indicator-appmenu.c
