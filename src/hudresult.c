@@ -48,7 +48,7 @@ struct _HudResult
   HudItem *item;
 
   guint   distance;
-  gchar **matched;
+  const gchar **matched;
   gchar  *description;
 };
 
@@ -60,7 +60,7 @@ hud_result_finalize (GObject *object)
   HudResult *result = HUD_RESULT (object);
 
   g_object_unref (result->item);
-  g_strfreev (result->matched);
+  g_free (result->matched);
   g_free (result->description);
 
   G_OBJECT_CLASS (hud_result_parent_class)
@@ -107,7 +107,7 @@ hud_result_get_if_matched (HudItem      *item,
     return NULL;
 
   /* ignore the penalty in the max-distance calculation */
-  if (hud_token_list_distance (hud_item_get_token_list (item), search_tokens) <= hud_settings.max_distance)
+  if (hud_token_list_distance (hud_item_get_token_list (item), search_tokens, NULL) <= hud_settings.max_distance)
     return hud_result_new (item, search_tokens, penalty);
   else
     return NULL;
@@ -196,8 +196,7 @@ hud_result_new (HudItem      *item,
 
   result = g_object_new (HUD_TYPE_RESULT, NULL);
   result->item = g_object_ref (item);
-  result->matched = g_new0 (gchar *, 1);
-  result->distance = hud_token_list_distance (hud_item_get_token_list (item), search_tokens);
+  result->distance = hud_token_list_distance (hud_item_get_token_list (item), search_tokens, &result->matched);
   hud_result_format_description (result);
 
   result->distance += (result->distance * penalty) / 100;

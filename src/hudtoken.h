@@ -24,16 +24,17 @@
 typedef struct _HudTokenList HudTokenList;
 typedef struct _HudToken HudToken;
 
-HudToken *              hud_token_new                                   (const gchar    *token,
-                                                                         gssize          length);
-void                    hud_token_free                                  (HudToken       *token);
-guint                   hud_token_distance                              (const HudToken *haystack,
-                                                                         const HudToken *needle);
+HudToken *              hud_token_new                                   (const gchar      *token,
+                                                                         gssize            length);
+void                    hud_token_free                                  (HudToken         *token);
+guint                   hud_token_distance                              (const HudToken   *haystack,
+                                                                         const HudToken   *needle);
 
-HudTokenList *          hud_token_list_new_from_string                  (const gchar    *string);
-HudTokenList *          hud_token_list_new_from_string_list             (HudStringList  *string_list);
-void                    hud_token_list_free                             (HudTokenList   *list);
-guint                   hud_token_list_distance                         (HudTokenList   *haystack,
-                                                                         HudTokenList   *needle);
+HudTokenList *          hud_token_list_new_from_string                  (const gchar      *string);
+HudTokenList *          hud_token_list_new_from_string_list             (HudStringList    *string_list);
+void                    hud_token_list_free                             (HudTokenList     *list);
+guint                   hud_token_list_distance                         (HudTokenList     *haystack,
+                                                                         HudTokenList     *needle,
+                                                                         const gchar    ***matches);
 
 #endif /* __HUD_TOKEN_H__ */

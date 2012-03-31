@@ -25,6 +25,7 @@
 struct _HudToken
 {
   guint     length;
+  gchar    *original;
   gunichar *str;
 };
 
@@ -169,6 +170,7 @@ hud_token_new (const gchar *str,
 
   token = g_slice_new (HudToken);
 
+  token->original = g_strndup (str, length);
   normal = g_utf8_normalize (str, length, G_NORMALIZE_ALL);
   folded = g_utf8_casefold (normal, -1);
   token->str = g_utf8_to_ucs4_fast (folded, -1, &items);
@@ -188,8 +190,15 @@ hud_token_new (const gchar *str,
 void
 hud_token_free (HudToken *token)
 {
+  g_free (token->original);
   g_free (token->str);
   g_slice_free (HudToken, token);
+}
+
+static const gchar *
+hud_token_get_original (HudToken *token)
+{
+  return token->original;
 }
 
 struct _HudTokenList
@@ -286,8 +295,9 @@ hud_token_list_distance_slow (HudTokenList *haystack,
 }
 
 guint
-hud_token_list_distance (HudTokenList *haystack,
-                         HudTokenList *needle)
+hud_token_list_distance (HudTokenList   *haystack,
+                         HudTokenList   *needle,
+                         const gchar  ***matches)
 {
   static guint d[32][32];
   gint i, j;
@@ -333,6 +343,25 @@ hud_token_list_distance (HudTokenList *haystack,
           cost = MIN (take_cost, cost + 1);
           d[i][j] = cost;
         }
+    }
+
+  /* Discover which terms were matched */
+  if (matches)
+    {
+      *matches = g_new (const gchar *, needle->length + 1);
+
+      j = haystack->length - 1;
+
+      for (i = needle->length - 1; i >= 0; i--)
+        {
+          while (j > i && d[i][j-1] == d[i][j] - 1)
+            j--;
+
+          (*matches)[i] = hud_token_get_original (haystack->tokens[j]);
+          j--;
+        }
+
+      (*matches)[needle->length] = NULL;
     }
 
   return d[needle->length - 1][haystack->length - 1];
