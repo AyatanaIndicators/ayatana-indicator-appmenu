@@ -278,64 +278,11 @@ hud_token_list_distance_slow (HudTokenList *haystack,
   g_assert_not_reached ();
 }
 
-static gboolean
-item_is_in_array (guint item,
-                  guint *array,
-                  guint array_len)
-{
-  gint i;
-
-  for (i = 0; i < array_len; i++)
-    if (array[i] == item)
-      return TRUE;
-
-  return FALSE;
-}
-
-static guint
-hud_token_list_select_matches (guint d[32][32],
-                               guint matches[32],
-                               gint  iteration,
-                               gint  num_needles,
-                               gint  num_haystacks)
-{
-  guint best = G_MAXINT;
-  gint i;
-
-  /* Base case: no more needles -> no more distance */
-  if (iteration == num_needles)
-    return 0;
-
-  /* Try all of the possible haystacks as a potential best-match */
-  for (i = 0; i < num_haystacks; i++)
-    {
-      guint distance;
-
-      /* In case of multiple search terms, check if we already picked
-       * this haystack (to avoid using the same haystack for both search
-       * terms).
-       */
-      if (item_is_in_array (i, matches, iteration))
-        continue;
-
-      /* Store our guess in the array so that the recursive call can see
-       * that we've already picked this haystack for this iteration
-       */
-      matches[iteration] = i;
-      distance = d[iteration][i];
-      distance += hud_token_list_select_matches (d, matches, iteration + 1, num_needles, num_haystacks);
-      best = MIN (best, distance);
-    }
-
-  return best;
-}
-
 guint
 hud_token_list_distance (HudTokenList *haystack,
                          HudTokenList *needle)
 {
   static guint d[32][32];
-  guint matches[32];
   gint i, j;
 
   if (needle->length > haystack->length)
@@ -344,9 +291,42 @@ hud_token_list_distance (HudTokenList *haystack,
   if G_UNLIKELY (haystack->length > 32 || needle->length > 32)
     return hud_token_list_distance_slow (haystack, needle);
 
-  for (i = 0; i < needle->length; i++)
-    for (j = 0; j < haystack->length; j++)
-      d[i][j] = hud_token_distance (haystack->tokens[j], needle->tokens[i]);
+  /* unroll the handling of the first needle term */
+  {
+    guint cost;
 
-  return hud_token_list_select_matches (d, matches, 0, needle->length, haystack->length);
+    /* unroll the handling of the first haystack term */
+    cost = hud_token_distance (haystack->tokens[0], needle->tokens[0]);
+    d[0][0] = cost;
+
+    for (j = 0; j < haystack->length; j++)
+      {
+        guint take_cost;
+
+        take_cost = hud_token_distance (haystack->tokens[j], needle->tokens[0]);
+        cost = MIN (take_cost, cost + 1);
+        d[0][j] = cost;
+      }
+  }
+
+  /* if we have only one needle, this loop won't run at all */
+  for (i = 1; i < needle->length; i++)
+    {
+      guint cost;
+
+      /* unroll the handling of the first haystack term */
+      cost = d[i - 1][i - 1] + hud_token_distance (haystack->tokens[i], needle->tokens[i]);
+      d[i][i] = cost;
+
+      for (j = i + 1; j < haystack->length; j++)
+        {
+          guint take_cost;
+
+          take_cost = d[i - 1][j - 1] + hud_token_distance (haystack->tokens[j], needle->tokens[i]);
+          cost = MIN (take_cost, cost + 1);
+          d[i][j] = cost;
+        }
+    }
+
+  return d[needle->length - 1][haystack->length - 1];
 }
