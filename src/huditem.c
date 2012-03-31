@@ -73,6 +73,7 @@ hud_item_finalize (GObject *object)
   hud_token_list_free (item->priv->token_list);
   hud_string_list_unref (item->priv->tokens);
   g_free (item->priv->desktop_file);
+  g_free (item->priv->app_icon);
   g_free (item->priv->usage_tag);
 
   G_OBJECT_CLASS (hud_item_parent_class)
