@@ -214,8 +214,8 @@ hud_token_list_new_consume_array (GPtrArray *array)
 
 #define SEPARATORS " .->"
 static void
-hud_token_list_add_to_array (GPtrArray   *array,
-                             const gchar *string)
+hud_token_list_add_string_to_array (GPtrArray   *array,
+                                    const gchar *string)
 {
   while (*string)
     {
@@ -234,13 +234,24 @@ hud_token_list_add_to_array (GPtrArray   *array,
     }
 }
 
+static void
+hud_token_list_add_string_list_to_array (GPtrArray     *array,
+                                         HudStringList *list)
+{
+  if (list == NULL)
+    return;
+
+  hud_token_list_add_string_list_to_array (array, hud_string_list_get_tail (list));
+  hud_token_list_add_string_to_array (array, hud_string_list_get_head (list));
+}
+
 HudTokenList *
 hud_token_list_new_from_string (const gchar *string)
 {
   GPtrArray *array;
 
   array = g_ptr_array_new ();
-  hud_token_list_add_to_array (array, string);
+  hud_token_list_add_string_to_array (array, string);
   return hud_token_list_new_consume_array (array);
 }
 
@@ -250,11 +261,7 @@ hud_token_list_new_from_string_list (HudStringList *string_list)
   GPtrArray *array;
 
   array = g_ptr_array_new ();
-  while (string_list)
-    {
-      hud_token_list_add_to_array (array, hud_string_list_get_head (string_list));
-      string_list = hud_string_list_get_tail (string_list);
-    }
+  hud_token_list_add_string_list_to_array (array, string_list);
   return hud_token_list_new_consume_array (array);
 }
 
