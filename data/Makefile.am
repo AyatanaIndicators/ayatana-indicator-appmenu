@@ -17,5 +17,4 @@ EXTRA_DIST = \
 
 CLEANFILES = \
 	$(dbus_services_DATA) \
-	$(gsettings_SCHEMAS:.xml=.valid) \
 	$(gsettings_SCHEMAS)
