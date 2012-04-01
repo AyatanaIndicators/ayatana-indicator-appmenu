@@ -224,6 +224,18 @@ test_distance_dups (void)
 	return;
 }
 
+/* Check to make sure 'Save' matches better than 'Save As...' for "save" */
+static void
+test_distance_extra_terms (void)
+{
+  const gchar *save_as[] = { "File", "Save", "As...", NULL };
+  const gchar *save[] = { "File", "Save", NULL };
+
+  g_assert_cmpint (calculate_distance ("save", (GStrv) save, NULL),
+                   <,
+                   calculate_distance ("save", (GStrv) save_as, NULL));
+}
+
 /* Build the test suite */
 static void
 test_distance_suite (void)
@@ -235,6 +247,7 @@ test_distance_suite (void)
 	g_test_add_func ("/hud/distance/duplicates",    test_distance_dups);
 	g_test_add_func ("/hud/distance/variety",       test_distance_variety);
 	g_test_add_func ("/hud/distance/french_pref",   test_distance_french_pref);
+	g_test_add_func ("/hud/distance/extra_terms",   test_distance_extra_terms);
 	return;
 }
 
