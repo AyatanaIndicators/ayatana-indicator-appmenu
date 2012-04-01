@@ -169,7 +169,7 @@ hud_webapp_application_source_new (HudSource *source,
   
   application_source->collector = (HudSource *)hud_dbusmenu_collector_new_for_endpoint (bamf_view_get_name (BAMF_VIEW (application)),
 											bamf_view_get_name (BAMF_VIEW (application)),
-											50,
+											0,
 											name, path);
   
   g_signal_connect_object (application, "child-moved",
