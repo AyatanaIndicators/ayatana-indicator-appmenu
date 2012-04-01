@@ -78,6 +78,16 @@ hud_webapp_source_collector_changed (HudSource *source,
   hud_source_changed ((HudSource *)user_data);
 }
 
+static void
+hud_webapp_source_application_child_moved (BamfApplication *application,
+					     BamfView *child,
+					     gpointer user_data)
+{
+  HudSource *source = HUD_SOURCE (user_data);
+  
+  hud_source_changed (source);
+}
+
 static gboolean
 hud_webapp_source_should_search_app (BamfApplication *application,
 				     guint32 active_xid)
@@ -89,23 +99,14 @@ hud_webapp_source_should_search_app (BamfApplication *application,
   
   children = bamf_view_get_children (BAMF_VIEW (application));
 
-  printf("baz\n");
-  
   for (walk = children; walk != NULL; walk = walk->next)
     {
       BamfTab *child;
       
-      printf("Fooo\n");
-
       if (BAMF_IS_TAB (walk->data) == FALSE)
 	continue;
       
       child = BAMF_TAB (walk->data);
-      
-      printf("Whhhy\n");
-      
-      printf("active_xid: %u, tab_xid: %u \n", active_xid,
-	     (guint32)bamf_tab_get_xid (child));
       
       if ((active_xid == bamf_tab_get_xid (child)) &&
 	  bamf_tab_get_is_foreground_tab (child))
@@ -170,6 +171,12 @@ hud_webapp_application_source_new (HudSource *source,
 											bamf_view_get_name (BAMF_VIEW (application)),
 											50,
 											name, path);
+  
+  g_signal_connect_object (application, "child-moved",
+			   G_CALLBACK (hud_webapp_source_application_child_moved),
+			   source, 0);
+  
+  
   
   g_free (name);
   g_free (path);
