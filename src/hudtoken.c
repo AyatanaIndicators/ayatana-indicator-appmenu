@@ -337,10 +337,33 @@ hud_token_list_distance (HudTokenList   *haystack,
 
       for (j = i + 1; j < haystack->length; j++)
         {
-          guint take_cost;
+          guint prev_cost;
 
-          take_cost = d[i - 1][j - 1] + hud_token_distance (haystack->tokens[j], needle->tokens[i]);
-          cost = MIN (take_cost, cost + 1);
+          prev_cost = d[i - 1][j - 1];
+          /* Only do checking of additional terms of it's possible that
+           * we'll come in under the max distance AND beat the cost of
+           * just dropping the term.
+           *
+           * hud_token_distance() could return zero so we need to try it
+           * if:
+           *
+           *   - prev_cost is less than or equal to the max distance
+           *     (because then our result could equal the max distance)
+           *
+           *   - prev_cost is less than or equal to the last cost
+           *     Even if it's equal, skipping has a cost and a perfect
+           *     match has no cost, so we need to try the match.
+           */
+          if (prev_cost <= hud_settings.max_distance && prev_cost <= cost)
+            {
+              guint take_cost;
+
+              take_cost = prev_cost + hud_token_distance (haystack->tokens[j], needle->tokens[i]);
+              cost = MIN (take_cost, cost + 1);
+            }
+          else
+            cost = cost + 1;
+
           d[i][j] = cost;
         }
     }
