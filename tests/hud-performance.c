@@ -29,7 +29,7 @@
 #define MAX_DEPTH 6
 
 /* Max number of items per submenu */
-#define MAX_ITEMS 20
+#define MAX_ITEMS 10
 
 /* Max number of words per label.
  * NB: keep MAX_WORDS * MAX_DEPTH under 32
@@ -263,6 +263,7 @@ test_query_performance (void)
     }
 
   g_object_unref (source);
+  g_rand_free (rand);
 }
 
 int
