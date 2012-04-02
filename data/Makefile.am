@@ -16,5 +16,4 @@ EXTRA_DIST = \
 	$(gsettings_in_files)
 
 CLEANFILES = \
-	$(dbus_services_DATA) \
-	$(gsettings_SCHEMAS)
+	$(dbus_services_DATA)
