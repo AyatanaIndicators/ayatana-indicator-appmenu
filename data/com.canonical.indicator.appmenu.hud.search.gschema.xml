@@ -50,7 +50,7 @@
     </key>
 
     <key type='u' name='swap-penalty'>
-      <default>10</default>
+      <default>15</default>
       <summary>Penalty applied when the characters are not the same</summary>
       <description>
         The penalty for each substituted character in the search term.

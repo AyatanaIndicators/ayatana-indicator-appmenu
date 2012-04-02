@@ -33,7 +33,7 @@ HudSettings hud_settings = {
 	.add_penalty = 10,
 	.drop_penalty = 10,
 	.end_drop_penalty = 1,
-	.swap_penalty = 10,
+	.swap_penalty = 15,
 	.max_distance = 30
 };
 
