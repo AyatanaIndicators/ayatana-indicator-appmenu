@@ -21,7 +21,7 @@
 
 #include <glib-object.h>
 
-#include "hudstringlist.h"
+#include "hudtoken.h"
 
 #define HUD_TYPE_ITEM                                       (hud_item_get_type ())
 #define HUD_ITEM(inst)                                      (G_TYPE_CHECK_INSTANCE_CAST ((inst),                     \
@@ -74,5 +74,6 @@ guint                   hud_item_get_usage                              (HudItem
 gboolean                hud_item_get_enabled                            (HudItem       *item);
 guint64                 hud_item_get_id                                 (HudItem       *item);
 HudItem *               hud_item_lookup                                 (guint64        id);
+HudTokenList *          hud_item_get_token_list                         (HudItem       *item);
 
 #endif /* __HUD_ITEM_H__ */

@@ -296,9 +296,9 @@ hud_window_source_unuse (HudSource *hud_source)
 }
 
 static void
-hud_window_source_search (HudSource   *hud_source,
-                          GPtrArray   *results_array,
-                          const gchar *search_string)
+hud_window_source_search (HudSource    *hud_source,
+                          GPtrArray    *results_array,
+                          HudTokenList *search_string)
 {
   HudWindowSource *source = HUD_WINDOW_SOURCE (hud_source);
 

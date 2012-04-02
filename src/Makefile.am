@@ -99,8 +99,6 @@ noinst_LIBRARIES = libhud-service.a
 libhud_service_a_SOURCES = \
 	create-db.h \
 	create-db.c \
-	distance.h \
-	distance.c \
 	dump-app-info.h \
 	dump-app-info.c \
 	shared-values.h \
@@ -124,6 +122,8 @@ libhud_service_a_SOURCES = \
 	hudsourcelist.c		\
 	hudsource.h		\
 	hudsource.c		\
+	hudtoken.h		\
+	hudtoken.c		\
 	hudquery.h		\
 	hudquery.c		\
 	hudstringlist.h		\
