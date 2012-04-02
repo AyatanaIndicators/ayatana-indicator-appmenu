@@ -1,3 +1,9 @@
+indicator-appmenu (0.3.96-0ubuntu2) UNRELEASED; urgency=low
+
+  * Backport desrt's fix for a leak in the icon code (lp: #967879)
+
+ -- Sebastien Bacher <seb128@ubuntu.com>  Mon, 02 Apr 2012 15:02:36 +0200
+
 indicator-appmenu (0.3.96-0ubuntu1) precise; urgency=low
 
   [ Charles Kerr ]
