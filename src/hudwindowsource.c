@@ -67,6 +67,7 @@ struct _HudWindowSource
   BamfWindow *active_window;
   BamfApplication *active_application;
   const gchar *active_desktop_file;
+  const gchar *active_icon;
   HudSource *active_collector;
   gint use_count;
 };
@@ -167,12 +168,15 @@ hud_window_source_get_collector (HudWindowSource *source)
        * For that reason, we check first for GMenuModel and assume if it
        * doesn't exist then it must be dbusmenu.
        */
-      menumodel_collector = hud_menu_model_collector_get (source->active_window, source->active_desktop_file);
+      menumodel_collector = hud_menu_model_collector_get (source->active_window,
+                                                          source->active_desktop_file,
+                                                          source->active_icon);
       if (menumodel_collector)
         collector = HUD_SOURCE (menumodel_collector);
       else
         collector = HUD_SOURCE (hud_dbusmenu_collector_new_for_window (source->active_window,
-                                                                       source->active_desktop_file));
+                                                                       source->active_desktop_file,
+                                                                       source->active_icon));
 
       g_object_set_qdata_full (G_OBJECT (source->active_window), menu_collector_quark, collector, g_object_unref);
     }
@@ -254,6 +258,7 @@ hud_window_source_active_window_changed (BamfMatcher *matcher,
   source->active_window = g_object_ref (window);
   source->active_application = g_object_ref (application);
   source->active_desktop_file = desktop_file;
+  source->active_icon = bamf_view_get_icon (BAMF_VIEW (application));
   source->active_collector = g_object_ref (hud_window_source_get_collector (source));
 
   if (source->use_count)

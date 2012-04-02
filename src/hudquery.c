@@ -106,14 +106,6 @@ hud_query_refresh (HudQuery *query)
   if (query->search_string[0] != '\0')
     hud_source_search (query->source, query->results, query->search_string);
 
-  /* XXX: The old code queried, sorted, truncated to 15, got usage data,
-   * then sorted again.
-   *
-   * We try to do it only once.
-   *
-   * This may change the results...
-   */
-
   g_ptr_array_foreach (query->results, hud_query_find_max_usage, &max_usage);
   g_ptr_array_sort_with_data (query->results, hud_query_compare_results, GINT_TO_POINTER (max_usage));
   if (query->results->len > query->num_results)

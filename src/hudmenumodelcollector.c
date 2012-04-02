@@ -60,6 +60,7 @@ struct _HudMenuModelCollector
   GDBusActionGroup *window;
 
   gchar *desktop_file;
+  gchar *icon;
   GPtrArray *items;
   gint use_count;
 };
@@ -119,13 +120,14 @@ hud_model_item_class_init (HudModelItemClass *class)
 static HudItem *
 hud_model_item_new (HudStringList      *tokens,
                     const gchar        *desktop_file,
+                    const gchar        *icon,
                     GRemoteActionGroup *action_group,
                     const gchar        *action_name,
                     GVariant           *target)
 {
   HudModelItem *item;
 
-  item = hud_item_construct (hud_model_item_get_type (), tokens, desktop_file, TRUE);
+  item = hud_item_construct (hud_model_item_get_type (), tokens, desktop_file, icon, TRUE);
   item->group = g_object_ref (action_group);
   item->action_name = g_strdup (action_name);
   item->target = target ? g_variant_ref_sink (target) : NULL;
@@ -262,8 +264,7 @@ hud_menu_model_collector_model_changed (GMenuModel *model,
 
               target = g_menu_model_get_item_attribute_value (model, i, G_MENU_ATTRIBUTE_TARGET, NULL);
 
-              /* XXX: todo: target */
-              item = hud_model_item_new (tokens, collector->desktop_file,
+              item = hud_model_item_new (tokens, collector->desktop_file, collector->icon,
                                          G_REMOTE_ACTION_GROUP (action_group),
                                          value + 4, target);
               g_ptr_array_add (collector->items, item);
@@ -381,6 +382,7 @@ hud_menu_model_collector_finalize (GObject *object)
   g_clear_object (&collector->window);
 
   g_free (collector->desktop_file);
+  g_free (collector->icon);
 
   g_ptr_array_unref (collector->items);
 
@@ -412,6 +414,7 @@ hud_menu_model_collector_class_init (HudMenuModelCollectorClass *class)
  * hud_menu_model_collector_get:
  * @window: a #BamfWindow
  * @desktop_file: the desktop file of the application of @window
+ * @icon: the application icon's name
  *
  * If the given @window has #GMenuModel-style menus then returns a
  * collector for them, otherwise returns %NULL.
@@ -422,7 +425,8 @@ hud_menu_model_collector_class_init (HudMenuModelCollectorClass *class)
  **/
 HudMenuModelCollector *
 hud_menu_model_collector_get (BamfWindow  *window,
-                              const gchar *desktop_file)
+                              const gchar *desktop_file,
+                              const gchar *icon)
 {
   HudMenuModelCollector *collector;
   gchar *unique_bus_name;
@@ -466,6 +470,7 @@ hud_menu_model_collector_get (BamfWindow  *window,
     collector->window = g_dbus_action_group_get (session, unique_bus_name, window_object_path);
 
   collector->desktop_file = g_strdup (desktop_file);
+  collector->icon = g_strdup (icon);
 
   /* when the action groups change, we could end up having items
    * enabled/disabled.  how to deal with that?
