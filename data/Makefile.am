@@ -13,7 +13,7 @@ dbus_services_DATA = com.canonical.hud.service
 
 EXTRA_DIST = \
 	$(dbus_services_DATA:.service=.service.in) \
-	$(gsettings_in_files)
+	$(gsettings_SCHEMAS)
 
 CLEANFILES = \
 	$(dbus_services_DATA)
