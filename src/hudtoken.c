@@ -29,11 +29,16 @@ struct _HudToken
   gunichar *str;
 };
 
+/* This is actually one greater than the max-length.
+ * Should be power-of-two for best performance.
+ */
+#define TOKEN_LENGTH_LIMIT 32
+
 #if 0
 static void
 hud_token_distance_debug (const HudToken *haystack,
                           const HudToken *needle,
-                          guint           d[32][32])
+                          guint           d[TOKEN_LENGTH_LIMIT][TOKEN_LENGTH_LIMIT])
 {
   gint i, j;
 
@@ -69,12 +74,12 @@ guint
 hud_token_distance (const HudToken *haystack,
                     const HudToken *needle)
 {
-  static guint d[32][32];
+  static guint d[TOKEN_LENGTH_LIMIT][TOKEN_LENGTH_LIMIT];
   gunichar h, n;
   gint result;
   gint i, j;
 
-  g_assert (haystack->length < 32 && needle->length < 32);
+  g_assert (haystack->length < TOKEN_LENGTH_LIMIT && needle->length < TOKEN_LENGTH_LIMIT);
   g_assert (haystack->str[haystack->length] == 0);
   g_assert (needle->str[needle->length] == 0);
 
@@ -178,7 +183,7 @@ hud_token_new (const gchar *str,
   g_free (folded);
   g_free (normal);
 
-  if (!(token->length < 32))
+  if (!(token->length < TOKEN_LENGTH_LIMIT))
     {
       token->length = 31;
       token->str[31] = 0;
@@ -288,13 +293,6 @@ hud_token_list_free (HudTokenList *list)
 }
 
 guint
-hud_token_list_distance_slow (HudTokenList *haystack,
-                              HudTokenList *needle)
-{
-  g_assert_not_reached ();
-}
-
-guint
 hud_token_list_distance (HudTokenList   *haystack,
                          HudTokenList   *needle,
                          const gchar  ***matches)
@@ -305,8 +303,13 @@ hud_token_list_distance (HudTokenList   *haystack,
   if (needle->length > haystack->length)
     return G_MAXUINT;
 
-  if G_UNLIKELY (haystack->length > 32 || needle->length > 32)
-    return hud_token_list_distance_slow (haystack, needle);
+  /* Simply refuse to deal with ridiculous situations.
+   *
+   * This only happens when the user has more than 32 words in their
+   * search or the same happens in a menu item.
+   */
+  if (haystack->length > 32 || needle->length > 32)
+    return G_MAXUINT;
 
   /* unroll the handling of the first needle term */
   {
