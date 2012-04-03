@@ -347,60 +347,57 @@ calculate_distance (const gchar * needle, GStrv haystacks, GStrv * matches)
 	g_strfreev(needle_split);
 	guint num_needle_tokens = g_strv_length(needle_tokens);
 
-	/* If we can't even find a set that works, let's just cut
-	   our losses here */
-	if (num_needle_tokens > num_haystack_tokens) {
-		goto cleanup_tokens;
-	}
+	if (num_needle_tokens <= num_haystack_tokens) {
 
-	/* We need a place to store all the distances */
-	guint * distances = g_new0(guint, num_haystack_tokens * num_needle_tokens);
+		/* We need a place to store all the distances */
+		guint * distances = g_new0(guint, num_haystack_tokens * num_needle_tokens);
 
-	/* Calculate all the distance combinations */
-	gint needle_token;
-	for (needle_token = 0; needle_tokens[needle_token] != NULL; needle_token++) {
-		gchar * ineedle = needle_tokens[needle_token];
+		/* Calculate all the distance combinations */
+		gint needle_token;
+		for (needle_token = 0; needle_tokens[needle_token] != NULL; needle_token++) {
+			gchar * ineedle = needle_tokens[needle_token];
 
-		guint haystacks_cnt;
-		guint haystack_token_cnt = 0;
-		for (haystacks_cnt = 0; haystacks_cnt < num_haystacks; haystacks_cnt++) {
-			guint haystack_cnt;
-			for (haystack_cnt = 0; haystacks_array[haystacks_cnt][haystack_cnt] != NULL; haystack_cnt++) {
-				gchar * ihaystack = haystacks_array[haystacks_cnt][haystack_cnt];
-				guint distance = calculate_token_distance(ineedle, ihaystack);
+			guint haystacks_cnt;
+			guint haystack_token_cnt = 0;
+			for (haystacks_cnt = 0; haystacks_cnt < num_haystacks; haystacks_cnt++) {
+				guint haystack_cnt;
+				for (haystack_cnt = 0; haystacks_array[haystacks_cnt][haystack_cnt] != NULL; haystack_cnt++) {
+					gchar * ihaystack = haystacks_array[haystacks_cnt][haystack_cnt];
+					guint distance = calculate_token_distance(ineedle, ihaystack);
 
-				distances[(needle_token * num_haystack_tokens) + haystack_token_cnt] = distance;
-				haystack_token_cnt++;
+					distances[(needle_token * num_haystack_tokens) + haystack_token_cnt] = distance;
+					haystack_token_cnt++;
+				}
 			}
 		}
-	}
 
-	/* Now, try to find a path through the array that results in the
-	   lowest total value */
-	guint * final_matches = g_new0(guint, num_needle_tokens);
+		/* Now, try to find a path through the array that results in the
+		   lowest total value */
+		guint * final_matches = g_new0(guint, num_needle_tokens);
 
-	final_distance = minimize_distance(num_needle_tokens, num_haystack_tokens, distances, final_matches);
+		final_distance = minimize_distance(num_needle_tokens, num_haystack_tokens, distances, final_matches);
 
-	/* Set up an array for matches so that we can enter
-	   the items as we go */
-	if (matches != NULL) {
-		GStrv match_array = NULL;
-		match_array = g_new0(gchar *, num_needle_tokens + 1);
-		match_array[num_needle_tokens] = NULL;
+		/* Set up an array for matches so that we can enter
+		   the items as we go */
+		if (matches != NULL) {
+			GStrv match_array = NULL;
+			match_array = g_new0(gchar *, num_needle_tokens + 1);
+			match_array[num_needle_tokens] = NULL;
 
-		/* Copy the strings that we care about */
-		int i;
-		for (i = 0; i < num_needle_tokens; i++) {
-			match_array[i] = find_token(final_matches[i], haystacks_array, num_haystacks);
+			/* Copy the strings that we care about */
+			int i;
+			for (i = 0; i < num_needle_tokens; i++) {
+				match_array[i] = find_token(final_matches[i], haystacks_array, num_haystacks);
+			}
+
+			*matches = match_array;
 		}
 
-		*matches = match_array;
+		g_free(final_matches);
+		g_free(distances);
 	}
 
-	g_free(final_matches);
-	g_free(distances);
-
-cleanup_tokens:
+	/* token cleanup */
 	g_strfreev(needle_tokens);
 	for (i = 0; i < num_haystacks; i++) {
 		g_strfreev(haystacks_array[i]);
