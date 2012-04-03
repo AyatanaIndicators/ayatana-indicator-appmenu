@@ -144,9 +144,9 @@ hud_source_unuse (HudSource *source)
  * function may have changed, at which point you should call it again.
  **/
 void
-hud_source_search (HudSource   *source,
-                   GPtrArray   *results_array,
-                   const gchar *search_string)
+hud_source_search (HudSource    *source,
+                   GPtrArray    *results_array,
+                   HudTokenList *search_string)
 {
   g_debug ("search on %s %p", G_OBJECT_TYPE_NAME (source), source);
 

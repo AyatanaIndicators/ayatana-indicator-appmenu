@@ -346,9 +346,9 @@ hud_menu_model_collector_unuse (HudSource *source)
 }
 
 static void
-hud_menu_model_collector_search (HudSource   *source,
-                                 GPtrArray   *results_array,
-                                 const gchar *search_string)
+hud_menu_model_collector_search (HudSource    *source,
+                                 GPtrArray    *results_array,
+                                 HudTokenList *search_string)
 {
   HudMenuModelCollector *collector = HUD_MENU_MODEL_COLLECTOR (source);
   GPtrArray *items;

@@ -53,20 +53,14 @@
  *   matching result
  * @add_penalty: the penalty incurred by a character in the search term
  *   that does not exist in the item being matched
- * @add_penalty_pre: the penalty incurred by a character in the search
- *   term that does not exist in the item being matched when that
- *   character comes at the beginning of the term
  * @drop_penalty: the penalty incurred by a character missing from the
  *   search string as compared to the item being matched
- * @drop_penalty_end: the penalty incurred by a character missing from
+ * @end_drop_penalty: the penalty incurred by a character missing from
  *   the search string as compared to the item being matched when the
  *   character is at the end of the item (ie: the search term is a
  *   prefix of the item)
- * @transpose_penalty: the penalty incurred for transposed characters
  * @swap_penalty: the penalty incurred for the substitution of one
  *   character for another
- * @swap_penalty_case: the penalty incurred for the substitution of one
- *   character for another when the characters differ only in case
  *
  * This structure contains the value of several tunable parameters that
  * affect the behaviour of various components of the HUD.
@@ -101,19 +95,14 @@ hud_search_settings_refresh (GSettings *settings)
   hud_settings.indicator_penalty = g_settings_get_uint (settings, "indicator-penalty");
   hud_settings.max_distance = g_settings_get_uint (settings, "max-distance");
   hud_settings.add_penalty = g_settings_get_uint (settings, "add-penalty");
-  hud_settings.add_penalty_pre = g_settings_get_uint (settings, "add-penalty-pre");
   hud_settings.drop_penalty = g_settings_get_uint (settings, "drop-penalty");
-  hud_settings.drop_penalty_end = g_settings_get_uint (settings, "drop-penalty-end");
-  hud_settings.transpose_penalty = g_settings_get_uint (settings, "transpose-penalty");
+  hud_settings.end_drop_penalty = g_settings_get_uint (settings, "end-drop-penalty");
   hud_settings.swap_penalty = g_settings_get_uint (settings, "swap-penalty");
-  hud_settings.swap_penalty_case = g_settings_get_uint (settings, "swap-penalty-case");
 
   g_debug ("indicator penalty: %u, max distance: %u",
            hud_settings.indicator_penalty, hud_settings.max_distance);
-  g_debug ("penalties: add:%u add-pre:%u drop:%u drop-end:%u trans:%u swap:%u swap-case:%u",
-           hud_settings.add_penalty, hud_settings.add_penalty_pre, hud_settings.drop_penalty,
-           hud_settings.drop_penalty_end, hud_settings.transpose_penalty, hud_settings.swap_penalty,
-           hud_settings.swap_penalty_case);
+  g_debug ("penalties: add:%u drop:%u end-drop:%u swap:%u", hud_settings.add_penalty,
+           hud_settings.drop_penalty, hud_settings.end_drop_penalty, hud_settings.swap_penalty);
 }
 
 /**
