@@ -107,7 +107,7 @@ hud_query_refresh (HudQuery *query)
 
   g_ptr_array_set_size (query->results, 0);
 
-  if (query->search_string[0] != '\0')
+  if (hud_token_list_get_length (query->token_list) != 0)
     hud_source_search (query->source, query->results, query->token_list);
 
   g_ptr_array_foreach (query->results, hud_query_find_max_usage, &max_usage);
