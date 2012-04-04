@@ -392,3 +392,9 @@ hud_token_list_distance (HudTokenList   *haystack,
 
   return d[needle->length - 1][haystack->length - 1];
 }
+
+guint
+hud_token_list_get_length (HudTokenList *list)
+{
+  return list->length;
+}
