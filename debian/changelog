@@ -24,13 +24,6 @@ indicator-appmenu (0.3.96-0ubuntu2) precise; urgency=low
 
  -- Sebastien Bacher <seb128@ubuntu.com>  Mon, 02 Apr 2012 15:03:25 +0200
 
-indicator-appmenu (0.3.96-0ubuntu2~ppa1) UNRELEASED; urgency=low
-
-  * debian/control
-    - Added build depends needed for test-dbus-message-count
-
- -- Ken VanDine <ken.vandine@canonical.com>  Thu, 29 Mar 2012 10:57:55 -0400
-
 indicator-appmenu (0.3.96-0ubuntu1) precise; urgency=low
 
   [ Charles Kerr ]
