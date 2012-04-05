@@ -1,7 +1,18 @@
+indicator-appmenu (0.3.97-0ubuntu1) precise; urgency=low
+
+  * New upstream release.
+    * Faster searches and better search results. (lp: #947283, lp: #972354)
+    * Don't submit searches with zero tokens. (lp: #973203)
+    * Propertly emit the WindowUnregistered signal when windows go away.
+    * Improvements to the gcov automake rules.
+    * Fix bootstrap error in tests.
+
+ -- Charles Kerr <charles.kerr@canonical.com>  Thu, 05 Apr 2012 11:58:41 -0500
+
 indicator-appmenu (0.3.96-0ubuntu3) precise; urgency=low
 
   * Backport desrt's performance improvement work:
-    - reduce hud cpu usage and DoS on long strings (lp: #938584, ##948820)
+    - reduce hud cpu usage and DoS on long strings (lp: #938584, lp: #948820)
     - should stop stripping issues (lp: #937020)
     - fixes a small leak (lp: #972354)
 
@@ -12,6 +23,13 @@ indicator-appmenu (0.3.96-0ubuntu2) precise; urgency=low
   * Backport desrt's fix for a leak in the icon code (lp: #967879)
 
  -- Sebastien Bacher <seb128@ubuntu.com>  Mon, 02 Apr 2012 15:03:25 +0200
+
+indicator-appmenu (0.3.96-0ubuntu2~ppa1) UNRELEASED; urgency=low
+
+  * debian/control
+    - Added build depends needed for test-dbus-message-count
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Thu, 29 Mar 2012 10:57:55 -0400
 
 indicator-appmenu (0.3.96-0ubuntu1) precise; urgency=low
 

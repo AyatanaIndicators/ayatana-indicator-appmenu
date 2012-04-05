@@ -1240,6 +1240,8 @@ unregister_window (IndicatorAppmenu * iapp, guint windowid)
 	/* If it's a desktop window remove it from that table as well */
 	g_hash_table_remove(iapp->desktop_windows, GUINT_TO_POINTER(windowid));
 
+	emit_signal(iapp, "WindowUnregistered", g_variant_new ("(u)", windowid));
+
 	/* Now let's see if we've got a WM object for it then
 	   we need to mark it as destroyed and unreference to
 	   actually destroy it. */

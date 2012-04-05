@@ -36,7 +36,7 @@ host_triplet = @host@
 check_PROGRAMS = test-distance$(EXEEXT) test-usage-db-simple$(EXEEXT) \
 	test-usage-db-old$(EXEEXT) test-usage-db-ancient$(EXEEXT) \
 	test-usage-db-testapp$(EXEEXT) test-bad-app-info$(EXEEXT) \
-	test-load-app-info$(EXEEXT)
+	test-load-app-info$(EXEEXT) hud-performance$(EXEEXT)
 XFAIL_TESTS =
 subdir = tests
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
@@ -57,15 +57,24 @@ mkinstalldirs = $(install_sh) -d
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
-am_test_bad_app_info_OBJECTS =  \
-	test_bad_app_info-test-bad-app-info.$(OBJEXT)
-test_bad_app_info_OBJECTS = $(am_test_bad_app_info_OBJECTS)
+am_hud_performance_OBJECTS =  \
+	hud_performance-hud-performance.$(OBJEXT)
+hud_performance_OBJECTS = $(am_hud_performance_OBJECTS)
 am__DEPENDENCIES_1 =
-test_bad_app_info_DEPENDENCIES = ../src/libhud-service.a \
+hud_performance_DEPENDENCIES = ../src/libhud-service.a \
 	$(am__DEPENDENCIES_1)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
+hud_performance_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(hud_performance_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
+	-o $@
+am_test_bad_app_info_OBJECTS =  \
+	test_bad_app_info-test-bad-app-info.$(OBJEXT)
+test_bad_app_info_OBJECTS = $(am_test_bad_app_info_OBJECTS)
+test_bad_app_info_DEPENDENCIES = ../src/libhud-service.a \
+	$(am__DEPENDENCIES_1)
 test_bad_app_info_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(test_bad_app_info_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) $(LDFLAGS) \
@@ -148,13 +157,15 @@ am__v_CCLD_0 = @echo "  CCLD  " $@;
 AM_V_GEN = $(am__v_GEN_@AM_V@)
 am__v_GEN_ = $(am__v_GEN_@AM_DEFAULT_V@)
 am__v_GEN_0 = @echo "  GEN   " $@;
-SOURCES = $(test_bad_app_info_SOURCES) $(test_distance_SOURCES) \
-	$(test_load_app_info_SOURCES) $(test_usage_db_ancient_SOURCES) \
-	$(test_usage_db_old_SOURCES) $(test_usage_db_simple_SOURCES) \
+SOURCES = $(hud_performance_SOURCES) $(test_bad_app_info_SOURCES) \
+	$(test_distance_SOURCES) $(test_load_app_info_SOURCES) \
+	$(test_usage_db_ancient_SOURCES) $(test_usage_db_old_SOURCES) \
+	$(test_usage_db_simple_SOURCES) \
 	$(test_usage_db_testapp_SOURCES)
-DIST_SOURCES = $(test_bad_app_info_SOURCES) $(test_distance_SOURCES) \
-	$(test_load_app_info_SOURCES) $(test_usage_db_ancient_SOURCES) \
-	$(test_usage_db_old_SOURCES) $(test_usage_db_simple_SOURCES) \
+DIST_SOURCES = $(hud_performance_SOURCES) $(test_bad_app_info_SOURCES) \
+	$(test_distance_SOURCES) $(test_load_app_info_SOURCES) \
+	$(test_usage_db_ancient_SOURCES) $(test_usage_db_old_SOURCES) \
+	$(test_usage_db_simple_SOURCES) \
 	$(test_usage_db_testapp_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	html-recursive info-recursive install-data-recursive \
@@ -559,6 +570,19 @@ test_load_app_info_LDADD = \
 	../src/libhud-service.a		\
 	$(HUD_LIBS)
 
+hud_performance_CFLAGS = \
+	-I$(top_builddir)/src		\
+	-I$(top_srcdir)/src		\
+	$(HUD_CFLAGS)
+
+hud_performance_LDADD = \
+	../src/libhud-service.a		\
+	$(HUD_LIBS)
+
+hud_performance_SOURCES = \
+	hud-performance.c	\
+	word-list.h
+
 all: all-recursive
 
 .SUFFIXES:
@@ -602,6 +626,9 @@ clean-checkPROGRAMS:
 	list=`for p in $$list; do echo "$$p"; done | sed 's/$(EXEEXT)$$//'`; \
 	echo " rm -f" $$list; \
 	rm -f $$list
+hud-performance$(EXEEXT): $(hud_performance_OBJECTS) $(hud_performance_DEPENDENCIES) $(EXTRA_hud_performance_DEPENDENCIES) 
+	@rm -f hud-performance$(EXEEXT)
+	$(AM_V_CCLD)$(hud_performance_LINK) $(hud_performance_OBJECTS) $(hud_performance_LDADD) $(LIBS)
 test-bad-app-info$(EXEEXT): $(test_bad_app_info_OBJECTS) $(test_bad_app_info_DEPENDENCIES) $(EXTRA_test_bad_app_info_DEPENDENCIES) 
 	@rm -f test-bad-app-info$(EXEEXT)
 	$(AM_V_CCLD)$(test_bad_app_info_LINK) $(test_bad_app_info_OBJECTS) $(test_bad_app_info_LDADD) $(LIBS)
@@ -630,6 +657,7 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_performance-hud-performance.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_bad_app_info-test-bad-app-info.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_distance-test-distance.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_load_app_info-test-load-app-info.Po@am__quote@
@@ -661,6 +689,20 @@ distclean-compile:
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
+
+hud_performance-hud-performance.o: hud-performance.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_performance_CFLAGS) $(CFLAGS) -MT hud_performance-hud-performance.o -MD -MP -MF $(DEPDIR)/hud_performance-hud-performance.Tpo -c -o hud_performance-hud-performance.o `test -f 'hud-performance.c' || echo '$(srcdir)/'`hud-performance.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_performance-hud-performance.Tpo $(DEPDIR)/hud_performance-hud-performance.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='hud-performance.c' object='hud_performance-hud-performance.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_performance_CFLAGS) $(CFLAGS) -c -o hud_performance-hud-performance.o `test -f 'hud-performance.c' || echo '$(srcdir)/'`hud-performance.c
+
+hud_performance-hud-performance.obj: hud-performance.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_performance_CFLAGS) $(CFLAGS) -MT hud_performance-hud-performance.obj -MD -MP -MF $(DEPDIR)/hud_performance-hud-performance.Tpo -c -o hud_performance-hud-performance.obj `if test -f 'hud-performance.c'; then $(CYGPATH_W) 'hud-performance.c'; else $(CYGPATH_W) '$(srcdir)/hud-performance.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/hud_performance-hud-performance.Tpo $(DEPDIR)/hud_performance-hud-performance.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='hud-performance.c' object='hud_performance-hud-performance.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_performance_CFLAGS) $(CFLAGS) -c -o hud_performance-hud-performance.obj `if test -f 'hud-performance.c'; then $(CYGPATH_W) 'hud-performance.c'; else $(CYGPATH_W) '$(srcdir)/hud-performance.c'; fi`
 
 test_bad_app_info-test-bad-app-info.o: test-bad-app-info.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_bad_app_info_CFLAGS) $(CFLAGS) -MT test_bad_app_info-test-bad-app-info.o -MD -MP -MF $(DEPDIR)/test_bad_app_info-test-bad-app-info.Tpo -c -o test_bad_app_info-test-bad-app-info.o `test -f 'test-bad-app-info.c' || echo '$(srcdir)/'`test-bad-app-info.c

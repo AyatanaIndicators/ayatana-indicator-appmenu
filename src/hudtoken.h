@@ -32,6 +32,7 @@ guint                   hud_token_distance                              (const H
 
 HudTokenList *          hud_token_list_new_from_string                  (const gchar      *string);
 HudTokenList *          hud_token_list_new_from_string_list             (HudStringList    *string_list);
+guint                   hud_token_list_get_length                       (HudTokenList     *list);
 void                    hud_token_list_free                             (HudTokenList     *list);
 guint                   hud_token_list_distance                         (HudTokenList     *haystack,
                                                                          HudTokenList     *needle,
