@@ -36,22 +36,22 @@ struct _HudSourceInterface
 {
   GTypeInterface g_iface;
 
-  void (* use)    (HudSource   *source);
-  void (* unuse)  (HudSource   *source);
-  void (* search) (HudSource   *source,
-                   GPtrArray   *results_array,
-                   const gchar *search_string);
+  void (* use)    (HudSource    *source);
+  void (* unuse)  (HudSource    *source);
+  void (* search) (HudSource    *source,
+                   GPtrArray    *results_array,
+                   HudTokenList *search_tokens);
 };
 
 GType                   hud_source_get_type                             (void);
 
-void                    hud_source_use                                  (HudSource   *source);
-void                    hud_source_unuse                                (HudSource   *source);
+void                    hud_source_use                                  (HudSource    *source);
+void                    hud_source_unuse                                (HudSource    *source);
 
-void                    hud_source_search                               (HudSource   *source,
-                                                                         GPtrArray   *results_array,
-                                                                         const gchar *search_string);
+void                    hud_source_search                               (HudSource    *source,
+                                                                         GPtrArray    *results_array,
+                                                                         HudTokenList *search_tokens);
 
-void                    hud_source_changed                              (HudSource   *source);
+void                    hud_source_changed                              (HudSource    *source);
 
 #endif /* __HUD_SOURCE_H__ */

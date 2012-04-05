@@ -31,12 +31,9 @@ struct _HudSettings
   guint max_distance;
 
   guint add_penalty;
-  guint add_penalty_pre;
   guint drop_penalty;
-  guint drop_penalty_end;
-  guint transpose_penalty;
+  guint end_drop_penalty;
   guint swap_penalty;
-  guint swap_penalty_case;
 };
 
 extern HudSettings hud_settings;

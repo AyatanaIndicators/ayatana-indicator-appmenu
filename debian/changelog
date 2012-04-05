@@ -1,3 +1,18 @@
+indicator-appmenu (0.3.96-0ubuntu3) precise; urgency=low
+
+  * Backport desrt's performance improvement work:
+    - reduce hud cpu usage and DoS on long strings (lp: #938584, ##948820)
+    - should stop stripping issues (lp: #937020)
+    - fixes a small leak (lp: #972354)
+
+ -- Sebastien Bacher <seb128@ubuntu.com>  Tue, 03 Apr 2012 17:59:03 +0200
+
+indicator-appmenu (0.3.96-0ubuntu2) precise; urgency=low
+
+  * Backport desrt's fix for a leak in the icon code (lp: #967879)
+
+ -- Sebastien Bacher <seb128@ubuntu.com>  Mon, 02 Apr 2012 15:03:25 +0200
+
 indicator-appmenu (0.3.96-0ubuntu2~ppa1) UNRELEASED; urgency=low
 
   * debian/control
@@ -5,14 +20,20 @@ indicator-appmenu (0.3.96-0ubuntu2~ppa1) UNRELEASED; urgency=low
 
  -- Ken VanDine <ken.vandine@canonical.com>  Thu, 29 Mar 2012 10:57:55 -0400
 
-indicator-appmenu (0.3.96-0ubuntu1~ppa1) precise; urgency=low
+indicator-appmenu (0.3.96-0ubuntu1) precise; urgency=low
 
+  [ Charles Kerr ]
   * New upstream release.
     * Fix icon support.
     * Fix a pair of memory leaks (LP: #965497)
     * Added tests to benchmark dbus message traffic.
 
- -- Charles Kerr <charles.kerr@canonical.com>  Wed, 28 Mar 2012 17:05:30 -0700
+  [ Ken VanDine ]
+  * tests/Makefile.am
+    - Don't run the test-dbus-message-count test, it requires bustle which 
+      is in universe
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Thu, 29 Mar 2012 10:53:14 -0400
 
 indicator-appmenu (0.3.95-0ubuntu2) precise; urgency=low
 

@@ -23,7 +23,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <glib-object.h>
 
 #include "hudsettings.h"
-#include "distance.h"
+#include "hudtoken.h"
 
 /* hardcode some parameters so the test doesn't fail if the user
  * has bogus things in GSettings.
@@ -31,14 +31,53 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 HudSettings hud_settings = {
 	.indicator_penalty = 50,
 	.add_penalty = 10,
-	.add_penalty_pre = 1,
 	.drop_penalty = 10,
-	.drop_penalty_end = 10,
-	.transpose_penalty = 10,
-	.swap_penalty = 10,
-	.swap_penalty_case = 1,
+	.end_drop_penalty = 1,
+	.swap_penalty = 15,
 	.max_distance = 30
 };
+
+static guint
+calculate_distance (const gchar *search, GStrv teststrings, gchar ***matches)
+{
+	HudStringList *list = NULL;
+	HudTokenList *haystack;
+	HudTokenList *needle;
+	guint distance;
+	gint i;
+
+	if (search == NULL || teststrings == NULL) {
+		return G_MAXINT;
+	}
+
+	for (i = 0; teststrings[i]; i++) {
+		HudStringList *tmp;
+
+		tmp = hud_string_list_cons (teststrings[i], list);
+		hud_string_list_unref (list);
+		list = tmp;
+	}
+
+	haystack = hud_token_list_new_from_string_list (list);
+	hud_string_list_unref (list);
+
+	needle = hud_token_list_new_from_string (search);
+	distance = hud_token_list_distance (haystack, needle, (const gchar ***) matches);
+
+	if (matches) {
+		/* These are owned by the tokenlists, so make copies
+		 * before freeing.
+		 */
+		for (i = 0; (*matches)[i]; i++) {
+			(*matches)[i] = g_strdup ((*matches)[i]);
+		}
+	}
+
+	hud_token_list_free (haystack);
+	hud_token_list_free (needle);
+
+	return distance;
+}
 
 /* Ensure the base calculation works */
 static void
@@ -185,6 +224,18 @@ test_distance_dups (void)
 	return;
 }
 
+/* Check to make sure 'Save' matches better than 'Save As...' for "save" */
+static void
+test_distance_extra_terms (void)
+{
+  const gchar *save_as[] = { "File", "Save", "As...", NULL };
+  const gchar *save[] = { "File", "Save", NULL };
+
+  g_assert_cmpint (calculate_distance ("save", (GStrv) save, NULL),
+                   <,
+                   calculate_distance ("save", (GStrv) save_as, NULL));
+}
+
 /* Build the test suite */
 static void
 test_distance_suite (void)
@@ -196,6 +247,7 @@ test_distance_suite (void)
 	g_test_add_func ("/hud/distance/duplicates",    test_distance_dups);
 	g_test_add_func ("/hud/distance/variety",       test_distance_variety);
 	g_test_add_func ("/hud/distance/french_pref",   test_distance_french_pref);
+	g_test_add_func ("/hud/distance/extra_terms",   test_distance_extra_terms);
 	return;
 }
 

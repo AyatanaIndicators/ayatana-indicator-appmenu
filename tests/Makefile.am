@@ -373,8 +373,8 @@ EXTRA_DIST += \
 # Test Dbus Messages
 #########################
 
-TESTS += \
-	test-dbus-message-count
+#TESTS += \
+#	test-dbus-message-count
 
 test-dbus-message-count: test-dbus-message-count.in
 	@sed \
@@ -390,6 +390,24 @@ EXTRA_DIST += \
 	test-dbus-message-count.json
 
 DISTCLEANFILES += test-dbus-message-count.bustle
+
+###################
+# Test Performance
+###################
+
+check_PROGRAMS += \
+	hud-performance
+
+hud_performance_CFLAGS = \
+	-I$(top_builddir)/src		\
+	-I$(top_srcdir)/src		\
+	$(HUD_CFLAGS)
+hud_performance_LDADD = \
+	../src/libhud-service.a		\
+	$(HUD_LIBS)
+hud_performance_SOURCES = \
+	hud-performance.c	\
+	word-list.h
 
 #########################
 # Footer
