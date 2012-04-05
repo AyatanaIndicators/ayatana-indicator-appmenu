@@ -51,6 +51,7 @@ struct _HudQuery
 
   HudSource *source;
   gchar *search_string;
+  HudTokenList *token_list;
   gint num_results;
   guint refresh_id;
 
@@ -100,16 +101,21 @@ static void
 hud_query_refresh (HudQuery *query)
 {
   guint max_usage = 0;
+  guint64 start_time;
+
+  start_time = g_get_monotonic_time ();
 
   g_ptr_array_set_size (query->results, 0);
 
-  if (query->search_string[0] != '\0')
-    hud_source_search (query->source, query->results, query->search_string);
+  if (hud_token_list_get_length (query->token_list) != 0)
+    hud_source_search (query->source, query->results, query->token_list);
 
   g_ptr_array_foreach (query->results, hud_query_find_max_usage, &max_usage);
   g_ptr_array_sort_with_data (query->results, hud_query_compare_results, GINT_TO_POINTER (max_usage));
   if (query->results->len > query->num_results)
     g_ptr_array_set_size (query->results, query->num_results);
+
+  g_debug ("query took %dus\n", (int) (g_get_monotonic_time () - start_time));
 }
 
 static gboolean
@@ -148,6 +154,7 @@ hud_query_finalize (GObject *object)
   hud_source_unuse (query->source);
 
   g_object_unref (query->source);
+  hud_token_list_free (query->token_list);
   g_free (query->search_string);
   g_ptr_array_unref (query->results);
 
@@ -206,6 +213,7 @@ hud_query_new (HudSource   *source,
   query->source = g_object_ref (source);
   query->results = g_ptr_array_new_with_free_func (g_object_unref);
   query->search_string = g_strdup (search_string);
+  query->token_list = hud_token_list_new_from_string (query->search_string);
   query->num_results = num_results;
 
   hud_source_use (query->source);

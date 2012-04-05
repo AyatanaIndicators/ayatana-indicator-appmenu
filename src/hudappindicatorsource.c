@@ -371,9 +371,9 @@ hud_app_indicator_source_unuse (HudSource *hud_source)
 }
 
 static void
-hud_app_indicator_source_search (HudSource   *hud_source,
-                                 GPtrArray   *results_array,
-                                 const gchar *search_string)
+hud_app_indicator_source_search (HudSource    *hud_source,
+                                 GPtrArray    *results_array,
+                                 HudTokenList *search_tokens)
 {
   HudAppIndicatorSource *source = HUD_APP_INDICATOR_SOURCE (hud_source);
   GSequenceIter *iter;
@@ -382,7 +382,7 @@ hud_app_indicator_source_search (HudSource   *hud_source,
 
   while (!g_sequence_iter_is_end (iter))
     {
-      hud_source_search (g_sequence_get (iter), results_array, search_string);
+      hud_source_search (g_sequence_get (iter), results_array, search_tokens);
       iter = g_sequence_iter_next (iter);
     }
 }

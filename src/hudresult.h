@@ -31,18 +31,18 @@ typedef struct _HudResult                                   HudResult;
 
 GType                   hud_result_get_type                             (void);
 
-HudResult *             hud_result_new                                  (HudItem     *item,
-                                                                         const gchar *search_string,
-                                                                         guint        penalty);
+HudResult *             hud_result_new                                  (HudItem      *item,
+                                                                         HudTokenList *search_tokens,
+                                                                         guint         penalty);
 
-HudResult *             hud_result_get_if_matched                       (HudItem     *item,
-                                                                         const gchar *search_string,
-                                                                         guint        penalty);
+HudResult *             hud_result_get_if_matched                       (HudItem      *item,
+                                                                         HudTokenList *search_tokens,
+                                                                         guint         penalty);
 
-HudItem *               hud_result_get_item                             (HudResult   *result);
-guint                   hud_result_get_distance                         (HudResult   *result,
-                                                                         guint        max_usage);
-const gchar *           hud_result_get_html_description                 (HudResult   *result);
+HudItem *               hud_result_get_item                             (HudResult    *result);
+guint                   hud_result_get_distance                         (HudResult    *result,
+                                                                         guint         max_usage);
+const gchar *           hud_result_get_html_description                 (HudResult    *result);
 
 
 #endif /* __HUD_RESULT_H__ */
