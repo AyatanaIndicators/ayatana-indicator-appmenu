@@ -1,4 +1,4 @@
-indicator-appmenu (0.3.97-0ubuntu1) UNRELEASED; urgency=low
+indicator-appmenu (0.3.97-0ubuntu1) precise; urgency=low
 
   * New upstream release.
     * Faster searches and better search results. (lp: #947283, lp: #972354)
@@ -7,7 +7,7 @@ indicator-appmenu (0.3.97-0ubuntu1) UNRELEASED; urgency=low
     * Improvements to the gcov automake rules.
     * Fix bootstrap error in tests.
 
- -- Charles Kerr <charles.kerr@canonical.com>  Thu, 05 Apr 2012 11:18:34 -0500
+ -- Charles Kerr <charles.kerr@canonical.com>  Thu, 05 Apr 2012 11:58:41 -0500
 
 indicator-appmenu (0.3.96-0ubuntu3) precise; urgency=low
 
