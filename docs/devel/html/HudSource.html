@@ -50,7 +50,7 @@ struct              <a class="link" href="HudSource.html#HudSourceInterface" tit
 <span class="returnvalue">void</span>                <a class="link" href="HudSource.html#hud-source-changed" title="hud_source_changed ()">hud_source_changed</a>                  (<em class="parameter"><code><a class="link" href="HudSource.html" title="HudSource"><span class="type">HudSource</span></a> *source</code></em>);
 <span class="returnvalue">void</span>                <a class="link" href="HudSource.html#hud-source-search" title="hud_source_search ()">hud_source_search</a>                   (<em class="parameter"><code><a class="link" href="HudSource.html" title="HudSource"><span class="type">HudSource</span></a> *source</code></em>,
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.html#GPtrArray"><span class="type">GPtrArray</span></a> *results_array</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *search_string</code></em>);
+                                                         <em class="parameter"><code><span class="type">HudTokenList</span> *search_tokens</code></em>);
 </pre>
 </div>
 <div class="refsect1">
@@ -128,11 +128,11 @@ This is an opaque structure type.
 <pre class="programlisting">struct HudSourceInterface {
   GTypeInterface g_iface;
 
-  void (* use)    (HudSource   *source);
-  void (* unuse)  (HudSource   *source);
-  void (* search) (HudSource   *source,
-                   GPtrArray   *results_array,
-                   const gchar *search_string);
+  void (* use)    (HudSource    *source);
+  void (* unuse)  (HudSource    *source);
+  void (* search) (HudSource    *source,
+                   GPtrArray    *results_array,
+                   HudTokenList *search_tokens);
 };
 </pre>
 <p>
@@ -188,7 +188,7 @@ This function should only ever be called by implementations of
 <a name="hud-source-search"></a><h3>hud_source_search ()</h3>
 <pre class="programlisting"><span class="returnvalue">void</span>                hud_source_search                   (<em class="parameter"><code><a class="link" href="HudSource.html" title="HudSource"><span class="type">HudSource</span></a> *source</code></em>,
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Pointer-Arrays.html#GPtrArray"><span class="type">GPtrArray</span></a> *results_array</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *search_string</code></em>);</pre>
+                                                         <em class="parameter"><code><span class="type">HudTokenList</span> *search_tokens</code></em>);</pre>
 <p>
 Searches for <a href="HudItem.html"><span class="type">HudItems</span></a> in <em class="parameter"><code>source</code></em> that potentially match
 <em class="parameter"><code>search_string</code></em> and creates <a href="HudResult.html"><span class="type">HudResults</span></a> for them, appending them to

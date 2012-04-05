@@ -76,12 +76,9 @@ changes that the user may have made to their local configuration
   guint max_distance;
 
   guint add_penalty;
-  guint add_penalty_pre;
   guint drop_penalty;
-  guint drop_penalty_end;
-  guint transpose_penalty;
+  guint end_drop_penalty;
   guint swap_penalty;
-  guint swap_penalty_case;
 };
 </pre>
 <p>
@@ -111,36 +108,21 @@ matching result</td>
 that does not exist in the item being matched</td>
 </tr>
 <tr>
-<td><p><span class="term"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> <em class="structfield"><code><a name="HudSettings.add-penalty-pre"></a>add_penalty_pre</code></em>;</span></p></td>
-<td>the penalty incurred by a character in the search
-term that does not exist in the item being matched when that
-character comes at the beginning of the term</td>
-</tr>
-<tr>
 <td><p><span class="term"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> <em class="structfield"><code><a name="HudSettings.drop-penalty"></a>drop_penalty</code></em>;</span></p></td>
 <td>the penalty incurred by a character missing from the
 search string as compared to the item being matched</td>
 </tr>
 <tr>
-<td><p><span class="term"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> <em class="structfield"><code><a name="HudSettings.drop-penalty-end"></a>drop_penalty_end</code></em>;</span></p></td>
+<td><p><span class="term"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> <em class="structfield"><code><a name="HudSettings.end-drop-penalty"></a>end_drop_penalty</code></em>;</span></p></td>
 <td>the penalty incurred by a character missing from
 the search string as compared to the item being matched when the
 character is at the end of the item (ie: the search term is a
 prefix of the item)</td>
 </tr>
 <tr>
-<td><p><span class="term"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> <em class="structfield"><code><a name="HudSettings.transpose-penalty"></a>transpose_penalty</code></em>;</span></p></td>
-<td>the penalty incurred for transposed characters</td>
-</tr>
-<tr>
 <td><p><span class="term"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> <em class="structfield"><code><a name="HudSettings.swap-penalty"></a>swap_penalty</code></em>;</span></p></td>
 <td>the penalty incurred for the substitution of one
 character for another</td>
-</tr>
-<tr>
-<td><p><span class="term"><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> <em class="structfield"><code><a name="HudSettings.swap-penalty-case"></a>swap_penalty_case</code></em>;</span></p></td>
-<td>the penalty incurred for the substitution of one
-character for another when the characters differ only in case</td>
 </tr>
 </tbody>
 </table></div>

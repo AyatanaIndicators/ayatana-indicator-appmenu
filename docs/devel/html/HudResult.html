@@ -45,11 +45,11 @@
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> max_usage</code></em>);
 const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="returnvalue">gchar</span></a> *       <a class="link" href="HudResult.html#hud-result-get-html-description" title="hud_result_get_html_description ()">hud_result_get_html_description</a>     (<em class="parameter"><code><a class="link" href="HudResult.html" title="HudResult"><span class="type">HudResult</span></a> *result</code></em>);
 <a class="link" href="HudResult.html" title="HudResult"><span class="returnvalue">HudResult</span></a> *         <a class="link" href="HudResult.html#hud-result-get-if-matched" title="hud_result_get_if_matched ()">hud_result_get_if_matched</a>           (<em class="parameter"><code><a class="link" href="HudItem.html" title="HudItem"><span class="type">HudItem</span></a> *item</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *search_string</code></em>,
+                                                         <em class="parameter"><code><span class="type">HudTokenList</span> *search_tokens</code></em>,
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> penalty</code></em>);
 <a class="link" href="HudItem.html" title="HudItem"><span class="returnvalue">HudItem</span></a> *           <a class="link" href="HudResult.html#hud-result-get-item" title="hud_result_get_item ()">hud_result_get_item</a>                 (<em class="parameter"><code><a class="link" href="HudResult.html" title="HudResult"><span class="type">HudResult</span></a> *result</code></em>);
 <a class="link" href="HudResult.html" title="HudResult"><span class="returnvalue">HudResult</span></a> *         <a class="link" href="HudResult.html#hud-result-new" title="hud_result_new ()">hud_result_new</a>                      (<em class="parameter"><code><a class="link" href="HudItem.html" title="HudItem"><span class="type">HudItem</span></a> *item</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *search_string</code></em>,
+                                                         <em class="parameter"><code><span class="type">HudTokenList</span> *search_tokens</code></em>,
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> penalty</code></em>);
 </pre>
 </div>
@@ -140,7 +140,7 @@ that matched the search string strenghtened (ie: in bold).
 <div class="refsect2">
 <a name="hud-result-get-if-matched"></a><h3>hud_result_get_if_matched ()</h3>
 <pre class="programlisting"><a class="link" href="HudResult.html" title="HudResult"><span class="returnvalue">HudResult</span></a> *         hud_result_get_if_matched           (<em class="parameter"><code><a class="link" href="HudItem.html" title="HudItem"><span class="type">HudItem</span></a> *item</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *search_string</code></em>,
+                                                         <em class="parameter"><code><span class="type">HudTokenList</span> *search_tokens</code></em>,
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> penalty</code></em>);</pre>
 <p>
 Creates a <a class="link" href="HudResult.html" title="HudResult"><span class="type">HudResult</span></a> for <em class="parameter"><code>item</code></em>, only if the resulting unadjusted
@@ -207,7 +207,7 @@ Gets the <a class="link" href="HudItem.html" title="HudItem"><span class="type">
 <div class="refsect2">
 <a name="hud-result-new"></a><h3>hud_result_new ()</h3>
 <pre class="programlisting"><a class="link" href="HudResult.html" title="HudResult"><span class="returnvalue">HudResult</span></a> *         hud_result_new                      (<em class="parameter"><code><a class="link" href="HudItem.html" title="HudItem"><span class="type">HudItem</span></a> *item</code></em>,
-                                                         <em class="parameter"><code>const <a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#gchar"><span class="type">gchar</span></a> *search_string</code></em>,
+                                                         <em class="parameter"><code><span class="type">HudTokenList</span> *search_tokens</code></em>,
                                                          <em class="parameter"><code><a href="http://library.gnome.org/devel/glib/unstable/glib-Basic-Types.html#guint"><span class="type">guint</span></a> penalty</code></em>);</pre>
 <p>
 Creates a <a class="link" href="HudResult.html" title="HudResult"><span class="type">HudResult</span></a> for <em class="parameter"><code>item</code></em> as search for using <em class="parameter"><code>search_string</code></em>.

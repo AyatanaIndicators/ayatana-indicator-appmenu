@@ -271,24 +271,19 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-gsettings_in_files = \
-    com.canonical.indicator.appmenu.gschema.xml.in \
-    com.canonical.indicator.appmenu.hud.gschema.xml.in \
-    com.canonical.indicator.appmenu.hud.search.gschema.xml.in
-
 gsettings_SCHEMAS = \
-	$(gsettings_in_files:.xml.in=.xml)
+    com.canonical.indicator.appmenu.gschema.xml \
+    com.canonical.indicator.appmenu.hud.gschema.xml \
+    com.canonical.indicator.appmenu.hud.search.gschema.xml
 
 dbus_servicesdir = $(DBUSSERVICEDIR)
 dbus_services_DATA = com.canonical.hud.service
 EXTRA_DIST = \
 	$(dbus_services_DATA:.service=.service.in) \
-	$(gsettings_in_files)
+	$(gsettings_SCHEMAS)
 
 CLEANFILES = \
-	$(dbus_services_DATA) \
-	$(gsettings_SCHEMAS:.xml=.valid) \
-	$(gsettings_SCHEMAS)
+	$(dbus_services_DATA)
 
 all: all-am
 
@@ -503,7 +498,6 @@ uninstall-am: uninstall-dbus_servicesDATA
 	ps ps-am uninstall uninstall-am uninstall-dbus_servicesDATA
 
 
-@INTLTOOL_XML_NOMERGE_RULE@
 @GSETTINGS_RULES@
 
 %.service: %.service.in
