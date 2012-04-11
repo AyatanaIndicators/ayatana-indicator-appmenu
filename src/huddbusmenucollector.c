@@ -290,9 +290,9 @@ hud_dbusmenu_collector_unuse (HudSource *source)
 }
 
 static void
-hud_dbusmenu_collector_search (HudSource   *source,
-                               GPtrArray   *results_array,
-                               const gchar *search_string)
+hud_dbusmenu_collector_search (HudSource    *source,
+                               GPtrArray    *results_array,
+                               HudTokenList *search_string)
 {
   HudDbusmenuCollector *collector = HUD_DBUSMENU_COLLECTOR (source);
   GHashTableIter iter;

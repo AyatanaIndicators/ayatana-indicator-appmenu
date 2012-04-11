@@ -105,9 +105,9 @@ hud_debug_source_unuse (HudSource *hud_source)
 }
 
 static void
-hud_debug_source_search (HudSource   *hud_source,
-                         GPtrArray   *results_array,
-                         const gchar *search_string)
+hud_debug_source_search (HudSource    *hud_source,
+                         GPtrArray    *results_array,
+                         HudTokenList *search_string)
 {
   HudDebugSource *source = HUD_DEBUG_SOURCE (hud_source);
 

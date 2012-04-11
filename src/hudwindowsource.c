@@ -67,7 +67,7 @@ struct _HudWindowSource
   BamfWindow *active_window;
   BamfApplication *active_application;
   const gchar *active_desktop_file;
-  const gchar *active_icon;
+  gchar *active_icon;
   HudSource *active_collector;
   gint use_count;
 };
@@ -255,6 +255,7 @@ hud_window_source_active_window_changed (BamfMatcher *matcher,
   g_clear_object (&source->active_collector);
   g_clear_object (&source->active_application);
   g_clear_object (&source->active_window);
+  g_free (source->active_icon);
   source->active_window = g_object_ref (window);
   source->active_application = g_object_ref (application);
   source->active_desktop_file = desktop_file;
@@ -296,9 +297,9 @@ hud_window_source_unuse (HudSource *hud_source)
 }
 
 static void
-hud_window_source_search (HudSource   *hud_source,
-                          GPtrArray   *results_array,
-                          const gchar *search_string)
+hud_window_source_search (HudSource    *hud_source,
+                          GPtrArray    *results_array,
+                          HudTokenList *search_string)
 {
   HudWindowSource *source = HUD_WINDOW_SOURCE (hud_source);
 
@@ -311,9 +312,13 @@ hud_window_source_finalize (GObject *object)
 {
   HudWindowSource *source = HUD_WINDOW_SOURCE (object);
 
+  g_assert_cmpint (source->use_count, ==, 0);
+
   /* bamf matcher signals already disconnected in dispose */
+  g_clear_object (&source->active_collector);
   g_clear_object (&source->active_application);
   g_clear_object (&source->active_window);
+  g_free (source->active_icon);
 
   G_OBJECT_CLASS (hud_window_source_parent_class)
     ->finalize (object);
