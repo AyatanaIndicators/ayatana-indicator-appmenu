@@ -123,7 +123,7 @@ hud_webapp_source_should_search_app (BamfApplication *application,
 static void
 hud_webapp_source_search (HudSource   *hud_source,
 			  GPtrArray   *results_array,
-			  const gchar *search_string)
+			  HudTokenList *token_list)
 {
   HudWebappSource *source;
   GList *walk;
@@ -141,7 +141,7 @@ hud_webapp_source_search (HudSource   *hud_source,
 
       if (hud_webapp_source_should_search_app (application_source->application, active_xid))
 	{
-	  hud_source_search (application_source->collector, results_array, search_string);
+	  hud_source_search (application_source->collector, results_array, token_list);
 	}
 
     }
