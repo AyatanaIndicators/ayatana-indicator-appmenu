@@ -57,39 +57,18 @@ GLIB_GSETTINGS
 # Dependencies
 ###########################
 
-GTK_REQUIRED_VERSION=2.12
-GTK3_REQUIRED_VERSION=3.0
+GTK_REQUIRED_VERSION=3.0
 GIO_REQUIRED_VERSION=2.26
 INDICATOR_REQUIRED_VERSION=0.3.90
 DBUSMENUGTK_REQUIRED_VERSION=0.5.90
 BAMF_REQUIRED_VERSION=0.2.53
 
-AC_ARG_WITH([gtk],
-  [AS_HELP_STRING([--with-gtk],
-    [Which version of gtk to use @<:@default=3@:>@])],
-  [],
-  [with_gtk=3])
-
-AS_IF([test "x$with_gtk" = x3],
-        [PKG_CHECK_MODULES(INDICATOR,  gtk+-3.0 >= $GTK3_REQUIRED_VERSION
-                                       gio-2.0 >= $GIO_REQUIRED_VERSION
-                                       indicator3-0.4 >= $INDICATOR_REQUIRED_VERSION
-                                       dbusmenu-gtk3-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION
-                                       libbamf3 >= $BAMF_REQUIRED_VERSION)
-         AC_DEFINE(HAVE_GTK3, 1, [whether gtk3 is available])
-        ],
-      [test "x$with_gtk" = x2],
-        [PKG_CHECK_MODULES(INDICATOR,  gtk+-2.0 >= $GTK_REQUIRED_VERSION
-                                       gio-2.0 >= $GIO_REQUIRED_VERSION
-                                       indicator-0.4 >= $INDICATOR_REQUIRED_VERSION
-                                       dbusmenu-gtk-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION
-                                       libbamf >= $BAMF_REQUIRED_VERSION)
-        ],
-      [AC_MSG_FAILURE([Value for --with-gtk was neither 2 nor 3])]
-)
-
-PKG_CHECK_MODULES(gtk, gtk+-3.0 >= $GTK3_REQUIRED_VERSION)
-
+PKG_CHECK_MODULES(gtk, gtk+-3.0 >= $GTK_REQUIRED_VERSION)
+PKG_CHECK_MODULES(INDICATOR,  gtk+-3.0 >= $GTK_REQUIRED_VERSION
+                              gio-2.0 >= $GIO_REQUIRED_VERSION
+                              indicator3-0.4 >= $INDICATOR_REQUIRED_VERSION
+                              dbusmenu-gtk3-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION
+                              libbamf3 >= $BAMF_REQUIRED_VERSION)
 AC_SUBST(INDICATOR_CFLAGS)
 AC_SUBST(INDICATOR_LIBS)
 

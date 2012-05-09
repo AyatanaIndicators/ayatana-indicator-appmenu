@@ -386,9 +386,7 @@ entry_on_menuitem (WindowMenuModel * menu, GtkMenuItem * gmi)
 static void
 item_inserted_cb (GtkContainer *menu,
                   GtkWidget    *widget,
-#ifdef HAVE_GTK3
                   gint          position,
-#endif
                   gpointer      data)
 {
 	if (g_object_get_data(G_OBJECT(widget), ENTRY_DATA) == NULL) {
@@ -422,11 +420,7 @@ add_window_menu (WindowMenuModel * menu, GMenuModel * model)
 	g_object_ref_sink(menu->priv->win_menu);
 
 	menu->priv->win_menu_insert = g_signal_connect(G_OBJECT (menu->priv->win_menu),
-#ifdef HAVE_GTK3
 		"insert",
-#else
-		"child-added",
-#endif
 		G_CALLBACK (item_inserted_cb),
 		menu);
 	menu->priv->win_menu_remove = g_signal_connect (G_OBJECT (menu->priv->win_menu),
