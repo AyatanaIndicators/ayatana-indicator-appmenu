@@ -63,7 +63,6 @@ gtk_model_menu_item_toggle_size_request (GtkMenuItem *menu_item,
     *requisition = 0;
 }
 
-#if HAVE_GTK3
 static void
 gtk_model_menu_item_draw_indicator (GtkCheckMenuItem *check_item,
                                     cairo_t          *cr)
@@ -74,18 +73,6 @@ gtk_model_menu_item_draw_indicator (GtkCheckMenuItem *check_item,
     GTK_CHECK_MENU_ITEM_CLASS (gtk_model_menu_item_parent_class)
       ->draw_indicator (check_item, cr);
 }
-#else
-static void
-gtk_model_menu_item_draw_indicator (GtkCheckMenuItem *check_item,
-                                    GdkRectangle     *area)
-{
-  GtkModelMenuItem *item = GTK_MODEL_MENU_ITEM (check_item);
-
-  if (item->has_indicator)
-    GTK_CHECK_MENU_ITEM_CLASS (gtk_model_menu_item_parent_class)
-      ->draw_indicator (check_item, area);
-}
-#endif
 
 static void
 gtk_model_menu_item_set_active (GtkModelMenuItem *item,

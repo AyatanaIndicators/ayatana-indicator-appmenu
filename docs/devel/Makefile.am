@@ -31,4 +31,6 @@ IGNORE_HFILES = \
 
 GTKDOC_CFLAGS = -I$(top_srcdir)/src $(HUD_CFLAGS)
 
-GTKDOC_LIBS = $(top_builddir)/src/libhud-service.a $(HUD_LIBS)
+GTKDOC_LIBS = $(top_builddir)/src/libhud-service.a \
+	$(HUD_LIBS) \
+	$(COVERAGE_LDFLAGS)

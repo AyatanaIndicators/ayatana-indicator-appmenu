@@ -201,6 +201,9 @@ hud_result_new (HudItem      *item,
 
   result->distance += (result->distance * penalty) / 100;
 
+  if (result->distance == 0 && penalty > 0)
+    result->distance = 1;
+
   return result;
 }
 
