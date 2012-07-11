@@ -1,3 +1,14 @@
+indicator-appmenu (12.10.0-0ubuntu1) UNRELEASED; urgency=low
+
+  * New upstream release.
+  * debian/control.in:
+    - drop deprecated conflicts
+  * debian/control.in,
+    debian/rules:
+    - drop gtk2 build, only gtk3 is supported in the current version
+
+ -- Sebastien Bacher <seb128@ubuntu.com>  Wed, 11 Jul 2012 21:59:37 +0200
+
 indicator-appmenu (0.3.97-0ubuntu1) precise; urgency=low
 
   * New upstream release.
