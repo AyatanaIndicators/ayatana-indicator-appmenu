@@ -1,0 +1,8 @@
+12.10.0
+
+  - merge lp:~desrt/indicator-appmenu/no-zero-indicator-penalty to
+    improve HUD's scoring algorithm
+  - merge lp:~allanlesage/indicator-appmenu/TDD-fixes for gcov fixes,
+    including docs fixes which broke linking.
+  - raise GTK minimum to 3.0
+

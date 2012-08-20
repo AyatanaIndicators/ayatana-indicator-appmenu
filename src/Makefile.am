@@ -55,7 +55,7 @@ libappmenu_la_CFLAGS = \
 	-Wall -Wl,-Bsymbolic-functions -Wl,-z,defs -Wl,--as-needed -Werror -DG_LOG_DOMAIN=\"Indicator-Appmenu\"
 libappmenu_la_LIBADD = $(INDICATOR_LIBS) -lX11
 libappmenu_la_LDFLAGS = \
-	$(COVERAGE_CFLAGS) \
+	$(COVERAGE_LDFLAGS) \
 	-module -avoid-version
 
 ######################################
@@ -156,6 +156,9 @@ hud_service_CFLAGS = \
 hud_service_LDADD = \
 	libhud-service.a	\
 	$(HUD_LIBS)
+hud_service_LDFLAGS = \
+	$(COVERAGE_LDFLAGS)
+
 
 create-db.c: create-db.sql
 	echo "#include \"create-db.h\"" > $@
@@ -184,6 +187,7 @@ hud_cli_CFLAGS = \
 
 hud_cli_LDFLAGS = \
 	$(HUD_LIBS) \
+	$(COVERAGE_LDFLAGS) \
 	-lreadline -lcurses
 
 
@@ -209,6 +213,7 @@ hud_dump_application_CFLAGS = \
 	$(COVERAGE_CFLAGS) \
 	-Wall -Werror
 hud_dump_application_LDFLAGS = \
+	$(COVERAGE_LDFLAGS) \
 	$(HUD_LIBS)
 
 #######################
@@ -227,6 +232,7 @@ hud_verify_app_info_CFLAGS = \
 	$(COVERAGE_CFLAGS) \
 	-Wall -Werror
 hud_verify_app_info_LDFLAGS = \
+	$(COVERAGE_LDFLAGS) \
 	$(HUD_LIBS)
 
 ####################
