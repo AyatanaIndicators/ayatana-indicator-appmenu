@@ -112,6 +112,8 @@ libhud_service_a_SOURCES = \
 	hudmenumodelcollector.c	\
 	hudappindicatorsource.h	\
 	hudappindicatorsource.c	\
+	hudwebappsource.h \
+	hudwebappsource.c \
 	hudindicatorsource.h	\
 	hudindicatorsource.c	\
 	hudwindowsource.h	\
