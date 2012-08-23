@@ -28,15 +28,13 @@
 #include <gio/gdesktopappinfo.h>
 
 #include "window-menu-model.h"
-#include "gactionmuxer.h"
-#include "gtkmodelmenu.h"
 
 struct _WindowMenuModelPrivate {
 	guint xid;
 
-	/* All the actions */
-	GActionMuxer * action_mux;
 	GtkAccelGroup * accel_group;
+	GActionGroup * app_actions;
+	GActionGroup * win_actions;
 
 	/* Application Menu */
 	GDBusMenuModel * app_menu_model;
@@ -103,7 +101,6 @@ window_menu_model_init (WindowMenuModel *self)
 {
 	self->priv = WINDOW_MENU_MODEL_GET_PRIVATE(self);
 
-	self->priv->action_mux = g_action_muxer_new();
 	self->priv->accel_group = gtk_accel_group_new();
 
 	return;
@@ -114,7 +111,6 @@ window_menu_model_dispose (GObject *object)
 {
 	WindowMenuModel * menu = WINDOW_MENU_MODEL(object);
 
-	g_clear_object(&menu->priv->action_mux);
 	g_clear_object(&menu->priv->accel_group);
 
 	/* Application Menu */
@@ -135,6 +131,9 @@ window_menu_model_dispose (GObject *object)
 
 	g_clear_object(&menu->priv->win_menu_model);
 	g_clear_object(&menu->priv->win_menu);
+
+	g_clear_object(&menu->priv->win_actions);
+	g_clear_object(&menu->priv->app_actions);
 
 	G_OBJECT_CLASS (window_menu_model_parent_class)->dispose (object);
 	return;
@@ -165,7 +164,13 @@ add_application_menu (WindowMenuModel * menu, const gchar * appname, GMenuModel 
 	g_object_ref_sink(menu->priv->application_menu.label);
 	gtk_widget_show(GTK_WIDGET(menu->priv->application_menu.label));
 
-	menu->priv->application_menu.menu = GTK_MENU(gtk_model_menu_create_menu(model, G_ACTION_OBSERVABLE(menu->priv->action_mux), menu->priv->accel_group));
+	menu->priv->application_menu.menu = GTK_MENU(gtk_menu_new_from_model(model));
+	if (menu->priv->app_actions) {
+		gtk_widget_insert_action_group(GTK_WIDGET(menu->priv->application_menu.menu), ACTION_MUX_PREFIX_APP, menu->priv->app_actions);
+	}
+	if (menu->priv->win_actions) {
+		gtk_widget_insert_action_group(GTK_WIDGET(menu->priv->application_menu.menu), ACTION_MUX_PREFIX_WIN, menu->priv->win_actions);
+	}
 
 	gtk_widget_show(GTK_WIDGET(menu->priv->application_menu.menu));
 	g_object_ref_sink(menu->priv->application_menu.menu);
@@ -344,6 +349,14 @@ entry_on_menuitem (WindowMenuModel * menu, GtkMenuItem * gmi)
 {
 	WindowMenuEntry * entry = g_new0(WindowMenuEntry, 1);
 
+	if (menu->priv->app_actions) {
+		gtk_widget_insert_action_group(GTK_WIDGET(gmi), ACTION_MUX_PREFIX_APP, menu->priv->app_actions);
+	}
+	if (menu->priv->win_actions) {
+		gtk_widget_insert_action_group(GTK_WIDGET(gmi), ACTION_MUX_PREFIX_WIN, menu->priv->win_actions);
+	}
+
+
 	entry->gmi = gmi;
 
 	entry->entry.label = mi_find_label(GTK_WIDGET(gmi));
@@ -415,7 +428,7 @@ add_window_menu (WindowMenuModel * menu, GMenuModel * model)
 {
 	menu->priv->win_menu_model = g_object_ref(model);
 
-	menu->priv->win_menu = GTK_MENU(gtk_model_menu_create_menu(model, G_ACTION_OBSERVABLE(menu->priv->action_mux), menu->priv->accel_group));
+	menu->priv->win_menu = GTK_MENU(gtk_menu_new_from_model(model));
 	g_assert(menu->priv->win_menu != NULL);
 	g_object_ref_sink(menu->priv->win_menu);
 
@@ -478,11 +491,11 @@ window_menu_model_new (BamfApplication * app, BamfWindow * window)
 
 	/* Setup actions */
 	if (application_object_path != NULL) {
-		g_action_muxer_insert(menu->priv->action_mux, ACTION_MUX_PREFIX_APP, G_ACTION_GROUP(g_dbus_action_group_get (session, unique_bus_name, application_object_path)));
+		menu->priv->app_actions = G_ACTION_GROUP(g_dbus_action_group_get (session, unique_bus_name, application_object_path));
 	}
 
 	if (window_object_path != NULL) {
-		g_action_muxer_insert(menu->priv->action_mux, ACTION_MUX_PREFIX_WIN, G_ACTION_GROUP(g_dbus_action_group_get (session, unique_bus_name, window_object_path)));
+		menu->priv->win_actions = G_ACTION_GROUP(g_dbus_action_group_get (session, unique_bus_name, window_object_path));
 	}
 
 	/* Build us some menus */
