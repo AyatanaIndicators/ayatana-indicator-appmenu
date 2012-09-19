@@ -1,3 +1,11 @@
+indicator-appmenu (12.10.1-0ubuntu1) quantal; urgency=low
+
+  * New upstream release.
+    - Support for webapps in the indicator-appmenu (LP: #1048992)
+    - Port appmenu indicator to gtk_widget_insert_action_group()
+
+ -- Ken VanDine <ken.vandine@canonical.com>  Wed, 19 Sep 2012 15:02:13 -0400
+
 indicator-appmenu (12.10.0-0ubuntu2) quantal; urgency=low
 
   * Backport lp:~desrt/indicator-appmenu/insert-action-group should fix 

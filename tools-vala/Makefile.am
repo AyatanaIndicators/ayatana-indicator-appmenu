@@ -1,7 +1,7 @@
 
 EXTRA_DIST = 
-bin_PROGRAMS = \
-	hud-gtk
+bin_PROGRAMS = hud-gtk
+
 
 ####################
 # hud-gtk

@@ -28,6 +28,7 @@
 
 #include "hudappindicatorsource.h"
 #include "hudindicatorsource.h"
+#include "hudwebappsource.h"
 #include "hudwindowsource.h"
 #include "huddebugsource.h"
 #include "hudsourcelist.h"
@@ -302,6 +303,15 @@ main (int argc, char **argv)
     source = hud_app_indicator_source_new ();
     hud_source_list_add (source_list, HUD_SOURCE (source));
     g_object_unref (source);
+  }
+  
+  {
+    HudWebappSource *source;
+    
+    source = hud_webapp_source_new (window_source);
+    hud_source_list_add (source_list, HUD_SOURCE (source));
+    
+    g_object_unref (G_OBJECT (source));
   }
 
   if (getenv ("HUD_DEBUG_SOURCE"))
