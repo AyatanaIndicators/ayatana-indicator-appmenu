@@ -38,17 +38,7 @@ libappmenu_la_SOURCES = \
 	gen-application-menu-renderer.xml.c \
 	gen-application-menu-renderer.xml.h \
 	gen-application-menu-registrar.xml.c \
-	gen-application-menu-registrar.xml.h \
-	gactionmuxer.c \
-	gactionmuxer.h \
-	gactionobservable.c \
-	gactionobservable.h \
-	gactionobserver.c \
-	gactionobserver.h \
-	gtkmodelmenu.c \
-	gtkmodelmenu.h \
-	gtkmodelmenuitem.c \
-	gtkmodelmenuitem.h
+	gen-application-menu-registrar.xml.h
 libappmenu_la_CFLAGS = \
 	$(INDICATOR_CFLAGS) \
 	$(COVERAGE_CFLAGS) \
@@ -112,6 +102,8 @@ libhud_service_a_SOURCES = \
 	hudmenumodelcollector.c	\
 	hudappindicatorsource.h	\
 	hudappindicatorsource.c	\
+	hudwebappsource.h \
+	hudwebappsource.c \
 	hudindicatorsource.h	\
 	hudindicatorsource.c	\
 	hudwindowsource.h	\

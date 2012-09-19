@@ -116,6 +116,7 @@ am_libhud_service_a_OBJECTS = libhud_service_a-create-db.$(OBJEXT) \
 	libhud_service_a-huddbusmenucollector.$(OBJEXT) \
 	libhud_service_a-hudmenumodelcollector.$(OBJEXT) \
 	libhud_service_a-hudappindicatorsource.$(OBJEXT) \
+	libhud_service_a-hudwebappsource.$(OBJEXT) \
 	libhud_service_a-hudindicatorsource.$(OBJEXT) \
 	libhud_service_a-hudwindowsource.$(OBJEXT) \
 	libhud_service_a-huddebugsource.$(OBJEXT) \
@@ -169,11 +170,7 @@ am_libappmenu_la_OBJECTS = libappmenu_la-gdk-get-func.lo \
 	libappmenu_la-window-menu-dbusmenu.lo \
 	libappmenu_la-window-menu-model.lo \
 	libappmenu_la-gen-application-menu-renderer.xml.lo \
-	libappmenu_la-gen-application-menu-registrar.xml.lo \
-	libappmenu_la-gactionmuxer.lo \
-	libappmenu_la-gactionobservable.lo \
-	libappmenu_la-gactionobserver.lo libappmenu_la-gtkmodelmenu.lo \
-	libappmenu_la-gtkmodelmenuitem.lo
+	libappmenu_la-gen-application-menu-registrar.xml.lo
 libappmenu_la_OBJECTS = $(am_libappmenu_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -475,17 +472,7 @@ libappmenu_la_SOURCES = \
 	gen-application-menu-renderer.xml.c \
 	gen-application-menu-renderer.xml.h \
 	gen-application-menu-registrar.xml.c \
-	gen-application-menu-registrar.xml.h \
-	gactionmuxer.c \
-	gactionmuxer.h \
-	gactionobservable.c \
-	gactionobservable.h \
-	gactionobserver.c \
-	gactionobserver.h \
-	gtkmodelmenu.c \
-	gtkmodelmenu.h \
-	gtkmodelmenuitem.c \
-	gtkmodelmenuitem.h
+	gen-application-menu-registrar.xml.h
 
 libappmenu_la_CFLAGS = \
 	$(INDICATOR_CFLAGS) \
@@ -532,6 +519,8 @@ libhud_service_a_SOURCES = \
 	hudmenumodelcollector.c	\
 	hudappindicatorsource.h	\
 	hudappindicatorsource.c	\
+	hudwebappsource.h \
+	hudwebappsource.c \
 	hudindicatorsource.h	\
 	hudindicatorsource.c	\
 	hudwindowsource.h	\
@@ -868,14 +857,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_verify_app_info-create-db.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_verify_app_info-hud-verify-app-info.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/hud_verify_app_info-load-app-info.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libappmenu_la-gactionmuxer.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libappmenu_la-gactionobservable.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libappmenu_la-gactionobserver.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libappmenu_la-gdk-get-func.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libappmenu_la-gen-application-menu-registrar.xml.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libappmenu_la-gen-application-menu-renderer.xml.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libappmenu_la-gtkmodelmenu.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libappmenu_la-gtkmodelmenuitem.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libappmenu_la-indicator-appmenu-marshal.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libappmenu_la-indicator-appmenu.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libappmenu_la-window-menu-dbusmenu.Plo@am__quote@
@@ -898,6 +882,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libhud_service_a-hudsourcelist.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libhud_service_a-hudstringlist.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libhud_service_a-hudtoken.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libhud_service_a-hudwebappsource.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libhud_service_a-hudwindowsource.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libhud_service_a-load-app-info.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libhud_service_a-usage-tracker.Po@am__quote@
@@ -1023,6 +1008,20 @@ libhud_service_a-hudappindicatorsource.obj: hudappindicatorsource.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='hudappindicatorsource.c' object='libhud_service_a-hudappindicatorsource.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libhud_service_a_CFLAGS) $(CFLAGS) -c -o libhud_service_a-hudappindicatorsource.obj `if test -f 'hudappindicatorsource.c'; then $(CYGPATH_W) 'hudappindicatorsource.c'; else $(CYGPATH_W) '$(srcdir)/hudappindicatorsource.c'; fi`
+
+libhud_service_a-hudwebappsource.o: hudwebappsource.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libhud_service_a_CFLAGS) $(CFLAGS) -MT libhud_service_a-hudwebappsource.o -MD -MP -MF $(DEPDIR)/libhud_service_a-hudwebappsource.Tpo -c -o libhud_service_a-hudwebappsource.o `test -f 'hudwebappsource.c' || echo '$(srcdir)/'`hudwebappsource.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libhud_service_a-hudwebappsource.Tpo $(DEPDIR)/libhud_service_a-hudwebappsource.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='hudwebappsource.c' object='libhud_service_a-hudwebappsource.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libhud_service_a_CFLAGS) $(CFLAGS) -c -o libhud_service_a-hudwebappsource.o `test -f 'hudwebappsource.c' || echo '$(srcdir)/'`hudwebappsource.c
+
+libhud_service_a-hudwebappsource.obj: hudwebappsource.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libhud_service_a_CFLAGS) $(CFLAGS) -MT libhud_service_a-hudwebappsource.obj -MD -MP -MF $(DEPDIR)/libhud_service_a-hudwebappsource.Tpo -c -o libhud_service_a-hudwebappsource.obj `if test -f 'hudwebappsource.c'; then $(CYGPATH_W) 'hudwebappsource.c'; else $(CYGPATH_W) '$(srcdir)/hudwebappsource.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libhud_service_a-hudwebappsource.Tpo $(DEPDIR)/libhud_service_a-hudwebappsource.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='hudwebappsource.c' object='libhud_service_a-hudwebappsource.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libhud_service_a_CFLAGS) $(CFLAGS) -c -o libhud_service_a-hudwebappsource.obj `if test -f 'hudwebappsource.c'; then $(CYGPATH_W) 'hudwebappsource.c'; else $(CYGPATH_W) '$(srcdir)/hudwebappsource.c'; fi`
 
 libhud_service_a-hudindicatorsource.o: hudindicatorsource.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libhud_service_a_CFLAGS) $(CFLAGS) -MT libhud_service_a-hudindicatorsource.o -MD -MP -MF $(DEPDIR)/libhud_service_a-hudindicatorsource.Tpo -c -o libhud_service_a-hudindicatorsource.o `test -f 'hudindicatorsource.c' || echo '$(srcdir)/'`hudindicatorsource.c
@@ -1261,41 +1260,6 @@ libappmenu_la-gen-application-menu-registrar.xml.lo: gen-application-menu-regist
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gen-application-menu-registrar.xml.c' object='libappmenu_la-gen-application-menu-registrar.xml.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libappmenu_la_CFLAGS) $(CFLAGS) -c -o libappmenu_la-gen-application-menu-registrar.xml.lo `test -f 'gen-application-menu-registrar.xml.c' || echo '$(srcdir)/'`gen-application-menu-registrar.xml.c
-
-libappmenu_la-gactionmuxer.lo: gactionmuxer.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libappmenu_la_CFLAGS) $(CFLAGS) -MT libappmenu_la-gactionmuxer.lo -MD -MP -MF $(DEPDIR)/libappmenu_la-gactionmuxer.Tpo -c -o libappmenu_la-gactionmuxer.lo `test -f 'gactionmuxer.c' || echo '$(srcdir)/'`gactionmuxer.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libappmenu_la-gactionmuxer.Tpo $(DEPDIR)/libappmenu_la-gactionmuxer.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gactionmuxer.c' object='libappmenu_la-gactionmuxer.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libappmenu_la_CFLAGS) $(CFLAGS) -c -o libappmenu_la-gactionmuxer.lo `test -f 'gactionmuxer.c' || echo '$(srcdir)/'`gactionmuxer.c
-
-libappmenu_la-gactionobservable.lo: gactionobservable.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libappmenu_la_CFLAGS) $(CFLAGS) -MT libappmenu_la-gactionobservable.lo -MD -MP -MF $(DEPDIR)/libappmenu_la-gactionobservable.Tpo -c -o libappmenu_la-gactionobservable.lo `test -f 'gactionobservable.c' || echo '$(srcdir)/'`gactionobservable.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libappmenu_la-gactionobservable.Tpo $(DEPDIR)/libappmenu_la-gactionobservable.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gactionobservable.c' object='libappmenu_la-gactionobservable.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libappmenu_la_CFLAGS) $(CFLAGS) -c -o libappmenu_la-gactionobservable.lo `test -f 'gactionobservable.c' || echo '$(srcdir)/'`gactionobservable.c
-
-libappmenu_la-gactionobserver.lo: gactionobserver.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libappmenu_la_CFLAGS) $(CFLAGS) -MT libappmenu_la-gactionobserver.lo -MD -MP -MF $(DEPDIR)/libappmenu_la-gactionobserver.Tpo -c -o libappmenu_la-gactionobserver.lo `test -f 'gactionobserver.c' || echo '$(srcdir)/'`gactionobserver.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libappmenu_la-gactionobserver.Tpo $(DEPDIR)/libappmenu_la-gactionobserver.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gactionobserver.c' object='libappmenu_la-gactionobserver.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libappmenu_la_CFLAGS) $(CFLAGS) -c -o libappmenu_la-gactionobserver.lo `test -f 'gactionobserver.c' || echo '$(srcdir)/'`gactionobserver.c
-
-libappmenu_la-gtkmodelmenu.lo: gtkmodelmenu.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libappmenu_la_CFLAGS) $(CFLAGS) -MT libappmenu_la-gtkmodelmenu.lo -MD -MP -MF $(DEPDIR)/libappmenu_la-gtkmodelmenu.Tpo -c -o libappmenu_la-gtkmodelmenu.lo `test -f 'gtkmodelmenu.c' || echo '$(srcdir)/'`gtkmodelmenu.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libappmenu_la-gtkmodelmenu.Tpo $(DEPDIR)/libappmenu_la-gtkmodelmenu.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gtkmodelmenu.c' object='libappmenu_la-gtkmodelmenu.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libappmenu_la_CFLAGS) $(CFLAGS) -c -o libappmenu_la-gtkmodelmenu.lo `test -f 'gtkmodelmenu.c' || echo '$(srcdir)/'`gtkmodelmenu.c
-
-libappmenu_la-gtkmodelmenuitem.lo: gtkmodelmenuitem.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libappmenu_la_CFLAGS) $(CFLAGS) -MT libappmenu_la-gtkmodelmenuitem.lo -MD -MP -MF $(DEPDIR)/libappmenu_la-gtkmodelmenuitem.Tpo -c -o libappmenu_la-gtkmodelmenuitem.lo `test -f 'gtkmodelmenuitem.c' || echo '$(srcdir)/'`gtkmodelmenuitem.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libappmenu_la-gtkmodelmenuitem.Tpo $(DEPDIR)/libappmenu_la-gtkmodelmenuitem.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='gtkmodelmenuitem.c' object='libappmenu_la-gtkmodelmenuitem.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libappmenu_la_CFLAGS) $(CFLAGS) -c -o libappmenu_la-gtkmodelmenuitem.lo `test -f 'gtkmodelmenuitem.c' || echo '$(srcdir)/'`gtkmodelmenuitem.c
 
 hud_cli-hud-cli.o: hud-cli.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(hud_cli_CFLAGS) $(CFLAGS) -MT hud_cli-hud-cli.o -MD -MP -MF $(DEPDIR)/hud_cli-hud-cli.Tpo -c -o hud_cli-hud-cli.o `test -f 'hud-cli.c' || echo '$(srcdir)/'`hud-cli.c

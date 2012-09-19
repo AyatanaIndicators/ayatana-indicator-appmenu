@@ -1,5 +1,5 @@
 AC_INIT([indicator-appmenu],
-        [12.10.0],
+        [12.10.1],
         [http://bugs.launchpad.net/indicator-appmenu],
         [indicator-appmenu],
         [http://launchpad.net/indicator-appmenu])
@@ -20,7 +20,7 @@ AM_SILENT_RULES([yes])
 # Check for programs
 AC_PROG_CC
 AM_PROG_CC_C_O
-AM_PROG_VALAC([0.15.2])
+AM_PROG_VALAC([])
 
 # Initialize libtool
 LT_PREREQ([2.2.6])
@@ -82,7 +82,7 @@ SQLITE_REQUIRED_VERSION=0.0
 
 PKG_CHECK_MODULES([HUD],[
 		dbusmenu-glib-0.4 >= $DBUSMENU_GLIB_REQUIRED_VERSION
-		libbamf3 >= $BAMF_REQUIRED_VERSION
+		libbamf3 
 		sqlite3 >= $SQLITE_REQUIRED_VERSION
 ])
 

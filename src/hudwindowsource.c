@@ -364,3 +364,9 @@ hud_window_source_new (void)
 {
   return g_object_new (HUD_TYPE_WINDOW_SOURCE, NULL);
 }
+
+guint32 
+hud_window_source_get_active_xid (HudWindowSource *source)
+{
+  return bamf_window_get_xid (source->active_window);
+}

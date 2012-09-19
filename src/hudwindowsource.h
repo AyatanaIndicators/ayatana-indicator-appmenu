@@ -32,5 +32,6 @@ typedef struct _HudWindowSource                             HudWindowSource;
 GType                   hud_window_source_get_type                      (void);
 
 HudWindowSource *       hud_window_source_new                           (void);
+guint32 hud_window_source_get_active_xid (HudWindowSource *source);
 
 #endif /* __HUD_WINDOW_SOURCE_H__ */
