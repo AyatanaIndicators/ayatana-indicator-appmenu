@@ -1,5 +1,5 @@
 AC_INIT([indicator-appmenu],
-        [12.10.0],
+        [12.10.1],
         [http://bugs.launchpad.net/indicator-appmenu],
         [indicator-appmenu],
         [http://launchpad.net/indicator-appmenu])

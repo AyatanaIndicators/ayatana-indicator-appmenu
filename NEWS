@@ -1,5 +1,8 @@
-12.10.0
+12.10.1
+  - add webapp support
+  - port appmenu indicator to gtk_widget_insert_action_group()
 
+12.10.0
   - merge lp:~desrt/indicator-appmenu/no-zero-indicator-penalty to
     improve HUD's scoring algorithm
   - merge lp:~allanlesage/indicator-appmenu/TDD-fixes for gcov fixes,
