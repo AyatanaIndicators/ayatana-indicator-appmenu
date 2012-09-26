@@ -24,6 +24,7 @@
 
 #include "hudsettings.h"
 #include "huddbusmenucollector.h"
+#include "hudmenumodelcollector.h"
 #include "hudsource.h"
 
 /**
@@ -49,6 +50,7 @@ typedef struct
   const gchar *indicator_name;
   const gchar *user_visible_name;
   const gchar *icon;
+  gboolean     uses_gmenumodel;
 } IndicatorInfo;
 
 static const IndicatorInfo indicator_info[] = {
@@ -85,7 +87,8 @@ static const IndicatorInfo indicator_info[] = {
     .dbus_menu_path    = "/com/canonical/indicator/messages/menu",
     .indicator_name    = "indicator-messages",
     .user_visible_name = N_("Messages"),
-    .icon              = "indicator-messages"
+    .icon              = "indicator-messages",
+    .uses_gmenumodel   = TRUE
   }
 };
 
@@ -180,15 +183,34 @@ hud_indicator_source_name_appeared (GDBusConnection *connection,
                                     gpointer         user_data)
 {
   HudIndicatorSourceIndicator *indicator = user_data;
-  HudDbusmenuCollector *collector;
 
-  collector = hud_dbusmenu_collector_new_for_endpoint (indicator->info->indicator_name,
-                                                       _(indicator->info->user_visible_name),
-                                                       indicator->info->icon,
-                                                       hud_settings.indicator_penalty,
-                                                       name_owner, indicator->info->dbus_menu_path);
-  g_signal_connect (collector, "changed", G_CALLBACK (hud_indicator_source_collector_changed), indicator);
-  indicator->collector = HUD_SOURCE (collector);
+  if (indicator->info->uses_gmenumodel)
+    {
+      HudMenuModelCollector *collector;
+
+      collector = hud_menu_model_collector_new_for_endpoint (indicator->info->indicator_name,
+                                                             _(indicator->info->user_visible_name),
+                                                             indicator->info->icon,
+                                                             hud_settings.indicator_penalty,
+                                                             name_owner,
+                                                             indicator->info->dbus_menu_path);
+
+      indicator->collector = HUD_SOURCE (collector);
+    }
+  else
+    {
+      HudDbusmenuCollector *collector;
+
+      collector = hud_dbusmenu_collector_new_for_endpoint (indicator->info->indicator_name,
+                                                           _(indicator->info->user_visible_name),
+                                                           indicator->info->icon,
+                                                           hud_settings.indicator_penalty,
+                                                           name_owner, indicator->info->dbus_menu_path);
+      indicator->collector = HUD_SOURCE (collector);
+    }
+
+  g_signal_connect (indicator->collector, "changed",
+                    G_CALLBACK (hud_indicator_source_collector_changed), indicator);
 
   /* Set initial use count on new indicator if query is active. */
   if (indicator->source->use_count)

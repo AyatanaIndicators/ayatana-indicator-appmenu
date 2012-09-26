@@ -63,6 +63,7 @@ struct _HudMenuModelCollector
   gchar *icon;
   GPtrArray *items;
   gint use_count;
+  guint penalty;
 };
 
 typedef struct
@@ -176,6 +177,39 @@ hud_menu_model_collector_refresh (gpointer user_data)
   return G_SOURCE_REMOVE;
 }
 
+static GQuark
+hud_menu_model_collector_context_quark ()
+{
+  static GQuark context_quark;
+
+  if (!context_quark)
+    context_quark = g_quark_from_string ("menu item context");
+
+  return context_quark;
+}
+
+static GRemoteActionGroup *
+hud_menu_model_collector_get_action_group (HudMenuModelCollector  *collector,
+                                           const gchar            *action,
+                                           const gchar           **action_name)
+{
+  if (g_str_has_prefix (action, "app."))
+    {
+      *action_name = action + 4;
+      return G_REMOTE_ACTION_GROUP (collector->application);
+    }
+  else if (g_str_has_prefix (action, "win."))
+    {
+      *action_name = action + 4;
+      return G_REMOTE_ACTION_GROUP (collector->window);
+    }
+  else
+    {
+      *action_name = action;
+      return G_REMOTE_ACTION_GROUP (collector->application);
+    }
+}
+
 static void
 hud_menu_model_collector_model_changed (GMenuModel *model,
                                         gint        position,
@@ -184,7 +218,7 @@ hud_menu_model_collector_model_changed (GMenuModel *model,
                                         gpointer    user_data)
 {
   HudMenuModelCollector *collector = user_data;
-  static GQuark context_quark;
+  GQuark context_quark;
   HudStringList *context;
   gboolean changed;
   gint i;
@@ -205,8 +239,7 @@ hud_menu_model_collector_model_changed (GMenuModel *model,
       return;
     }
 
-  if (!context_quark)
-    context_quark = g_quark_from_string ("menu item context");
+  context_quark = hud_menu_model_collector_context_quark ();
 
   /* The 'context' is the list of strings that got us up to where we are
    * now, like "View > Toolbars".  We hang this on the GMenuModel with
@@ -249,14 +282,10 @@ hud_menu_model_collector_model_changed (GMenuModel *model,
        */
       if (g_menu_model_get_item_attribute (model, i, G_MENU_ATTRIBUTE_ACTION, "s", &value))
         {
-          GDBusActionGroup *action_group = NULL;
+          GRemoteActionGroup *action_group = NULL;
+          const gchar *name;
 
-          /* It's an action, so add it. */
-          if (g_str_has_prefix (value, "app."))
-            action_group = collector->application;
-          else if (g_str_has_prefix (value, "win."))
-            action_group = collector->window;
-
+          action_group = hud_menu_model_collector_get_action_group (collector, value, &name);
           if (action_group)
             {
               GVariant *target;
@@ -265,8 +294,7 @@ hud_menu_model_collector_model_changed (GMenuModel *model,
               target = g_menu_model_get_item_attribute_value (model, i, G_MENU_ATTRIBUTE_TARGET, NULL);
 
               item = hud_model_item_new (tokens, collector->desktop_file, collector->icon,
-                                         G_REMOTE_ACTION_GROUP (action_group),
-                                         value + 4, target);
+                                         action_group, name, target);
               g_ptr_array_add (collector->items, item);
 
               if (target)
@@ -362,7 +390,7 @@ hud_menu_model_collector_search (HudSource    *source,
       HudItem *item;
 
       item = g_ptr_array_index (items, i);
-      result = hud_result_get_if_matched (item, search_string, 0);
+      result = hud_result_get_if_matched (item, search_string, collector->penalty);
       if (result)
         g_ptr_array_add (results_array, result);
     }
@@ -481,6 +509,65 @@ hud_menu_model_collector_get (BamfWindow  *window,
   g_free (menubar_object_path);
   g_free (application_object_path);
   g_free (window_object_path);
+
+  g_object_unref (session);
+
+  return collector;
+}
+
+/**
+ * hud_menu_model_collector_new_for_endpoint:
+ * @application_id: a unique identifier for the application
+ * @prefix: the title to prefix to all items
+ * @icon: the icon for the appliction
+ * @penalty: the penalty to apply to all results
+ * @bus_name: a D-Bus bus name
+ * @object_path: an object path at the destination given by @bus_name
+ *
+ * Creates a new #HudMenuModelCollector for the specified endpoint.
+ *
+ * This call is intended to be used for indicators.
+ *
+ * If @prefix is non-%NULL (which, for indicators, it ought to be), then
+ * it is prefixed to every item created by the collector.
+ *
+ * If @penalty is non-zero then all results returned from the collector
+ * have their distance increased by a percentage equal to the penalty.
+ * This allows items from indicators to score lower than they would
+ * otherwise.
+ *
+ * Returns: a new #HudMenuModelCollector
+ */
+HudMenuModelCollector *
+hud_menu_model_collector_new_for_endpoint (const gchar *application_id,
+                                           const gchar *prefix,
+                                           const gchar *icon,
+                                           guint        penalty,
+                                           const gchar *bus_name,
+                                           const gchar *object_path)
+{
+  HudMenuModelCollector *collector;
+  GDBusConnection *session;
+
+  collector = g_object_new (HUD_TYPE_MENU_MODEL_COLLECTOR, NULL);
+
+  session = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, NULL);
+
+  collector->app_menu = g_dbus_menu_model_get (session, bus_name, object_path);
+  if (prefix)
+    {
+      g_object_set_qdata_full (G_OBJECT (collector->app_menu),
+                               hud_menu_model_collector_context_quark (),
+                               hud_string_list_cons_label (prefix, NULL),
+                               (GDestroyNotify) hud_string_list_unref);
+    }
+  hud_menu_model_collector_add_model (collector, G_MENU_MODEL (collector->app_menu));
+
+  collector->application = g_dbus_action_group_get (session, bus_name, object_path);
+
+  collector->desktop_file = g_strdup (application_id);
+  collector->icon = g_strdup (icon);
+  collector->penalty = penalty;
 
   g_object_unref (session);
 

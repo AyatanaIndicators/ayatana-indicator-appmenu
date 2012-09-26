@@ -36,4 +36,11 @@ HudMenuModelCollector * hud_menu_model_collector_get                    (BamfWin
                                                                          const gchar *desktop_file,
                                                                          const gchar *icon);
 
+HudMenuModelCollector * hud_menu_model_collector_new_for_endpoint       (const gchar *application_id,
+                                                                         const gchar *prefix,
+                                                                         const gchar *icon,
+                                                                         guint        penalty,
+                                                                         const gchar *bus_name,
+                                                                         const gchar *object_path);
+
 #endif /* __HUD_MENU_MODEL_COLLECTOR_H__ */
