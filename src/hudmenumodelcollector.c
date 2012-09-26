@@ -181,6 +181,36 @@ hud_menu_model_collector_refresh (gpointer user_data)
   return G_SOURCE_REMOVE;
 }
 
+typedef struct
+{
+  HudStringList *tokens;
+  gchar *namespace;
+} HudItemContext;
+
+static HudItemContext *
+hud_item_context_new (HudStringList *tokens,
+                      const gchar   *namespace)
+{
+  HudItemContext *context;
+
+  context = g_slice_new (HudItemContext);
+  context->tokens = tokens ? hud_string_list_ref (tokens) : NULL;
+  context->namespace = g_strdup (namespace);
+
+  return context;
+}
+
+static void
+hud_item_context_free (HudItemContext *context)
+{
+  if (context)
+    {
+      hud_string_list_unref (context->tokens);
+      g_free (context->namespace);
+      g_slice_free (HudItemContext, context);
+    }
+}
+
 static GQuark
 hud_menu_model_collector_context_quark ()
 {
@@ -190,17 +220,6 @@ hud_menu_model_collector_context_quark ()
     context_quark = g_quark_from_string ("menu item context");
 
   return context_quark;
-}
-
-static GQuark
-hud_menu_model_collector_namespace_quark ()
-{
-  static GQuark namespace_quark;
-
-  if (!namespace_quark)
-    namespace_quark = g_quark_from_string ("menu item namespace");
-
-  return namespace_quark;
 }
 
 static GRemoteActionGroup *
@@ -233,8 +252,7 @@ hud_menu_model_collector_model_changed (GMenuModel *model,
                                         gpointer    user_data)
 {
   HudMenuModelCollector *collector = user_data;
-  HudStringList *context;
-  const gchar *namespace;
+  HudItemContext *context;
   gboolean changed;
   gint i;
 
@@ -254,9 +272,8 @@ hud_menu_model_collector_model_changed (GMenuModel *model,
       return;
     }
 
-  /* The 'context' is the list of strings that got us up to where we are
-   * now, like "View > Toolbars".  We hang this on the GMenuModel with
-   * qdata.
+  /* The tokens in 'context' are the list of strings that got us up to
+   * where we are now, like "View > Toolbars".
    *
    * Strictly speaking, GMenuModel structures are DAGs, but we more or
    * less assume that they are trees here and replace the data
@@ -265,9 +282,6 @@ hud_menu_model_collector_model_changed (GMenuModel *model,
    */
   context = g_object_get_qdata (G_OBJECT (model),
                                 hud_menu_model_collector_context_quark ());
-
-  namespace = g_object_get_qdata (G_OBJECT (model),
-                                  hud_menu_model_collector_namespace_quark ());
 
   changed = FALSE;
   for (i = position; i < position + added; i++)
@@ -278,22 +292,22 @@ hud_menu_model_collector_model_changed (GMenuModel *model,
       gchar *item_namespace = NULL;
 
       /* If this item has a label then we add it onto the context to get
-       * our 'tokens'.  For example, if context is 'File' then we will
-       * have 'File > New'.
+       * our 'tokens'.  For example, if context->tokens is 'File' then
+       * we will have 'File > New'.
        *
        * If there is no label (which only really makes sense for
-       * sections) then we just reuse the existing context by taking a
+       * sections) then we just reuse the existing tokens by taking a
        * ref to it.
        *
        * Either way, we need to free it at the end of the loop.
        */
       if (g_menu_model_get_item_attribute (model, i, G_MENU_ATTRIBUTE_LABEL, "s", &value))
         {
-          tokens = hud_string_list_cons_label (value, context);
+          tokens = hud_string_list_cons_label (value, context->tokens);
           g_free (value);
         }
       else
-        tokens = hud_string_list_ref (context);
+        tokens = hud_string_list_ref (context->tokens);
 
       /* Check if this is an action.  Here's where we may end up
        * creating a HudItem.
@@ -304,8 +318,8 @@ hud_menu_model_collector_model_changed (GMenuModel *model,
           gchar *fullname;
           const gchar *name;
 
-          if (namespace)
-            fullname = g_strconcat (namespace, ".", value, NULL);
+          if (context->namespace)
+            fullname = g_strconcat (context->namespace, ".", value, NULL);
           else
             fullname = value;
 
@@ -327,7 +341,7 @@ hud_menu_model_collector_model_changed (GMenuModel *model,
               changed = TRUE;
             }
 
-          if (namespace)
+          if (context->namespace)
             g_free (fullname);
 
           g_free (value);
@@ -335,8 +349,8 @@ hud_menu_model_collector_model_changed (GMenuModel *model,
 
       if (g_menu_model_get_item_attribute (model, i, "action-namespace", "s", &value))
         {
-          if (namespace)
-            item_namespace = g_strconcat (namespace, ".", value, NULL);
+          if (context->namespace)
+            item_namespace = g_strconcat (context->namespace, ".", value, NULL);
           else
             item_namespace = g_strdup (value);
 
@@ -378,21 +392,10 @@ hud_menu_model_collector_add_model_full (HudMenuModelCollector *collector,
   g_signal_connect (model, "items-changed", G_CALLBACK (hud_menu_model_collector_model_changed), collector);
   collector->models = g_slist_prepend (collector->models, g_object_ref (model));
 
-  if (context)
-    {
-      g_object_set_qdata_full (G_OBJECT (model),
-                               hud_menu_model_collector_context_quark (),
-                               hud_string_list_ref (context),
-                               (GDestroyNotify) hud_string_list_unref);
-    }
-
-  if (namespace)
-    {
-      g_object_set_qdata_full (G_OBJECT (model),
-                               hud_menu_model_collector_namespace_quark (),
-                               g_strdup (namespace),
-                               g_free);
-    }
+  g_object_set_qdata_full (G_OBJECT (model),
+                           hud_menu_model_collector_context_quark (),
+                           hud_item_context_new (context, namespace),
+                           (GDestroyNotify) hud_item_context_free);
 
   n_items = g_menu_model_get_n_items (model);
   if (n_items > 0)
