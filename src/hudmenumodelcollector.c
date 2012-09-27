@@ -318,15 +318,19 @@ hud_menu_model_collector_model_changed (GMenuModel *model,
       if (g_menu_model_get_item_attribute (model, i, G_MENU_ATTRIBUTE_ACTION, "s", &value))
         {
           GRemoteActionGroup *action_group = NULL;
-          gchar *fullname;
           const gchar *name;
 
           if (context->namespace)
-            fullname = g_strconcat (context->namespace, ".", value, NULL);
-          else
-            fullname = value;
+            {
+              gchar *suffix;
 
-          action_group = hud_menu_model_collector_get_action_group (collector, fullname, &name);
+              suffix = value;
+              value = g_strconcat (context->namespace, ".", suffix, NULL);
+
+              g_free (suffix);
+            }
+
+          action_group = hud_menu_model_collector_get_action_group (collector, value, &name);
           if (action_group)
             {
               GVariant *target;
@@ -343,9 +347,6 @@ hud_menu_model_collector_model_changed (GMenuModel *model,
 
               changed = TRUE;
             }
-
-          if (context->namespace)
-            g_free (fullname);
 
           g_free (value);
         }
