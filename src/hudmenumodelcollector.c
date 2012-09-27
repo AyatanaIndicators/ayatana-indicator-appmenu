@@ -59,6 +59,8 @@ struct _HudMenuModelCollector
   GDBusActionGroup *application;
   GDBusActionGroup *window;
 
+  gboolean is_application;
+
   gchar *desktop_file;
   gchar *icon;
   GPtrArray *items;
@@ -227,15 +229,16 @@ hud_menu_model_collector_get_action_group (HudMenuModelCollector  *collector,
                                            const gchar            *action,
                                            const gchar           **action_name)
 {
-  if (g_str_has_prefix (action, "app."))
+  if (collector->is_application)
     {
       *action_name = action + 4;
-      return G_REMOTE_ACTION_GROUP (collector->application);
-    }
-  else if (g_str_has_prefix (action, "win."))
-    {
-      *action_name = action + 4;
-      return G_REMOTE_ACTION_GROUP (collector->window);
+
+      if (g_str_has_prefix (action, "app."))
+        return G_REMOTE_ACTION_GROUP (collector->application);
+      else if (g_str_has_prefix (action, "win."))
+        return G_REMOTE_ACTION_GROUP (collector->window);
+      else
+        return NULL;
     }
   else
     {
@@ -556,6 +559,7 @@ hud_menu_model_collector_get (BamfWindow  *window,
   if (window_object_path)
     collector->window = g_dbus_action_group_get (session, unique_bus_name, window_object_path);
 
+  collector->is_application = TRUE;
   collector->desktop_file = g_strdup (desktop_file);
   collector->icon = g_strdup (icon);
 
@@ -619,6 +623,7 @@ hud_menu_model_collector_new_for_endpoint (const gchar *application_id,
 
   collector->application = g_dbus_action_group_get (session, bus_name, object_path);
 
+  collector->is_application = FALSE;
   collector->desktop_file = g_strdup (application_id);
   collector->icon = g_strdup (icon);
   collector->penalty = penalty;
