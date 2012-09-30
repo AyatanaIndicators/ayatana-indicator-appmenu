@@ -47,6 +47,15 @@
  * This is an opaque structure type.
  **/
 
+typedef struct _HudMenuModelContext HudMenuModelContext;
+
+struct _HudMenuModelContext
+{
+  HudStringList *tokens;
+  gchar *action_namespace;
+  gint ref_count;
+};
+
 struct _HudMenuModelCollector
 {
   GObject parent_instance;
@@ -120,20 +129,81 @@ hud_model_item_class_init (HudModelItemClass *class)
   class->activate = hud_model_item_activate;
 }
 
+static gchar *
+hud_menu_model_context_get_action_name (HudMenuModelContext *context,
+                                        const gchar         *action_name)
+{
+  if (context && context->action_namespace)
+    /* Note: this will (intentionally) work if action_name is NULL */
+    return g_strjoin (".", context->action_namespace, action_name, NULL);
+  else
+    return g_strdup (action_name);
+}
+
+static HudStringList *
+hud_menu_model_context_get_label (HudMenuModelContext *context,
+                                  const gchar         *label)
+{
+  HudStringList *parent_tokens = context ? context->tokens : NULL;
+
+  if (label)
+    return hud_string_list_cons (label, parent_tokens);
+  else
+    return hud_string_list_ref (parent_tokens);
+}
+
 static HudItem *
-hud_model_item_new (HudStringList      *tokens,
-                    const gchar        *desktop_file,
-                    const gchar        *icon,
-                    GRemoteActionGroup *action_group,
-                    const gchar        *action_name,
-                    GVariant           *target)
+hud_model_item_new (HudMenuModelCollector *collector,
+                    HudMenuModelContext   *context,
+                    const gchar           *label,
+                    const gchar           *action_name,
+                    GVariant              *target)
 {
   HudModelItem *item;
+  const gchar *stripped_action_name;
+  gchar *full_action_name;
+  GDBusActionGroup *group = NULL;
+  HudStringList *full_label;
 
-  item = hud_item_construct (hud_model_item_get_type (), tokens, desktop_file, icon, TRUE);
-  item->group = g_object_ref (action_group);
-  item->action_name = g_strdup (action_name);
+  full_action_name = hud_menu_model_context_get_action_name (context, action_name);
+
+  if (collector->is_application)
+    {
+      /* For applications we support "app." and "win." actions and
+       * deliver them to the application or the window, with the prefix
+       * removed.
+       */
+      if (g_str_has_prefix (full_action_name, "app."))
+        group = collector->application;
+      else if (g_str_has_prefix (full_action_name, "win."))
+        group = collector->window;
+
+      stripped_action_name = full_action_name + 4;
+    }
+  else
+    {
+      /* For indicators, we deliver directly to the (one) action group
+       * that we were given the object path for at construction.
+       */
+      stripped_action_name = full_action_name;
+      group = collector->application;
+    }
+
+  if (!group)
+    {
+      g_free (full_action_name);
+      return NULL;
+    }
+
+  full_label = hud_menu_model_context_get_label (context, label);
+
+  item = hud_item_construct (hud_model_item_get_type (), full_label, collector->desktop_file, collector->icon, TRUE);
+  item->group = g_object_ref (group);
+  item->action_name = g_strdup (stripped_action_name);
   item->target = target ? g_variant_ref_sink (target) : NULL;
+
+  hud_string_list_unref (full_label);
+  g_free (full_action_name);
 
   return HUD_ITEM (item);
 }
@@ -144,8 +214,6 @@ static void hud_menu_model_collector_iface_init (HudSourceInterface *iface);
 G_DEFINE_TYPE_WITH_CODE (HudMenuModelCollector, hud_menu_model_collector, G_TYPE_OBJECT,
                          G_IMPLEMENT_INTERFACE (HUD_TYPE_SOURCE, hud_menu_model_collector_iface_init))
 
-typedef struct _HudItemContext HudItemContext;
-
 /* XXX: There is a potential for unbounded recursion here if a hostile
  * client were to feed us corrupted data.  We should figure out a way to
  * address that.
@@ -155,13 +223,13 @@ typedef struct _HudItemContext HudItemContext;
  * receiving menus from untrusted sources, we need to take another look,
  * though.
  */
-static void hud_menu_model_collector_add_model_full (HudMenuModelCollector *collector,
-                                                     GMenuModel            *model,
-                                                     HudItemContext        *context);
-static void hud_menu_model_collector_add_model      (HudMenuModelCollector *collector,
-                                                     GMenuModel            *model);
-static void hud_menu_model_collector_disconnect     (gpointer               data,
-                                                     gpointer               user_data);
+static void hud_menu_model_collector_add_model  (HudMenuModelCollector *collector,
+                                                 GMenuModel            *model,
+                                                 HudMenuModelContext   *parent_context,
+                                                 const gchar           *action_namespace,
+                                                 const gchar           *label);
+static void hud_menu_model_collector_disconnect (gpointer               data,
+                                                 gpointer               user_data);
 
 static gboolean
 hud_menu_model_collector_refresh (gpointer user_data)
@@ -174,9 +242,9 @@ hud_menu_model_collector_refresh (gpointer user_data)
   collector->models = NULL;
 
   if (collector->app_menu)
-    hud_menu_model_collector_add_model (collector, G_MENU_MODEL (collector->app_menu));
+    hud_menu_model_collector_add_model (collector, G_MENU_MODEL (collector->app_menu), NULL, NULL, NULL);
   if (collector->menubar)
-    hud_menu_model_collector_add_model (collector, G_MENU_MODEL (collector->menubar));
+    hud_menu_model_collector_add_model (collector, G_MENU_MODEL (collector->menubar), NULL, NULL, NULL);
 
   g_slist_foreach (free_list, hud_menu_model_collector_disconnect, collector);
   g_slist_free_full (free_list, g_object_unref);
@@ -184,38 +252,8 @@ hud_menu_model_collector_refresh (gpointer user_data)
   return G_SOURCE_REMOVE;
 }
 
-struct _HudItemContext
-{
-  HudStringList *tokens;
-  gchar *namespace;
-  gint ref_count;
-};
-
-static HudItemContext *
-hud_item_context_new (HudItemContext *parent,
-                      const gchar    *label,
-                      const gchar    *namespace)
-{
-  HudItemContext *context;
-
-  context = g_slice_new (HudItemContext);
-  context->ref_count = 1;
-
-  if (label)
-    context->tokens = hud_string_list_cons_label (label, parent ? parent->tokens : NULL);
-  else
-    context->tokens = parent ? hud_string_list_ref (parent->tokens) : NULL;
-
-  if (parent && parent->namespace)
-    context->namespace = g_strjoin (".", parent->namespace, namespace, NULL);
-  else
-    context->namespace = g_strdup (namespace);
-
-  return context;
-}
-
-static HudItemContext *
-hud_item_context_ref (HudItemContext *context)
+static HudMenuModelContext *
+hud_menu_model_context_ref (HudMenuModelContext *context)
 {
   if (context)
     g_atomic_int_inc (&context->ref_count);
@@ -224,15 +262,35 @@ hud_item_context_ref (HudItemContext *context)
 }
 
 static void
-hud_item_context_unref (HudItemContext *context)
+hud_menu_model_context_unref (HudMenuModelContext *context)
 {
   if (context && g_atomic_int_dec_and_test (&context->ref_count))
     {
       hud_string_list_unref (context->tokens);
-      g_free (context->namespace);
-      g_slice_free (HudItemContext, context);
+      g_free (context->action_namespace);
+      g_slice_free (HudMenuModelContext, context);
     }
 }
+
+static HudMenuModelContext *
+hud_menu_model_context_new (HudMenuModelContext *parent,
+                      const gchar    *namespace,
+                      const gchar    *label)
+{
+  HudMenuModelContext *context;
+
+  /* If we would be an unmodified copy of the parent, just take a ref */
+  if (!namespace && !label)
+    return hud_menu_model_context_ref (parent);
+
+  context = g_slice_new (HudMenuModelContext);
+  context->action_namespace = hud_menu_model_context_get_action_name (parent, namespace);
+  context->tokens = hud_menu_model_context_get_label (parent, label);
+  context->ref_count = 1;
+
+  return context;
+}
+
 
 static GQuark
 hud_menu_model_collector_context_quark ()
@@ -245,29 +303,6 @@ hud_menu_model_collector_context_quark ()
   return context_quark;
 }
 
-static GRemoteActionGroup *
-hud_menu_model_collector_get_action_group (HudMenuModelCollector  *collector,
-                                           const gchar            *action,
-                                           const gchar           **action_name)
-{
-  if (collector->is_application)
-    {
-      *action_name = action + 4;
-
-      if (g_str_has_prefix (action, "app."))
-        return G_REMOTE_ACTION_GROUP (collector->application);
-      else if (g_str_has_prefix (action, "win."))
-        return G_REMOTE_ACTION_GROUP (collector->window);
-      else
-        return NULL;
-    }
-  else
-    {
-      *action_name = action;
-      return G_REMOTE_ACTION_GROUP (collector->application);
-    }
-}
-
 static void
 hud_menu_model_collector_model_changed (GMenuModel *model,
                                         gint        position,
@@ -276,7 +311,7 @@ hud_menu_model_collector_model_changed (GMenuModel *model,
                                         gpointer    user_data)
 {
   HudMenuModelCollector *collector = user_data;
-  HudItemContext *context;
+  HudMenuModelContext *context;
   gboolean changed;
   gint i;
 
@@ -296,71 +331,39 @@ hud_menu_model_collector_model_changed (GMenuModel *model,
       return;
     }
 
-  /* The tokens in 'context' are the list of strings that got us up to
-   * where we are now, like "View > Toolbars".
-   *
-   * Strictly speaking, GMenuModel structures are DAGs, but we more or
-   * less assume that they are trees here and replace the data
-   * unconditionally when we visit it the second time (which will be
-   * more or less never, because really, a menu is a tree).
-   */
-  context = g_object_get_qdata (G_OBJECT (model),
-                                hud_menu_model_collector_context_quark ());
+  context = g_object_get_qdata (G_OBJECT (model), hud_menu_model_collector_context_quark ());
 
   changed = FALSE;
   for (i = position; i < position + added; i++)
     {
-      HudItemContext *new_context;
       GMenuModel *link;
-      gchar *value;
       gchar *label = NULL;
       gchar *action_namespace = NULL;
+      gchar *action = NULL;
 
-      g_menu_model_get_item_attribute (model, i, G_MENU_ATTRIBUTE_LABEL, "s", &label);
       g_menu_model_get_item_attribute (model, i, "action-namespace", "s", &action_namespace);
-
-      if (label || action_namespace)
-        new_context = hud_item_context_new (context, label, action_namespace);
-      else
-        new_context = hud_item_context_ref (context);
+      g_menu_model_get_item_attribute (model, i, G_MENU_ATTRIBUTE_ACTION, "s", &action);
+      g_menu_model_get_item_attribute (model, i, G_MENU_ATTRIBUTE_LABEL, "s", &label);
 
       /* Check if this is an action.  Here's where we may end up
        * creating a HudItem.
        */
-      if (g_menu_model_get_item_attribute (model, i, G_MENU_ATTRIBUTE_ACTION, "s", &value))
+      if (action && label)
         {
-          GRemoteActionGroup *action_group = NULL;
-          const gchar *name;
+          GVariant *target;
+          HudItem *item;
 
-          if (context && context->namespace)
-            {
-              gchar *suffix;
+          target = g_menu_model_get_item_attribute_value (model, i, G_MENU_ATTRIBUTE_TARGET, NULL);
 
-              suffix = value;
-              value = g_strconcat (context->namespace, ".", suffix, NULL);
+          item = hud_model_item_new (collector, context, label, action, target);
 
-              g_free (suffix);
-            }
+          if (item)
+            g_ptr_array_add (collector->items, item);
 
-          action_group = hud_menu_model_collector_get_action_group (collector, value, &name);
-          if (action_group)
-            {
-              GVariant *target;
-              HudItem *item;
+          if (target)
+            g_variant_unref (target);
 
-              target = g_menu_model_get_item_attribute_value (model, i, G_MENU_ATTRIBUTE_TARGET, NULL);
-
-              item = hud_model_item_new (new_context->tokens, collector->desktop_file, collector->icon,
-                                         action_group, name, target);
-              g_ptr_array_add (collector->items, item);
-
-              if (target)
-                g_variant_unref (target);
-
-              changed = TRUE;
-            }
-
-          g_free (value);
+          changed = TRUE;
         }
 
       /* For 'section' and 'submenu' links, we should recurse.  This is
@@ -369,19 +372,19 @@ hud_menu_model_collector_model_changed (GMenuModel *model,
        */
       if ((link = g_menu_model_get_item_link (model, i, G_MENU_LINK_SECTION)))
         {
-          hud_menu_model_collector_add_model_full (collector, link, new_context);
+          hud_menu_model_collector_add_model (collector, link, context, action_namespace, label);
           g_object_unref (link);
         }
 
       if ((link = g_menu_model_get_item_link (model, i, G_MENU_LINK_SUBMENU)))
         {
-          hud_menu_model_collector_add_model_full (collector, link, new_context);
+          hud_menu_model_collector_add_model (collector, link, context, action_namespace, label);
           g_object_unref (link);
         }
 
-      g_free (label);
       g_free (action_namespace);
-      hud_item_context_unref (new_context);
+      g_free (action);
+      g_free (label);
     }
 
   if (changed)
@@ -389,33 +392,33 @@ hud_menu_model_collector_model_changed (GMenuModel *model,
 }
 
 static void
-hud_menu_model_collector_add_model_full (HudMenuModelCollector *collector,
-                                         GMenuModel            *model,
-                                         HudItemContext        *context)
+hud_menu_model_collector_add_model (HudMenuModelCollector *collector,
+                                    GMenuModel            *model,
+                                    HudMenuModelContext   *parent_context,
+                                    const gchar           *action_namespace,
+                                    const gchar           *label)
 {
   gint n_items;
 
   g_signal_connect (model, "items-changed", G_CALLBACK (hud_menu_model_collector_model_changed), collector);
   collector->models = g_slist_prepend (collector->models, g_object_ref (model));
 
-  if (context)
-    {
-      g_object_set_qdata_full (G_OBJECT (model),
-                               hud_menu_model_collector_context_quark (),
-                               hud_item_context_ref (context),
-                               (GDestroyNotify) hud_item_context_unref);
-    }
+  /* The tokens in 'context' are the list of strings that got us up to
+   * where we are now, like "View > Toolbars".
+   *
+   * Strictly speaking, GMenuModel structures are DAGs, but we more or
+   * less assume that they are trees here and replace the data
+   * unconditionally when we visit it the second time (which will be
+   * more or less never, because really, a menu is a tree).
+   */
+  g_object_set_qdata_full (G_OBJECT (model),
+                           hud_menu_model_collector_context_quark (),
+                           hud_menu_model_context_new (parent_context, action_namespace, label),
+                           (GDestroyNotify) hud_menu_model_context_unref);
 
   n_items = g_menu_model_get_n_items (model);
   if (n_items > 0)
     hud_menu_model_collector_model_changed (model, 0, 0, n_items, collector);
-}
-
-static void
-hud_menu_model_collector_add_model (HudMenuModelCollector *collector,
-                                    GMenuModel            *model)
-{
-  hud_menu_model_collector_add_model_full (collector, model, NULL);
 }
 
 static void
@@ -550,13 +553,13 @@ hud_menu_model_collector_get (BamfWindow  *window,
   if (app_menu_object_path)
     {
       collector->app_menu = g_dbus_menu_model_get (session, unique_bus_name, app_menu_object_path);
-      hud_menu_model_collector_add_model (collector, G_MENU_MODEL (collector->app_menu));
+      hud_menu_model_collector_add_model (collector, G_MENU_MODEL (collector->app_menu), NULL, NULL, NULL);
     }
 
   if (menubar_object_path)
     {
       collector->menubar = g_dbus_menu_model_get (session, unique_bus_name, menubar_object_path);
-      hud_menu_model_collector_add_model (collector, G_MENU_MODEL (collector->menubar));
+      hud_menu_model_collector_add_model (collector, G_MENU_MODEL (collector->menubar), NULL, NULL, NULL);
     }
 
   if (application_object_path)
@@ -617,15 +620,13 @@ hud_menu_model_collector_new_for_endpoint (const gchar *application_id,
 {
   HudMenuModelCollector *collector;
   GDBusConnection *session;
-  HudItemContext *context;
 
   collector = g_object_new (HUD_TYPE_MENU_MODEL_COLLECTOR, NULL);
 
   session = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, NULL);
 
   collector->app_menu = g_dbus_menu_model_get (session, bus_name, object_path);
-  context = hud_item_context_new (NULL, prefix, NULL);
-  hud_menu_model_collector_add_model_full (collector, G_MENU_MODEL (collector->app_menu), context);
+  hud_menu_model_collector_add_model (collector, G_MENU_MODEL (collector->app_menu), NULL, NULL, prefix);
 
   collector->application = g_dbus_action_group_get (session, bus_name, object_path);
 
@@ -634,7 +635,6 @@ hud_menu_model_collector_new_for_endpoint (const gchar *application_id,
   collector->icon = g_strdup (icon);
   collector->penalty = penalty;
 
-  hud_item_context_unref (context);
   g_object_unref (session);
 
   return collector;
