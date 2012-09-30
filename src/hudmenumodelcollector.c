@@ -70,6 +70,7 @@ struct _HudMenuModelCollector
 
   gboolean is_application;
 
+  gchar *prefix;
   gchar *desktop_file;
   gchar *icon;
   GPtrArray *items;
@@ -242,9 +243,9 @@ hud_menu_model_collector_refresh (gpointer user_data)
   collector->models = NULL;
 
   if (collector->app_menu)
-    hud_menu_model_collector_add_model (collector, G_MENU_MODEL (collector->app_menu), NULL, NULL, NULL);
+    hud_menu_model_collector_add_model (collector, G_MENU_MODEL (collector->app_menu), NULL, NULL, collector->prefix);
   if (collector->menubar)
-    hud_menu_model_collector_add_model (collector, G_MENU_MODEL (collector->menubar), NULL, NULL, NULL);
+    hud_menu_model_collector_add_model (collector, G_MENU_MODEL (collector->menubar), NULL, NULL, collector->prefix);
 
   g_slist_foreach (free_list, hud_menu_model_collector_disconnect, collector);
   g_slist_free_full (free_list, g_object_unref);
@@ -480,6 +481,7 @@ hud_menu_model_collector_finalize (GObject *object)
   g_clear_object (&collector->application);
   g_clear_object (&collector->window);
 
+  g_free (collector->prefix);
   g_free (collector->desktop_file);
   g_free (collector->icon);
 
@@ -631,6 +633,7 @@ hud_menu_model_collector_new_for_endpoint (const gchar *application_id,
   collector->application = g_dbus_action_group_get (session, bus_name, object_path);
 
   collector->is_application = FALSE;
+  collector->prefix = g_strdup (prefix);
   collector->desktop_file = g_strdup (application_id);
   collector->icon = g_strdup (icon);
   collector->penalty = penalty;
