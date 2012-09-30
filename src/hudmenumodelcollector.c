@@ -89,6 +89,71 @@ typedef struct
 
 typedef HudItemClass HudModelItemClass;
 
+static gchar *
+hud_menu_model_context_get_action_name (HudMenuModelContext *context,
+                                        const gchar         *action_name)
+{
+  if (context && context->action_namespace)
+    /* Note: this will (intentionally) work if action_name is NULL */
+    return g_strjoin (".", context->action_namespace, action_name, NULL);
+  else
+    return g_strdup (action_name);
+}
+
+static HudStringList *
+hud_menu_model_context_get_label (HudMenuModelContext *context,
+                                  const gchar         *label)
+{
+  HudStringList *parent_tokens = context ? context->tokens : NULL;
+
+  if (label)
+    return hud_string_list_cons (label, parent_tokens);
+  else
+    return hud_string_list_ref (parent_tokens);
+}
+
+static HudMenuModelContext *
+hud_menu_model_context_ref (HudMenuModelContext *context)
+{
+  if (context)
+    g_atomic_int_inc (&context->ref_count);
+
+  return context;
+}
+
+static void
+hud_menu_model_context_unref (HudMenuModelContext *context)
+{
+  if (context && g_atomic_int_dec_and_test (&context->ref_count))
+    {
+      hud_string_list_unref (context->tokens);
+      g_free (context->action_namespace);
+      g_slice_free (HudMenuModelContext, context);
+    }
+}
+
+static HudMenuModelContext *
+hud_menu_model_context_new (HudMenuModelContext *parent,
+                            const gchar         *namespace,
+                            const gchar         *label)
+{
+  HudMenuModelContext *context;
+
+  /* If we would be an unmodified copy of the parent, just take a ref */
+  if (!namespace && !label)
+    return hud_menu_model_context_ref (parent);
+
+  context = g_slice_new (HudMenuModelContext);
+  context->action_namespace = hud_menu_model_context_get_action_name (parent, namespace);
+  context->tokens = hud_menu_model_context_get_label (parent, label);
+  context->ref_count = 1;
+
+  return context;
+}
+
+
+
+
 G_DEFINE_TYPE (HudModelItem, hud_model_item, HUD_TYPE_ITEM)
 
 static void
@@ -128,29 +193,6 @@ hud_model_item_class_init (HudModelItemClass *class)
   gobject_class->finalize = hud_model_item_finalize;
 
   class->activate = hud_model_item_activate;
-}
-
-static gchar *
-hud_menu_model_context_get_action_name (HudMenuModelContext *context,
-                                        const gchar         *action_name)
-{
-  if (context && context->action_namespace)
-    /* Note: this will (intentionally) work if action_name is NULL */
-    return g_strjoin (".", context->action_namespace, action_name, NULL);
-  else
-    return g_strdup (action_name);
-}
-
-static HudStringList *
-hud_menu_model_context_get_label (HudMenuModelContext *context,
-                                  const gchar         *label)
-{
-  HudStringList *parent_tokens = context ? context->tokens : NULL;
-
-  if (label)
-    return hud_string_list_cons (label, parent_tokens);
-  else
-    return hud_string_list_ref (parent_tokens);
 }
 
 static HudItem *
@@ -252,46 +294,6 @@ hud_menu_model_collector_refresh (gpointer user_data)
 
   return G_SOURCE_REMOVE;
 }
-
-static HudMenuModelContext *
-hud_menu_model_context_ref (HudMenuModelContext *context)
-{
-  if (context)
-    g_atomic_int_inc (&context->ref_count);
-
-  return context;
-}
-
-static void
-hud_menu_model_context_unref (HudMenuModelContext *context)
-{
-  if (context && g_atomic_int_dec_and_test (&context->ref_count))
-    {
-      hud_string_list_unref (context->tokens);
-      g_free (context->action_namespace);
-      g_slice_free (HudMenuModelContext, context);
-    }
-}
-
-static HudMenuModelContext *
-hud_menu_model_context_new (HudMenuModelContext *parent,
-                      const gchar    *namespace,
-                      const gchar    *label)
-{
-  HudMenuModelContext *context;
-
-  /* If we would be an unmodified copy of the parent, just take a ref */
-  if (!namespace && !label)
-    return hud_menu_model_context_ref (parent);
-
-  context = g_slice_new (HudMenuModelContext);
-  context->action_namespace = hud_menu_model_context_get_action_name (parent, namespace);
-  context->tokens = hud_menu_model_context_get_label (parent, label);
-  context->ref_count = 1;
-
-  return context;
-}
-
 
 static GQuark
 hud_menu_model_collector_context_quark ()
