@@ -630,8 +630,6 @@ hud_menu_model_collector_new_for_endpoint (const gchar *application_id,
   session = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, NULL);
 
   collector->app_menu = g_dbus_menu_model_get (session, bus_name, object_path);
-  hud_menu_model_collector_add_model (collector, G_MENU_MODEL (collector->app_menu), NULL, NULL, prefix);
-
   collector->application = g_dbus_action_group_get (session, bus_name, object_path);
 
   collector->is_application = FALSE;
@@ -639,6 +637,8 @@ hud_menu_model_collector_new_for_endpoint (const gchar *application_id,
   collector->desktop_file = g_strdup (application_id);
   collector->icon = g_strdup (icon);
   collector->penalty = penalty;
+
+  hud_menu_model_collector_add_model (collector, G_MENU_MODEL (collector->app_menu), NULL, NULL, prefix);
 
   g_object_unref (session);
 
