@@ -107,7 +107,7 @@ hud_menu_model_context_get_label (HudMenuModelContext *context,
   HudStringList *parent_tokens = context ? context->tokens : NULL;
 
   if (label)
-    return hud_string_list_cons (label, parent_tokens);
+    return hud_string_list_cons_label (label, parent_tokens);
   else
     return hud_string_list_ref (parent_tokens);
 }
