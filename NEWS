@@ -1,3 +1,7 @@
+12.10.2
+  - support indicators based on gmenumodel (lp #1042824)
+  - fix crash (lp #913324)
+
 12.10.1
   - add webapp support
   - port appmenu indicator to gtk_widget_insert_action_group()
