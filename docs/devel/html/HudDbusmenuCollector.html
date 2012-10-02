@@ -74,7 +74,7 @@ HudDbusmenuCollector implements
 <div class="refsect1">
 <a name="HudDbusmenuCollector.description"></a><h2>Description</h2>
 <p>
-The <a class="link" href="HudDbusmenuCollector.html" title="HudDbusmenuCollector"><span class="type">HudDbusmenuCollector</span></a> collects menu items from a <a href="/usr/share/gtk-doc/html/libdbusmenu-glib/libdbusmenu-glib-DbusmenuClient.html#DbusmenuClient"><span class="type">DbusmenuClient</span></a>.
+The <a class="link" href="HudDbusmenuCollector.html" title="HudDbusmenuCollector"><span class="type">HudDbusmenuCollector</span></a> collects menu items from a <span class="type">DbusmenuClient</span>.
 </p>
 <p>
 There are two modes of operation.
@@ -82,7 +82,7 @@ There are two modes of operation.
 <p>
 In the simple mode, the collector is created with a specified
 endpoint using <a class="link" href="HudDbusmenuCollector.html#hud-dbusmenu-collector-new-for-endpoint" title="hud_dbusmenu_collector_new_for_endpoint ()"><code class="function">hud_dbusmenu_collector_new_for_endpoint()</code></a>.  A
-<a href="/usr/share/gtk-doc/html/libdbusmenu-glib/libdbusmenu-glib-DbusmenuClient.html#DbusmenuClient"><span class="type">DbusmenuClient</span></a> is constructed using this endpoint and the collector
+<span class="type">DbusmenuClient</span> is constructed using this endpoint and the collector
 constructs <a href="HudItem.html"><span class="type">HudItems</span></a> for the contents of the menu found there.  This
 mode is intended for use with indicators.
 </p>
@@ -116,7 +116,7 @@ This is an opaque structure type.
 Creates a new <a class="link" href="HudDbusmenuCollector.html" title="HudDbusmenuCollector"><span class="type">HudDbusmenuCollector</span></a> for the specified endpoint.
 </p>
 <p>
-Internally, a <a href="/usr/share/gtk-doc/html/libdbusmenu-glib/libdbusmenu-glib-DbusmenuClient.html#DbusmenuClient"><span class="type">DbusmenuClient</span></a> is created for this endpoint.  Searches
+Internally, a <span class="type">DbusmenuClient</span> is created for this endpoint.  Searches
 are performed against the contents of those menus.
 </p>
 <p>

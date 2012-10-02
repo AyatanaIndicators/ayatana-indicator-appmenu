@@ -1,6 +1,10 @@
+12.10.2
+  - support indicators based on gmenumodel (lp #1042824)
+  - fix crash (lp #913324)
+
 12.10.1
-  - Add webapp support
-  - Port appmenu indicator to gtk_widget_insert_action_group()
+  - add webapp support
+  - port appmenu indicator to gtk_widget_insert_action_group()
 
 12.10.0
   - merge lp:~desrt/indicator-appmenu/no-zero-indicator-penalty to

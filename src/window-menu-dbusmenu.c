@@ -53,6 +53,7 @@ struct _WMEntry {
 	gboolean hidden;
 	DbusmenuMenuitem * mi;
 	WindowMenuDbusmenu * wm;
+	GVariant * vaccessible_desc;
 };
 
 #define WINDOW_MENU_DBUSMENU_GET_PRIVATE(o) \
@@ -140,6 +141,9 @@ entry_free(IndicatorObjectEntry * entry)
 	if (entry->accessible_desc != NULL) {
 		entry->accessible_desc = NULL;
 	}
+
+	g_clear_pointer(&wmentry->vaccessible_desc, g_variant_unref);
+
 	if (entry->image != NULL) {
 		g_object_unref(entry->image);
 		entry->image = NULL;
@@ -658,7 +662,10 @@ menu_prop_changed (DbusmenuMenuitem * item, const gchar * property, GVariant * v
 		wmentry->disabled = !g_variant_get_boolean(value);
 	} else if (!g_strcmp0(property, DBUSMENU_MENUITEM_PROP_LABEL)) {
 		gtk_label_set_text_with_mnemonic(entry->label, g_variant_get_string(value, NULL));
+
+		g_clear_pointer(&wmentry->vaccessible_desc, g_variant_unref);
 		entry->accessible_desc = g_variant_get_string(value, NULL);
+		wmentry->vaccessible_desc = g_variant_ref(value);
 
 		if (wmentry->wm != NULL) {
 			g_signal_emit_by_name(G_OBJECT(wmentry->wm), WINDOW_MENU_SIGNAL_A11Y_UPDATE, entry, TRUE);
@@ -704,7 +711,9 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 		g_object_ref_sink(entry->label);
 	}
 
-	entry->accessible_desc = dbusmenu_menuitem_property_get(newentry, DBUSMENU_MENUITEM_PROP_LABEL);
+	g_clear_pointer(&wmentry->vaccessible_desc, g_variant_unref);
+	wmentry->vaccessible_desc = g_variant_ref(dbusmenu_menuitem_property_get_variant(newentry, DBUSMENU_MENUITEM_PROP_LABEL));
+	entry->accessible_desc = g_variant_get_string(wmentry->vaccessible_desc, NULL);
 
 	entry->menu = dbusmenu_gtkclient_menuitem_get_submenu(priv->client, newentry);
 
