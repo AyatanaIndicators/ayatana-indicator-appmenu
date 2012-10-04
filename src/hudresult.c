@@ -48,7 +48,6 @@ struct _HudResult
   HudItem *item;
 
   guint   distance;
-  const gchar **matched;
   gchar  *description;
 };
 
@@ -60,7 +59,6 @@ hud_result_finalize (GObject *object)
   HudResult *result = HUD_RESULT (object);
 
   g_object_unref (result->item);
-  g_free (result->matched);
   g_free (result->description);
 
   G_OBJECT_CLASS (hud_result_parent_class)
@@ -113,61 +111,95 @@ hud_result_get_if_matched (HudItem      *item,
     return NULL;
 }
 
-/* recurse so that we can avoid having to prepend the string */
+/* We recurse instead of iterating because we want to visit the tokens
+ * in the "user visible order" (which is backwards from the way the
+ * stack was constructed).  This allows for two nice properties:
+ *
+ *   - first is that it allow us to avoid prepending to the description
+ *     string
+ *
+ *   - second is that the token-matching algorithm always returns the
+ *     results in this order, so we can always just look at the head
+ *     of the queue for our match.
+ */
 static void
-hud_result_format_tokens (GString       *string,
-                          HudStringList *tokens)
+hud_result_format_tokens (GString          *string,
+                          HudStringList    *tokens,
+                          const HudToken ***matches)
 {
   HudStringList *tail;
+  const gchar *head;
+  guint head_length;
   gchar *escaped;
 
   tail = hud_string_list_get_tail (tokens);
 
   if (tail)
     {
-      hud_result_format_tokens (string, tail);
+      /* The tail will get a chance to consume some 'matches' first... */
+      hud_result_format_tokens (string, tail, matches);
       g_string_append (string, " &gt; ");
     }
 
-  escaped = g_markup_escape_text (hud_string_list_get_head (tokens), -1);
+  head = hud_string_list_get_head (tokens);
+  head_length = strlen (head);
+
+  while (**matches)
+    {
+      const gchar *matched_string;
+      guint match_length;
+
+      matched_string = hud_token_get_original (**matches, &match_length);
+
+      if (head <= matched_string && matched_string + match_length <= head + head_length)
+        {
+          /* The matched string is a substring of the string that we
+           * were just about to append.
+           *
+           * Append the part before the match.
+           */
+          escaped = g_markup_escape_text (head, matched_string - head);
+          g_string_append (string, escaped);
+          g_free (escaped);
+
+          /* Append the matched part, in bold. */
+          escaped = g_markup_escape_text (matched_string, match_length);
+          g_string_append (string, "<b>");
+          g_string_append (string, escaped);
+          g_string_append (string, "</b>");
+          g_free (escaped);
+
+          /* Fast-forward the head string.  There may be multiple
+           * matches here (so we go another time around the 'while').
+           */
+          head = matched_string + match_length;
+
+          /* That's it for this match. */
+          (*matches)++;
+        }
+
+      else
+        /* Didn't match?  Stop. */
+        break;
+    }
+
+  /* Append whatever is left of the string after dealing with the
+   * matches
+   */
+  escaped = g_markup_escape_text (head, -1);
   g_string_append (string, escaped);
   g_free (escaped);
 }
 
-static void
-hud_result_format_description (HudResult *result)
+static gchar *
+hud_result_format_description (HudStringList   *tokens,
+                               const HudToken **matches)
 {
   GString *description;
-  gint i;
 
   description = g_string_new (NULL);
-  hud_result_format_tokens (description, hud_item_get_tokens (result->item));
-
-  for (i = 0; result->matched[i]; i++)
-    {
-      gchar *escaped;
-      gchar *match;
-
-      escaped = g_markup_escape_text (result->matched[i], -1);
-      match = strstr (description->str, escaped);
-
-      if (match != NULL)
-        {
-          gsize start, end;
-
-          start = match - description->str;
-          end = start + strlen (escaped);
-
-          /* modify the end first so that the modification to the start
-           * doesn't change the offset of the end */
-          g_string_insert (description, end, "</b>");
-          g_string_insert (description, start, "<b>");
-        }
-
-      g_free (escaped);
-    }
-
-  result->description = g_string_free (description, FALSE);
+  hud_result_format_tokens (description, tokens, &matches);
+  return g_string_free (description, FALSE);
 }
 
 /**
@@ -189,6 +221,7 @@ hud_result_new (HudItem      *item,
                 HudTokenList *search_tokens,
                 guint         penalty)
 {
+  const HudToken **matched;
   HudResult *result;
 
   g_return_val_if_fail (HUD_IS_ITEM (item), NULL);
@@ -196,8 +229,9 @@ hud_result_new (HudItem      *item,
 
   result = g_object_new (HUD_TYPE_RESULT, NULL);
   result->item = g_object_ref (item);
-  result->distance = hud_token_list_distance (hud_item_get_token_list (item), search_tokens, &result->matched);
-  hud_result_format_description (result);
+  result->distance = hud_token_list_distance (hud_item_get_token_list (item), search_tokens, &matched);
+  result->description = hud_result_format_description (hud_item_get_tokens (item), matched);
+  g_free (matched);
 
   result->distance += (result->distance * penalty) / 100;
 
