@@ -49,6 +49,40 @@ test_distance_LDADD = \
 DISTCLEANFILES += $(DISTANCE_XML_REPORT)
 
 ######################
+# Test Result Highlighting
+######################
+
+TESTS += \
+	test-result-highlighting-test
+
+check_PROGRAMS += \
+	test-result-highlighting
+
+DISTANCE_XML_REPORT = test-result-highlighting.xml
+
+test-result-highlighting-test: test-result-highlighting Makefile.am
+	@echo "#!/bin/bash" > $@
+	@echo $(XVFB_RUN) >> $@
+	@echo gtester --verbose -k -o $(DISTANCE_XML_REPORT) $(builddir)/test-result-highlighting >> $@
+	@chmod +x $@
+
+test_result_highlighting_SOURCES = \
+	test-result-highlighting.c
+
+test_result_highlighting_CFLAGS = \
+	$(HUD_CFLAGS) \
+	$(COVERAGE_CFLAGS) \
+	-I$(top_srcdir)/src \
+	-I$(top_builddir)/src \
+	-Wall -Werror
+
+test_result_highlighting_LDADD = \
+	../src/libhud-service.a		\
+	$(HUD_LIBS)
+
+DISTCLEANFILES += $(DISTANCE_XML_REPORT)
+
+######################
 # Test Usage DB Simple
 ######################
 
