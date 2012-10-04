@@ -1,3 +1,12 @@
+indicator-appmenu (12.10.3-0ubuntu1) UNRELEASED; urgency=low
+
+  * New upstream release.
+  - add the hud awareness protocol, an efficient way to notify applications that
+    the HUD will open (required for libreoffice)
+  - fix hud match highlighting (lp #961000)
+
+ -- Sebastien Bacher <seb128@ubuntu.com>  Thu, 04 Oct 2012 19:25:38 +0200
+
 indicator-appmenu (12.10.2-0ubuntu1) quantal; urgency=low
 
   * New upstream release:

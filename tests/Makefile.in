@@ -50,10 +50,12 @@ PRE_UNINSTALL = :
 POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
-check_PROGRAMS = test-distance$(EXEEXT) test-usage-db-simple$(EXEEXT) \
-	test-usage-db-old$(EXEEXT) test-usage-db-ancient$(EXEEXT) \
-	test-usage-db-testapp$(EXEEXT) test-bad-app-info$(EXEEXT) \
-	test-load-app-info$(EXEEXT) hud-performance$(EXEEXT)
+check_PROGRAMS = test-distance$(EXEEXT) \
+	test-result-highlighting$(EXEEXT) \
+	test-usage-db-simple$(EXEEXT) test-usage-db-old$(EXEEXT) \
+	test-usage-db-ancient$(EXEEXT) test-usage-db-testapp$(EXEEXT) \
+	test-bad-app-info$(EXEEXT) test-load-app-info$(EXEEXT) \
+	hud-performance$(EXEEXT)
 XFAIL_TESTS =
 subdir = tests
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in
@@ -111,6 +113,16 @@ test_load_app_info_DEPENDENCIES = ../src/libhud-service.a \
 test_load_app_info_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
 	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
 	$(test_load_app_info_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
+	$(LDFLAGS) -o $@
+am_test_result_highlighting_OBJECTS =  \
+	test_result_highlighting-test-result-highlighting.$(OBJEXT)
+test_result_highlighting_OBJECTS =  \
+	$(am_test_result_highlighting_OBJECTS)
+test_result_highlighting_DEPENDENCIES = ../src/libhud-service.a \
+	$(am__DEPENDENCIES_1)
+test_result_highlighting_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC \
+	$(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=link $(CCLD) \
+	$(test_result_highlighting_CFLAGS) $(CFLAGS) $(AM_LDFLAGS) \
 	$(LDFLAGS) -o $@
 am_test_usage_db_ancient_OBJECTS =  \
 	test_usage_db_ancient-test-usage-db-ancient.$(OBJEXT)
@@ -176,11 +188,13 @@ am__v_GEN_ = $(am__v_GEN_@AM_DEFAULT_V@)
 am__v_GEN_0 = @echo "  GEN   " $@;
 SOURCES = $(hud_performance_SOURCES) $(test_bad_app_info_SOURCES) \
 	$(test_distance_SOURCES) $(test_load_app_info_SOURCES) \
+	$(test_result_highlighting_SOURCES) \
 	$(test_usage_db_ancient_SOURCES) $(test_usage_db_old_SOURCES) \
 	$(test_usage_db_simple_SOURCES) \
 	$(test_usage_db_testapp_SOURCES)
 DIST_SOURCES = $(hud_performance_SOURCES) $(test_bad_app_info_SOURCES) \
 	$(test_distance_SOURCES) $(test_load_app_info_SOURCES) \
+	$(test_result_highlighting_SOURCES) \
 	$(test_usage_db_ancient_SOURCES) $(test_usage_db_old_SOURCES) \
 	$(test_usage_db_simple_SOURCES) \
 	$(test_usage_db_testapp_SOURCES)
@@ -416,10 +430,10 @@ top_srcdir = @top_srcdir@
 #########################
 # Footer
 #########################
-DISTCLEANFILES = $(DISTANCE_XML_REPORT) $(USAGE_DB_SIMPLE_XML_REPORT) \
-	$(USAGE_DB_OLD_XML_REPORT) $(USAGE_TESTAPP_XML_REPORT) \
-	$(USAGE_OFF_XML_REPORT) test-dbus-message-count.bustle \
-	$(TESTS)
+DISTCLEANFILES = $(DISTANCE_XML_REPORT) $(DISTANCE_XML_REPORT) \
+	$(USAGE_DB_SIMPLE_XML_REPORT) $(USAGE_DB_OLD_XML_REPORT) \
+	$(USAGE_TESTAPP_XML_REPORT) $(USAGE_OFF_XML_REPORT) \
+	test-dbus-message-count.bustle $(TESTS)
 EXTRA_DIST = run-xvfb.sh test-usage-db-simple.sql \
 	test-usage-db-old.sql test-usage-db-ancient.sql \
 	test-usage-dump-entries.sql \
@@ -438,6 +452,10 @@ EXTRA_DIST = run-xvfb.sh test-usage-db-simple.sql \
 
 ######################
 # Test Distance
+######################
+
+######################
+# Test Result Highlighting
 ######################
 
 ######################
@@ -471,11 +489,12 @@ EXTRA_DIST = run-xvfb.sh test-usage-db-simple.sql \
 #########################
 # Test Dbus Messages
 #########################
-TESTS = test-distance-test test-usage-db-simple-test \
-	test-usage-db-old-test test-usage-db-ancient-test \
-	test-usage-db-testapp-test test-usage-db-off-test \
-	test-bad-app-info-dual-header test-bad-app-info-item-no-count \
-	test-bad-app-info-item-no-name test-bad-app-info-menu-no-name \
+TESTS = test-distance-test test-result-highlighting-test \
+	test-usage-db-simple-test test-usage-db-old-test \
+	test-usage-db-ancient-test test-usage-db-testapp-test \
+	test-usage-db-off-test test-bad-app-info-dual-header \
+	test-bad-app-info-item-no-count test-bad-app-info-item-no-name \
+	test-bad-app-info-menu-no-name \
 	test-bad-app-info-missing-desktop \
 	test-bad-app-info-missing-menus \
 	test-bad-app-info-multiple-menus \
@@ -485,7 +504,7 @@ XVFB_RUN = ". $(srcdir)/run-xvfb.sh"
 SUBDIRS = \
 	manual
 
-DISTANCE_XML_REPORT = test-distance.xml
+DISTANCE_XML_REPORT = test-result-highlighting.xml
 test_distance_SOURCES = \
 	test-distance.c
 
@@ -497,6 +516,20 @@ test_distance_CFLAGS = \
 	-Wall -Werror
 
 test_distance_LDADD = \
+	../src/libhud-service.a		\
+	$(HUD_LIBS)
+
+test_result_highlighting_SOURCES = \
+	test-result-highlighting.c
+
+test_result_highlighting_CFLAGS = \
+	$(HUD_CFLAGS) \
+	$(COVERAGE_CFLAGS) \
+	-I$(top_srcdir)/src \
+	-I$(top_builddir)/src \
+	-Wall -Werror
+
+test_result_highlighting_LDADD = \
 	../src/libhud-service.a		\
 	$(HUD_LIBS)
 
@@ -660,6 +693,9 @@ test-distance$(EXEEXT): $(test_distance_OBJECTS) $(test_distance_DEPENDENCIES) $
 test-load-app-info$(EXEEXT): $(test_load_app_info_OBJECTS) $(test_load_app_info_DEPENDENCIES) $(EXTRA_test_load_app_info_DEPENDENCIES) 
 	@rm -f test-load-app-info$(EXEEXT)
 	$(AM_V_CCLD)$(test_load_app_info_LINK) $(test_load_app_info_OBJECTS) $(test_load_app_info_LDADD) $(LIBS)
+test-result-highlighting$(EXEEXT): $(test_result_highlighting_OBJECTS) $(test_result_highlighting_DEPENDENCIES) $(EXTRA_test_result_highlighting_DEPENDENCIES) 
+	@rm -f test-result-highlighting$(EXEEXT)
+	$(AM_V_CCLD)$(test_result_highlighting_LINK) $(test_result_highlighting_OBJECTS) $(test_result_highlighting_LDADD) $(LIBS)
 test-usage-db-ancient$(EXEEXT): $(test_usage_db_ancient_OBJECTS) $(test_usage_db_ancient_DEPENDENCIES) $(EXTRA_test_usage_db_ancient_DEPENDENCIES) 
 	@rm -f test-usage-db-ancient$(EXEEXT)
 	$(AM_V_CCLD)$(test_usage_db_ancient_LINK) $(test_usage_db_ancient_OBJECTS) $(test_usage_db_ancient_LDADD) $(LIBS)
@@ -683,6 +719,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_bad_app_info-test-bad-app-info.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_distance-test-distance.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_load_app_info-test-load-app-info.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_result_highlighting-test-result-highlighting.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_usage_db_ancient-test-usage-db-ancient.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_usage_db_old-test-usage-db-old.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test_usage_db_simple-test-usage-db-simple.Po@am__quote@
@@ -767,6 +804,20 @@ test_load_app_info-test-load-app-info.obj: test-load-app-info.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-load-app-info.c' object='test_load_app_info-test-load-app-info.obj' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_load_app_info_CFLAGS) $(CFLAGS) -c -o test_load_app_info-test-load-app-info.obj `if test -f 'test-load-app-info.c'; then $(CYGPATH_W) 'test-load-app-info.c'; else $(CYGPATH_W) '$(srcdir)/test-load-app-info.c'; fi`
+
+test_result_highlighting-test-result-highlighting.o: test-result-highlighting.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_result_highlighting_CFLAGS) $(CFLAGS) -MT test_result_highlighting-test-result-highlighting.o -MD -MP -MF $(DEPDIR)/test_result_highlighting-test-result-highlighting.Tpo -c -o test_result_highlighting-test-result-highlighting.o `test -f 'test-result-highlighting.c' || echo '$(srcdir)/'`test-result-highlighting.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_result_highlighting-test-result-highlighting.Tpo $(DEPDIR)/test_result_highlighting-test-result-highlighting.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-result-highlighting.c' object='test_result_highlighting-test-result-highlighting.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_result_highlighting_CFLAGS) $(CFLAGS) -c -o test_result_highlighting-test-result-highlighting.o `test -f 'test-result-highlighting.c' || echo '$(srcdir)/'`test-result-highlighting.c
+
+test_result_highlighting-test-result-highlighting.obj: test-result-highlighting.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_result_highlighting_CFLAGS) $(CFLAGS) -MT test_result_highlighting-test-result-highlighting.obj -MD -MP -MF $(DEPDIR)/test_result_highlighting-test-result-highlighting.Tpo -c -o test_result_highlighting-test-result-highlighting.obj `if test -f 'test-result-highlighting.c'; then $(CYGPATH_W) 'test-result-highlighting.c'; else $(CYGPATH_W) '$(srcdir)/test-result-highlighting.c'; fi`
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/test_result_highlighting-test-result-highlighting.Tpo $(DEPDIR)/test_result_highlighting-test-result-highlighting.Po
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='test-result-highlighting.c' object='test_result_highlighting-test-result-highlighting.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_result_highlighting_CFLAGS) $(CFLAGS) -c -o test_result_highlighting-test-result-highlighting.obj `if test -f 'test-result-highlighting.c'; then $(CYGPATH_W) 'test-result-highlighting.c'; else $(CYGPATH_W) '$(srcdir)/test-result-highlighting.c'; fi`
 
 test_usage_db_ancient-test-usage-db-ancient.o: test-usage-db-ancient.c
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(test_usage_db_ancient_CFLAGS) $(CFLAGS) -MT test_usage_db_ancient-test-usage-db-ancient.o -MD -MP -MF $(DEPDIR)/test_usage_db_ancient-test-usage-db-ancient.Tpo -c -o test_usage_db_ancient-test-usage-db-ancient.o `test -f 'test-usage-db-ancient.c' || echo '$(srcdir)/'`test-usage-db-ancient.c
@@ -1245,6 +1296,12 @@ test-distance-test: test-distance Makefile.am
 	@echo "#!/bin/bash" > $@
 	@echo $(XVFB_RUN) >> $@
 	@echo gtester --verbose -k -o $(DISTANCE_XML_REPORT) $(builddir)/test-distance >> $@
+	@chmod +x $@
+
+test-result-highlighting-test: test-result-highlighting Makefile.am
+	@echo "#!/bin/bash" > $@
+	@echo $(XVFB_RUN) >> $@
+	@echo gtester --verbose -k -o $(DISTANCE_XML_REPORT) $(builddir)/test-result-highlighting >> $@
 	@chmod +x $@
 
 test-usage-db-simple-test: test-usage-db-simple test-usage-db-simple.sql Makefile.am

@@ -29,6 +29,8 @@ HudToken *              hud_token_new                                   (const g
 void                    hud_token_free                                  (HudToken         *token);
 guint                   hud_token_distance                              (const HudToken   *haystack,
                                                                          const HudToken   *needle);
+const gchar *           hud_token_get_original                          (const HudToken   *token,
+                                                                         guint            *length);
 
 HudTokenList *          hud_token_list_new_from_string                  (const gchar      *string);
 HudTokenList *          hud_token_list_new_from_string_list             (HudStringList    *string_list);
@@ -36,6 +38,6 @@ guint                   hud_token_list_get_length                       (HudToke
 void                    hud_token_list_free                             (HudTokenList     *list);
 guint                   hud_token_list_distance                         (HudTokenList     *haystack,
                                                                          HudTokenList     *needle,
-                                                                         const gchar    ***matches);
+                                                                         const HudToken ***matches);
 
 #endif /* __HUD_TOKEN_H__ */
