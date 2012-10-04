@@ -62,14 +62,18 @@ calculate_distance (const gchar *search, GStrv teststrings, gchar ***matches)
 	hud_string_list_unref (list);
 
 	needle = hud_token_list_new_from_string (search);
-	distance = hud_token_list_distance (haystack, needle, (const gchar ***) matches);
+	distance = hud_token_list_distance (haystack, needle, (const HudToken ***) matches);
 
 	if (matches) {
 		/* These are owned by the tokenlists, so make copies
 		 * before freeing.
 		 */
 		for (i = 0; (*matches)[i]; i++) {
-			(*matches)[i] = g_strdup ((*matches)[i]);
+			const gchar *matchstr;
+			guint matchlen;
+
+			matchstr = hud_token_get_original ((HudToken *) (*matches)[i], &matchlen);
+			(*matches)[i] = g_strndup (matchstr, matchlen);
 		}
 	}
 
