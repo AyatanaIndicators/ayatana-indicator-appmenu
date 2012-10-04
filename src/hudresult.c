@@ -167,6 +167,7 @@ hud_result_format_tokens (GString          *string,
           g_string_append (string, "<b>");
           g_string_append (string, escaped);
           g_string_append (string, "</b>");
+          g_free (escaped);
 
           /* Fast-forward the head string.  There may be multiple
            * matches here (so we go another time around the 'while').
