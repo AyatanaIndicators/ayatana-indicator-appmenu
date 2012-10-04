@@ -60,22 +60,67 @@ struct _HudMenuModelCollector
 {
   GObject parent_instance;
 
-  GSList *models;
-  guint refresh_id;
-  /* stuff... */
-  GDBusMenuModel *app_menu;
-  GDBusMenuModel *menubar;
+  /* Cancelled on finalize */
+  GCancellable *cancellable;
+
+  /* GDBus shared session bus and D-Bus name of the app/indicator */
+  GDBusConnection *session;
+  gchar *unique_bus_name;
+
+  /* If this is an application, is_application will be set and
+   * 'application' and 'window' will contain the two action groups for
+   * the window that we are collecting.
+   *
+   * If this is an indicator, is_application will be false and the
+   * (singular) action group for the indicator will be in 'application'.
+   */
   GDBusActionGroup *application;
   GDBusActionGroup *window;
-
   gboolean is_application;
 
+  /* The GMenuModel for the app menu.
+   *
+   * If this is an indicator, the indicator menu is stored here.
+   *
+   * app_menu_is_hud_aware is TRUE if we should send HudActiveChanged
+   * calls to app_menu_object_path when our use_count goes above 0.
+   */
+  GDBusMenuModel *app_menu;
+  gchar *app_menu_object_path;
+  gboolean app_menu_is_hud_aware;
+
+  /* Ditto for the menubar.
+   *
+   * If this is an indicator then these will all be unset.
+   */
+  GDBusMenuModel *menubar;
+  gchar *menubar_object_path;
+  gboolean menubar_is_hud_aware;
+
+  /* Boring details about the app/indicator we are showing. */
   gchar *prefix;
   gchar *desktop_file;
   gchar *icon;
-  GPtrArray *items;
-  gint use_count;
   guint penalty;
+
+  /* Each time we see a new menumodel added we add it to 'models', start
+   * watching it for changes and add its contents to 'items', possibly
+   * finding more menumodels to do the same to.
+   *
+   * Each time an item is removed, we schedule an idle (in 'refresh_id')
+   * to wipe out all the 'items', disconnect signals from each model in
+   * 'models' and add them all back again.
+   *
+   * Searching just iterates over 'items'.
+   */
+  GPtrArray *items;
+  GSList *models;
+  guint refresh_id;
+
+  /* Keep track of our use_count in order to send signals to HUD-aware
+   * apps and indicators.
+   */
+  gint use_count;
 };
 
 typedef struct
@@ -150,9 +195,6 @@ hud_menu_model_context_new (HudMenuModelContext *parent,
 
   return context;
 }
-
-
-
 
 G_DEFINE_TYPE (HudModelItem, hud_model_item, HUD_TYPE_ITEM)
 
@@ -432,9 +474,27 @@ hud_menu_model_collector_disconnect (gpointer data,
 }
 
 static void
+hud_menu_model_collector_active_changed (HudMenuModelCollector *collector,
+                                         gboolean               active)
+{
+  if (collector->app_menu_is_hud_aware)
+    g_dbus_connection_call (collector->session, collector->unique_bus_name, collector->app_menu_object_path,
+                            "com.canonical.hud.Awareness", "HudActiveChanged", g_variant_new ("(b)", active),
+                            NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL, NULL);
+
+  if (collector->menubar_is_hud_aware)
+    g_dbus_connection_call (collector->session, collector->unique_bus_name, collector->app_menu_object_path,
+                            "com.canonical.hud.Awareness", "HudActiveChanged", g_variant_new ("(b)", active),
+                            NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL, NULL);
+}
+
+static void
 hud_menu_model_collector_use (HudSource *source)
 {
   HudMenuModelCollector *collector = HUD_MENU_MODEL_COLLECTOR (source);
+
+  if (collector->use_count == 0)
+    hud_menu_model_collector_active_changed (collector, TRUE);
 
   collector->use_count++;
 }
@@ -445,6 +505,9 @@ hud_menu_model_collector_unuse (HudSource *source)
   HudMenuModelCollector *collector = HUD_MENU_MODEL_COLLECTOR (source);
 
   collector->use_count--;
+
+  if (collector->use_count == 0)
+    hud_menu_model_collector_active_changed (collector, FALSE);
 }
 
 static void
@@ -474,6 +537,9 @@ hud_menu_model_collector_finalize (GObject *object)
 {
   HudMenuModelCollector *collector = HUD_MENU_MODEL_COLLECTOR (object);
 
+  g_cancellable_cancel (collector->cancellable);
+  g_object_unref (collector->cancellable);
+
   if (collector->refresh_id)
     g_source_remove (collector->refresh_id);
 
@@ -483,6 +549,10 @@ hud_menu_model_collector_finalize (GObject *object)
   g_clear_object (&collector->application);
   g_clear_object (&collector->window);
 
+  g_object_unref (collector->session);
+  g_free (collector->unique_bus_name);
+  g_free (collector->app_menu_object_path);
+  g_free (collector->menubar_object_path);
   g_free (collector->prefix);
   g_free (collector->desktop_file);
   g_free (collector->icon);
@@ -497,6 +567,7 @@ static void
 hud_menu_model_collector_init (HudMenuModelCollector *collector)
 {
   collector->items = g_ptr_array_new_with_free_func (g_object_unref);
+  collector->cancellable = g_cancellable_new ();
 }
 
 static void
@@ -511,6 +582,40 @@ static void
 hud_menu_model_collector_class_init (HudMenuModelCollectorClass *class)
 {
   class->finalize = hud_menu_model_collector_finalize;
+}
+
+static void
+hud_menu_model_collector_hud_awareness_cb (GObject      *source,
+                                           GAsyncResult *result,
+                                           gpointer      user_data)
+{
+  GVariant *reply;
+
+  /* The goal of this function is to set either the
+   * app_menu_is_hud_aware or menubar_is_hud_aware flag (which we have a
+   * pointer to in user_data) to TRUE in the case that the remote
+   * appears to support the com.canonical.hud.Awareness protocol.
+   *
+   * If it supports it, the async call will be successful.  In that
+   * case, we want to set *(gboolean *) user_data = TRUE;
+   *
+   * There are two cases that we don't want to do that write.  The first
+   * is the event that the remote doesn't support the protocol.  In that
+   * case, we will see an error when we inspect the result.  The other
+   * is the case in which the flag to which user_data points no longer
+   * exists (ie: collector has been finalized).  In this case, the
+   * cancellable will have been cancelled and we will also see an error.
+   *
+   * Long story short: If we get any error, just do nothing.
+   */
+
+  reply = g_dbus_connection_call_finish (G_DBUS_CONNECTION (source), result, NULL);
+
+  if (reply)
+    {
+      *(gboolean *) user_data = TRUE;
+      g_variant_unref (reply);
+    }
 }
 
 /**
@@ -533,11 +638,14 @@ hud_menu_model_collector_get (BamfWindow  *window,
 {
   HudMenuModelCollector *collector;
   gchar *unique_bus_name;
-  gchar *app_menu_object_path;
-  gchar *menubar_object_path;
   gchar *application_object_path;
   gchar *window_object_path;
   GDBusConnection *session;
+
+  session = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, NULL);
+
+  if (!session)
+    return NULL;
 
   unique_bus_name = bamf_window_get_utf8_prop (window, "_GTK_UNIQUE_BUS_NAME");
 
@@ -546,24 +654,32 @@ hud_menu_model_collector_get (BamfWindow  *window,
     return NULL;
 
   collector = g_object_new (HUD_TYPE_MENU_MODEL_COLLECTOR, NULL);
+  collector->session = session;
+  collector->unique_bus_name = unique_bus_name;
 
-  app_menu_object_path = bamf_window_get_utf8_prop (window, "_GTK_APP_MENU_OBJECT_PATH");
-  menubar_object_path = bamf_window_get_utf8_prop (window, "_GTK_MENUBAR_OBJECT_PATH");
+  collector->app_menu_object_path = bamf_window_get_utf8_prop (window, "_GTK_APP_MENU_OBJECT_PATH");
+  collector->menubar_object_path = bamf_window_get_utf8_prop (window, "_GTK_MENUBAR_OBJECT_PATH");
   application_object_path = bamf_window_get_utf8_prop (window, "_GTK_APPLICATION_OBJECT_PATH");
   window_object_path = bamf_window_get_utf8_prop (window, "_GTK_WINDOW_OBJECT_PATH");
 
-  session = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, NULL);
-
-  if (app_menu_object_path)
+  if (collector->app_menu_object_path)
     {
-      collector->app_menu = g_dbus_menu_model_get (session, unique_bus_name, app_menu_object_path);
+      collector->app_menu = g_dbus_menu_model_get (session, unique_bus_name, collector->app_menu_object_path);
       hud_menu_model_collector_add_model (collector, G_MENU_MODEL (collector->app_menu), NULL, NULL, NULL);
+      g_dbus_connection_call (session, unique_bus_name, collector->app_menu_object_path,
+                              "com.canonical.hud.Awareness", "CheckAwareness",
+                              NULL, G_VARIANT_TYPE_UNIT, G_DBUS_CALL_FLAGS_NONE, -1, collector->cancellable,
+                              hud_menu_model_collector_hud_awareness_cb, &collector->app_menu_is_hud_aware);
     }
 
-  if (menubar_object_path)
+  if (collector->menubar_object_path)
     {
-      collector->menubar = g_dbus_menu_model_get (session, unique_bus_name, menubar_object_path);
+      collector->menubar = g_dbus_menu_model_get (session, unique_bus_name, collector->menubar_object_path);
       hud_menu_model_collector_add_model (collector, G_MENU_MODEL (collector->menubar), NULL, NULL, NULL);
+      g_dbus_connection_call (session, unique_bus_name, collector->app_menu_object_path,
+                              "com.canonical.hud.Awareness", "CheckAwareness",
+                              NULL, G_VARIANT_TYPE_UNIT, G_DBUS_CALL_FLAGS_NONE, -1, collector->cancellable,
+                              hud_menu_model_collector_hud_awareness_cb, &collector->menubar_is_hud_aware);
     }
 
   if (application_object_path)
@@ -580,13 +696,8 @@ hud_menu_model_collector_get (BamfWindow  *window,
    * enabled/disabled.  how to deal with that?
    */
 
-  g_free (unique_bus_name);
-  g_free (app_menu_object_path);
-  g_free (menubar_object_path);
   g_free (application_object_path);
   g_free (window_object_path);
-
-  g_object_unref (session);
 
   return collector;
 }
