@@ -627,7 +627,13 @@ menu_entry_realized (DbusmenuMenuitem * newentry, gpointer user_data)
 
 			g_signal_connect_data(G_OBJECT(children->data), DBUSMENU_MENUITEM_SIGNAL_REALIZED, G_CALLBACK(menu_child_realized), data, child_realized_data_cleanup, 0);
 		} else {
-			g_signal_connect(G_OBJECT(newentry), DBUSMENU_MENUITEM_SIGNAL_CHILD_ADDED, G_CALLBACK(menu_entry_realized_child_added), user_data);
+            /* Menu entry has no children */
+            gpointer * data = g_new(gpointer, 2);
+            data[0] = user_data;
+            data[1] = newentry;
+            menu_child_realized(NULL, data);
+            g_free (data);
+            g_signal_connect_data(G_OBJECT(newentry), DBUSMENU_MENUITEM_SIGNAL_REALIZED, G_CALLBACK(menu_child_realized), data, child_realized_data_cleanup, 0);
 		}
 	} else {
 		gpointer * data = g_new(gpointer, 2);
