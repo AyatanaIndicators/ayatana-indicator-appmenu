@@ -631,9 +631,9 @@ menu_entry_realized (DbusmenuMenuitem * newentry, gpointer user_data)
 			gpointer * data = g_new(gpointer, 2);
 			data[0] = user_data;
 			data[1] = newentry;
+
 			menu_child_realized(NULL, data);
 			g_free (data);
-			g_signal_connect_data(G_OBJECT(newentry), DBUSMENU_MENUITEM_SIGNAL_REALIZED, G_CALLBACK(menu_child_realized), data, child_realized_data_cleanup, 0);
 		}
 	} else {
 		gpointer * data = g_new(gpointer, 2);
@@ -882,7 +882,18 @@ static void
 entry_activate (WindowMenu * wm, IndicatorObjectEntry * entry, guint timestamp)
 {
 	g_return_if_fail(IS_WINDOW_MENU_DBUSMENU(wm));
+	g_return_if_fail(entry != NULL);
 	WMEntry * wme = (WMEntry *)entry;
-	dbusmenu_menuitem_send_about_to_show(wme->mi, NULL, NULL);
+
+	/* If entry is a childless menu item, activate the entry. */
+	if (entry->menu == NULL) {
+		dbusmenu_menuitem_handle_event(wme->mi,
+									DBUSMENU_MENUITEM_EVENT_ACTIVATED,
+									NULL,
+									0);
+	/* Otherwise, show the menu */
+	} else {
+		dbusmenu_menuitem_send_about_to_show(wme->mi, NULL, NULL);
+	}
 	return;
 }
