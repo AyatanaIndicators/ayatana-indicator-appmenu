@@ -630,10 +630,13 @@ menu_entry_realized (DbusmenuMenuitem * newentry, gpointer user_data)
 			/* Menu entry has no children */
 			gpointer * data = g_new(gpointer, 2);
 			data[0] = user_data;
-			data[1] = newentry;
+			data[1] = g_object_ref(newentry);
 
+			/* Make sure the menu item gets displayed on the menu bar */
 			menu_child_realized(NULL, data);
 			g_free (data);
+
+			g_signal_connect(G_OBJECT(newentry), DBUSMENU_MENUITEM_SIGNAL_CHILD_ADDED, G_CALLBACK(menu_entry_realized_child_added), user_data);
 		}
 	} else {
 		gpointer * data = g_new(gpointer, 2);
