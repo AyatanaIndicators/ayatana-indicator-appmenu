@@ -483,7 +483,7 @@ hud_menu_model_collector_active_changed (HudMenuModelCollector *collector,
                             NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL, NULL);
 
   if (collector->menubar_is_hud_aware)
-    g_dbus_connection_call (collector->session, collector->unique_bus_name, collector->app_menu_object_path,
+    g_dbus_connection_call (collector->session, collector->unique_bus_name, collector->menubar_object_path,
                             "com.canonical.hud.Awareness", "HudActiveChanged", g_variant_new ("(b)", active),
                             NULL, G_DBUS_CALL_FLAGS_NONE, -1, NULL, NULL, NULL);
 }
@@ -676,7 +676,7 @@ hud_menu_model_collector_get (BamfWindow  *window,
     {
       collector->menubar = g_dbus_menu_model_get (session, unique_bus_name, collector->menubar_object_path);
       hud_menu_model_collector_add_model (collector, G_MENU_MODEL (collector->menubar), NULL, NULL, NULL);
-      g_dbus_connection_call (session, unique_bus_name, collector->app_menu_object_path,
+      g_dbus_connection_call (session, unique_bus_name, collector->menubar_object_path,
                               "com.canonical.hud.Awareness", "CheckAwareness",
                               NULL, G_VARIANT_TYPE_UNIT, G_DBUS_CALL_FLAGS_NONE, -1, collector->cancellable,
                               hud_menu_model_collector_hud_awareness_cb, &collector->menubar_is_hud_aware);
