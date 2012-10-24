@@ -10,8 +10,7 @@ if BUILD_TESTS
 SUBDIRS += \
 	scripts \
 	tests \
-	tools \
-	tools-vala
+	tools
 endif
 
 tests: src
