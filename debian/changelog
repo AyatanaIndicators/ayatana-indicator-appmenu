@@ -1,9 +1,9 @@
-indicator-appmenu (12.10.3-0ubuntu3) UNRELEASED; urgency=low
+indicator-appmenu (12.10.3-0ubuntu3) raring; urgency=low
 
   * Backported r218, should fix menus not working when an application is
     closed and restarted directly (lp: #1075263)
 
- -- Sebastien Bacher <seb128@ubuntu.com>  Mon, 12 Nov 2012 17:08:05 +0100
+ -- Sebastien Bacher <seb128@ubuntu.com>  Mon, 12 Nov 2012 17:16:17 +0100
 
 indicator-appmenu (12.10.3-0ubuntu2) quantal-proposed; urgency=low
 
