@@ -1,0 +1,18 @@
+#!/usr/bin/make -f
+
+export AUTOPOINT = true
+export DISPLAY = 
+
+include /usr/share/cdbs/1/rules/debhelper.mk
+include /usr/share/cdbs/1/class/gnome.mk
+include /usr/share/cdbs/1/rules/autoreconf.mk
+
+DEB_CONFIGURE_EXTRA_FLAGS = --disable-static
+
+DEB_MAKE_CHECK_TARGET := check
+
+LDFLAGS += -Wl,-z,defs -Wl,--as-needed
+
+common-install-arch::
+	find debian/indicator-appmenu -name \*.la -delete
+	find debian/indicator-appmenu -name \*.a -delete
