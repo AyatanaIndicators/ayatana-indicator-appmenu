@@ -1,6 +1,6 @@
-debian/tmp/usr/lib/indicator-appmenu/current-menu* /usr/lib/indicator-appmenu/
-debian/tmp/usr/lib/indicator-appmenu/menu-pusher /usr/lib/indicator-appmenu/
-debian/tmp/usr/lib/indicator-appmenu/mock-json-app /usr/lib/indicator-appmenu/
+debian/tmp/usr/lib/*/current-menu*
+debian/tmp/usr/lib/*/menu-pusher
+debian/tmp/usr/lib/*/mock-json-app
 debian/tmp/usr/bin/hud-cli /usr/bin/
 debian/tmp/usr/bin/hud-dump-application /usr/bin/
 debian/tmp/usr/bin/hud-gtk /usr/bin/
