@@ -12,6 +12,7 @@ indicator-appmenu (12.10.4-0ubuntu1) UNRELEASED; urgency=low
     - Make sure the build fails if there are files not listed in install files
       when building the packages.
     - Override dh_autoreconf to call autogen.sh and not run configure.
+    - Temporarily disable tests due to missing dependencies.
 
  -- Mathieu Trudel-Lapierre <mathieu-tl@ubuntu.com>  Wed, 21 Nov 2012 10:05:45 -0500
 
