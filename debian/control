@@ -8,6 +8,8 @@ Build-Depends: debhelper (>= 5.0),
                libgtk-3-dev,
                gnome-doc-utils,
                intltool,
+               dbus-test-runner,
+               xvfb,
                libindicator3-dev (>= 0.4.90),
                libdbusmenu-glib-dev (>= 0.5.90),
                libdbusmenu-gtk3-dev (>= 0.5.90),
@@ -15,13 +17,11 @@ Build-Depends: debhelper (>= 5.0),
                libbamf3-dev (>= 0.2.53),
                libsqlite3-dev,
                sqlite3,
-               dbus-test-runner,
                libreadline-dev,
                libncurses5-dev,
                libappindicator3-dev,
                indicator-application (>= 0.4.90),
-               xvfb,
-               valac-0.16
+               valac-0.16,
 Standards-Version: 3.9.2
 Homepage: http://launchpad.net/indicator-appmenu
 Vcs-Bzr: http://bazaar.launchpad.net/~ubuntu-desktop/indicator-appmenu/ubuntu
@@ -29,11 +29,12 @@ Vcs-Browser: https://code.launchpad.net/~ubuntu-desktop/indicator-appmenu/ubuntu
 
 Package: indicator-appmenu
 Architecture: any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends},
+         ${misc:Depends},
 Recommends: indicator-applet | indicator-renderer,
             appmenu-gtk,
             appmenu-gtk3,
-            appmenu-qt
+            appmenu-qt,
 Description: Indicator for application menus.
  .
  This package provides support for application menus.
@@ -44,7 +45,7 @@ Depends: ${shlibs:Depends},
          ${misc:Depends},
          indicator-appmenu (= ${binary:Version}),
          libdbusmenu-tools,
-         sqlite3
+         sqlite3,
 Description: Tools for debuging application menus.
  .
  This package provides tools for supporting application menus.
