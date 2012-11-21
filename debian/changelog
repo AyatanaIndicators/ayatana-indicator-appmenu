@@ -6,6 +6,7 @@ indicator-appmenu (12.10.4-0ubuntu1) UNRELEASED; urgency=low
     - Drop Build-Depends on cdbs.
     - Bump debhelper Build-Depends to (>= 9). 
     - Add gnome-common to Build-Depends.
+    - Update Vcs-Bzr, Vcs-Browser and add notice to uploaders.
   * debian/compat: bump compat level to 9.
   * debian/rules:
     - Convert to using the dh sequencer.
