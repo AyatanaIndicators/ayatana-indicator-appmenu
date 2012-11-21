@@ -1,8 +1,5 @@
 #!/usr/bin/make -f
 
-#export AUTOPOINT = true
-#export DISPLAY = 
-
 LDFLAGS += -Wl,-z,defs -Wl,--as-needed
 
 %:
