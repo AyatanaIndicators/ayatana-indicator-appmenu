@@ -1,4 +1,4 @@
-indicator-appmenu (12.10.4-0ubuntu1) UNRELEASED; urgency=low
+indicator-appmenu (12.10.4daily12.11.23-0ubuntu1) raring; urgency=low
 
   [ Mathieu Trudel-Lapierre ]
   * debian/control:
@@ -24,8 +24,12 @@ indicator-appmenu (12.10.4-0ubuntu1) UNRELEASED; urgency=low
   * Automatic snapshot from revision 219 (bootstrap):
     - Adds childless menu support to the Unity menu panel. (LP: #773101)
     - add pot template
+  * Unity global menu bar hides childless menu items (LP: #773101)
 
- -- Mathieu Trudel-Lapierre <mathieu-tl@ubuntu.com>  Wed, 21 Nov 2012 10:05:45 -0500
+  [ Automatic PS uploader ]
+  * Automatic snapshot from revision 221
+
+ -- Automatic PS uploader <ps-jenkins@lists.canonical.com>  Fri, 23 Nov 2012 07:39:58 +0000
 
 indicator-appmenu (12.10.3-0ubuntu3) raring; urgency=low
 
