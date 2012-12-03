@@ -1,10 +1,3 @@
 debian/tmp/usr/lib/*/current-menu*
 debian/tmp/usr/lib/*/menu-pusher
 debian/tmp/usr/lib/*/mock-json-app
-debian/tmp/usr/bin/hud-cli /usr/bin/
-debian/tmp/usr/bin/hud-dump-application /usr/bin/
-debian/tmp/usr/bin/hud-gtk /usr/bin/
-debian/tmp/usr/bin/hud-list-applications /usr/bin/
-debian/tmp/usr/bin/hud-verify-app-info /usr/bin/
-debian/tmp/usr/share/man/ /usr/share/
-debian/tmp/usr/share/hud-gtk /usr/share/
