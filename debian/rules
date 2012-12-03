@@ -1,0 +1,21 @@
+#!/usr/bin/make -f
+
+LDFLAGS += -Wl,-z,defs -Wl,--as-needed
+
+%:
+	dh $@ --with autoreconf
+
+override_dh_autoreconf:
+	NOCONFIGURE=1 dh_autoreconf ./autogen.sh
+
+override_dh_auto_configure:
+	dh_auto_configure -- \
+		--disable-static
+
+override_dh_install:
+	find debian/indicator-appmenu -name \*.la -delete
+	find debian/indicator-appmenu -name \*.a -delete
+	dh_install --fail-missing
+
+override_dh_auto_test:
+	# Tests temporarily disabled: bustle-dbus-monitor can't be found, needs deps in universe.

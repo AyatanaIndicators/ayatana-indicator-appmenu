@@ -1,0 +1,6 @@
+debian/tmp/usr/lib/indicators3 /usr/lib
+debian/source_indicator-appmenu.py /usr/share/apport/package-hooks/
+debian/indicator-appmenu-crashdb.conf /etc/apport/crashdb.conf.d/
+debian/tmp/usr/lib/*/hud-service
+debian/tmp/usr/share/dbus-1/ /usr/share/
+debian/tmp/usr/share/glib-2.0/ /usr/share/

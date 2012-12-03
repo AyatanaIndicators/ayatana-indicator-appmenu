@@ -106,8 +106,6 @@ struct _IndicatorAppmenu {
 	GDBusConnection * bus;
 	guint owner_id;
 	guint dbus_registration;
-
-	GHashTable * destruction_timers;
 };
 
 
@@ -203,7 +201,6 @@ static void on_name_lost                                             (GDBusConne
                                                                       gpointer user_data);
 static void menus_destroyed                                          (GObject * menus,
                                                                       gpointer user_data);
-static void source_unregister                                        (gpointer user_data);
 static GVariant * unregister_window                                  (IndicatorAppmenu * iapp,
                                                                       guint windowid);
 
@@ -286,9 +283,6 @@ indicator_appmenu_init (IndicatorAppmenu *self)
 	/* Setup the cache of windows with possible desktop entries */
 	self->desktop_windows = g_hash_table_new(g_direct_hash, g_direct_equal);
 	self->desktop_menu = NULL; /* Starts NULL until found */
-
-	/* Set up the hashtable of destruction timers */
-	self->destruction_timers = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, source_unregister);
 
 	build_window_menus(self);
 
@@ -406,14 +400,6 @@ indicator_appmenu_dispose (GObject *object)
 		g_dbus_connection_unregister_object(iapp->bus, iapp->dbus_registration);
 		/* Don't care if it fails, there's nothing we can do */
 		iapp->dbus_registration = 0;
-	}
-
-	if (iapp->destruction_timers != NULL) {
-		/* These are in dispose and not finalize becuase the dereference
-		   function removes timers that could need the object to be in
-		   a valid state, so it's better to have them in dispose */
-		g_hash_table_destroy(iapp->destruction_timers);
-		iapp->destruction_timers = NULL;
 	}
 
 	if (iapp->bus != NULL) {
@@ -627,9 +613,6 @@ new_window (BamfMatcher * matcher, BamfView * view, gpointer user_data)
 	IndicatorAppmenu * iapp = INDICATOR_APPMENU(user_data);
 	guint32 xid = bamf_window_get_xid(window);
 
-	/* Make sure we don't destroy it later */
-	g_hash_table_remove(iapp->destruction_timers, GUINT_TO_POINTER(xid));
-
 	if (bamf_window_get_window_type(window) != BAMF_WINDOW_DESKTOP) {
 		return;
 	}
@@ -651,32 +634,6 @@ new_window (BamfMatcher * matcher, BamfView * view, gpointer user_data)
 	return;
 }
 
-typedef struct _destroy_data_t destroy_data_t;
-struct _destroy_data_t {
-	IndicatorAppmenu * iapp;
-	guint32 xid;
-};
-
-/* Timeout to finally cleanup the window.  Causes is to ignore glitches that
-   come from BAMF/WNCK. */
-static gboolean
-destroy_window_timeout (gpointer user_data)
-{
-	destroy_data_t * destroy_data = (destroy_data_t *)user_data;
-	g_hash_table_steal(destroy_data->iapp->destruction_timers, GUINT_TO_POINTER(destroy_data->xid));
-	unregister_window(destroy_data->iapp, destroy_data->xid);
-	return FALSE; /* free's data through source deregistration */
-}
-
-/* Unregisters the source in the hash table when it gets removed.  This ensure
-   we don't leave any timeouts around */
-static void
-source_unregister (gpointer user_data)
-{
-	g_source_remove(GPOINTER_TO_UINT(user_data));
-	return;
-}
-
 /* When windows leave us, this function gets called */
 static void
 old_window (BamfMatcher * matcher, BamfView * view, gpointer user_data)
@@ -689,12 +646,7 @@ old_window (BamfMatcher * matcher, BamfView * view, gpointer user_data)
 	BamfWindow * window = BAMF_WINDOW(view);
 	guint32 xid = bamf_window_get_xid(window);
 
-	destroy_data_t * destroy_data = g_new0(destroy_data_t, 1);
-	destroy_data->iapp = iapp;
-	destroy_data->xid = xid;
-
-	guint source_id = g_timeout_add_seconds_full(G_PRIORITY_LOW, 5, destroy_window_timeout, destroy_data, g_free);
-	g_hash_table_replace(iapp->destruction_timers, GUINT_TO_POINTER(xid), GUINT_TO_POINTER(source_id));
+	unregister_window(iapp, xid);
 
 	return;
 }
@@ -1178,9 +1130,6 @@ register_window (IndicatorAppmenu * iapp, guint windowid, const gchar * objectpa
 {
 	g_debug("Registering window ID %d with path %s from %s", windowid, objectpath, sender);
 
-	/* Shouldn't do anything, but let's be sure */
-	g_hash_table_remove(iapp->destruction_timers, GUINT_TO_POINTER(windowid));
-
 	if (g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid)) == NULL && windowid != 0) {
 		WindowMenu * wm = WINDOW_MENU(window_menu_dbusmenu_new(windowid, sender, objectpath));
 		g_return_val_if_fail(wm != NULL, FALSE);
@@ -1229,9 +1178,6 @@ unregister_window (IndicatorAppmenu * iapp, guint windowid)
 	g_debug("Unregistering: %d", windowid);
 	g_return_val_if_fail(IS_INDICATOR_APPMENU(iapp), NULL);
 	g_return_val_if_fail(iapp->matcher != NULL, NULL);
-
-	/* Make sure we don't destroy it later */
-	g_hash_table_remove(iapp->destruction_timers, GUINT_TO_POINTER(windowid));
 
 	/* If it's a desktop window remove it from that table as well */
 	g_hash_table_remove(iapp->desktop_windows, GUINT_TO_POINTER(windowid));

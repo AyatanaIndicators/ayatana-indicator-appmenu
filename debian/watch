@@ -1,0 +1,2 @@
+version=3
+http://launchpad.net/indicator-appmenu/+download .*/indicator-appmenu-([0-9.]+)\.tar\.gz
