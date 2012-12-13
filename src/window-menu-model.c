@@ -43,7 +43,7 @@ struct _WindowMenuModelPrivate {
 
 	/* Window Menus */
 	GDBusMenuModel * win_menu_model;
-	GtkMenu * win_menu;
+	GtkMenuBar * win_menu;
 	gulong win_menu_insert;
 	gulong win_menu_remove;
 };
@@ -356,7 +356,6 @@ entry_on_menuitem (WindowMenuModel * menu, GtkMenuItem * gmi)
 		gtk_widget_insert_action_group(GTK_WIDGET(gmi), ACTION_MUX_PREFIX_WIN, menu->priv->win_actions);
 	}
 
-
 	entry->gmi = gmi;
 
 	entry->entry.label = mi_find_label(GTK_WIDGET(gmi));
@@ -428,7 +427,7 @@ add_window_menu (WindowMenuModel * menu, GMenuModel * model)
 {
 	menu->priv->win_menu_model = g_object_ref(model);
 
-	menu->priv->win_menu = GTK_MENU(gtk_menu_new_from_model(model));
+	menu->priv->win_menu = GTK_MENU_BAR(gtk_menu_bar_new_from_model(model));
 	g_assert(menu->priv->win_menu != NULL);
 	g_object_ref_sink(menu->priv->win_menu);
 
