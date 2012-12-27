@@ -172,11 +172,13 @@ hud_cli_SOURCES = \
 
 hud_cli_CFLAGS = \
 	$(HUD_CFLAGS) \
+	$(HUD_CLIENTS_CFLAGS) \
 	$(COVERAGE_CFLAGS) \
 	-Wall -Werror
 
 hud_cli_LDFLAGS = \
 	$(HUD_LIBS) \
+	$(HUD_CLIENTS_LIBS) \
 	$(COVERAGE_LDFLAGS) \
 	-lreadline -lcurses
 

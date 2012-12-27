@@ -82,8 +82,14 @@ SQLITE_REQUIRED_VERSION=0.0
 
 PKG_CHECK_MODULES([HUD],[
 		dbusmenu-glib-0.4 >= $DBUSMENU_GLIB_REQUIRED_VERSION
-		libbamf3 
+		gio-2.0 >= $GIO_REQUIRED_VERSION
+		libbamf3
 		sqlite3 >= $SQLITE_REQUIRED_VERSION
+])
+
+PKG_CHECK_MODULES([HUD_CLIENTS],[
+		gio-unix-2.0 >= $GIO_REQUIRED_VERSION
+		gtk+-3.0 >= $GTK_REQUIRED_VERSION
 ])
 
 ###########################
