@@ -269,9 +269,8 @@ test_query_performance (void)
 int
 main (int argc, char **argv)
 {
-  g_type_init ();
-
   g_test_init (&argc, &argv, NULL);
+
   if (g_test_perf ())
     g_test_add_func ("/hud/query-performance", test_query_performance);
 

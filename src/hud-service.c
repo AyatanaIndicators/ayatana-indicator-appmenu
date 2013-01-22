@@ -275,8 +275,6 @@ main (int argc, char **argv)
   HudWindowSource *window_source;
   HudSourceList *source_list;
 
-  g_type_init ();
-
   setlocale (LC_ALL, "");
   bindtextdomain (GETTEXT_PACKAGE, GNOMELOCALEDIR);
   textdomain (GETTEXT_PACKAGE);

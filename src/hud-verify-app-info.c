@@ -53,8 +53,6 @@ main (int argv, char * argc[])
 		return 1;
 	}
 
-	g_type_init();
-
 	gchar * filename = NULL;
 	gint tmpfile = g_file_open_tmp("hud-verify-app-info-temp-db-XXXXXX", &filename, NULL);
 

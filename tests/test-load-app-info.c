@@ -53,8 +53,6 @@ main (int argv, char * argc[])
 		return 1;
 	}
 
-	g_type_init();
-
 	gchar * filename = argc[1];
 
 	sqlite3 * db = NULL;

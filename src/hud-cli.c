@@ -45,9 +45,6 @@ int use_curses = 0;
 int
 main (int argc, char *argv[])
 {
-
-	g_type_init();
-
 	int single_char;
 	int pos = 0;
 	
