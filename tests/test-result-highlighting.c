@@ -189,9 +189,6 @@ test_result_highlighting_suite (void)
 gint
 main (gint argc, gchar * argv[])
 {
-	//gtk_init(&argc, &argv);
-	g_type_init();
-
 	g_test_init(&argc, &argv, NULL);
 
 	/* Test suites */
