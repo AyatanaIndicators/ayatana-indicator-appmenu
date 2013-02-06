@@ -214,6 +214,7 @@ configure_db (UsageTracker * self)
 			if (g_mkdir(cachedir, 00700) != 0) {
 				g_warning("Could not create cache directory, LRU DB can't be created");
 				self->priv->db = NULL;
+				g_free(cachedir);
 				return;
 			}
 		}
