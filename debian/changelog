@@ -1,3 +1,13 @@
+indicator-appmenu (12.10.4daily13.02.13-0ubuntu1) raring; urgency=low
+
+  [ Mathieu Trudel-Lapierre ]
+  * Coverity CHECKED_RETURN - CID 11391 (LP: #1112844)
+
+  [ Automatic PS uploader ]
+  * Automatic snapshot from revision 231
+
+ -- Automatic PS uploader <ps-jenkins@lists.canonical.com>  Wed, 13 Feb 2013 02:02:13 +0000
+
 indicator-appmenu (12.10.4daily13.01.25-0ubuntu1) raring; urgency=low
 
   [ Charles Kerr ]
