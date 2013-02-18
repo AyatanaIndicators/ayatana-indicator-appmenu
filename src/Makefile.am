@@ -69,7 +69,6 @@ BUILT_SOURCES += \
 	gen-application-menu-registrar.xml.c \
 	gen-application-menu-registrar.xml.h
 
-
 CLEANFILES += $(BUILT_SOURCES)
 
 EXTRA_DIST += $(DBUS_SPECS) clean-namespaces.xslt

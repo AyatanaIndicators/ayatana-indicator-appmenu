@@ -211,7 +211,12 @@ configure_db (UsageTracker * self)
 
 		gchar * cachedir = g_build_filename(basecachedir, "indicator-appmenu", NULL);
 		if (!g_file_test(cachedir, G_FILE_TEST_EXISTS | G_FILE_TEST_IS_DIR)) {
-			g_mkdir(cachedir, 1 << 6 | 1 << 7 | 1 << 8); // 700
+			if (g_mkdir(cachedir, 00700) != 0) {
+				g_warning("Could not create cache directory, LRU DB can't be created");
+				self->priv->db = NULL;
+				g_free(cachedir);
+				return;
+			}
 		}
 		g_free(cachedir);
 

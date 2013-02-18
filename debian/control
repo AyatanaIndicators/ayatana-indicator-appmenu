@@ -4,6 +4,7 @@ Priority: optional
 Maintainer: Ubuntu Desktop Team <ubuntu-desktop@lists.ubuntu.com>
 Build-Depends: debhelper (>= 9),
                dh-autoreconf,
+               libglib2.0-dev (>= 2.35.4),
                libgtk-3-dev,
                gnome-doc-utils,
                gtk-doc-tools,
