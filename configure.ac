@@ -76,26 +76,6 @@ AC_SUBST(INDICATOR_CFLAGS)
 AC_SUBST(INDICATOR_LIBS)
 
 ###########################
-# Dependencies
-###########################
-
-DBUSMENU_GLIB_REQUIRED_VERSION=0.4.0
-BAMF_REQUIRED_VERSION=0.2.53
-SQLITE_REQUIRED_VERSION=0.0
-
-PKG_CHECK_MODULES([HUD],[
-		dbusmenu-glib-0.4 >= $DBUSMENU_GLIB_REQUIRED_VERSION
-		gio-2.0 >= $GIO_REQUIRED_VERSION
-		libbamf3
-		sqlite3 >= $SQLITE_REQUIRED_VERSION
-])
-
-PKG_CHECK_MODULES([HUD_CLIENT],[
-		gio-unix-2.0 >= $GIO_REQUIRED_VERSION
-		gtk+-3.0 >= $GTK_REQUIRED_VERSION
-])
-
-###########################
 # CLI Dependencies
 ###########################
 
@@ -233,12 +213,8 @@ scripts/Makefile
 data/Makefile
 tools/Makefile
 po/Makefile.in
-tools-vala/Makefile
 tests/Makefile
 tests/manual/Makefile
-docs/Makefile
-docs/man/Makefile
-docs/devel/Makefile
 ])
 
 ###########################

@@ -3,15 +3,13 @@ ACLOCAL_AMFLAGS = -I m4 ${ACLOCAL_FLAGS}
 SUBDIRS = \
 	data \
 	po \
-	src \
-	docs
+	src
 
 if BUILD_TESTS
 SUBDIRS += \
 	scripts \
 	tests \
-	tools \
-	tools-vala
+	tools
 endif
 
 tests: src
