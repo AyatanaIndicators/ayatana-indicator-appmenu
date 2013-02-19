@@ -31,6 +31,7 @@ Package: indicator-appmenu
 Architecture: any
 Depends: ${shlibs:Depends},
          ${misc:Depends},
+         hud,
 Recommends: indicator-applet | indicator-renderer,
             appmenu-gtk,
             appmenu-gtk3,
