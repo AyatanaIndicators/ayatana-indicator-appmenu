@@ -1,3 +1,9 @@
+indicator-appmenu (13.01.0daily13.02.13-0ubuntu2) UNRELEASED; urgency=low
+
+  * Artificially bump upstream major version to please hud.
+
+ -- Mathieu Trudel-Lapierre <mathieu-tl@ubuntu.com>  Wed, 20 Feb 2013 09:09:08 +0000
+
 indicator-appmenu (12.10.4daily13.02.13-0ubuntu1) raring; urgency=low
 
   [ Mathieu Trudel-Lapierre ]
