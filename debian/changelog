@@ -1,3 +1,10 @@
+indicator-appmenu (13.01.0daily13.02.20-0ubuntu2) UNRELEASED; urgency=low
+
+  * debian/control:
+    - We're recommending the installation of appmenu-qt5 now, which is safe
+
+ -- Łukasz 'sil2100' Zemczak <lukasz.zemczak@canonical.com>  Thu, 28 Mar 2013 15:36:34 +0100
+
 indicator-appmenu (13.01.0daily13.02.20-0ubuntu1) raring; urgency=low
 
   [ Mathieu Trudel-Lapierre ]
