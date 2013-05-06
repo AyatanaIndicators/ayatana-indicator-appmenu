@@ -35,6 +35,7 @@ struct _WindowMenuModelPrivate {
 	GtkAccelGroup * accel_group;
 	GActionGroup * app_actions;
 	GActionGroup * win_actions;
+	GActionGroup * unity_actions;
 
 	/* Application Menu */
 	GDBusMenuModel * app_menu_model;
@@ -69,8 +70,9 @@ static guint               get_xid                      (WindowMenu * wm);
 G_DEFINE_TYPE (WindowMenuModel, window_menu_model, WINDOW_MENU_TYPE);
 
 /* Prefixes to the action muxer */
-#define ACTION_MUX_PREFIX_WIN  "win"
-#define ACTION_MUX_PREFIX_APP  "app"
+#define ACTION_MUX_PREFIX_APP   "app"
+#define ACTION_MUX_PREFIX_WIN   "win"
+#define ACTION_MUX_PREFIX_UNITY "unity"
 
 /* Entry data on the menuitem */
 #define ENTRY_DATA  "window-menu-model-menuitem-entry"
@@ -132,6 +134,7 @@ window_menu_model_dispose (GObject *object)
 	g_clear_object(&menu->priv->win_menu_model);
 	g_clear_object(&menu->priv->win_menu);
 
+	g_clear_object(&menu->priv->unity_actions);
 	g_clear_object(&menu->priv->win_actions);
 	g_clear_object(&menu->priv->app_actions);
 
@@ -170,6 +173,9 @@ add_application_menu (WindowMenuModel * menu, const gchar * appname, GMenuModel 
 	}
 	if (menu->priv->win_actions) {
 		gtk_widget_insert_action_group(GTK_WIDGET(menu->priv->application_menu.menu), ACTION_MUX_PREFIX_WIN, menu->priv->win_actions);
+	}
+	if (menu->priv->unity_actions) {
+		gtk_widget_insert_action_group(GTK_WIDGET(menu->priv->application_menu.menu), ACTION_MUX_PREFIX_UNITY, menu->priv->unity_actions);
 	}
 
 	gtk_widget_show(GTK_WIDGET(menu->priv->application_menu.menu));
@@ -355,6 +361,9 @@ entry_on_menuitem (WindowMenuModel * menu, GtkMenuItem * gmi)
 	if (menu->priv->win_actions) {
 		gtk_widget_insert_action_group(GTK_WIDGET(gmi), ACTION_MUX_PREFIX_WIN, menu->priv->win_actions);
 	}
+	if (menu->priv->unity_actions) {
+		gtk_widget_insert_action_group(GTK_WIDGET(gmi), ACTION_MUX_PREFIX_UNITY, menu->priv->unity_actions);
+	}
 
 	entry->gmi = gmi;
 
@@ -472,6 +481,7 @@ window_menu_model_new (BamfApplication * app, BamfWindow * window)
 	gchar *menubar_object_path;
 	gchar *application_object_path;
 	gchar *window_object_path;
+	gchar *unity_object_path;
 	GDBusConnection *session;
 
 	unique_bus_name = bamf_window_get_utf8_prop (window, "_GTK_UNIQUE_BUS_NAME");
@@ -485,6 +495,7 @@ window_menu_model_new (BamfApplication * app, BamfWindow * window)
 	menubar_object_path = bamf_window_get_utf8_prop (window, "_GTK_MENUBAR_OBJECT_PATH");
 	application_object_path = bamf_window_get_utf8_prop (window, "_GTK_APPLICATION_OBJECT_PATH");
 	window_object_path = bamf_window_get_utf8_prop (window, "_GTK_WINDOW_OBJECT_PATH");
+	unity_object_path = bamf_window_get_utf8_prop (window, "_UNITY_OBJECT_PATH");
 
 	session = g_bus_get_sync (G_BUS_TYPE_SESSION, NULL, NULL);
 
@@ -495,6 +506,10 @@ window_menu_model_new (BamfApplication * app, BamfWindow * window)
 
 	if (window_object_path != NULL) {
 		menu->priv->win_actions = G_ACTION_GROUP(g_dbus_action_group_get (session, unique_bus_name, window_object_path));
+	}
+
+	if (unity_object_path != NULL) {
+		menu->priv->unity_actions = G_ACTION_GROUP(g_dbus_action_group_get (session, unique_bus_name, unity_object_path));
 	}
 
 	/* Build us some menus */
@@ -537,6 +552,7 @@ window_menu_model_new (BamfApplication * app, BamfWindow * window)
 	g_free (menubar_object_path);
 	g_free (application_object_path);
 	g_free (window_object_path);
+	g_free (unity_object_path);
 
 	g_object_unref (session);
 
