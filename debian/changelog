@@ -1,3 +1,16 @@
+indicator-appmenu (13.01.0daily13.05.23.1-0ubuntu1) saucy; urgency=low
+
+  [ William Hua ]
+  * Adds 'unity' action group. This is needed because applications in
+    general may already be using the 'application' and 'window' action
+    groups for their own purposes, and unity-gtk-module should try to
+    avoid using these if they're already being used. (LP: #1176154)
+
+  [ Ubuntu daily release ]
+  * Automatic snapshot from revision 238
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Thu, 23 May 2013 16:59:28 +0000
+
 indicator-appmenu (13.01.0daily13.03.28-0ubuntu1) raring; urgency=low
 
   [ Łukasz 'sil2100' Zemczak ]
