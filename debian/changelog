@@ -1,3 +1,13 @@
+indicator-appmenu (13.01.0+13.10.20130731-0ubuntu1) saucy; urgency=low
+
+  [ Jeremy Bicha ]
+  * Don't build-depend on gnome-doc-utils.
+
+  [ Ubuntu daily release ]
+  * Automatic snapshot from revision 242
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Wed, 31 Jul 2013 02:02:52 +0000
+
 indicator-appmenu (13.01.0daily13.06.07-0ubuntu1) saucy; urgency=low
 
   [ Łukasz 'sil2100' Zemczak ]
