@@ -1,3 +1,10 @@
+indicator-appmenu (13.01.0+13.10.20130812-0ubuntu1) saucy; urgency=low
+
+  * New rebuild forced
+  * Automatic snapshot from revision 243
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Mon, 12 Aug 2013 11:28:23 +0000
+
 indicator-appmenu (13.01.0+13.10.20130731-0ubuntu1) saucy; urgency=low
 
   [ Jeremy Bicha ]
