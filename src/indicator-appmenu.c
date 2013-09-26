@@ -1,7 +1,7 @@
 /*
 An implementation of indicator object showing menus from applications.
 
-Copyright 2010 Canonical Ltd.
+Copyright 2010-2013 Canonical Ltd.
 
 Authors:
     Ted Gould <ted@canonical.com>
@@ -322,8 +322,8 @@ retry_registration (gpointer user_data)
 	                                 iapp->dbus_registration == 0 ? on_bus_acquired : NULL,
 	                                 on_name_acquired,
 	                                 on_name_lost,
-	                                 g_object_ref(iapp),
-	                                 g_object_unref);
+	                                 iapp,
+	                                 NULL);
 
 	return TRUE;
 }
