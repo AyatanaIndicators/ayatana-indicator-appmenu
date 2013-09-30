@@ -1,3 +1,14 @@
+indicator-appmenu (13.01.0+13.10.20130930-0ubuntu1) saucy; urgency=low
+
+  [ Stephen M. Webb ]
+  * don't add a circular self-ref in IndicatorAppmenu objects (lp:
+    #1231218). (LP: #1231218)
+
+  [ Ubuntu daily release ]
+  * Automatic snapshot from revision 245
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Mon, 30 Sep 2013 06:32:57 +0000
+
 indicator-appmenu (13.01.0+13.10.20130812-0ubuntu1) saucy; urgency=low
 
   * New rebuild forced
