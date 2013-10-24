@@ -132,7 +132,12 @@ window_menu_model_dispose (GObject *object)
 	}
 
 	g_clear_object(&menu->priv->win_menu_model);
-	g_clear_object(&menu->priv->win_menu);
+
+	if (menu->priv->win_menu) {
+		gtk_widget_destroy (GTK_WIDGET (menu->priv->win_menu));
+		g_object_unref (menu->priv->win_menu);
+		menu->priv->win_menu = NULL;
+	}
 
 	g_clear_object(&menu->priv->unity_actions);
 	g_clear_object(&menu->priv->win_actions);
