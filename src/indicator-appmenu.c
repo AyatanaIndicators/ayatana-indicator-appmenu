@@ -23,6 +23,8 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "config.h"
 #endif
 
+#include <stdlib.h> /* exit() */
+
 #include <X11/Xlib.h>
 #include <gdk/gdkx.h>
 #include <gio/gio.h>
@@ -80,8 +82,6 @@ struct _IndicatorAppmenuClass {
 
 struct _IndicatorAppmenu {
 	IndicatorObject parent;
-
-	gulong retry_registration;
 
 	WindowMenu * default_app;
 	GHashTable * apps;
@@ -181,7 +181,6 @@ static void active_window_changed                                    (BamfMatche
                                                                       BamfView * newview,
                                                                       gpointer user_data);
 static GQuark error_quark                                            (void);
-static gboolean retry_registration                                   (gpointer user_data);
 static void bus_method_call                                          (GDBusConnection * connection,
                                                                       const gchar * sender,
                                                                       const gchar * object_path,
@@ -191,9 +190,6 @@ static void bus_method_call                                          (GDBusConne
                                                                       GDBusMethodInvocation * invocation,
                                                                       gpointer user_data);
 static void on_bus_acquired                                          (GDBusConnection * connection,
-                                                                      const gchar * name,
-                                                                      gpointer user_data);
-static void on_name_acquired                                         (GDBusConnection * connection,
                                                                       const gchar * name,
                                                                       gpointer user_data);
 static void on_name_lost                                             (GDBusConnection * connection,
@@ -272,7 +268,6 @@ indicator_appmenu_init (IndicatorAppmenu *self)
 	self->active_window = NULL;
 	self->active_stubs = STUBS_UNKNOWN;
 	self->close_item = NULL;
-	self->retry_registration = 0;
 	self->bus = NULL;
 	self->owner_id = 0;
 	self->dbus_registration = 0;
@@ -303,29 +298,14 @@ indicator_appmenu_init (IndicatorAppmenu *self)
 	find_desktop_windows(self);
 
 	/* Request a name so others can find us */
-	retry_registration(self);
-
-	return;
-}
-
-/* If we weren't able to register on the bus, then we need
-   to try it all again. */
-static gboolean
-retry_registration (gpointer user_data)
-{
-	g_return_val_if_fail(IS_INDICATOR_APPMENU(user_data), FALSE);
-	IndicatorAppmenu * iapp = INDICATOR_APPMENU(user_data);
-
-	iapp->owner_id = g_bus_own_name (G_BUS_TYPE_SESSION,
+	self->owner_id = g_bus_own_name (G_BUS_TYPE_SESSION,
 	                                 DBUS_NAME,
 	                                 G_BUS_NAME_OWNER_FLAGS_NONE,
-	                                 iapp->dbus_registration == 0 ? on_bus_acquired : NULL,
-	                                 on_name_acquired,
+	                                 on_bus_acquired,
+	                                 NULL,
 	                                 on_name_lost,
-	                                 iapp,
+	                                 self,
 	                                 NULL);
-
-	return TRUE;
 }
 
 static void
@@ -334,6 +314,11 @@ on_bus_acquired (GDBusConnection * connection, const gchar * name,
 {
 	IndicatorAppmenu * iapp = INDICATOR_APPMENU(user_data);
 	GError * error = NULL;
+
+	if (connection == NULL) {
+		g_critical ("Unable to get session bus.");
+		exit (0);
+	}
 
 	iapp->bus = connection;
 
@@ -349,19 +334,7 @@ on_bus_acquired (GDBusConnection * connection, const gchar * name,
 	if (error != NULL) {
 		g_critical("Unable to register the object to DBus: %s", error->message);
 		g_error_free(error);
-		g_bus_unown_name(iapp->owner_id);
-		iapp->owner_id = 0;
-		iapp->retry_registration = g_timeout_add_seconds(1, retry_registration, iapp);
-		return;
 	}
-
-	return;	
-}
-
-static void
-on_name_acquired (GDBusConnection * connection, const gchar * name,
-                  gpointer user_data)
-{
 }
 
 static void
@@ -380,8 +353,6 @@ on_name_lost (GDBusConnection * connection, const gchar * name,
 	/* We can rest assured no one will register with us, but let's
 	   just ensure we're not showing anything. */
 	switch_default_app(iapp, NULL, NULL);
-
-	iapp->owner_id = 0;
 }
 
 /* Object refs decrement */
@@ -389,12 +360,6 @@ static void
 indicator_appmenu_dispose (GObject *object)
 {
 	IndicatorAppmenu * iapp = INDICATOR_APPMENU(object);
-
-	/* Don't register if we're dying! */
-	if (iapp->retry_registration != 0) {
-		g_source_remove(iapp->retry_registration);
-		iapp->retry_registration = 0;
-	}
 
 	if (iapp->dbus_registration != 0) {
 		g_dbus_connection_unregister_object(iapp->bus, iapp->dbus_registration);
