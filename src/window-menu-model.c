@@ -258,37 +258,7 @@ struct _WindowMenuEntry {
 	IndicatorObjectEntry entry;
 
 	GtkMenuItem * gmi;
-
-	gulong label_sig;
-	gulong sensitive_sig;
-	gulong visible_sig;
 };
-
-/* Destroy and unref the items of the object entry */
-static void
-entry_object_free (gpointer inentry)
-{
-	WindowMenuEntry * entry = (WindowMenuEntry *)inentry;
-
-	if (entry->label_sig != 0) {
-		g_signal_handler_disconnect(entry->gmi, entry->label_sig);
-	}
-
-	if (entry->sensitive_sig != 0) {
-		g_signal_handler_disconnect(entry->gmi, entry->sensitive_sig);
-	}
-
-	if (entry->visible_sig != 0) {
-		g_signal_handler_disconnect(entry->gmi, entry->visible_sig);
-	}
-
-	g_clear_object(&entry->entry.label);
-	g_clear_object(&entry->entry.image);
-	g_clear_object(&entry->entry.menu);
-
-	g_free(entry);
-	return;
-}
 
 /* Sync the menu label changing to the label object */
 static void
@@ -349,6 +319,24 @@ entry_sensitive_notify (GObject * obj, GParamSpec * pspec, gpointer user_data)
 	return;
 }
 
+/* Destroy and unref the items of the object entry */
+static void
+entry_object_free (gpointer inentry)
+{
+	WindowMenuEntry * entry = (WindowMenuEntry *)inentry;
+
+	g_signal_handlers_disconnect_by_func (entry->gmi, entry_label_notify, entry);
+	g_signal_handlers_disconnect_by_func (entry->gmi, entry_sensitive_notify, entry);
+	g_signal_handlers_disconnect_by_func (entry->gmi, entry_visible_notify, entry);
+
+	g_clear_object(&entry->entry.label);
+	g_clear_object(&entry->entry.image);
+	g_clear_object(&entry->entry.menu);
+
+	g_free(entry);
+	return;
+}
+
 /* Put an entry on a menu item */
 static void
 entry_on_menuitem (WindowMenuModel * menu, GtkMenuItem * gmi)
@@ -380,7 +368,7 @@ entry_on_menuitem (WindowMenuModel * menu, GtkMenuItem * gmi)
 
 		entry->entry.label = GTK_LABEL(gtk_label_new(label));
 		gtk_widget_show(GTK_WIDGET(entry->entry.label));
-		entry->label_sig = g_signal_connect(G_OBJECT(gmi), "notify::label", G_CALLBACK(entry_label_notify), entry->entry.label);
+		g_signal_connect(G_OBJECT(gmi), "notify::label", G_CALLBACK(entry_label_notify), entry);
 	}
 
 	if (entry->entry.label != NULL) {
@@ -395,8 +383,8 @@ entry_on_menuitem (WindowMenuModel * menu, GtkMenuItem * gmi)
 		g_object_ref_sink(entry->entry.menu);
 	}
 
-	entry->sensitive_sig = g_signal_connect(G_OBJECT(gmi), "notify::sensitive", G_CALLBACK(entry_sensitive_notify), entry);
-	entry->visible_sig = g_signal_connect(G_OBJECT(gmi), "notify::visible", G_CALLBACK(entry_visible_notify), entry);
+	g_signal_connect(G_OBJECT(gmi), "notify::sensitive", G_CALLBACK(entry_sensitive_notify), entry);
+	g_signal_connect(G_OBJECT(gmi), "notify::visible", G_CALLBACK(entry_visible_notify), entry);
 
 	g_object_set_data_full(G_OBJECT(gmi), ENTRY_DATA, entry, entry_object_free);
 
