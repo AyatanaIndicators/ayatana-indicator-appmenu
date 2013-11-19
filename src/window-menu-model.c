@@ -348,16 +348,6 @@ entry_on_menuitem (WindowMenuModel * menu, GtkMenuItem * gmi)
 {
 	WindowMenuEntry * entry = g_new0(WindowMenuEntry, 1);
 
-	if (menu->priv->app_actions) {
-		gtk_widget_insert_action_group(GTK_WIDGET(gmi), ACTION_MUX_PREFIX_APP, menu->priv->app_actions);
-	}
-	if (menu->priv->win_actions) {
-		gtk_widget_insert_action_group(GTK_WIDGET(gmi), ACTION_MUX_PREFIX_WIN, menu->priv->win_actions);
-	}
-	if (menu->priv->unity_actions) {
-		gtk_widget_insert_action_group(GTK_WIDGET(gmi), ACTION_MUX_PREFIX_UNITY, menu->priv->unity_actions);
-	}
-
 	entry->gmi = gmi;
 
 	entry->entry.label = mi_find_label(GTK_WIDGET(gmi));
@@ -432,6 +422,13 @@ add_window_menu (WindowMenuModel * menu, GMenuModel * model)
 	menu->priv->win_menu = GTK_MENU_BAR(gtk_menu_bar_new_from_model(model));
 	g_assert(menu->priv->win_menu != NULL);
 	g_object_ref_sink(menu->priv->win_menu);
+
+	if (menu->priv->app_actions)
+		gtk_widget_insert_action_group(GTK_WIDGET(menu->priv->win_menu), ACTION_MUX_PREFIX_APP, menu->priv->app_actions);
+	if (menu->priv->win_actions)
+		gtk_widget_insert_action_group(GTK_WIDGET(menu->priv->win_menu), ACTION_MUX_PREFIX_WIN, menu->priv->win_actions);
+	if (menu->priv->unity_actions)
+		gtk_widget_insert_action_group(GTK_WIDGET(menu->priv->win_menu), ACTION_MUX_PREFIX_UNITY, menu->priv->unity_actions);
 
 	menu->priv->win_menu_insert = g_signal_connect(G_OBJECT (menu->priv->win_menu),
 		"insert",
