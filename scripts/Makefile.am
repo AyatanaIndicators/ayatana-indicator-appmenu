@@ -6,6 +6,6 @@ menu_pusher_SOURCES = \
 menu_pusher_CFLAGS = \
 	$(INDICATOR_CFLAGS) \
 	-Wall \
-	-Werror
+	-Werror -Wno-error=deprecated-declarations
 menu_pusher_LDADD = \
 	$(INDICATOR_LIBS)

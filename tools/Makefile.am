@@ -17,7 +17,7 @@ mock_json_app_SOURCES = \
 mock_json_app_CFLAGS = \
 	$(INDICATOR_CFLAGS) \
 	$(INDICATORTEST_CFLAGS) \
-	-Wall -Werror
+	-Wall -Werror -Wno-error=deprecated-declarations
 mock_json_app_LDADD = \
 	$(INDICATOR_LIBS) \
 	$(INDICATORTEST_LIBS)
