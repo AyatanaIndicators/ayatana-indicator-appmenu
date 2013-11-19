@@ -31,7 +31,7 @@ libappmenu_la_SOURCES = \
 libappmenu_la_CFLAGS = \
 	$(INDICATOR_CFLAGS) \
 	$(COVERAGE_CFLAGS) \
-	-Wall -Wl,-Bsymbolic-functions -Wl,-z,defs -Wl,--as-needed -Werror -DG_LOG_DOMAIN=\"Indicator-Appmenu\"
+	-Wall -Wl,-Bsymbolic-functions -Wl,-z,defs -Wl,--as-needed -Werror -Wno-error=deprecated-declarations -DG_LOG_DOMAIN=\"Indicator-Appmenu\"
 libappmenu_la_LIBADD = $(INDICATOR_LIBS) -lX11
 libappmenu_la_LDFLAGS = \
 	$(COVERAGE_LDFLAGS) \
