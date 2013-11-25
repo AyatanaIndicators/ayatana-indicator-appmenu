@@ -1,3 +1,33 @@
+indicator-appmenu (13.01.0+14.04.20131125-0ubuntu1) trusty; urgency=low
+
+  [ Charles Kerr ]
+  * If we can't get the bus, exit instead of stacking g_bus_own_name()
+    calls on top of each other, leaking GSources. (LP: #1244250)
+
+  [ Sebastien Bacher ]
+  * Build with -Wno-error=deprecated-declarations.
+
+  [ Lars Uebernickel ]
+  * Call gtk_widget_destroy() to break potential ref cycles Calling
+    g_object_unref() is not enough for many of gtk's widgets.
+  * window-menu-model: disconnect entry signal handlers by func instead
+    of id entry_object_free disconnected signal handlers by id. This
+    throws warnings when entry_object_free is called when disposing an
+    object, because signals are already disconnected at that point. This
+    patch uses g_signal_handlers_disconnect_by_func(), which works both
+    when the entry is alive and being disposed.
+  * WindowMenuModel: insert action groups on the toplevel menus
+    Inserting them on the menu items was a workaround for the long-fixed
+    cloaking-bug in libindicator. It's not supported in gtk 3.10
+    anymore, because the menu tracker in gtk doesn't allow action groups
+    on menu items. That's for good reasons: it's more efficient and
+    consumers of that api should not modify the created menu hierarchy.
+
+  [ Ubuntu daily release ]
+  * Automatic snapshot from revision 251
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Mon, 25 Nov 2013 03:55:37 +0000
+
 indicator-appmenu (13.01.0+13.10.20130930-0ubuntu1) saucy; urgency=low
 
   [ Stephen M. Webb ]
