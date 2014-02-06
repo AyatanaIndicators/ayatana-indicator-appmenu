@@ -670,8 +670,9 @@ menu_prop_changed (DbusmenuMenuitem * item, const gchar * property, GVariant * v
 		gtk_widget_set_sensitive(GTK_WIDGET(entry->label), g_variant_get_boolean(value));
 		wmentry->disabled = !g_variant_get_boolean(value);
 	} else if (!g_strcmp0(property, DBUSMENU_MENUITEM_PROP_LABEL)) {
-		gtk_label_set_text_with_mnemonic(entry->label, g_variant_get_string(value, NULL));
-
+		const gchar* str = g_variant_get_string(value, NULL);
+		if(str != NULL)
+			gtk_label_set_text_with_mnemonic(entry->label, str);
 		g_clear_pointer(&wmentry->vaccessible_desc, g_variant_unref);
 		entry->accessible_desc = g_variant_get_string(value, NULL);
 		wmentry->vaccessible_desc = g_variant_ref(value);
