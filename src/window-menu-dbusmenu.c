@@ -710,6 +710,7 @@ menu_child_realized (DbusmenuMenuitem * child, gpointer user_data)
 	WMEntry * wmentry = g_new0(WMEntry, 1);
 	wmentry->wm = wm;
 	IndicatorObjectEntry * entry = &wmentry->ioentry;
+	entry->parent_window = priv->windowid;
 
 	wmentry->mi = newentry;
 	g_object_ref(G_OBJECT(wmentry->mi));

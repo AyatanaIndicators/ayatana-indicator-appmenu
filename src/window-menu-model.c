@@ -163,6 +163,7 @@ add_application_menu (WindowMenuModel * menu, const gchar * appname, GMenuModel 
 	g_return_if_fail(G_IS_MENU_MODEL(model));
 
 	menu->priv->app_menu_model = g_object_ref(model);
+	menu->priv->application_menu.parent_window = menu->priv->xid;
 
 	if (appname != NULL) {
 		menu->priv->application_menu.label = GTK_LABEL(gtk_label_new(appname));
@@ -350,6 +351,7 @@ entry_on_menuitem (WindowMenuModel * menu, GtkMenuItem * gmi)
 
 	entry->gmi = gmi;
 
+	entry->entry.parent_window = menu->priv->xid;
 	entry->entry.label = mi_find_label(GTK_WIDGET(gmi));
 	entry->entry.image = mi_find_icon(GTK_WIDGET(gmi));
 	entry->entry.menu = mi_find_menu(gmi);
@@ -365,7 +367,6 @@ entry_on_menuitem (WindowMenuModel * menu, GtkMenuItem * gmi)
 		gtk_widget_show(GTK_WIDGET(entry->entry.label));
 		g_signal_connect(G_OBJECT(gmi), "notify::label", G_CALLBACK(entry_label_notify), entry);
 	}
-
 	if (entry->entry.label != NULL) {
 		g_object_ref_sink(entry->entry.label);
 	}
