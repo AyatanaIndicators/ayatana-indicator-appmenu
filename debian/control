@@ -45,8 +45,7 @@ Architecture: any
 Depends: ${shlibs:Depends},
          ${misc:Depends},
          indicator-appmenu (= ${binary:Version}),
-         libdbusmenu-tools,
+         libdbusmenu-tools (>= 12.10.3daily13.02.01),
 Description: Tools for debuging application menus.
  .
  This package provides tools for supporting application menus.
-
