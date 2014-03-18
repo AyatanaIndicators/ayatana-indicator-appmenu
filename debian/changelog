@@ -1,3 +1,15 @@
+indicator-appmenu (13.01.0+14.04.20140318-0ubuntu1) trusty; urgency=low
+
+  [ Charles Kerr ]
+  * Check for PROP_LABEL to be non-null before passing it a long to
+    gtk_label_set_text_with_mnemonic().
+  * When pruning libtool/static libraries in debian/rules'
+    override_dh_install, use a matching pattern that actually finds the
+    files we want to prune. (LP: #1281659)
+  * Minor copyediting of schema key's summary/description. (LP: #970903)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Tue, 18 Mar 2014 09:52:58 +0000
+
 indicator-appmenu (13.01.0+14.04.20131125-0ubuntu1) trusty; urgency=low
 
   [ Charles Kerr ]
