@@ -1,3 +1,10 @@
+indicator-appmenu (13.01.0+14.04.20140320-0ubuntu1) trusty; urgency=low
+
+  [ Charles Kerr ]
+  * Don't dereference a NULL WindowMenu pointer. (LP: #1294545)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Thu, 20 Mar 2014 09:03:45 +0000
+
 indicator-appmenu (13.01.0+14.04.20140318-0ubuntu1) trusty; urgency=low
 
   [ Charles Kerr ]
