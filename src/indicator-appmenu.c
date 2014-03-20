@@ -195,8 +195,6 @@ static void on_bus_acquired                                          (GDBusConne
 static void on_name_lost                                             (GDBusConnection * connection,
                                                                       const gchar * name,
                                                                       gpointer user_data);
-static void menus_destroyed                                          (GObject * menus,
-                                                                      gpointer user_data);
 static GVariant * unregister_window                                  (IndicatorAppmenu * iapp,
                                                                       guint windowid);
 
@@ -1054,18 +1052,15 @@ active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * new
 /* Respond to the menus being destroyed.  We need to deregister
    and make sure we weren't being shown.  */
 static void
-menus_destroyed (GObject * menus, gpointer user_data)
+menus_destroyed (IndicatorAppmenu * iapp, guint windowid)
 {
 	gboolean reload_menus = FALSE;
-	WindowMenu * wm = WINDOW_MENU(menus);
-	IndicatorAppmenu * iapp = INDICATOR_APPMENU(user_data);
+	WindowMenu * wm = g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid));
+	g_return_if_fail (wm != NULL);
 
-	guint32 xid = window_menu_get_xid(wm);
-	g_return_if_fail(xid != 0);
+	g_hash_table_steal(iapp->apps, GUINT_TO_POINTER(windowid));
 
-	g_hash_table_steal(iapp->apps, GUINT_TO_POINTER(xid));
-
-	g_debug("Removing menus for %d", xid);
+	g_debug("Removing menus for %d", windowid);
 
 	if (iapp->desktop_menu == wm) {
 		iapp->desktop_menu = NULL;
@@ -1085,7 +1080,7 @@ menus_destroyed (GObject * menus, gpointer user_data)
 		switch_default_app(iapp, NULL, NULL);
 	}
 
-	return;
+	g_object_unref(wm);
 }
 
 /* A new window wishes to register it's windows with us */
@@ -1149,19 +1144,7 @@ unregister_window (IndicatorAppmenu * iapp, guint windowid)
 
 	emit_signal(iapp, "WindowUnregistered", g_variant_new ("(u)", windowid));
 
-	/* Now let's see if we've got a WM object for it then
-	   we need to mark it as destroyed and unreference to
-	   actually destroy it. */
-	gpointer wm = g_hash_table_lookup(iapp->apps, GUINT_TO_POINTER(windowid));
-	if (wm != NULL) {
-		GObject * wmo = G_OBJECT(wm);
-
-		/* Using destroyed so that if the menus are shown
-		   they'll be switch and the current window gets
-		   updated as well. */
-		menus_destroyed(wmo, iapp);
-		g_object_unref(wmo);
-	}
+	menus_destroyed(iapp, windowid);
 
 	return NULL;
 }
