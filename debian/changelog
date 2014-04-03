@@ -1,3 +1,11 @@
+indicator-appmenu (13.01.0+14.04.20140403-0ubuntu1) trusty; urgency=low
+
+  [ Sebastien Bacher ]
+  * Clean leftover hud files, it has its own source now. Drop depends as
+    well (LP: #1295593)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Thu, 03 Apr 2014 14:03:27 +0000
+
 indicator-appmenu (13.01.0+14.04.20140320-0ubuntu1) trusty; urgency=low
 
   [ Charles Kerr ]
