@@ -1,3 +1,4 @@
+from apport.hookutils import *
 import os.path
 
 def add_info(report):
