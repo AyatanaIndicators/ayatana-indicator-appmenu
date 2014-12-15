@@ -753,23 +753,24 @@ entry_activate (IndicatorObject * io, IndicatorObjectEntry * entry, guint timest
 static BamfWindow *
 xid_to_bamf_window (IndicatorAppmenu * iapp, guint xid)
 {
-	GList * windows = bamf_matcher_get_windows(iapp->matcher);
-	GList * window;
+	BamfApplication *application = bamf_matcher_get_application_for_xid(iapp->matcher, xid);
+	GList * children = bamf_view_get_children (BAMF_VIEW (application));
+	GList * l;
 	BamfWindow * newwindow = NULL;
 
-	for (window = windows; window != NULL; window = g_list_next(window)) {
-		if (!BAMF_IS_WINDOW(window->data)) {
+	for (l = children; l; l = l->next) {
+		if (!BAMF_IS_WINDOW(l->data)) {
 			continue;
 		}
 
-		BamfWindow * testwindow = BAMF_WINDOW(window->data);
+		BamfWindow * testwindow = BAMF_WINDOW(l->data);
 
 		if (xid == bamf_window_get_xid(testwindow)) {
 			newwindow = testwindow;
 			break;
 		}
 	}
-	g_list_free(windows);
+	g_list_free(children);
 
 	return newwindow;
 }
