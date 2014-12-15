@@ -678,7 +678,9 @@ get_entries (IndicatorObject * io)
 
 	/* Oh, now we're looking at stubs. */
 
-	if (iapp->active_stubs == STUBS_UNKNOWN) {
+	if (indicator_object_check_environment(INDICATOR_OBJECT(iapp), "unity")) {
+		iapp->active_stubs = STUBS_HIDE;
+	} else if (iapp->active_stubs == STUBS_UNKNOWN) {
 		iapp->active_stubs = STUBS_SHOW;
 
 		BamfApplication * app = bamf_matcher_get_application_for_window(iapp->matcher, iapp->active_window);
@@ -694,10 +696,6 @@ get_entries (IndicatorObject * io)
 	}
 
 	if (iapp->active_stubs == STUBS_HIDE) {
-		return NULL;
-	}
-
-	if (indicator_object_check_environment(INDICATOR_OBJECT(iapp), "unity")) {
 		return NULL;
 	}
 
