@@ -196,15 +196,11 @@ window_menu_dbusmenu_dispose (GObject *object)
 	}
 
 	if (priv->client != NULL) {
-		g_signal_handlers_disconnect_by_func(G_OBJECT(priv->client), G_CALLBACK(root_changed),    object);
-		g_signal_handlers_disconnect_by_func(G_OBJECT(priv->client), G_CALLBACK(event_status),    object);
-		g_signal_handlers_disconnect_by_func(G_OBJECT(priv->client), G_CALLBACK(item_activate),   object);
-		g_signal_handlers_disconnect_by_func(G_OBJECT(priv->client), G_CALLBACK(status_changed),  object);
-
+		g_signal_handlers_disconnect_by_data(priv->client, object);
 		g_object_unref(G_OBJECT(priv->client));
 		priv->client = NULL;
 	}
-	
+
 	if (priv->props != NULL) {
 		g_object_unref(G_OBJECT(priv->props));
 		priv->props = NULL;
@@ -531,9 +527,7 @@ root_changed (DbusmenuClient * client, DbusmenuMenuitem * new_root, gpointer use
 
 	if (priv->root != NULL) {
 		dbusmenu_menuitem_foreach(priv->root, remove_menuitem_signals, user_data);
-
-		g_signal_handlers_disconnect_by_func(G_OBJECT(priv->root), G_CALLBACK(menu_entry_added), user_data);
-		g_signal_handlers_disconnect_by_func(G_OBJECT(priv->root), G_CALLBACK(menu_entry_removed), user_data);
+		g_signal_handlers_disconnect_by_data(priv->root, user_data);
 		g_object_unref(priv->root);
 	}
 

@@ -75,9 +75,6 @@ enum _ActiveStubsState {
 
 struct _IndicatorAppmenuClass {
 	IndicatorObjectClass parent_class;
-
-	void (*window_registered) (IndicatorAppmenu * iapp, guint wid, gchar * address, gpointer path, gpointer user_data);
-	void (*window_unregistered) (IndicatorAppmenu * iapp, guint wid, gpointer user_data);
 };
 
 struct _IndicatorAppmenu {
@@ -90,14 +87,7 @@ struct _IndicatorAppmenu {
 	BamfWindow * active_window;
 	ActiveStubsState active_stubs;
 
-	gulong sig_entry_added;
-	gulong sig_entry_removed;
-	gulong sig_status_changed;
-	gulong sig_show_menu;
-	gulong sig_a11y_update;
-
 	GtkMenuItem * close_item;
-
 	GArray * window_menus;
 
 	GHashTable * desktop_windows;
@@ -421,6 +411,9 @@ indicator_appmenu_finalize (GObject *object)
 		g_array_free(iapp->window_menus, TRUE);
 		iapp->window_menus = NULL;
 	}
+
+	g_signal_handlers_disconnect_by_data(iapp->close_item, iapp);
+	g_signal_handlers_disconnect_by_data(iapp->matcher, iapp);
 
 	G_OBJECT_CLASS (indicator_appmenu_parent_class)->finalize (object);
 	return;
@@ -877,7 +870,7 @@ switch_active_window (IndicatorAppmenu * iapp, BamfWindow * active_window)
 	if (xid == 0 || bamf_view_is_closed (BAMF_VIEW (iapp->active_window))) {
 		return;
 	}
- 
+
 	GdkWMFunction functions;
 	if (!egg_xid_get_functions(xid, &functions)) {
 		g_debug("Unable to get MWM functions for: %d", xid);
@@ -913,28 +906,9 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenu * newdef, BamfWindow * a
 
 	/* hide the entries that we're swapping out */
 	indicator_object_set_visible (INDICATOR_OBJECT(iapp), FALSE);
-	
+
 	/* Disconnect signals */
-	if (iapp->sig_entry_added != 0) {
-		g_signal_handler_disconnect(G_OBJECT(iapp->default_app), iapp->sig_entry_added);
-		iapp->sig_entry_added = 0;
-	}
-	if (iapp->sig_entry_removed != 0) {
-		g_signal_handler_disconnect(G_OBJECT(iapp->default_app), iapp->sig_entry_removed);
-		iapp->sig_entry_removed = 0;
-	}
-	if (iapp->sig_status_changed != 0) {
-		g_signal_handler_disconnect(G_OBJECT(iapp->default_app), iapp->sig_status_changed);
-		iapp->sig_status_changed = 0;
-	}
-	if (iapp->sig_show_menu != 0) {
-		g_signal_handler_disconnect(G_OBJECT(iapp->default_app), iapp->sig_show_menu);
-		iapp->sig_show_menu = 0;
-	}
-	if (iapp->sig_a11y_update != 0) {
-		g_signal_handler_disconnect(G_OBJECT(iapp->default_app), iapp->sig_a11y_update);
-		iapp->sig_a11y_update = 0;
-	}
+	g_signal_handlers_disconnect_by_data (iapp->default_app, iapp);
 
 	/* Default App is NULL, let's see if it needs replacement */
 	iapp->default_app = NULL;
@@ -948,26 +922,26 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenu * newdef, BamfWindow * a
 		iapp->default_app = newdef;
 
 		/* Connect signals */
-		iapp->sig_entry_added =   g_signal_connect(G_OBJECT(iapp->default_app),
-		                                           WINDOW_MENU_SIGNAL_ENTRY_ADDED,
-		                                           G_CALLBACK(window_entry_added),
-		                                           iapp);
-		iapp->sig_entry_removed = g_signal_connect(G_OBJECT(iapp->default_app),
-		                                           WINDOW_MENU_SIGNAL_ENTRY_REMOVED,
-		                                           G_CALLBACK(window_entry_removed),
-		                                           iapp);
-		iapp->sig_status_changed = g_signal_connect(G_OBJECT(iapp->default_app),
-		                                           WINDOW_MENU_SIGNAL_STATUS_CHANGED,
-		                                           G_CALLBACK(window_status_changed),
-		                                           iapp);
-		iapp->sig_show_menu     = g_signal_connect(G_OBJECT(iapp->default_app),
-		                                           WINDOW_MENU_SIGNAL_SHOW_MENU,
-		                                           G_CALLBACK(window_show_menu),
-		                                           iapp);
-		iapp->sig_a11y_update   = g_signal_connect(G_OBJECT(iapp->default_app),
-		                                           WINDOW_MENU_SIGNAL_A11Y_UPDATE,
-		                                           G_CALLBACK(window_a11y_update),
-		                                           iapp);
+		g_signal_connect(G_OBJECT(iapp->default_app),
+		                 WINDOW_MENU_SIGNAL_ENTRY_ADDED,
+		                 G_CALLBACK(window_entry_added),
+		                 iapp);
+		g_signal_connect(G_OBJECT(iapp->default_app),
+		                 WINDOW_MENU_SIGNAL_ENTRY_REMOVED,
+		                 G_CALLBACK(window_entry_removed),
+		                 iapp);
+		g_signal_connect(G_OBJECT(iapp->default_app),
+		                 WINDOW_MENU_SIGNAL_STATUS_CHANGED,
+		                 G_CALLBACK(window_status_changed),
+		                 iapp);
+		g_signal_connect(G_OBJECT(iapp->default_app),
+		                 WINDOW_MENU_SIGNAL_SHOW_MENU,
+		                 G_CALLBACK(window_show_menu),
+		                 iapp);
+		g_signal_connect(G_OBJECT(iapp->default_app),
+		                 WINDOW_MENU_SIGNAL_A11Y_UPDATE,
+		                 G_CALLBACK(window_a11y_update),
+		                 iapp);
 	}
 
 	/* show the entries that we're swapping in */
