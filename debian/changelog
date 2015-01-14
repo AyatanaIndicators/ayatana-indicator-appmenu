@@ -1,3 +1,10 @@
+indicator-appmenu (13.01.0+15.04.20150114-0ubuntu1) vivid; urgency=low
+
+  [ Didier Roche ]
+  * Recommending jayatana for java appmenu integration
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Wed, 14 Jan 2015 15:02:27 +0000
+
 indicator-appmenu (13.01.0+14.04.20140404-0ubuntu1) trusty; urgency=low
 
   [ Ted Gould ]
