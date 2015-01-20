@@ -1,3 +1,10 @@
+indicator-appmenu (13.01.0+15.04.20150120-0ubuntu1) vivid; urgency=low
+
+  [ Dmitry Shachnev ]
+  * Look for dbusmenu-dumper in correct location
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Tue, 20 Jan 2015 22:02:20 +0000
+
 indicator-appmenu (13.01.0+15.04.20150114-0ubuntu1) vivid; urgency=low
 
   [ Didier Roche ]
