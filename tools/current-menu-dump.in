@@ -2,11 +2,7 @@
 
 TMPFILE=`mktemp`
 CURMENU="@LIBEXECDIR@/current-menu"
-if [ -x /usr/lib/libdbusmenu/dbusmenu-dumper ]; then
-  DBUSDUMP="/usr/lib/libdbusmenu/dbusmenu-dumper"
-else
-  DBUSDUMP="/usr/lib/dbusmenu-dumper"
-fi
+DBUSDUMP="@LIBEXECDIR@/dbusmenu-dumper"
 
 $CURMENU > $TMPFILE
 
