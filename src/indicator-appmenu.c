@@ -75,7 +75,6 @@ enum _ActiveStubsState {
 
 typedef enum _AppmenuMode AppmenuMode;
 enum _AppmenuMode {
-	MODE_UNSET,
 	MODE_STANDARD,
 	MODE_UNITY,
 	MODE_UNITY_ALL_MENUS
@@ -137,6 +136,7 @@ struct _IndicatorAppmenuDebug {
 /**********************
   Prototypes
  **********************/
+static gboolean indicator_appmenu_delayed_init                       (IndicatorAppmenu * iapp);
 static void indicator_appmenu_dispose                                (GObject *object);
 static void indicator_appmenu_finalize                               (GObject *object);
 static void build_window_menus                                       (IndicatorAppmenu * iapp);
@@ -262,10 +262,33 @@ indicator_appmenu_class_init (IndicatorAppmenuClass *klass)
 	return;
 }
 
+/* Per instance Init */
+static void
+indicator_appmenu_init (IndicatorAppmenu *self)
+{
+	self->apps = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_object_unref);
+	self->mode = MODE_STANDARD;
+	self->active_stubs = STUBS_UNKNOWN;
+
+	/* Setup the cache of windows with possible desktop entries */
+	self->desktop_windows = g_hash_table_new(g_direct_hash, g_direct_equal);
+
+	g_idle_add((GSourceFunc) indicator_appmenu_delayed_init, self);
+}
+
 /* Delayed Init, this is done so it can happen after that the mode has been set */
 static gboolean
 indicator_appmenu_delayed_init (IndicatorAppmenu *self)
 {
+	if (indicator_object_check_environment(INDICATOR_OBJECT(self), "unity-all-menus")) {
+		self->mode = MODE_UNITY_ALL_MENUS;
+	} else if (indicator_object_check_environment(INDICATOR_OBJECT(self), "unity")) {
+		self->mode = MODE_UNITY;
+	}
+
+	if (self->mode != MODE_STANDARD)
+		self->active_stubs = STUBS_HIDE;
+
 	if (self->active_stubs != STUBS_HIDE)
 		build_window_menus(self);
 
@@ -296,52 +319,6 @@ indicator_appmenu_delayed_init (IndicatorAppmenu *self)
 	                                 NULL);
 
 	return G_SOURCE_REMOVE;
-}
-
-/* Per instance Init */
-static void
-indicator_appmenu_init (IndicatorAppmenu *self)
-{
-	self->apps = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_object_unref);
-	self->mode = MODE_UNSET;
-	self->active_stubs = STUBS_UNKNOWN;
-
-	/* Setup the cache of windows with possible desktop entries */
-	self->desktop_windows = g_hash_table_new(g_direct_hash, g_direct_equal);
-
-	g_idle_add((GSourceFunc) indicator_appmenu_delayed_init, self);
-}
-
-AppmenuMode
-get_mode (IndicatorAppmenu * iapp)
-{
-	if (iapp->mode != MODE_UNSET) {
-		return iapp->mode;
-	}
-
-	if (indicator_object_check_environment(INDICATOR_OBJECT(iapp), "unity-all-menus")) {
-		iapp->mode = MODE_UNITY;
-		switch_default_app(iapp, NULL, NULL);
-		iapp->mode = MODE_UNITY_ALL_MENUS;
-
-		gpointer value;
-		GHashTableIter iter;
-		g_hash_table_iter_init(&iter, iapp->apps);
-		while (g_hash_table_iter_next (&iter, NULL, &value)) {
-			connect_to_menu_signals(iapp, WINDOW_MENU (value));
-		}
-
-		find_relevant_windows(iapp);
-	} else if (indicator_object_check_environment(INDICATOR_OBJECT(iapp), "unity")) {
-		iapp->mode = MODE_UNITY;
-	} else {
-		iapp->mode = MODE_STANDARD;
-	}
-
-	if (iapp->mode != MODE_STANDARD)
-		iapp->active_stubs = STUBS_HIDE;
-
-	return iapp->mode;
 }
 
 static void
@@ -615,7 +592,7 @@ new_window (BamfMatcher * matcher, BamfView * view, gpointer user_data)
 	IndicatorAppmenu * iapp = INDICATOR_APPMENU(user_data);
 	guint32 xid = bamf_window_get_xid(window);
 
-	if (get_mode(iapp) == MODE_UNITY_ALL_MENUS) {
+	if (iapp->mode == MODE_UNITY_ALL_MENUS) {
 		ensure_menus(iapp, window);
 		return;
 	}
@@ -712,7 +689,7 @@ get_entries (IndicatorObject * io)
 	gpointer value;
 	GList* entries = NULL;
 
-	if (get_mode(iapp) == MODE_UNITY_ALL_MENUS) {
+	if (iapp->mode == MODE_UNITY_ALL_MENUS) {
 		g_hash_table_iter_init (&iter, iapp->apps);
 		while (g_hash_table_iter_next (&iter, NULL, &value)) {
 			GList *app_entries = window_menu_get_entries (WINDOW_MENU (value));
@@ -892,7 +869,7 @@ window_finalized_is_active (gpointer user_data, GObject * old_window)
 static void
 switch_active_window (IndicatorAppmenu * iapp, BamfWindow * active_window)
 {
-	if (iapp->active_window == active_window || get_mode(iapp) == MODE_UNITY_ALL_MENUS) {
+	if (iapp->active_window == active_window || iapp->mode == MODE_UNITY_ALL_MENUS) {
 		return;
 	}
 
@@ -974,7 +951,7 @@ connect_to_menu_signals (IndicatorAppmenu * iapp, WindowMenu * menus)
 static void
 switch_default_app (IndicatorAppmenu * iapp, WindowMenu * newdef, BamfWindow * active_window)
 {
-	if (get_mode(iapp) == MODE_UNITY_ALL_MENUS) {
+	if (iapp->mode == MODE_UNITY_ALL_MENUS) {
 		return;
 	}
 
@@ -1036,7 +1013,7 @@ track_menus (IndicatorAppmenu * iapp, guint xid, WindowMenu * menus)
 
 	g_hash_table_insert(iapp->apps, GUINT_TO_POINTER(xid), menus);
 
-	if (get_mode(iapp) == MODE_UNITY_ALL_MENUS) {
+	if (iapp->mode == MODE_UNITY_ALL_MENUS) {
 		connect_to_menu_signals(iapp, menus);
 	}
 }
