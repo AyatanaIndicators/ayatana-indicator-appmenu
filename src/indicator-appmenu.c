@@ -689,10 +689,10 @@ get_entries (IndicatorObject * io)
 	GList* entries = NULL;
 
 	if (iapp->mode == MODE_UNITY_ALL_MENUS) {
-		g_hash_table_iter_init (&iter, iapp->apps);
-		while (g_hash_table_iter_next (&iter, NULL, &value)) {
-			GList *app_entries = window_menu_get_entries (WINDOW_MENU (value));
-			entries = g_list_concat (app_entries, entries);
+		g_hash_table_iter_init(&iter, iapp->apps);
+		while (g_hash_table_iter_next(&iter, NULL, &value)) {
+			GList *app_entries = window_menu_get_entries(WINDOW_MENU (value));
+			entries = g_list_concat(app_entries, entries);
 		}
 
 		return entries;
