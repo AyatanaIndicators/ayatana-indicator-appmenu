@@ -1119,6 +1119,7 @@ menus_destroyed (GObject * menus, gpointer user_data)
 	g_return_if_fail(xid != 0);
 
 	g_hash_table_steal(iapp->apps, GUINT_TO_POINTER(xid));
+	g_signal_handlers_disconnect_by_data(menus, iapp);
 
 	g_debug("Removing menus for %d", xid);
 
