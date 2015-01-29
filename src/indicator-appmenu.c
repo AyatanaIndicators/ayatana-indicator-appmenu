@@ -75,6 +75,7 @@ enum _ActiveStubsState {
 
 typedef enum _AppmenuMode AppmenuMode;
 enum _AppmenuMode {
+	MODE_UNSET,
 	MODE_STANDARD,
 	MODE_UNITY,
 	MODE_UNITY_ALL_MENUS
@@ -261,17 +262,10 @@ indicator_appmenu_class_init (IndicatorAppmenuClass *klass)
 	return;
 }
 
-/* Per instance Init */
-static void
-indicator_appmenu_init (IndicatorAppmenu *self)
+/* Delayed Init, this is done so it can happen after that the mode has been set */
+static gboolean
+indicator_appmenu_delayed_init (IndicatorAppmenu *self)
 {
-	self->apps = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_object_unref);
-	self->mode = MODE_STANDARD;
-	self->active_stubs = STUBS_UNKNOWN;
-
-	/* Setup the cache of windows with possible desktop entries */
-	self->desktop_windows = g_hash_table_new(g_direct_hash, g_direct_equal);
-
 	if (self->active_stubs != STUBS_HIDE)
 		build_window_menus(self);
 
@@ -300,12 +294,28 @@ indicator_appmenu_init (IndicatorAppmenu *self)
 	                                 on_name_lost,
 	                                 self,
 	                                 NULL);
+
+	return G_SOURCE_REMOVE;
+}
+
+/* Per instance Init */
+static void
+indicator_appmenu_init (IndicatorAppmenu *self)
+{
+	self->apps = g_hash_table_new_full(g_direct_hash, g_direct_equal, NULL, g_object_unref);
+	self->mode = MODE_UNSET;
+	self->active_stubs = STUBS_UNKNOWN;
+
+	/* Setup the cache of windows with possible desktop entries */
+	self->desktop_windows = g_hash_table_new(g_direct_hash, g_direct_equal);
+
+	g_idle_add((GSourceFunc) indicator_appmenu_delayed_init, self);
 }
 
 AppmenuMode
 get_mode (IndicatorAppmenu * iapp)
 {
-	if (iapp->mode != MODE_STANDARD) {
+	if (iapp->mode != MODE_UNSET) {
 		return iapp->mode;
 	}
 
@@ -324,6 +334,8 @@ get_mode (IndicatorAppmenu * iapp)
 		find_relevant_windows(iapp);
 	} else if (indicator_object_check_environment(INDICATOR_OBJECT(iapp), "unity")) {
 		iapp->mode = MODE_UNITY;
+	} else {
+		iapp->mode = MODE_STANDARD;
 	}
 
 	if (iapp->mode != MODE_STANDARD)
