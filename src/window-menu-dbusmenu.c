@@ -169,7 +169,7 @@ free_entries(GObject *object, gboolean should_signal)
 			IndicatorObjectEntry * entry;
 			entry = g_array_index(priv->entries, IndicatorObjectEntry *, 0);
 			g_array_remove_index(priv->entries, 0);
-			if (should_signal) {			
+			if (should_signal) {
 				g_signal_emit_by_name(object, WINDOW_MENU_SIGNAL_ENTRY_REMOVED, entry, TRUE);
 			}
 			entry_free(entry);
@@ -509,8 +509,8 @@ remove_menuitem_signals (DbusmenuMenuitem * mi, gpointer user_data)
 {
 	g_signal_handlers_disconnect_by_func(G_OBJECT(mi), G_CALLBACK(menu_entry_realized), user_data);
 	g_signal_handlers_disconnect_by_func(G_OBJECT(mi), G_CALLBACK(menu_entry_realized_child_added), user_data);
-	g_signal_handlers_disconnect_matched (mi, G_SIGNAL_MATCH_FUNC, 0, 0, 0, menu_child_realized, NULL);
-	g_signal_handlers_disconnect_matched (mi, G_SIGNAL_MATCH_FUNC, 0, 0, 0, menu_prop_changed, NULL);
+	g_signal_handlers_disconnect_matched(mi, G_SIGNAL_MATCH_FUNC, 0, 0, 0, menu_child_realized, NULL);
+	g_signal_handlers_disconnect_matched(mi, G_SIGNAL_MATCH_FUNC, 0, 0, 0, menu_prop_changed, NULL);
 
 	return;
 }
