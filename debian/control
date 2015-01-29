@@ -30,12 +30,12 @@ Package: indicator-appmenu
 Architecture: any
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         hud,
 Recommends: indicator-applet | indicator-renderer,
             unity-gtk2-module,
             unity-gtk3-module,
             appmenu-qt,
             appmenu-qt5,
+            jayatana,
 Description: Indicator for application menus.
  .
  This package provides support for application menus.
@@ -45,8 +45,7 @@ Architecture: any
 Depends: ${shlibs:Depends},
          ${misc:Depends},
          indicator-appmenu (= ${binary:Version}),
-         libdbusmenu-tools,
+         libdbusmenu-tools (>= 12.10.3daily13.02.01),
 Description: Tools for debuging application menus.
  .
  This package provides tools for supporting application menus.
-

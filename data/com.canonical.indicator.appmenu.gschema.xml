@@ -9,9 +9,9 @@
   <schema path='/com/canonical/indicator/appmenu/' id='com.canonical.indicator.appmenu' gettext-domain='indicator-appmenu'>
     <key name='menu-mode' enum='menu-enum'>
       <default>'global'</default>
-      <summary>Where the menus displayed</summary>
+      <summary>Where the menu is displayed.</summary>
       <description>
-        Controls the menu display location. TODO: add more
+        Controls the menu display location.
       </description>
     </key>
   </schema>

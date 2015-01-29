@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2012-11-22 12:51+0100\n"
+"POT-Creation-Date: 2014-03-21 11:22+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -18,129 +18,13 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 
 #: ../data/com.canonical.indicator.appmenu.gschema.xml.h:1
-msgid "Where the menus displayed"
+msgid "Where the menu is displayed."
 msgstr ""
 
 #: ../data/com.canonical.indicator.appmenu.gschema.xml.h:2
-msgid "Controls the menu display location. TODO: add more"
+msgid "Controls the menu display location."
 msgstr ""
 
-#: ../data/com.canonical.indicator.appmenu.hud.gschema.xml.h:1
-msgid "Whether to store usage data"
-msgstr ""
-
-#: ../data/com.canonical.indicator.appmenu.hud.gschema.xml.h:2
-msgid ""
-"When the HUD executes operations it stores the execution in order to make "
-"the future results better. Some users could choose to not want this data to "
-"be stored. If that is the case they should disable this property."
-msgstr ""
-
-#: ../data/com.canonical.indicator.appmenu.hud.search.gschema.xml.h:1
-msgid "The penalty given to a menu item being in an indicator"
-msgstr ""
-
-#: ../data/com.canonical.indicator.appmenu.hud.search.gschema.xml.h:3
-#, no-c-format
-msgid ""
-"In order to have the application's menu items appear higher in the search "
-"results a slight penalty is given to the indicator menu items. This value "
-"represents the percentage of that penalty so a value of '50' is a 50% "
-"additional to the calculated distance."
-msgstr ""
-
-#: ../data/com.canonical.indicator.appmenu.hud.search.gschema.xml.h:4
-msgid "Penalty for extra characters added to the search"
-msgstr ""
-
-#: ../data/com.canonical.indicator.appmenu.hud.search.gschema.xml.h:5
-msgid ""
-"The penalty for each extra character in the search string that does not "
-"appear in the text of a menu item.\n"
-"\n"
-"This penalty would be applied if the user typed \"fiile\" when searching "
-"against the menu item \"File\", for example."
-msgstr ""
-
-#: ../data/com.canonical.indicator.appmenu.hud.search.gschema.xml.h:8
-msgid "Penalty applied if a character is dropped"
-msgstr ""
-
-#: ../data/com.canonical.indicator.appmenu.hud.search.gschema.xml.h:9
-msgid ""
-"The penalty for each character dropped from the search string, as compared "
-"with the text of a menu item. This only applies to missing characters that "
-"are not at the end of the search term.\n"
-"\n"
-"This penalty would be applied if the user typed \"fle\" when searching "
-"against the menu item \"File\", for example."
-msgstr ""
-
-#: ../data/com.canonical.indicator.appmenu.hud.search.gschema.xml.h:12
-msgid "Penalty applied if a character is dropped from the end"
-msgstr ""
-
-#: ../data/com.canonical.indicator.appmenu.hud.search.gschema.xml.h:13
-msgid ""
-"The penalty for each missing character at the end of a search term.\n"
-"\n"
-"This penalty would be applied if the user typed \"fil\" when searching "
-"against the menu item \"File\", for example."
-msgstr ""
-
-#: ../data/com.canonical.indicator.appmenu.hud.search.gschema.xml.h:16
-msgid "Penalty applied when the characters are not the same"
-msgstr ""
-
-#: ../data/com.canonical.indicator.appmenu.hud.search.gschema.xml.h:17
-msgid ""
-"The penalty for each substituted character in the search term.\n"
-"\n"
-"The penalty would be applied if the user typed \"fike\" when searching "
-"against the menu item \"File\", for example."
-msgstr ""
-
-#: ../data/com.canonical.indicator.appmenu.hud.search.gschema.xml.h:20
-msgid "The highest distance value that is shown in the results"
-msgstr ""
-
-#: ../data/com.canonical.indicator.appmenu.hud.search.gschema.xml.h:21
-msgid ""
-"After the distances are calculated (including the indicator penalty) then "
-"all values above this max are dropped. This means that the history for those "
-"entries aren't looked up as well."
-msgstr ""
-
-#. TRANSLATORS:  This is used for Application indicators that
-#. are not providing a title string.  The '%s' represents the
-#. unique ID that the app indicator provides, but it is usually
-#. the package name and not generally human readable.  An example
-#. for Network Manager would be 'nm-applet'.
-#: ../src/hudappindicatorsource.c:105
-#, c-format
-msgid "Untitled Indicator (%s)"
-msgstr ""
-
-#: ../src/hudindicatorsource.c:61
-msgid "Date"
-msgstr ""
-
-#: ../src/hudindicatorsource.c:68
-msgid "Device"
-msgstr ""
-
-#: ../src/hudindicatorsource.c:75
-msgid "Users"
-msgstr ""
-
-#: ../src/hudindicatorsource.c:82
-msgid "Sound"
-msgstr ""
-
-#: ../src/hudindicatorsource.c:89
-msgid "Messages"
-msgstr ""
-
-#: ../src/window-menu-model.c:162
+#: ../src/window-menu-model.c:170
 msgid "Unknown Application Name"
 msgstr ""

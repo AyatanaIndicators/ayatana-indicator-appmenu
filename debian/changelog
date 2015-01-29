@@ -1,3 +1,51 @@
+indicator-appmenu (13.01.0+15.04.20150120-0ubuntu1) vivid; urgency=low
+
+  [ Dmitry Shachnev ]
+  * Look for dbusmenu-dumper in correct location
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Tue, 20 Jan 2015 22:02:20 +0000
+
+indicator-appmenu (13.01.0+15.04.20150114-0ubuntu1) vivid; urgency=low
+
+  [ Didier Roche ]
+  * Recommending jayatana for java appmenu integration
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Wed, 14 Jan 2015 15:02:27 +0000
+
+indicator-appmenu (13.01.0+14.04.20140404-0ubuntu1) trusty; urgency=low
+
+  [ Ted Gould ]
+  * Fix the apport hook
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Fri, 04 Apr 2014 14:54:48 +0000
+
+indicator-appmenu (13.01.0+14.04.20140403-0ubuntu1) trusty; urgency=low
+
+  [ Sebastien Bacher ]
+  * Clean leftover hud files, it has its own source now. Drop depends as
+    well (LP: #1295593)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Thu, 03 Apr 2014 14:03:27 +0000
+
+indicator-appmenu (13.01.0+14.04.20140320-0ubuntu1) trusty; urgency=low
+
+  [ Charles Kerr ]
+  * Don't dereference a NULL WindowMenu pointer. (LP: #1294545)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Thu, 20 Mar 2014 09:03:45 +0000
+
+indicator-appmenu (13.01.0+14.04.20140318-0ubuntu1) trusty; urgency=low
+
+  [ Charles Kerr ]
+  * Check for PROP_LABEL to be non-null before passing it a long to
+    gtk_label_set_text_with_mnemonic().
+  * When pruning libtool/static libraries in debian/rules'
+    override_dh_install, use a matching pattern that actually finds the
+    files we want to prune. (LP: #1281659)
+  * Minor copyediting of schema key's summary/description. (LP: #970903)
+
+ -- Ubuntu daily release <ps-jenkins@lists.canonical.com>  Tue, 18 Mar 2014 09:52:58 +0000
+
 indicator-appmenu (13.01.0+14.04.20131125-0ubuntu1) trusty; urgency=low
 
   [ Charles Kerr ]

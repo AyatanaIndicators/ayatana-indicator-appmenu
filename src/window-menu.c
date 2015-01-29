@@ -136,6 +136,8 @@ window_menu_finalize (GObject *object)
 GList *
 window_menu_get_entries (WindowMenu * wm)
 {
+	g_return_val_if_fail (IS_WINDOW_MENU(wm), NULL);
+
 	WindowMenuClass * class = WINDOW_MENU_GET_CLASS(wm);
 
 	if (class->get_entries != NULL) {
@@ -148,6 +150,8 @@ window_menu_get_entries (WindowMenu * wm)
 guint
 window_menu_get_location (WindowMenu * wm, IndicatorObjectEntry * entry)
 {
+	g_return_val_if_fail (IS_WINDOW_MENU(wm), 0);
+
 	WindowMenuClass * class = WINDOW_MENU_GET_CLASS(wm);
 
 	if (class->get_location != NULL) {
@@ -160,6 +164,8 @@ window_menu_get_location (WindowMenu * wm, IndicatorObjectEntry * entry)
 guint
 window_menu_get_xid (WindowMenu * wm)
 {
+	g_return_val_if_fail (IS_WINDOW_MENU(wm), 0);
+
 	WindowMenuClass * class = WINDOW_MENU_GET_CLASS(wm);
 
 	if (class->get_xid != NULL) {
@@ -172,6 +178,8 @@ window_menu_get_xid (WindowMenu * wm)
 gboolean
 window_menu_get_error_state (WindowMenu * wm)
 {
+	g_return_val_if_fail (IS_WINDOW_MENU(wm), FALSE);
+
 	WindowMenuClass * class = WINDOW_MENU_GET_CLASS(wm);
 
 	if (class->get_error_state != NULL) {
@@ -184,6 +192,8 @@ window_menu_get_error_state (WindowMenu * wm)
 WindowMenuStatus
 window_menu_get_status (WindowMenu * wm)
 {
+	g_return_val_if_fail (IS_WINDOW_MENU(wm), WINDOW_MENU_STATUS_NORMAL);
+
 	WindowMenuClass * class = WINDOW_MENU_GET_CLASS(wm);
 
 	if (class->get_status != NULL) {
@@ -196,6 +206,8 @@ window_menu_get_status (WindowMenu * wm)
 void
 window_menu_entry_restore (WindowMenu * wm, IndicatorObjectEntry * entry)
 {
+	g_return_if_fail (IS_WINDOW_MENU(wm));
+
 	WindowMenuClass * class = WINDOW_MENU_GET_CLASS(wm);
 
 	if (class->entry_restore != NULL) {
@@ -208,6 +220,8 @@ window_menu_entry_restore (WindowMenu * wm, IndicatorObjectEntry * entry)
 void
 window_menu_entry_activate (WindowMenu * wm, IndicatorObjectEntry * entry, guint timestamp)
 {
+	g_return_if_fail (IS_WINDOW_MENU(wm));
+
 	WindowMenuClass * class = WINDOW_MENU_GET_CLASS(wm);
 
 	if (class->entry_activate != NULL) {
