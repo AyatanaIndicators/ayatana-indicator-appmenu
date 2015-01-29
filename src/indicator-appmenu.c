@@ -5,6 +5,7 @@ Copyright 2010-2013 Canonical Ltd.
 
 Authors:
     Ted Gould <ted@canonical.com>
+    Marco Trevisan <marco@canonical.com>
 
 This program is free software: you can redistribute it and/or modify it 
 under the terms of the GNU General Public License version 3, as published 
@@ -636,21 +637,21 @@ old_window (BamfMatcher * matcher, BamfView * view, gpointer user_data)
 /* List of desktop files that shouldn't have menu stubs. */
 const static gchar * stubs_blacklist[] = {
 	/* Firefox */
-	"/usr/share/applications/firefox.desktop",
+	"/firefox.desktop",
 	/* Thunderbird */
-	"/usr/share/applications/thunderbird.desktop",
+	"/thunderbird.desktop",
 	/* Open Office */
-	"/usr/share/applications/openoffice.org-base.desktop",
-	"/usr/share/applications/openoffice.org-impress.desktop",
-	"/usr/share/applications/openoffice.org-calc.desktop",
-	"/usr/share/applications/openoffice.org-math.desktop",
-	"/usr/share/applications/openoffice.org-draw.desktop",
-	"/usr/share/applications/openoffice.org-writer.desktop",
+	"/openoffice.org-base.desktop",
+	"/openoffice.org-impress.desktop",
+	"/openoffice.org-calc.desktop",
+	"/openoffice.org-math.desktop",
+	"/openoffice.org-draw.desktop",
+	"/openoffice.org-writer.desktop",
 	/* Blender */
-	"/usr/share/applications/blender-fullscreen.desktop",
-	"/usr/share/applications/blender-windowed.desktop",
+	"/blender-fullscreen.desktop",
+	"/blender-windowed.desktop",
 	/* Eclipse */
-	"/usr/share/applications/eclipse.desktop",
+	"/eclipse.desktop",
 
 	NULL
 };
@@ -671,7 +672,7 @@ show_menu_stubs (BamfApplication * app)
 
 	int i;
 	for (i = 0; stubs_blacklist[i] != NULL; i++) {
-		if (g_strcmp0(stubs_blacklist[i], desktop_file) == 0) {
+		if (g_str_has_suffix(desktop_file, stubs_blacklist[i]) == 0) {
 			return FALSE;
 		}
 	}
