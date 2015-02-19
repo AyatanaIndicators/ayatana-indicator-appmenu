@@ -1,8 +1,12 @@
-indicator-appmenu (15.02.0+15.04.20150203-0ubuntu1) UNRELEASED; urgency=medium
+indicator-appmenu (15.02.0+15.04.20150219.2-0ubuntu1) vivid; urgency=medium
 
+  [ Marco Trevisan (Treviño) ]
   * Bump indicator-appmenu version to 15.02
 
- -- Marco Trevisan (Treviño) <marco@ubuntu.com>  Tue, 03 Feb 2015 11:05:53 +0100
+  [ CI Train Bot ]
+  * New rebuild forced.
+
+ -- CI Train Bot <ci-train-bot@canonical.com>  Thu, 19 Feb 2015 19:32:07 +0000
 
 indicator-appmenu (13.01.0+15.04.20150120-0ubuntu1) vivid; urgency=low
 
