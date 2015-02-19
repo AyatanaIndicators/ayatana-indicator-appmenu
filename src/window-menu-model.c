@@ -45,8 +45,6 @@ struct _WindowMenuModelPrivate {
 	/* Window Menus */
 	GDBusMenuModel * win_menu_model;
 	GtkMenuBar * win_menu;
-	gulong win_menu_insert;
-	gulong win_menu_remove;
 };
 
 #define WINDOW_MENU_MODEL_GET_PRIVATE(o) \
@@ -121,19 +119,10 @@ window_menu_model_dispose (GObject *object)
 	g_clear_object(&menu->priv->application_menu.menu);
 
 	/* Window Menus */
-	if (menu->priv->win_menu_insert != 0) {
-		g_signal_handler_disconnect(menu->priv->win_menu, menu->priv->win_menu_insert);
-		menu->priv->win_menu_insert = 0;
-	}
-
-	if (menu->priv->win_menu_remove != 0) {
-		g_signal_handler_disconnect(menu->priv->win_menu, menu->priv->win_menu_remove);
-		menu->priv->win_menu_remove = 0;
-	}
-
 	g_clear_object(&menu->priv->win_menu_model);
 
 	if (menu->priv->win_menu) {
+		g_signal_handlers_disconnect_by_data(menu->priv->win_menu, menu);
 		gtk_widget_destroy (GTK_WIDGET (menu->priv->win_menu));
 		g_object_unref (menu->priv->win_menu);
 		menu->priv->win_menu = NULL;
@@ -163,6 +152,7 @@ add_application_menu (WindowMenuModel * menu, const gchar * appname, GMenuModel 
 	g_return_if_fail(G_IS_MENU_MODEL(model));
 
 	menu->priv->app_menu_model = g_object_ref(model);
+	menu->priv->application_menu.parent_window = menu->priv->xid;
 
 	if (appname != NULL) {
 		menu->priv->application_menu.label = GTK_LABEL(gtk_label_new(appname));
@@ -330,9 +320,7 @@ entry_object_free (gpointer inentry)
 {
 	WindowMenuEntry * entry = (WindowMenuEntry *)inentry;
 
-	g_signal_handlers_disconnect_by_func (entry->gmi, entry_label_notify, entry);
-	g_signal_handlers_disconnect_by_func (entry->gmi, entry_sensitive_notify, entry);
-	g_signal_handlers_disconnect_by_func (entry->gmi, entry_visible_notify, entry);
+	g_signal_handlers_disconnect_by_data(entry->gmi, entry);
 
 	g_clear_object(&entry->entry.label);
 	g_clear_object(&entry->entry.image);
@@ -350,9 +338,11 @@ entry_on_menuitem (WindowMenuModel * menu, GtkMenuItem * gmi)
 
 	entry->gmi = gmi;
 
+	entry->entry.parent_window = menu->priv->xid;
 	entry->entry.label = mi_find_label(GTK_WIDGET(gmi));
 	entry->entry.image = mi_find_icon(GTK_WIDGET(gmi));
 	entry->entry.menu = mi_find_menu(gmi);
+	g_print("%s Setting entry %p paret as %u\n",G_STRFUNC, &entry->entry, entry->entry.parent_window);
 
 	if (entry->entry.label == NULL && entry->entry.image == NULL) {
 		const gchar * label = gtk_menu_item_get_label(gmi);
@@ -365,7 +355,6 @@ entry_on_menuitem (WindowMenuModel * menu, GtkMenuItem * gmi)
 		gtk_widget_show(GTK_WIDGET(entry->entry.label));
 		g_signal_connect(G_OBJECT(gmi), "notify::label", G_CALLBACK(entry_label_notify), entry);
 	}
-
 	if (entry->entry.label != NULL) {
 		g_object_ref_sink(entry->entry.label);
 	}
@@ -430,14 +419,8 @@ add_window_menu (WindowMenuModel * menu, GMenuModel * model)
 	if (menu->priv->unity_actions)
 		gtk_widget_insert_action_group(GTK_WIDGET(menu->priv->win_menu), ACTION_MUX_PREFIX_UNITY, menu->priv->unity_actions);
 
-	menu->priv->win_menu_insert = g_signal_connect(G_OBJECT (menu->priv->win_menu),
-		"insert",
-		G_CALLBACK (item_inserted_cb),
-		menu);
-	menu->priv->win_menu_remove = g_signal_connect (G_OBJECT (menu->priv->win_menu),
-		"remove",
-		G_CALLBACK (item_removed_cb),
-		menu);
+	g_signal_connect(G_OBJECT(menu->priv->win_menu), "insert", G_CALLBACK (item_inserted_cb), menu);
+	g_signal_connect(G_OBJECT(menu->priv->win_menu), "remove", G_CALLBACK (item_removed_cb), menu);
 
 	GList * children = gtk_container_get_children(GTK_CONTAINER(menu->priv->win_menu));
 	GList * child;
