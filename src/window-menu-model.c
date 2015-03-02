@@ -177,8 +177,7 @@ add_application_menu (WindowMenuModel * menu, const gchar * appname, GMenuModel 
 	g_object_ref_sink(menu->priv->application_menu.menu);
 
 	menu->priv->has_application_menu = TRUE;
-
-	return;
+	g_signal_emit_by_name(menu, WINDOW_MENU_SIGNAL_ENTRY_ADDED, menu->priv->application_menu);
 }
 
 /* Find the label in a GTK MenuItem */
