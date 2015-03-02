@@ -1,3 +1,11 @@
+indicator-appmenu (15.02.0+15.04.20150302-0ubuntu1) vivid; urgency=medium
+
+  [ Marco Trevisan (Treviño) ]
+  * IndicatorAppmenu: ensure we emit "entry-added/removed" signals
+    after/before creating/destroying WindowMenu (LP: #1423855)
+
+ -- CI Train Bot <ci-train-bot@canonical.com>  Mon, 02 Mar 2015 22:36:54 +0000
+
 indicator-appmenu (15.02.0+15.04.20150219.2-0ubuntu1) vivid; urgency=medium
 
   [ Marco Trevisan (Treviño) ]
