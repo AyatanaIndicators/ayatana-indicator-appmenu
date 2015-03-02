@@ -54,7 +54,6 @@ struct _WindowMenuModelPrivate {
 static void                window_menu_model_class_init (WindowMenuModelClass *klass);
 static void                window_menu_model_init       (WindowMenuModel *self);
 static void                window_menu_model_dispose    (GObject *object);
-static void                window_menu_model_finalize   (GObject *object);
 
 /* Window Menu subclassin' */
 static GList *             get_entries                  (WindowMenu * wm);
@@ -83,7 +82,6 @@ window_menu_model_class_init (WindowMenuModelClass *klass)
 	g_type_class_add_private (klass, sizeof (WindowMenuModelPrivate));
 
 	object_class->dispose = window_menu_model_dispose;
-	object_class->finalize = window_menu_model_finalize;
 
 	WindowMenuClass * wm_class = WINDOW_MENU_CLASS(klass);
 
@@ -111,6 +109,11 @@ window_menu_model_dispose (GObject *object)
 {
 	WindowMenuModel * menu = WINDOW_MENU_MODEL(object);
 
+	if (menu->priv->has_application_menu) {
+		g_signal_emit_by_name(menu, WINDOW_MENU_SIGNAL_ENTRY_REMOVED, &menu->priv->application_menu);
+		menu->priv->has_application_menu = FALSE;
+	}
+
 	g_clear_object(&menu->priv->accel_group);
 
 	/* Application Menu */
@@ -133,14 +136,6 @@ window_menu_model_dispose (GObject *object)
 	g_clear_object(&menu->priv->app_actions);
 
 	G_OBJECT_CLASS (window_menu_model_parent_class)->dispose (object);
-	return;
-}
-
-static void
-window_menu_model_finalize (GObject *object)
-{
-
-	G_OBJECT_CLASS (window_menu_model_parent_class)->finalize (object);
 	return;
 }
 
@@ -177,7 +172,7 @@ add_application_menu (WindowMenuModel * menu, const gchar * appname, GMenuModel 
 	g_object_ref_sink(menu->priv->application_menu.menu);
 
 	menu->priv->has_application_menu = TRUE;
-	g_signal_emit_by_name(menu, WINDOW_MENU_SIGNAL_ENTRY_ADDED, menu->priv->application_menu);
+	g_signal_emit_by_name(menu, WINDOW_MENU_SIGNAL_ENTRY_ADDED, &menu->priv->application_menu);
 }
 
 /* Find the label in a GTK MenuItem */
@@ -341,7 +336,6 @@ entry_on_menuitem (WindowMenuModel * menu, GtkMenuItem * gmi)
 	entry->entry.label = mi_find_label(GTK_WIDGET(gmi));
 	entry->entry.image = mi_find_icon(GTK_WIDGET(gmi));
 	entry->entry.menu = mi_find_menu(gmi);
-	g_print("%s Setting entry %p paret as %u\n",G_STRFUNC, &entry->entry, entry->entry.parent_window);
 
 	if (entry->entry.label == NULL && entry->entry.image == NULL) {
 		const gchar * label = gtk_menu_item_get_label(gmi);
@@ -397,7 +391,6 @@ static void
 item_removed_cb (GtkContainer *menu, GtkWidget *widget, gpointer data)
 {
 	g_signal_emit_by_name(data, WINDOW_MENU_SIGNAL_ENTRY_REMOVED, g_object_get_data(G_OBJECT(widget), ENTRY_DATA));
-	return;
 }
 
 /* Adds the window menu and turns it into a set of IndicatorObjectEntries
