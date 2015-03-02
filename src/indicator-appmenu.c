@@ -1141,6 +1141,15 @@ menus_destroyed (IndicatorAppmenu * iapp, guint windowid)
 		switch_default_app(iapp, NULL, NULL);
 	}
 
+	if (iapp->mode == MODE_UNITY_ALL_MENUS) {
+		GList * entries, * l;
+		entries = window_menu_get_entries(wm);
+		for (l = entries; l; l = l->next) {
+			window_entry_removed(wm, l->data, iapp);
+		}
+		g_list_free(entries);
+	}
+
 	g_object_unref(wm);
 }
 
