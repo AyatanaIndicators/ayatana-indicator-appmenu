@@ -163,10 +163,10 @@ static void old_window                                               (BamfMatche
                                                                       gpointer user_data);
 static void window_entry_added                                       (WindowMenu * mw,
                                                                       IndicatorObjectEntry * entry,
-                                                                      gpointer user_data);
+                                                                      IndicatorAppmenu * iapp);
 static void window_entry_removed                                     (WindowMenu * mw,
                                                                       IndicatorObjectEntry * entry,
-                                                                      gpointer user_data);
+                                                                      IndicatorAppmenu * iapp);
 static void window_status_changed                                    (WindowMenu * mw,
                                                                       DbusmenuStatus status,
                                                                       IndicatorAppmenu * iapp);
@@ -997,9 +997,9 @@ switch_default_app (IndicatorAppmenu * iapp, WindowMenu * newdef, BamfWindow * a
 	/* Set up initial state for new entries if needed */
 	if (iapp->default_app != NULL &&
             window_menu_get_status (iapp->default_app) != WINDOW_MENU_STATUS_NORMAL) {
-		window_status_changed (iapp->default_app,
-		                       window_menu_get_status (iapp->default_app),
-		                       iapp);
+		window_status_changed(iapp->default_app,
+		                      window_menu_get_status (iapp->default_app),
+		                      iapp);
 	}
 
 	return;
@@ -1013,7 +1013,22 @@ track_menus (IndicatorAppmenu * iapp, guint xid, WindowMenu * menus)
 	g_hash_table_insert(iapp->apps, GUINT_TO_POINTER(xid), menus);
 
 	if (iapp->mode == MODE_UNITY_ALL_MENUS) {
+		GList *entries, *l;
+		WindowMenuStatus status;
+
 		connect_to_menu_signals(iapp, menus);
+		entries = window_menu_get_entries(menus);
+		status = window_menu_get_status(menus);
+
+		for (l = entries; l; l = l->next) {
+			window_entry_added(menus, l->data, iapp);
+		}
+
+		if (status != WINDOW_MENU_STATUS_ACTIVE) {
+			window_status_changed(menus, status, iapp);
+		}
+
+		g_list_free(entries);
 	}
 }
 
@@ -1124,6 +1139,15 @@ menus_destroyed (IndicatorAppmenu * iapp, guint windowid)
 
 	if (reload_menus) {
 		switch_default_app(iapp, NULL, NULL);
+	}
+
+	if (iapp->mode == MODE_UNITY_ALL_MENUS) {
+		GList * entries, * l;
+		entries = window_menu_get_entries(wm);
+		for (l = entries; l; l = l->next) {
+			window_entry_removed(wm, l->data, iapp);
+		}
+		g_list_free(entries);
 	}
 
 	g_object_unref(wm);
@@ -1313,18 +1337,18 @@ bus_method_call (GDBusConnection * connection, const gchar * sender,
 
 /* Pass up the entry added event */
 static void
-window_entry_added (WindowMenu * mw, IndicatorObjectEntry * entry, gpointer user_data)
+window_entry_added (WindowMenu * mw, IndicatorObjectEntry * entry, IndicatorAppmenu * iapp)
 {
-	entry->parent_object = user_data;
-	g_signal_emit_by_name(G_OBJECT(user_data), INDICATOR_OBJECT_SIGNAL_ENTRY_ADDED, entry);
+	entry->parent_object = INDICATOR_OBJECT(iapp);
+	g_signal_emit_by_name(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_ADDED, entry);
 }
 
 /* Pass up the entry removed event */
 static void
-window_entry_removed (WindowMenu * mw, IndicatorObjectEntry * entry, gpointer user_data)
+window_entry_removed (WindowMenu * mw, IndicatorObjectEntry * entry, IndicatorAppmenu * iapp)
 {
-	entry->parent_object = user_data;
-	g_signal_emit_by_name(G_OBJECT(user_data), INDICATOR_OBJECT_SIGNAL_ENTRY_REMOVED, entry);
+	entry->parent_object = INDICATOR_OBJECT(iapp);
+	g_signal_emit_by_name(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_ENTRY_REMOVED, entry);
 }
 
 /* Pass up the status changed event */
