@@ -455,7 +455,7 @@ get_location (WindowMenu * wm, IndicatorObjectEntry * entry)
 	g_return_val_if_fail(IS_WINDOW_MENU_DBUSMENU(wm), 0);
 
 	if (entry == NULL) {
-		return 0;
+		return G_MAXUINT;
 	}
 
 	guint i;
@@ -467,7 +467,7 @@ get_location (WindowMenu * wm, IndicatorObjectEntry * entry)
 	}
 
 	if (i == priv->entries->len) {
-		return 0;
+		return G_MAXUINT;
 	}
 
 	return i;
