@@ -813,6 +813,7 @@ xid_to_bamf_window (IndicatorAppmenu * iapp, guint xid)
 static void
 entry_activate_window (IndicatorObject * io, IndicatorObjectEntry * entry, guint windowid, guint timestamp)
 {
+	WindowMenu * menus = NULL;
 	IndicatorAppmenu * iapp = INDICATOR_APPMENU(io);
 
 	/* We need to force a focus change in this case as we probably
@@ -821,25 +822,21 @@ entry_activate_window (IndicatorObject * io, IndicatorObjectEntry * entry, guint
 		BamfWindow * newwindow = xid_to_bamf_window(iapp, windowid);
 
 		if (newwindow != NULL) {
-			update_active_window(iapp, newwindow);
+			menus = update_active_window(iapp, newwindow);
 		}
 	}
 
-	if (iapp->default_app != NULL) {
-		window_menu_entry_activate(iapp->default_app, entry, timestamp);
-		return;
-	}
+	if (iapp->mode != MODE_UNITY_ALL_MENUS && iapp->default_app != NULL) {
+		menus = iapp->default_app;
 
-	if (iapp->active_window == NULL) {
-		if (iapp->desktop_menu != NULL) {
-			window_menu_entry_activate(iapp->desktop_menu, entry, timestamp);
+		if (!menus && iapp->active_window == NULL) {
+			menus = iapp->desktop_menu;
 		}
-		return;
 	}
 
-	/* Else we've got stubs, and the stubs don't care. */
-
-	return;
+	if (menus) {
+		window_menu_entry_activate(menus, entry, timestamp);
+	}
 }
 
 /* Checks to see we cared about a window that's going
