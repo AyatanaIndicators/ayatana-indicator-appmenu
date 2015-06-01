@@ -752,6 +752,22 @@ get_location (IndicatorObject * io, IndicatorObjectEntry * entry)
 {
 	guint count = 0;
 	IndicatorAppmenu * iapp = INDICATOR_APPMENU(io);
+
+	if (iapp->mode == MODE_UNITY_ALL_MENUS) {
+		GHashTableIter iter;
+		gpointer value;
+
+		g_hash_table_iter_init(&iter, iapp->apps);
+		while (g_hash_table_iter_next(&iter, NULL, &value)) {
+			count = window_menu_get_location(WINDOW_MENU (value), entry);
+
+			if (count != G_MAXUINT)
+				return count;
+		}
+
+		return 0;
+	}
+
 	if (iapp->default_app != NULL) {
 		/* Find the location in the app */
 		count = window_menu_get_location(iapp->default_app, entry);
@@ -764,7 +780,7 @@ get_location (IndicatorObject * io, IndicatorObjectEntry * entry)
 		}
 		if (count == iapp->window_menus->len) {
 			g_warning("Unable to find entry in default window menus");
-			count = 0;
+			count = G_MAXUINT;
 		}
 	} else {
 		/* Find the location in the desktop menu */
@@ -772,7 +788,8 @@ get_location (IndicatorObject * io, IndicatorObjectEntry * entry)
 			count = window_menu_get_location(iapp->desktop_menu, entry);
 		}
 	}
-	return count;
+
+	return (count == G_MAXUINT) ? 0 : count;
 }
 
 /* Responds to a menuitem being activated on the panel. */
