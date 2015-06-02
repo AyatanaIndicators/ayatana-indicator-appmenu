@@ -45,7 +45,6 @@ AS_IF([test "x$enable_deprecations" = xno],
 ###########################
 
 GTK_DOC_CHECK([1.9], [--flavour=no-tmpl])
-AC_CONFIG_MACRO_DIR(m4)
 
 ###########################
 # GLib GSettings
