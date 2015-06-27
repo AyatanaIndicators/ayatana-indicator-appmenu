@@ -602,6 +602,7 @@ get_location (WindowMenu * wm, IndicatorObjectEntry * entry)
 		/* NOTE: Not printing any of the values here because there's
 		   a pretty good chance that they're not valid.  Let's not crash
 		   things here. */
+		pos = G_MAXUINT;
 		g_warning("Unable to find entry: %p", entry);
 	}
 

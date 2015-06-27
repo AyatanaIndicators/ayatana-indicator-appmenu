@@ -181,6 +181,8 @@ static void active_window_changed                                    (BamfMatche
                                                                       BamfView * oldview,
                                                                       BamfView * newview,
                                                                       gpointer user_data);
+static WindowMenu * update_active_window                             (IndicatorAppmenu * appmenu,
+                                                                      BamfWindow *window);
 static GQuark error_quark                                            (void);
 static void bus_method_call                                          (GDBusConnection * connection,
                                                                       const gchar * sender,
@@ -750,6 +752,22 @@ get_location (IndicatorObject * io, IndicatorObjectEntry * entry)
 {
 	guint count = 0;
 	IndicatorAppmenu * iapp = INDICATOR_APPMENU(io);
+
+	if (iapp->mode == MODE_UNITY_ALL_MENUS) {
+		GHashTableIter iter;
+		gpointer value;
+
+		g_hash_table_iter_init(&iter, iapp->apps);
+		while (g_hash_table_iter_next(&iter, NULL, &value)) {
+			count = window_menu_get_location(WINDOW_MENU (value), entry);
+
+			if (count != G_MAXUINT)
+				return count;
+		}
+
+		return 0;
+	}
+
 	if (iapp->default_app != NULL) {
 		/* Find the location in the app */
 		count = window_menu_get_location(iapp->default_app, entry);
@@ -762,7 +780,7 @@ get_location (IndicatorObject * io, IndicatorObjectEntry * entry)
 		}
 		if (count == iapp->window_menus->len) {
 			g_warning("Unable to find entry in default window menus");
-			count = 0;
+			count = G_MAXUINT;
 		}
 	} else {
 		/* Find the location in the desktop menu */
@@ -770,7 +788,8 @@ get_location (IndicatorObject * io, IndicatorObjectEntry * entry)
 			count = window_menu_get_location(iapp->desktop_menu, entry);
 		}
 	}
-	return count;
+
+	return (count == G_MAXUINT) ? 0 : count;
 }
 
 /* Responds to a menuitem being activated on the panel. */
@@ -811,33 +830,30 @@ xid_to_bamf_window (IndicatorAppmenu * iapp, guint xid)
 static void
 entry_activate_window (IndicatorObject * io, IndicatorObjectEntry * entry, guint windowid, guint timestamp)
 {
+	WindowMenu * menus = NULL;
 	IndicatorAppmenu * iapp = INDICATOR_APPMENU(io);
 
 	/* We need to force a focus change in this case as we probably
 	   just haven't gotten the signal from BAMF yet */
 	if (windowid != 0) {
-		BamfView * newwindow = BAMF_VIEW(xid_to_bamf_window(iapp, windowid));
+		BamfWindow * newwindow = xid_to_bamf_window(iapp, windowid);
 
 		if (newwindow != NULL) {
-			active_window_changed(iapp->matcher, BAMF_VIEW(iapp->active_window), newwindow, iapp);
+			menus = update_active_window(iapp, newwindow);
 		}
 	}
 
-	if (iapp->default_app != NULL) {
-		window_menu_entry_activate(iapp->default_app, entry, timestamp);
-		return;
-	}
+	if (iapp->mode != MODE_UNITY_ALL_MENUS && iapp->default_app != NULL) {
+		menus = iapp->default_app;
 
-	if (iapp->active_window == NULL) {
-		if (iapp->desktop_menu != NULL) {
-			window_menu_entry_activate(iapp->desktop_menu, entry, timestamp);
+		if (!menus && iapp->active_window == NULL) {
+			menus = iapp->desktop_menu;
 		}
-		return;
 	}
 
-	/* Else we've got stubs, and the stubs don't care. */
-
-	return;
+	if (menus) {
+		window_menu_entry_activate(menus, entry, timestamp);
+	}
 }
 
 /* Checks to see we cared about a window that's going
@@ -858,7 +874,7 @@ window_finalized_is_active (gpointer user_data, GObject * old_window)
 
 	/* We're going to a state where we don't know what the active
 	   window is, hopefully BAMF will save us */
-	active_window_changed (iapp->matcher, NULL, NULL, iapp);
+	active_window_changed(iapp->matcher, NULL, NULL, iapp);
 
 	return;
 }
@@ -1072,41 +1088,41 @@ ensure_menus (IndicatorAppmenu * iapp, BamfWindow * window)
 static void
 active_window_changed (BamfMatcher * matcher, BamfView * oldview, BamfView * newview, gpointer user_data)
 {
-	BamfWindow * window = NULL;
+	update_active_window(INDICATOR_APPMENU(user_data), (BamfWindow *) newview);
+}
 
-	if (newview != NULL) {
-		window = BAMF_WINDOW(newview);
-		if (window == NULL) {
+static WindowMenu *
+update_active_window (IndicatorAppmenu * appmenu, BamfWindow *window)
+{
+	WindowMenu * menus = NULL;
+
+	if (window != NULL) {
+		if (!BAMF_IS_WINDOW(window)) {
+			window = NULL;
 			g_warning("Active window changed to View thats not a window.");
 		}
 	} else {
 		g_debug("Active window is: NULL");
 	}
 
-	IndicatorAppmenu * appmenu = INDICATOR_APPMENU(user_data);
-
-	if (window != NULL && appmenu->mode == MODE_UNITY_ALL_MENUS) {
-		ensure_menus(appmenu, window);
-		return;
+	if (appmenu->mode == MODE_UNITY_ALL_MENUS) {
+		if (window != NULL) {
+			menus = ensure_menus(appmenu, window);
+		}
+		return menus;
 	}
 
 	if (window != NULL && bamf_window_get_window_type(window) == BAMF_WINDOW_DESKTOP) {
 		g_debug("Switching to menus from desktop");
 		switch_default_app(appmenu, NULL, NULL);
-		return;
+		return menus;
 	}
 
-	WindowMenu * menus = ensure_menus (appmenu, window);
+	g_debug("Switching to menus from XID %d", window ? bamf_window_get_xid(window) : 0);
+	menus = ensure_menus(appmenu, window);
+	switch_default_app(appmenu, menus, window);
 
-	/* Note: We're not using window here, but re-casting the
-	   newwindow variable.  Which means we stay where we were
-	   but get the menus from parents. */
-	g_debug("Switching to menus from XID %d", newview ? bamf_window_get_xid(BAMF_WINDOW(newview)) : 0);
-	if (newview != NULL) {
-		switch_default_app(appmenu, menus, BAMF_WINDOW(newview));
-	} else {
-		switch_default_app(appmenu, menus, NULL);
-	}
+	return menus;
 }
 
 /* Respond to the menus being destroyed.  We need to deregister
@@ -1176,8 +1192,7 @@ register_window (IndicatorAppmenu * iapp, guint windowid, const gchar * objectpa
 
 		/* Note: Does not cause ref */
 		BamfWindow * win = bamf_matcher_get_active_window(iapp->matcher);
-
-		active_window_changed(iapp->matcher, NULL, BAMF_VIEW(win), iapp);
+		update_active_window(iapp, win);
 	} else {
 		if (windowid == 0) {
 			g_warning("Can't build windows for a NULL window ID %d with path %s from %s", windowid, objectpath, sender);

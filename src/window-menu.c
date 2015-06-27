@@ -150,14 +150,14 @@ window_menu_get_entries (WindowMenu * wm)
 guint
 window_menu_get_location (WindowMenu * wm, IndicatorObjectEntry * entry)
 {
-	g_return_val_if_fail (IS_WINDOW_MENU(wm), 0);
+	g_return_val_if_fail (IS_WINDOW_MENU(wm), G_MAXUINT);
 
 	WindowMenuClass * class = WINDOW_MENU_GET_CLASS(wm);
 
 	if (class->get_location != NULL) {
 		return class->get_location(wm, entry);
 	} else {
-		return 0;
+		return G_MAXUINT;
 	}
 }
 
