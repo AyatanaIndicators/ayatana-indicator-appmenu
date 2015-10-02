@@ -1,3 +1,10 @@
+indicator-appmenu (15.02.0+15.10.20151002-0ubuntu1) wily; urgency=medium
+
+  * IndicatorAppmenu: only emit snow-now-changed signal for menus
+    belonging to the window that requested (LP: #1501837)
+
+ -- Marco Trevisan (Treviño) <mail@3v1n0.net>  Fri, 02 Oct 2015 00:32:10 +0000
+
 indicator-appmenu (15.02.0+15.10.20150627-0ubuntu1) wily; urgency=medium
 
   [ CI Train Bot ]
