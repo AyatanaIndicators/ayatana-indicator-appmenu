@@ -1371,14 +1371,13 @@ static void
 window_status_changed (WindowMenu * mw, DbusmenuStatus status, IndicatorAppmenu * iapp)
 {
 	gboolean show_now = (status == DBUSMENU_STATUS_NOTICE);
-	GList * entry_head, * entries;
+	GList * l, * window_entries = window_menu_get_entries(mw);
 
-	entry_head = indicator_object_get_entries(INDICATOR_OBJECT(iapp));
-
-	for (entries = entry_head; entries != NULL; entries = g_list_next(entries)) {
-		IndicatorObjectEntry * entry = (IndicatorObjectEntry *)entries->data;
+	for (l = window_entries; l; l = l->next) {
+		IndicatorObjectEntry * entry = l->data;
 		g_signal_emit(G_OBJECT(iapp), INDICATOR_OBJECT_SIGNAL_SHOW_NOW_CHANGED_ID, 0, entry, show_now);
 	}
+	g_list_free (window_entries);
 }
 
 /* Pass up the show menu event */
