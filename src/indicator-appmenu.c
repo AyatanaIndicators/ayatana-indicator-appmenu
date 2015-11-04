@@ -804,10 +804,14 @@ entry_activate (IndicatorObject * io, IndicatorObjectEntry * entry, guint timest
 static BamfWindow *
 xid_to_bamf_window (IndicatorAppmenu * iapp, guint xid)
 {
+	BamfWindow * newwindow = bamf_matcher_get_window_for_xid(iapp->matcher, xid);
+
+	if (BAMF_IS_WINDOW(newwindow))
+		return newwindow;
+
 	BamfApplication *application = bamf_matcher_get_application_for_xid(iapp->matcher, xid);
-	GList * children = bamf_view_get_children (BAMF_VIEW (application));
+	GList * children = bamf_view_peek_children (BAMF_VIEW (application));
 	GList * l;
-	BamfWindow * newwindow = NULL;
 
 	for (l = children; l; l = l->next) {
 		if (!BAMF_IS_WINDOW(l->data)) {
@@ -821,7 +825,6 @@ xid_to_bamf_window (IndicatorAppmenu * iapp, guint xid)
 			break;
 		}
 	}
-	g_list_free(children);
 
 	return newwindow;
 }

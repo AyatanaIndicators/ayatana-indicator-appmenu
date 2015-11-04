@@ -15,7 +15,7 @@ Build-Depends: debhelper (>= 9),
                libdbusmenu-glib-dev (>= 0.5.90),
                libdbusmenu-gtk3-dev (>= 0.5.90),
                libdbusmenu-jsonloader-dev (>= 0.5.90),
-               libbamf3-dev (>= 0.2.53),
+               libbamf3-dev (>= 0.5.2~bzr0),
                libappindicator3-dev,
                indicator-application (>= 0.4.90),
 Standards-Version: 3.9.2
