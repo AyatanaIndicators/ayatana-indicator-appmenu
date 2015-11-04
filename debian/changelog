@@ -1,3 +1,13 @@
+indicator-appmenu (15.02.0+16.04.20151104-0ubuntu1) xenial; urgency=medium
+
+  [ CI Train Bot ]
+  * New rebuild forced.
+
+  [ Marco Trevisan (Treviño) ]
+  * IndicatorAppmenu: depend on bamf 0.5.2 and use new API
+
+ -- Marco Trevisan (Treviño) <mail@3v1n0.net>  Wed, 04 Nov 2015 17:08:59 +0000
+
 indicator-appmenu (15.02.0+15.10.20151002-0ubuntu1) wily; urgency=medium
 
   * IndicatorAppmenu: only emit snow-now-changed signal for menus
