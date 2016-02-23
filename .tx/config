@@ -1,0 +1,8 @@
+[main]
+host = https://www.transifex.com
+
+[ayatana-indicators.appmenu]
+source_file = po/ayatana-indicator-appmenu.pot
+source_lang = en
+type = PO
+file_filter = po/<lang>.po
