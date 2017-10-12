@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-10-12 07:14+0200\n"
-"PO-Revision-Date: 2017-10-12 15:48+0000\n"
+"PO-Revision-Date: 2017-10-13 16:46+0000\n"
 "Last-Translator: Efstathios Iosifidis <iefstathios@gmail.com>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/ayatana-indicators"
 "/appmenu-applet/el/>\n"
@@ -17,7 +17,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 2.17-dev\n"
+"X-Generator: Weblate 2.17\n"
 
 #: ../data/org.ayatana.indicator.appmenu.gschema.xml:1
 msgid "Where the menu is displayed."
@@ -25,7 +25,7 @@ msgstr "Που θα εμφανίζεται το μενού."
 
 #: ../data/org.ayatana.indicator.appmenu.gschema.xml:2
 msgid "Controls the menu display location."
-msgstr "Ελέγχει την τοποθεσία προβολής του μενού."
+msgstr "Ελέγχει την τοποθεσία εμφάνισης του μενού."
 
 #: ../src/window-menu-model.c:155
 msgid "Unknown Application Name"
