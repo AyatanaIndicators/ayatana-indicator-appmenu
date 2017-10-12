@@ -1,4 +1,4 @@
-data/com.canonical.indicator.appmenu.gschema.xml
+data/org.ayatana.indicator.appmenu.gschema.xml
 src/gdk-get-func.c
 src/indicator-appmenu.c
 src/window-menu.c
