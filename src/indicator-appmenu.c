@@ -30,8 +30,8 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include <gdk/gdkx.h>
 #include <gio/gio.h>
 
-#include <libindicator/indicator.h>
-#include <libindicator/indicator-object.h>
+#include <libayatana-indicator/indicator.h>
+#include <libayatana-indicator/indicator-object.h>
 
 #include <libdbusmenu-glib/menuitem.h>
 #include <libdbusmenu-glib/client.h>
@@ -1344,7 +1344,7 @@ bus_method_call (GDBusConnection * connection, const gchar * sender,
 
 	if (error != NULL) {
 		g_dbus_method_invocation_return_dbus_error(invocation,
-		                                           "com.canonical.AppMenu.Error",
+		                                           "org.ayatana.AppMenu.Error",
 		                                           error->message);
 		g_error_free(error);
 	} else {

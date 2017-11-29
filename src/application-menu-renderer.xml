@@ -1,5 +1,5 @@
 <!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
-<node name="/com/canonical/AppMenu/Renderer" xmlns:dox="http://www.canonical.com/dbus/dox.dtd">
+<node name="/org/ayatana/AppMenu/Renderer" xmlns:dox="http://www.canonical.com/dbus/dox.dtd">
 	<dox:d><![CDATA[
 	  @mainpage
 	 
@@ -12,7 +12,7 @@
 	  The actual menus are transported using the dbusmenu protocol which is available
 	  here: @ref com::canonical::dbusmenu.
 	]]></dox:d>
-	<interface name="com.canonical.AppMenu.Renderer">
+	<interface name="org.ayatana.AppMenu.Renderer">
 		<dox:d>
 		  An interface to register a menu from an application's window to be displayed in another
 		  window.  This manages that association between XWindow Window IDs and the dbus

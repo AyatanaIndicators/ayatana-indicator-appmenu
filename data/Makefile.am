@@ -1,5 +1,5 @@
 gsettings_SCHEMAS = \
-    com.canonical.indicator.appmenu.gschema.xml
+    org.ayatana.indicator.appmenu.gschema.xml
 
 @GSETTINGS_RULES@
 

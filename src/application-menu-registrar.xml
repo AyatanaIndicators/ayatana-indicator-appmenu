@@ -9,7 +9,7 @@
 	  The actual menus are transported using the dbusmenu protocol which is available
 	  here: @ref com::canonical::dbusmenu.
 	]]></dox:d>
-	<interface name="com.canonical.AppMenu.Registrar">
+	<interface name="org.ayatana.AppMenu.Registrar">
 		<dox:d>
 		  An interface to register a menu from an application's window to be displayed in another
 		  window.  This manages that association between XWindow Window IDs and the dbus
@@ -50,7 +50,7 @@
 				<dox:d>The address of the connection on DBus (e.g. :1.23 or org.example.service)</dox:d>
 			</arg>
 			<arg name="menuObjectPath" type="o" direction="out">
-				<dox:d>The path to the object which implements the com.canonical.dbusmenu interface.</dox:d>
+				<dox:d>The path to the object which implements the org.ayatana.dbusmenu interface.</dox:d>
 			</arg>
 		</method>
 		<method name="GetMenus">
@@ -70,7 +70,7 @@
 				<dox:d>The address of the connection on DBus (e.g. :1.23 or org.example.service)</dox:d>
 			</arg>
 			<arg name="menuObjectPath" type="o" direction="out">
-				<dox:d>The path to the object which implements the com.canonical.dbusmenu interface.</dox:d>
+				<dox:d>The path to the object which implements the org.ayatana.dbusmenu interface.</dox:d>
 			</arg>
 		</signal>
 		<signal name="WindowUnregistered">

@@ -1,10 +1,11 @@
-AC_INIT([indicator-appmenu],
-        [15.02.0],
-        [http://bugs.launchpad.net/indicator-appmenu],
-        [indicator-appmenu],
-        [http://launchpad.net/indicator-appmenu])
+AC_INIT([ayatana-indicator-appmenu],
+        [0.4.0],
+        [https://github.com/ArcticaProject/ayatana-indicator-appmenu],
+        [ayatana-indicator-appmenu],
+        [https://github.com/ArcticaProject/ayatana-indicator-appmenu/issues])
 
-AC_COPYRIGHT([Copyright 2010 Canonical])
+AC_COPYRIGHT([Copyright 2010 Canonical
+Copyright 2015 Arctica Project])
 
 AC_PREREQ(2.53)
 
@@ -68,7 +69,7 @@ PKG_CHECK_MODULES(gtk, gtk+-3.0 >= $GTK_REQUIRED_VERSION)
 PKG_CHECK_MODULES(INDICATOR,  glib-2.0 >= $GLIB_REQUIRED_VERSION
                               gio-2.0 >= $GIO_REQUIRED_VERSION
                               gtk+-3.0 >= $GTK_REQUIRED_VERSION
-                              indicator3-0.4 >= $INDICATOR_REQUIRED_VERSION
+                              ayatana-indicator3-0.4 >= $INDICATOR_REQUIRED_VERSION
                               dbusmenu-gtk3-0.4 >= $DBUSMENUGTK_REQUIRED_VERSION
                               libbamf3 >= $BAMF_REQUIRED_VERSION)
 AC_SUBST(INDICATOR_CFLAGS)
@@ -101,7 +102,7 @@ AC_ARG_ENABLE([tests],
 if test x"$enable_tests" != x"no" ; then
    PKG_CHECK_MODULES(INDICATORTEST,
                      dbusmenu-jsonloader-0.4 >= $DBUSMENU_JSONLOADER_REQUIRED_VERSION
-                     appindicator3-0.1 >= $LIBAPPINDICATOR_REQUIRED_VERSION,
+                     ayatana-appindicator3-0.1 >= $LIBAPPINDICATOR_REQUIRED_VERSION,
                      [have_dbusmenu_jsonloader=yes],
                      [have_dbusmenu_jsonloader=no]
                     )
@@ -147,14 +148,14 @@ AC_ARG_ENABLE(localinstall, AS_HELP_STRING([--enable-localinstall], [install all
 ###########################
 
 if test "x$with_localinstall" = "xyes"; then
-	INDICATORDIR="${libdir}/indicators/3/"
-	INDICATORICONSDIR="${datadir}/libindicate/icons/"
+	INDICATORDIR="${libdir}/ayatana-indicators/3/"
+	INDICATORICONSDIR="${datadir}/libayatana-indicate/icons/"
 elif test "x$with_gtk" = x2; then
-	INDICATORDIR=`$PKG_CONFIG --variable=indicatordir indicator-0.4`
-	INDICATORICONSDIR=`$PKG_CONFIG --variable=iconsdir indicator-0.4`
+	INDICATORDIR=`$PKG_CONFIG --variable=indicatordir ayatana-indicator-0.4`
+	INDICATORICONSDIR=`$PKG_CONFIG --variable=iconsdir ayatana-indicator-0.4`
 else
-	INDICATORDIR=`$PKG_CONFIG --variable=indicatordir indicator3-0.4`
-	INDICATORICONSDIR=`$PKG_CONFIG --variable=iconsdir indicator3-0.4`
+	INDICATORDIR=`$PKG_CONFIG --variable=indicatordir ayatana-indicator3-0.4`
+	INDICATORICONSDIR=`$PKG_CONFIG --variable=iconsdir ayatana-indicator3-0.4`
 fi
 AC_SUBST(INDICATORDIR)
 AC_SUBST(INDICATORICONSDIR)
@@ -190,7 +191,7 @@ AC_DEFUN([AC_DEFINE_PATH], [
 # Internationalization
 ###########################
 
-GETTEXT_PACKAGE=indicator-appmenu
+GETTEXT_PACKAGE=ayatana-indicator-appmenu
 
 IT_PROG_INTLTOOL([0.50.2])
 

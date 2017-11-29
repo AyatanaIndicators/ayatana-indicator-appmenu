@@ -23,7 +23,7 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define __WINDOW_MENU_H__
 
 #include <glib-object.h>
-#include <libindicator/indicator-object.h>
+#include <libayatana-indicator/indicator-object.h>
 
 G_BEGIN_DECLS
 

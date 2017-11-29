@@ -1,7 +1,7 @@
-Source: indicator-appmenu
+Source: ayatana-indicator-appmenu
 Section: gnome
 Priority: optional
-Maintainer: Ubuntu Desktop Team <ubuntu-desktop@lists.ubuntu.com>
+Maintainer: Mike Gabriel <mike.gabriel@das-netzwerkteam.de>
 Build-Depends: debhelper (>= 9),
                dh-autoreconf,
                libglib2.0-dev (>= 2.35.4),
@@ -11,41 +11,36 @@ Build-Depends: debhelper (>= 9),
                intltool,
                dbus-test-runner,
                xvfb,
-               libindicator3-dev (>= 0.4.90),
+               libayatana-indicator3-dev (>= 0.5.0~),
                libdbusmenu-glib-dev (>= 0.5.90),
                libdbusmenu-gtk3-dev (>= 0.5.90),
                libdbusmenu-jsonloader-dev (>= 0.5.90),
                libbamf3-dev (>= 0.5.2~bzr0),
-               libappindicator3-dev,
-               indicator-application (>= 0.4.90),
-Standards-Version: 3.9.2
-Homepage: http://launchpad.net/indicator-appmenu
-# If you aren't a member of ~indicator-applet-developers but need to upload
-# packaging changes, just go ahead.  ~indicator-applet-developers will notice
-# and sync up the code again.
-Vcs-Bzr: https://code.launchpad.net/~indicator-applet-developers/indicator-appmenu/trunk.13.04
-Vcs-Browser: https://bazaar.launchpad.net/~indicator-applet-developers/indicator-appmenu/trunk.13.04/files
+               libayatana-appindicator3-dev,
+               ayatana-indicator-application (>= 0.5.0~),
+Standards-Version: 3.9.6
+Homepage: https://github.com/ArcticaProject/ayatana-indicator-appmenu
+Vcs-Git: git://cgit.arctica-project.org/ayatana/ayatana-indicator-appmenu.git
+Vcs-Browser: https://cgit.arctica-project.org/ayatana/ayatana-indicator-appmenu.git/
 
-Package: indicator-appmenu
+Package: ayatana-indicator-appmenu
 Architecture: any
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-Recommends: indicator-applet | indicator-renderer,
-            unity-gtk2-module,
-            unity-gtk3-module,
-            appmenu-qt,
-            appmenu-qt5,
-            jayatana,
-Description: Indicator for application menus.
- .
+Suggests: indicator-applet | mate-indicator-applet | indicator-renderer,
+          unity-gtk2-module,
+          unity-gtk3-module,
+          appmenu-qt,
+          appmenu-qt5,
+          jayatana,
+Description: Ayatana Indicator for application menus.
  This package provides support for application menus.
 
-Package: indicator-appmenu-tools
+Package: ayatana-indicator-appmenu-tools
 Architecture: any
 Depends: ${shlibs:Depends},
          ${misc:Depends},
-         indicator-appmenu (= ${binary:Version}),
+         ayatana-indicator-appmenu (= ${binary:Version}),
          libdbusmenu-tools (>= 12.10.3daily13.02.01),
 Description: Tools for debuging application menus.
- .
  This package provides tools for supporting application menus.

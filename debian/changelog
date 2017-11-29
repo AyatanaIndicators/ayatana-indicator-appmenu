@@ -1,3 +1,9 @@
+ayatana-indicator-appmenu (0.4.0-0) UNRELEASED; urgency=medium
+
+  * Fork from Ubuntu's indicator-appmenu.
+
+ -- Mike Gabriel <mike.gabriel@das-netzwerkteam.de>  Mon, 16 Nov 2015 15:25:00 +0100
+
 indicator-appmenu (15.02.0+16.04.20151104-0ubuntu1) xenial; urgency=medium
 
   [ CI Train Bot ]
