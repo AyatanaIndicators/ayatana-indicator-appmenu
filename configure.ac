@@ -5,7 +5,7 @@ AC_INIT([ayatana-indicator-appmenu],
         [https://github.com/ArcticaProject/ayatana-indicator-appmenu/issues])
 
 AC_COPYRIGHT([Copyright 2010 Canonical
-Copyright 2015 Arctica Project])
+Copyright 2017 Ayatana Indicators Project])
 
 AC_PREREQ(2.53)
 
