@@ -27,6 +27,7 @@ Package: ayatana-indicator-appmenu
 Architecture: any
 Depends: ${shlibs:Depends},
          ${misc:Depends},
+         glib2.0-bin,
 Suggests: indicator-applet | mate-indicator-applet | indicator-renderer,
           unity-gtk2-module,
           unity-gtk3-module,
