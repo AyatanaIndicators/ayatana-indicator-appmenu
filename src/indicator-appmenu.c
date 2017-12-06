@@ -231,6 +231,10 @@ indicator_appmenu_class_init (IndicatorAppmenuClass *klass)
 {
 	GObjectClass *object_class = G_OBJECT_CLASS (klass);
 
+	setlocale(LC_ALL, "");
+	bindtextdomain( GETTEXT_PACKAGE, LOCALEDIR );
+	textdomain( GETTEXT_PACKAGE );
+
 	object_class->dispose = indicator_appmenu_dispose;
 	object_class->finalize = indicator_appmenu_finalize;
 

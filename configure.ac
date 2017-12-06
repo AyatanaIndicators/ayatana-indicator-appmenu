@@ -197,7 +197,7 @@ IT_PROG_INTLTOOL([0.50.2])
 
 AC_SUBST(GETTEXT_PACKAGE)
 AC_DEFINE_UNQUOTED(GETTEXT_PACKAGE, "$GETTEXT_PACKAGE", [Define to the gettext package name.])
-AC_DEFINE_PATH(GNOMELOCALEDIR, "${datadir}/locale", [locale directory])
+AC_DEFINE_PATH(LOCALEDIR, "${datadir}/locale", [locale directory])
 
 ###########################
 # Files
