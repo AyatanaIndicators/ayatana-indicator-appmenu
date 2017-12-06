@@ -24,6 +24,10 @@ with this program.  If not, see <http://www.gnu.org/licenses/>.
 #include "config.h"
 #endif
 
+#include <locale.h>
+#include <langinfo.h>
+#include <libintl.h>
+
 #include <stdlib.h> /* exit() */
 
 #include <X11/Xlib.h>
