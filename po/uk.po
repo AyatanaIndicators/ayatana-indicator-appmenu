@@ -8,7 +8,7 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-11-29 12:34+0100\n"
-"PO-Revision-Date: 2018-01-24 12:35+0000\n"
+"PO-Revision-Date: 2018-01-30 21:13+0000\n"
 "Last-Translator: Марс Ямбар <mjambarmeta@gmail.com>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/ayatana-"
 "indicators/appmenu-applet/uk/>\n"
@@ -22,11 +22,11 @@ msgstr ""
 
 #: ../data/org.ayatana.indicator.appmenu.gschema.xml:1
 msgid "Where the menu is displayed."
-msgstr ""
+msgstr "Де меню відображається."
 
 #: ../data/org.ayatana.indicator.appmenu.gschema.xml:2
 msgid "Controls the menu display location."
-msgstr ""
+msgstr "Контролює розташування відображення меню."
 
 #: ../src/window-menu-model.c:155
 msgid "Unknown Application Name"
