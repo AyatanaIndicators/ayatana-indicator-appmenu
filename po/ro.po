@@ -8,24 +8,26 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-11-29 12:34+0100\n"
-"PO-Revision-Date: 2017-10-12 07:14+0200\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
+"PO-Revision-Date: 2018-02-03 08:44+0000\n"
+"Last-Translator: Cristian Gherman <c_gherman@yahoo.com>\n"
+"Language-Team: Romanian <https://hosted.weblate.org/projects/ayatana-"
+"indicators/appmenu-applet/ro/>\n"
 "Language: ro\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ASCII\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : (n==0 || (n%100 > 0 && n%100 < "
 "20)) ? 1 : 2;\n"
+"X-Generator: Weblate 2.19-dev\n"
 
 #: ../data/org.ayatana.indicator.appmenu.gschema.xml:1
 msgid "Where the menu is displayed."
-msgstr ""
+msgstr "Unde este afişat meniul"
 
 #: ../data/org.ayatana.indicator.appmenu.gschema.xml:2
 msgid "Controls the menu display location."
-msgstr ""
+msgstr "Controlează locația afișării meniului."
 
 #: ../src/window-menu-model.c:155
 msgid "Unknown Application Name"
-msgstr ""
+msgstr "Nume aplicație necunoscută"
