@@ -146,7 +146,7 @@ add_application_menu (WindowMenuModel * menu, const gchar * appname, GMenuModel 
 {
 	g_return_if_fail(G_IS_MENU_MODEL(model));
 
-	menu->priv->app_menu_model = g_object_ref(model);
+	menu->priv->app_menu_model = (GDBusMenuModel*)g_object_ref(model);
 	menu->priv->application_menu.parent_window = menu->priv->xid;
 
 	if (appname != NULL) {
@@ -398,7 +398,7 @@ item_removed_cb (GtkContainer *menu, GtkWidget *widget, gpointer data)
 static void
 add_window_menu (WindowMenuModel * menu, GMenuModel * model)
 {
-	menu->priv->win_menu_model = g_object_ref(model);
+	menu->priv->win_menu_model = (GDBusMenuModel*)g_object_ref(model);
 
 	menu->priv->win_menu = GTK_MENU_BAR(gtk_menu_bar_new_from_model(model));
 	g_assert(menu->priv->win_menu != NULL);

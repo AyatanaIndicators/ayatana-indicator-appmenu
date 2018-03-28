@@ -617,14 +617,14 @@ menu_entry_realized (DbusmenuMenuitem * newentry, gpointer user_data)
 		if (children != NULL) {
 			gpointer * data = g_new(gpointer, 2);
 			data[0] = user_data;
-			data[1] = g_object_ref(newentry);
+			data[1] = (DbusmenuMenuitem*)g_object_ref(newentry);
 
 			g_signal_connect_data(G_OBJECT(children->data), DBUSMENU_MENUITEM_SIGNAL_REALIZED, G_CALLBACK(menu_child_realized), data, child_realized_data_cleanup, 0);
 		} else {
 			/* Menu entry has no children */
 			gpointer * data = g_new(gpointer, 2);
 			data[0] = user_data;
-			data[1] = g_object_ref(newentry);
+			data[1] = (DbusmenuMenuitem*)g_object_ref(newentry);
 
 			/* Make sure the menu item gets displayed on the menu bar */
 			menu_child_realized(NULL, data);
