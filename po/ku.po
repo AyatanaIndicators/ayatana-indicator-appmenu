@@ -8,22 +8,25 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-11-29 12:34+0100\n"
-"PO-Revision-Date: 2017-10-12 07:14+0200\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
+"PO-Revision-Date: 2018-07-13 08:02+0000\n"
+"Last-Translator: Bikarhêner <kaya6491@gmail.com>\n"
+"Language-Team: Kurdish <https://hosted.weblate.org/projects/"
+"ayatana-indicators/appmenu-applet/ku/>\n"
 "Language: ku\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ASCII\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"X-Generator: Weblate 3.1-dev\n"
 
 #: ../data/org.ayatana.indicator.appmenu.gschema.xml:1
 msgid "Where the menu is displayed."
-msgstr ""
+msgstr "Cihê ku menû tê nîşandan."
 
 #: ../data/org.ayatana.indicator.appmenu.gschema.xml:2
 msgid "Controls the menu display location."
-msgstr ""
+msgstr "Cihê nîşandana menûyê kontrol dike."
 
 #: ../src/window-menu-model.c:155
 msgid "Unknown Application Name"
-msgstr ""
+msgstr "Navê Sepanê ya Nenas"
