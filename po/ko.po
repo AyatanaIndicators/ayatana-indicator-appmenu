@@ -8,23 +8,25 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-11-29 12:34+0100\n"
-"PO-Revision-Date: 2017-10-12 07:14+0200\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
+"PO-Revision-Date: 2019-10-05 10:56+0000\n"
+"Last-Translator: MrJang <ijin1322@gmail.com>\n"
+"Language-Team: Korean <https://hosted.weblate.org/projects/"
+"ayatana-indicators/appmenu-applet/ko/>\n"
 "Language: ko\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ASCII\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Weblate 3.9-dev\n"
 
 #: ../data/org.ayatana.indicator.appmenu.gschema.xml:1
 msgid "Where the menu is displayed."
-msgstr ""
+msgstr "메뉴가 표시되는 위치."
 
 #: ../data/org.ayatana.indicator.appmenu.gschema.xml:2
 msgid "Controls the menu display location."
-msgstr ""
+msgstr "메뉴 표시 위치를 조정합니다."
 
 #: ../src/window-menu-model.c:155
 msgid "Unknown Application Name"
-msgstr ""
+msgstr "알 수없는 응용 프로그램 이름"
