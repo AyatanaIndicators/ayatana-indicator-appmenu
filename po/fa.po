@@ -8,22 +8,25 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2017-11-29 12:34+0100\n"
-"PO-Revision-Date: 2017-10-12 07:14+0200\n"
-"Last-Translator: Automatically generated\n"
-"Language-Team: none\n"
+"PO-Revision-Date: 2020-06-12 16:41+0000\n"
+"Last-Translator: Alireza Jabbari <rhrurhraj@gmail.com>\n"
+"Language-Team: Persian <https://hosted.weblate.org/projects/"
+"ayatana-indicators/appmenu-applet/fa/>\n"
 "Language: fa\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=ASCII\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=n > 1;\n"
+"X-Generator: Weblate 4.1-dev\n"
 
 #: ../data/org.ayatana.indicator.appmenu.gschema.xml:1
 msgid "Where the menu is displayed."
-msgstr ""
+msgstr "جایی که منو نمایش داده می‌شود."
 
 #: ../data/org.ayatana.indicator.appmenu.gschema.xml:2
 msgid "Controls the menu display location."
-msgstr ""
+msgstr "جایگاه نمایش منو را کنترل می‌کند."
 
 #: ../src/window-menu-model.c:155
 msgid "Unknown Application Name"
-msgstr ""
+msgstr "نام اپلیکیشن ناشناخته"
